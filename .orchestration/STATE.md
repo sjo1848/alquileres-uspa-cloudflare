@@ -52,6 +52,23 @@ This project is a second Cloudflare migration laboratory alongside HMS Cloudflar
 
 A cross-project thesis is not yet authorized as fact. It may only be formulated after evidence from both labs supports or falsifies reusable claims.
 
+## External Independent Critic — REWORK-1
+
+Artifact reviewed: `08fbf91f6e87c45db1d2f97fbb5793f75e1881b7`.
+Verdict: `REWORK-1`.
+Human Gate: none.
+Blocker: none.
+
+Accepted/reusable evidence includes the pinned source inventory, parity/risk baseline, local Worker+D1+R2+Web Crypto primitive proof, conditional official-limit cost baseline, and preservation of negative findings.
+
+The artifact is not eligible for PASS because it diverges from the current hardened canonical method, lacks required specialist/independent-critic/Integration-Review evidence, has an invalid external-review state boundary, claims Pre-Critic readiness while an applicable invariant remains PENDING, leaves required auth/R2 lifecycle feasibility incomplete, overstates several hypothesis verdicts, and does not yet derive the cost envelope from the route/data drivers required by its own model.
+
+Binding findings and exit criteria are in:
+
+`.orchestration/reviews/CF-AU-I00-REWORK-1.md`
+
 ## Next action
 
-Execute CF-AU-I00 autonomously under `.orchestration/contracts/CF-AU-I00.md`, then stop at the external Independent Critic boundary.
+Codex must consume `.orchestration/reviews/CF-AU-I00-REWORK-1.md` directly, execute REWORK-1 autonomously under the existing CF-AU-I00 contract, re-run the mandatory Pre-Critic Gate, and publish a new immutable artifact descendant from current canonical `main` for External Independent Critic.
+
+Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.

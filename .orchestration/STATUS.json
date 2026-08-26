@@ -8,18 +8,18 @@
   "last_completed_task": "LAB_BOOTSTRAP",
   "last_completed_head": null,
   "work_branch": null,
-  "next_action": "EXECUTE_CF_AU_I00_BASELINE_FEASIBILITY_COST_ZERO_VALIDATION",
+  "next_action": "APPLY_CF_AU_I00_REWORK_1_FROM_.orchestration/reviews/CF-AU-I00-REWORK-1.md",
   "stop_reason": null,
   "event": {
-    "seq": 1,
-    "id": "CF-AU-I00@AUTHORIZED",
-    "type": "READY_TO_RESUME"
+    "seq": 2,
+    "id": "CF-AU-I00@REWORK-1",
+    "type": "EXTERNAL_REVIEW_REWORK"
   },
   "external_review": {
     "required": false,
-    "last_audited_head": null,
-    "last_verdict": null,
-    "artifact_head": null,
+    "last_audited_head": "08fbf91f6e87c45db1d2f97fbb5793f75e1881b7",
+    "last_verdict": "REWORK-1",
+    "artifact_head": "08fbf91f6e87c45db1d2f97fbb5793f75e1881b7",
     "pending_verdict": null
   },
   "human_gate": null,
