@@ -46,6 +46,26 @@ A hypothesis fails or requires REWORK if evidence shows a material parity gap, u
 10. Produce invariant evidence and pass the Pre-Critic Gate.
 11. Publish one immutable CF-AU-I00 artifact for External Independent Critic.
 
+## Required execution organization
+
+Codex owns the orchestration and must use its agents without routing routine coordination through the Human.
+
+For I00, separate at minimum these substantive investigation surfaces so assumptions can be challenged independently:
+
+- **Source/parity/data track:** source behavior, auth semantics, PostgreSQL/Prisma model, migration truthfulness and image lifecycle.
+- **Cloudflare/runtime/cost track:** Workers/Vite feasibility, Hono runtime compatibility, D1/R2 constraints and quantified free-tier envelope.
+
+Codex may split these further when useful. Parallel/disjoint outputs must receive an Integration Review before Pre-Critic.
+
+Internal falsification must be independent from the specialists that produced the corresponding evidence. Cover at least:
+
+- technical/security/data-parity criticism;
+- research/cost/method-assumption criticism.
+
+Persist enough evidence to prove role separation, findings, REWORK and integration. A specialist cannot approve its own result, and internal critics cannot substitute for ChatGPT External Independent Critic.
+
+The Human must not be asked to relay specialist findings, critic findings or REWORK instructions.
+
 ## Acceptance
 
 - No product code migration is claimed complete.
@@ -54,6 +74,8 @@ A hypothesis fails or requires REWORK if evidence shows a material parity gap, u
 - Source-product I13 acceptance dependency is explicit.
 - No paid resource, production deployment or real data is used.
 - Next increment is bounded and justified by evidence.
+- Specialist/critic independence and Integration Review are evidenced where applicable.
+- ChatGPT External Independent Critic remains the only external technical acceptance boundary.
 
 ## Evidence outputs
 
@@ -62,8 +84,9 @@ A hypothesis fails or requires REWORK if evidence shows a material parity gap, u
 - `docs/research/COST-ZERO-MODEL.md`
 - `docs/architecture/TARGET-ARCHITECTURE.md`
 - source/parity/migration evidence produced during I00
+- specialist/critic/integration evidence for I00
 - `.orchestration/evidence/CF-AU-I00-INVARIANTS.md`
 
 ## Stop condition
 
-Stop only at External Independent Critic boundary, legitimate Human Gate or demonstrated material blocker.
+Stop only at External Independent Critic boundary, legitimate Human Gate or demonstrated material blocker. Ordinary runtime/session limits persist `READY_TO_RESUME`; routine REWORK continues under Codex ownership.
