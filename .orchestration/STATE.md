@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
+State: `PENDING_EXTERNAL_REVIEW`
 Phase: `DISCOVERY / FEASIBILITY`
 Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
 
@@ -54,4 +54,4 @@ A cross-project thesis is not yet authorized as fact. It may only be formulated 
 
 ## Next action
 
-Execute CF-AU-I00 autonomously under `.orchestration/contracts/CF-AU-I00.md`, then stop at the external Independent Critic boundary.
+Commit the completed CF-AU-I00 evidence package as an immutable artifact, then wait for the External Independent Critic verdict.

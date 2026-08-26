@@ -48,6 +48,24 @@ Observed monthly free tier:
 
 Source: https://developers.cloudflare.com/r2/pricing/
 
+## Quantified workload envelope
+
+These are planning assumptions for synthetic laboratory traffic, not customer forecasts. D1 rows are deliberately conservative estimates of rows scanned/returned per request; actual values must be read from query metadata before deployment.
+
+| Scenario | Worker requests/day | D1 rows read/day | D1 rows written/day | R2 Class A/month | R2 Class B/month | R2 storage |
+|---|---:|---:|---:|---:|---:|---:|
+| Laboratory/demo | 500 | 10,000 | 100 | 500 | 5,000 | 0.1 GB-month |
+| Early local adoption | 5,000 | 150,000 | 1,000 | 5,000 | 150,000 | 2 GB-month |
+| Growth watch threshold | 80,000 | 4,000,000 | 80,000 | 800,000 | 8,000,000 | 8 GB-month |
+
+The growth row is a watch threshold, not a recommendation. It intentionally leaves only 20% headroom on Workers requests and D1 daily quotas, 20% headroom on R2 storage, and 20% headroom on R2 operations. A single large image upload can also hit the Workers Free 100 MB request-body limit; the implementation must enforce a lower application limit and use streaming/appropriate multipart handling.
+
+The conditional formula is:
+
+`cost-zero candidate = all measured daily/monthly metrics < documented free allowance and no required excluded service`
+
+At or above a watch threshold, stop and obtain a Human Gate before enabling a paid plan. D1 Free exceeding a daily quota returns query errors rather than silently billing; R2 and Workers usage must still be monitored to avoid a cost or availability surprise.
+
 ## What is not automatically free
 
 - custom domain registration;
