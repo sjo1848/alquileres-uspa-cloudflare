@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "project": "Alquileres Uspallata Cloudflare Lab",
+  "phase": "DISCOVERY_FEASIBILITY",
+  "runtime_status": "READY_TO_RESUME",
+  "resume_authorized": true,
+  "active_task": "CF-AU-I00",
+  "last_completed_task": "LAB_BOOTSTRAP",
+  "last_completed_head": null,
+  "work_branch": null,
+  "next_action": "EXECUTE_CF_AU_I00_BASELINE_FEASIBILITY_COST_ZERO_VALIDATION",
+  "stop_reason": null,
+  "event": {
+    "seq": 1,
+    "id": "CF-AU-I00@AUTHORIZED",
+    "type": "READY_TO_RESUME"
+  },
+  "external_review": {
+    "required": false,
+    "last_audited_head": null,
+    "last_verdict": null,
+    "artifact_head": null,
+    "pending_verdict": null
+  },
+  "human_gate": null,
+  "blocker": null
+}
