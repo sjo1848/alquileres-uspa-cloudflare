@@ -4,7 +4,7 @@ State: `PENDING_EXTERNAL_REVIEW`
 Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
 Active task: `CF-AU-I01-P0P1 — local baseline, synthetic auth feasibility and cost model`
 
-> Historical note: the bootstrap and CF-AU-I00 details immediately below record the lab's earlier state and remain as audit history. The latest canonical transition is the CF-AU-I01-P0P1 Artifact A1 review boundary at the end of this file, mirrored in `.orchestration/STATUS.json`.
+> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is the Artifact A3 external-review boundary recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
 ## Source baseline
 
@@ -138,4 +138,20 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Artifact A1 commit/tag remains immutable and reachable. All three A1 automated-review findings are resolved in the A2 candidate as recorded in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A1-AUTOMATED-REVIEW-REWORK.md`.
 - Immutable Artifact A2: commit `f9d8bfa9afb39555649365596be467d88f18d7a8`, annotated tag `CF-AU-I01-P0P1-Artifact-A2`. The artifact commit itself contains `runtime_status=PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and the known tag; the exact SHA is pinned in the following boundary commit.
 - PR #8 remains the open, unmerged review surface. Review is requested on exact commit `f9d8bfa9afb39555649365596be467d88f18d7a8` and tag `CF-AU-I01-P0P1-Artifact-A2`; the boundary commit records the SHA.
-- **Canonical next action:** await External Independent Critic on Artifact A2. No further work is authorized until that review verdict; do not merge or start another task.
+- At publication time the next action was to await the External Independent Critic. This historical A2 boundary was superseded by the canonical REWORK-1 event below.
+
+## CF-AU-I01-P0P1 — Artifact A2 REWORK-1 execution (2026-10-12)
+
+- Canonical authorization is `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-CRITIC.md` from `main@66a56a193ec418e28b17ca871df2289bf706edef`, event seq 17. It authorizes only the two bounded cost-model repairs A2-F1/A2-F2 under the existing P0P1 contract.
+- Main was merged into the same open PR branch by merge commit `f2f3e08223807bdecfb4640dd480920391a90f2d`; A1 and A2 lineage remains reachable. The STATUS conflict was resolved in favor of canonical main's REWORK-1 verdict and `READY_TO_RESUME` authorization.
+- A3 candidate now has nonzero registration Worker/bcrypt/D1 user+index drivers, image delete read-before-delete R2 Class B plus D1 lookup/compaction, and image reorder D1 read/write assumptions. Dispositions and exact formulas are in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-REWORK1-CLOSURE.md`.
+- Auth implementation/tests and fixture dependencies remain byte-identical to A2 and were not rerun, per the external critic's scope direction. Independent cost review recorded bounded PASS; Integration Review and Pre-Critic are complete for publication only.
+- Immutable Artifact A3 will contain `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and the known tag; its exact SHA is pinned in the following boundary commit on PR #8. No merge, functional migration, paid service, remote resource, production, real data or source write.
+
+
+## CF-AU-I01-P0P1 — Artifact A3 external-review boundary (2026-10-12)
+
+- Canonical main at rework start: `66a56a193ec418e28b17ca871df2289bf706edef`; merged into the open PR branch without rewriting A1/A2 history at `f2f3e08223807bdecfb4640dd480920391a90f2d`.
+- External REWORK-1 findings A2-F1/F2 are closed in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-REWORK1-CLOSURE.md`; independent cost-method review is bounded PASS in `.orchestration/evidence/critics/i01-cost-method-critic.md`. Integration Review, invariant matrix and Pre-Critic PASS are included in this artifact.
+- Artifact A3: commit SHA is pinned by the immediately following boundary commit; annotated tag `CF-AU-I01-P0P1-Artifact-A3`; PR #8 remains open and unmerged. External review is requested for this exact immutable artifact.
+- **Next action: await the External Independent Critic verdict on Artifact A3.** No merge, functional migration, paid service, remote resource, production, real data or source write is authorized by this boundary.

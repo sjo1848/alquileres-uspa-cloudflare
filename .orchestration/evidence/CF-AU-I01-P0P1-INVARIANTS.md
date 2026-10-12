@@ -17,11 +17,11 @@ Candidate scope: exact source/API baseline, local synthetic auth feasibility, an
 | 11 | APPLIES | PASS | Canonical main at task start was `84930c4ba59d133e40099aebb0edd0a8584fb6ab`; this candidate is isolated on `work/cf-au-i01-p0p1`. External state transition will be published on its open PR. |
 | 12 | N/A | N/A | No Drive mirror was used or updated. |
 | 13 | APPLIES | PASS | Execution owner does not issue External Independent Critic PASS. Internal critics reviewed independently; final state remains pending external verdict. |
-| 14 | APPLIES | PASS | Technical failures and reviewer rework were repaired autonomously; the final auth suite was rerun after the last behavior change. |
-| 15 | APPLIES | PASS FOR PUBLICATION GATE | This matrix and `.orchestration/evidence/CF-AU-I01-P0P1-PRECRITIC.md` are completed before submitting the immutable candidate to External Independent Critic. |
-| 16 | APPLIES | PENDING EXTERNAL REVIEW | Artifact tag identifies the exact immutable evidence commit. Reviewer boundary is set on the open PR; no self-approval or merge. |
+| 14 | APPLIES | PASS | A2's 23/23 auth suite and 0-vulnerability audit are inherited evidence. A3 changes only cost-model/evidence files; relevant Worker, test-runner and dependency blobs are unchanged, so the external critic's direction not to rerun auth/audit was followed. |
+| 15 | APPLIES | PASS FOR PUBLICATION | The independent cost-method critic recalculated all nine outputs, verified source mapping and accepted four omission-mutation checks; the Pre-Critic gate is complete for publication only. |
+| 16 | APPLIES | PASS FOR A3 PUBLICATION | A3 will be an immutable tagged commit containing the external-review stop state; a subsequent boundary commit will pin its exact SHA. No self-approval or merge. |
 | 17 | APPLIES | PASS | Work continued across multiple technical review/rework cycles until the bounded contract's external-review boundary. |
 | 18 | APPLIES | PASS | Reusable failure learnings are preserved in the technical critic report and corrected tests: count grouped checks accurately, decode selected Bearer/cookie consistently, validate expiry config before writes. |
-| 19 | APPLIES | PASS | Independent cost critic recalculated all scenario arithmetic and confirmed the cost JSON exactly matches calculator output; source route behaviors and unknown-account bcrypt skip are explicitly reconciled. |
+| 19 | APPLIES | PASS FOR PUBLICATION | A2-F1/F2 closure, unknown-account bcrypt skip, registration factors and image lifecycle assumptions were independently reconciled in `i01-cost-method-critic.md`; remaining telemetry and workload uncertainties are explicitly retained. |
 
 `PASS WITH EXPLICIT LIMITS` means the invariant is preserved for this evidence-only increment while stated unresolved compatibility findings remain open; it does not convert them into product acceptance or full-parity PASS.
