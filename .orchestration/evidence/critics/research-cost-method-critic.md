@@ -142,3 +142,15 @@ The 16/16 local harness result is useful as synthetic local Worker+D1+R2 evidenc
 - **OPEN:** This follow-up is not the cross-track Integration Review or Pre-Critic Gate. H1/H2/H3/H4/H6 remain correctly unresolved in `HYPOTHESES.md`; the final package still needs exact invariant evidence and a genuinely green gate before immutable publication.
 
 No new external limit claim was needed for the arithmetic review. The previous official-document check remains the applicable source freshness evidence for the quota constants; actual account usage and Cloudflare CPU telemetry remain absent.
+
+## Artifact A spot check — 2026-10-12
+
+**Reviewed boundary:** immutable Artifact A `e367a9790070b8ecd905037c16e660d9043d8fc8`; current PR #6 head `58350a6efc0020f9ec7746fc9c7f79df497c3fb9` (`rework/cf-au-i00-rework-1`, open against `main`). The cost model, hypothesis registry, calculation script/output and test-results JSON are byte-identical between Artifact A and the current PR head; the PR-head changes are state/status and Pre-Critic boundary records.
+
+**Arithmetic: consistent.** Independent recomputation matches the embedded script and JSON. For lab / early / growth: total Worker requests are 247 / 8,650 / 122,500; D1 reads 2,147 / 78,150 / 1,072,500; D1 writes 6 / 170 / 2,000; R2 Class A 31 / 909 / 11,363; R2 Class B 4,200 / 150,000 / 2,100,000; storage 0.04 / 0.8 / 3.2 GB-month. Growth exceeds the 100,000/day Worker quota by 22,500; other modeled headroom percentages match the prior recalculation. The test JSON records 17 total, 17 passed, 0 failed.
+
+**Finding — bcrypt timing text mismatch (REWORK).** Artifact test JSON reports async correct/wrong compare elapsed at **513/592 ms** and synchronous compare at **539 ms**. `COST-ZERO-MODEL.md` instead says async **555/536 ms**, while its synchronous **539 ms** agrees. Update the document to match the JSON or explicitly identify the async values as a separate earlier run with its own evidence. The hypothesis registry and H5 conclusion correctly use the final 539 ms value and narrowly reject the current bcryptjs cost-12 Workers Free path. Keep the caveat: this is local synchronous elapsed-time proxy evidence, not Cloudflare CPU telemetry; `cpu_ms=10` was configured but not enforced/measured by local Workerd. It strongly supports the narrow rejection without proving all future parity-preserving auth alternatives infeasible.
+
+**Caveats remain open.** The model labels workload figures as daily averages and leaves bursts unmeasured; no peak case is present. Static-asset requests are excluded from Worker totals, appropriately only if the chosen Static Assets config serves those paths directly; actual SPA/API routing and `run_worker_first` behavior remain unverified. These do not change the reproduced arithmetic, but must remain explicit limits on interpretation.
+
+This spot check is not an overall I00 approval, External Independent Critic verdict, or Pre-Critic re-run. The timing-text mismatch should be repaired or reconciled before PR #6 is treated as an exact, internally consistent evidence package.

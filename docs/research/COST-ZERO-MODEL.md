@@ -69,7 +69,7 @@ Illustrative snapshot: 1,000 listings × 8 KB + 50,000 contact events × 2 KB + 
 
 ## Authentication CPU experiment
 
-Source uses bcryptjs cost 12; JWT defaults to 15 minutes and login issues `alquileres_session`. Local Workerd test used synthetic credentials and the source-compatible bcryptjs 3.0.2 implementation. Successful/failed async compare elapsed 555/536 ms; a synchronous cost-12 comparison took 539 ms in the latest recorded run. Worker config set `cpu_ms=10`, but local `wrangler dev` did not enforce or expose Cloudflare's production CPU meter. The synchronous, no-I/O operation is a direct local CPU proxy, not a production CPU telemetry reading. It strongly falsifies Free feasibility for the current path; re-measurement on a future authorized target environment is not allowed to spend money or weaken auth. No production, real data or remote Cloudflare resource was used.
+Source uses bcryptjs cost 12; JWT defaults to 15 minutes and login issues `alquileres_session`. Local Workerd test used synthetic credentials and the source-compatible bcryptjs 3.0.2 implementation. Final successful/failed async compare elapsed 513/592 ms; synchronous cost-12 comparison took 539 ms. These values match the final test results JSON. Worker config set `cpu_ms=10`, but local `wrangler dev` did not enforce or expose Cloudflare's production CPU meter. The synchronous, no-I/O operation is a direct local CPU proxy, not a production CPU telemetry reading. It strongly falsifies Free feasibility for the current path; re-measurement on a future authorized target environment is not allowed to spend money or weaken auth. No production, real data or remote Cloudflare resource was used.
 
 ## Cost gate and conclusions
 

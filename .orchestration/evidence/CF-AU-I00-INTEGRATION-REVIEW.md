@@ -4,6 +4,8 @@ Date: 2026-10-12
 Branch: `rework/cf-au-i00-rework-1`
 Basis: canonical `main` at `452d764` and its review contract
 
+Post-publication QA found that the async bcrypt timings in the first immutable candidate (`e367a9790070b8ecd905037c16e660d9043d8fc8`) lagged its final test JSON. That candidate is superseded for external review by the corrected immutable Artifact A recorded in the publication boundary; the original commit and tag remain unchanged for auditability.
+
 ## Integrated tracks and role boundaries
 
 - Source/parity/data specialist report: `specialists/source-parity-data.md`.
@@ -29,7 +31,9 @@ Basis: canonical `main` at `452d764` and its review contract
 - No source-specific Vue/Vite Static Assets build or browser smoke test (H1).
 - No complete source auth flow, production CPU meter, cookie configuration matrix, logout or registration test (H2/H5 boundaries).
 - No full PostgreSQL/Prisma migration, reconciliation or historical-data proof; source `pg_advisory_xact_lock` concurrency behavior remains unimplemented/unproven (H3; technical critic TSC-2/TSC-3 remain partial/open).
-- No simultaneous image mutation, maximum-count race, missing-object injection, R2 restoration failure, failed cleanup, admin image-management, MIME/size boundary or orphan reconciliation test. The repaired test closes the cited status-gate and happy compensation byte verification defects only (H4; TSC-4 remains partial).
+- Post-repair technical critique closed the synthetic session issuer trust defect, published-listing delete gate, and successful compensation byte/content-type verification. The implementation rejects a missing R2 object before D1 mutation, but no regression test injects that case. Owner management was verified only for DRAFT; REJECTED, foreign/published/missing cases remain untested. No simultaneous image mutation, maximum-count race, R2 restoration failure, failed cleanup, admin image-management, MIME/size boundary or orphan reconciliation test exists (H4; TSC-4 remains partial).
 - Cost scenarios are average daily arithmetic, not peaks or forecasts; query-plan metering, exact per-route query/subrequest shape, initial R2 setup and static asset routing configuration are not measured (cost critic findings remain open/partial).
+
+Post-repair spot checks by the independent technical and cost critics are included in their dated follow-up sections. The cost report was reconciled to the final test JSON: async bcrypt elapsed is 513/592 ms and synchronous elapsed is 539 ms. Their spot checks do not approve the overall task.
 
 These uncertainties are represented by unresolved hypotheses and are not hidden by the 17/17 harness result. No migration implementation, real data, paid resource or production deployment was used. The completed scope remains CF-AU-I00 discovery/feasibility only.
