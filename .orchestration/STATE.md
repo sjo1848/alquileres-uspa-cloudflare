@@ -107,3 +107,15 @@ Binding findings and exit criteria are in:
 CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must execute only `.orchestration/contracts/CF-AU-I01-P0P1.md` (local/synthetic source baseline and auth compatibility with Workers Paid candidate plus cost model), then stop at immutable External Independent Critic review. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
 
 Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
+
+## CF-AU-I01-P0P1 — Artifact A1 awaiting External Independent Critic (2026-10-12)
+
+- Bounded task contract: `.orchestration/contracts/CF-AU-I01-P0P1.md`; authorization is local/synthetic P0 source baseline + P1 auth feasibility and Workers Paid cost sensitivity only.
+- Canonical lab `main` at task start: `84930c4ba59d133e40099aebb0edd0a8584fb6ab`. Exact source repository `main` checked through GitHub: `267c531f3e3d5869240894063d3a194fa1f9680b`; no API semantic drift from accepted I13 candidate found. Source repo remains unchanged. Its I13 `STATUS.json` discrepancy is a separate reconciliation prerequisite before migration.
+- Immutable evidence Artifact A1: commit `db0f18f062635d687e72ced0d0d405b9faa351ab`, annotated tag `CF-AU-I01-P0P1-Artifact-A1`.
+- External-review boundary: PR #8, `https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/8`, base `main`, head `work/cf-au-i01-p0p1`; unmerged. Review the exact artifact commit/tag, not a moving summary.
+- Local Workerd/synthetic D1 auth proof: 23/23 grouped checks; npm audit found 0 vulnerabilities; syntax and whitespace checks passed. Cost calculator output was independently recomputed and matches the result JSON. See `.orchestration/evidence/CF-AU-I01-P0P1-VALIDATION.md`.
+- Internal technical/auth critic and cost-method critic closed their bounded findings. Integration Review, all-invariant matrix and Pre-Critic publication gate are included. Pre-Critic PASS means the evidence package is ready for external review only; it is not a feasibility/product/security PASS.
+- Preserved unresolved limits: full `class-validator` email parity; malformed percent URI source 500; account-enumeration timing; logout does not revoke issued bearer JWT; provider-billed CPU and burst traffic unmeasured; D1 production row counts and R2 lifecycle not exercised; full API migration unimplemented; source I13 canonical status remains stale.
+- No paid plan/billing, remote Cloudflare resource, source write, production, real customer data, migration feature, P2/P3, or Runtime Watch was started.
+- **Canonical next action:** External Independent Critic audits exact `CF-AU-I01-P0P1-Artifact-A1` (`db0f18f062635d687e72ced0d0d405b9faa351ab`) and issues PASS/REWORK/BLOCKED/HUMAN_GATE. `resume_authorized=false` until that verdict is recorded. Do not merge or begin another task before review.
