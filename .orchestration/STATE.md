@@ -67,8 +67,17 @@ Binding findings and exit criteria are in:
 
 `.orchestration/reviews/CF-AU-I00-REWORK-1.md`
 
+## External Independent Critic — Artifact A3 REWORK-2 (2026-10-12)
+
+- Reviewed exact immutable Artifact A3: `d935616bb5634a7e357b5da2747767119b2c3464`, annotated tag `CF-AU-I00-Artifact-A3`; PR #6 boundary `db4902ebef4e03af72c41a4e3fc27622d004fccf` remains OPEN/unmerged.
+- **Verdict: REWORK-2**. Three bounded evidence defects: invalid enum test false-PASS; R2 insert-failure compensation lacks orphan-absence assertion; architecture bcrypt measurement 521 ms disagrees with final 539 ms.
+- Verdict and corrective acceptance criteria: `.orchestration/reviews/CF-AU-I00-ARTIFACT-A3-CRITIC.md`.
+- No Human Gate; no technical blocker; `resume_authorized=true` to let Codex repair **within CF-AU-I00**. External review resumes only after a new immutable Artifact A4 and green Pre-Critic.
+- Previously accepted research and uncertainties remain: H1/H2/H3/H4/H6 UNRESOLVED, H5 narrow bcryptjs cost-12 Workers Free rejection; source I13 Product Acceptance pending.
+- Main is canonical for the review event, while PR #6 retains the immutable A3 lineage; preserve that lineage when reconciling branches. No merge, production, real data or paid resources.
+
 ## Next action
 
-Codex must consume `.orchestration/reviews/CF-AU-I00-REWORK-1.md` directly, execute REWORK-1 autonomously under the existing CF-AU-I00 contract, re-run the mandatory Pre-Critic Gate, and publish a new immutable artifact descendant from current canonical `main` for External Independent Critic.
+Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A3-CRITIC.md` directly, repair REWORK-2 autonomously under existing CF-AU-I00, reconcile canonical main into PR #6 without losing immutable A3 ancestry, re-run Pre-Critic, and publish a new immutable Artifact A4 for External Independent Critic.
 
 Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
