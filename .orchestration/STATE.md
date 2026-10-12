@@ -104,9 +104,18 @@ Binding findings and exit criteria are in:
 - Canonical transition from I00 closed Human Gate is **only into this local authorized research task**. Future payment/overage/deploy and data migration decisions remain gated independently; no blanket spending authorization is implied.
 - After internal critics, integration, evidence and Pre-Critic, publish immutable Artifact for External Independent Critic and STOP. Preserve I00 PASS historical evidence; H1-H4 etc not falsely resolved.
 
+## External Independent Critic — CF-AU-I01-P0P1 Artifact A2 REWORK-1 (2026-10-12)
+
+- Reviewed immutable Artifact A2 `f9d8bfa9afb39555649365596be467d88f18d7a8`, annotated tag `CF-AU-I01-P0P1-Artifact-A2`; publication boundary `ec851d4e9fcdd729db270ec8a2be4ebcb16039f6`; PR #8 open and unmerged.
+- **Verdict: REWORK-1, cost model ONLY.** Canonical review: `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-CRITIC.md`.
+- A1 defects are closed: in-artifact external-review STOP, current independent cost critic timing reconciliation, DO all five price-meter categories disclosed. The 23/23 recorded synthetic local auth checks remain valid as bounded evidence with security and provider CPU caveats.
+- **A2-F1:** registration route omitted from Workers request/bcrypt CPU/D1 user-write driver while claiming all dynamic routes. **A2-F2:** image delete/reorder not represented in R2 read-before-delete and D1 mutation/read/compaction costs. Both are bounded model omissions; no deployment/security code change authorized.
+- No Human Gate or technical blocker. Resume Codex **only under existing CF-AU-I01-P0P1** to fix two cost drivers, rerun deterministic cost arithmetic/independent cost critic, keep unchanged auth test provenance, Pre-Critic and publish immutable A3 for external review.
+- CF-AU-I00 remains closed; source I13 PASS is documented but canonical source state reconciliation is separate. No functional migration, deployment, real data or paid service authorized.
+
 ## Next action
 
-CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must execute only `.orchestration/contracts/CF-AU-I01-P0P1.md` (local/synthetic source baseline and auth compatibility with Workers Paid candidate plus cost model), then stop at immutable External Independent Critic review. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
+CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must execute only the **two bounded cost evidence repairs** in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-CRITIC.md` under existing `.orchestration/contracts/CF-AU-I01-P0P1.md`, then publish immutable Artifact A3 and stop at External Independent Critic. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
 
 Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
 
