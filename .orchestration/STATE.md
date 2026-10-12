@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `PENDING_EXTERNAL_REVIEW`
+State: `AWAIT_CONTROLLER_NEXT_CONTRACT`
 Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
-Active task: `CF-AU-I01-P0P1 — local baseline, synthetic auth feasibility and cost model`
+Active task: `none — CF-AU-I01-P0P1 integrated and closed`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -131,7 +131,7 @@ Binding findings and exit criteria are in:
 
 ## Next action
 
-CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must consume `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A4-PASS.md` and integrate the **approved PR #8 only** with true history-preserving merge, reconcile External PASS state, verify A1/A2/A3/A4 ancestry, persist closeout and STOP for next bounded P2 implementation contract. No remote deployment or payment. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
+CF-AU-I00 remains technically closed with a bounded research PASS. CF-AU-I01-P0P1 is integrated and closed under the Artifact A4 External Independent Critic PASS. `main` now records `AWAIT_CONTROLLER_NEXT_CONTRACT`, `resume_authorized=false`. The full Cloudflare product objective remains, but no next Task Contract, migration work, paid service, remote deploy, production, real-data action or Runtime Watch is authorized by this closeout. Source I13 Product Acceptance already has Human PASS; its status drift remains a separately auditable prerequisite and must not be treated as a request to repeat acceptance.
 
 Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
 
@@ -189,3 +189,12 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - The coherent prefetch mutation defect is closed in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-REWORK2-CLOSURE.md`; focused independent QA verdict is in `.orchestration/evidence/critics/i01-cost-qa-critic-a3-f1.md`. Integration Review, invariant evidence and Pre-Critic PASS are included for publication only.
 - Immutable Artifact A4: commit `c7c5704e606bda704140c972a1ca5032b09b0627`, annotated tag `CF-AU-I01-P0P1-Artifact-A4`. This boundary pins the exact SHA; PR #8 remains open and unmerged.
 - **Next action: await External Independent Critic verdict on exact Artifact A4.** No merge, deployment, paid service, production, real data or new task is authorized.
+
+
+## CF-AU-I01-P0P1 — integrated closeout (2026-10-12)
+
+- External Independent Critic PASS for bounded P0/P1 evidence research is preserved in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A4-PASS.md` (canonical PASS event seq 23). Artifact A4 tag `CF-AU-I01-P0P1-Artifact-A4` resolves to `c7c5704e606bda704140c972a1ca5032b09b0627`.
+- PR #8 was merged without squash or rebase in merge commit `c57ebfab5b97606c91a746a7e02a9528a2018205`, with parents `fe79cddb8db3776f0fadd96de9c56bb253257645` (PASS-bearing canonical main) and `f6ee262ba88d96872b671c084c7cd0cdd0b72160` (reviewed PR branch). A1/A2/A3/A4 artifact ancestry and the exact A4 verdict remain reachable from main.
+- PR #8 is MERGED; overarching Issue #7 remains OPEN for the broader full-Cloudflare objective. CF-AU-I01-P0P1 research is the completed increment, not authorization to start P2 or other implementation.
+- Integration check found only the expected `.orchestration/STATUS.json` state conflict while incorporating PASS-bearing main. Resolution retained External PASS (seq 23) and the authorized integration action; no substantive source, auth, calculator, result, or evidence conflict occurred. No tests were rerun for this mechanical merge/state closeout; the final A4 verification ledger and external review remain authoritative.
+- **Canonical next action:** await a new Controller-issued Task Contract. `resume_authorized=false`; no Human Gate was newly opened. No production, payment, remote resource, real data, source write or Runtime Watch action occurred.

@@ -2,18 +2,18 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "FULL_CLOUDFLARE_ARCHITECTURE",
-  "runtime_status": "READY_TO_RESUME",
-  "resume_authorized": true,
-  "active_task": "CF-AU-I01-P0P1",
-  "last_completed_task": "CF-AU-I00",
-  "last_completed_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
-  "work_branch": "work/cf-au-i01-p0p1",
-  "next_action": "INTEGRATE_EXTERNALLY_APPROVED_CF_AU_I01_P0P1_PR_8_HISTORY_PRESERVING_CLOSEOUT_AND_STOP_FOR_NEXT_CONTROLLER_CONTRACT",
-  "stop_reason": null,
+  "runtime_status": "AWAIT_CONTROLLER_NEXT_CONTRACT",
+  "resume_authorized": false,
+  "active_task": null,
+  "last_completed_task": "CF-AU-I01-P0P1",
+  "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
+  "work_branch": "main",
+  "next_action": "AWAIT_CONTROLLER_NEXT_CONTRACT; DO_NOT_START_P2_OR_MIGRATION",
+  "stop_reason": "AWAIT_CONTROLLER_NEXT_CONTRACT",
   "event": {
-    "seq": 23,
-    "id": "CF-AU-I01-P0P1@ARTIFACT-A4-EXTERNAL-PASS",
-    "type": "EXTERNAL_REVIEW_PASS"
+    "seq": 24,
+    "id": "CF-AU-I01-P0P1@INTEGRATED-CLOSEOUT",
+    "type": "INTEGRATION_VERIFIED_AND_TASK_CLOSED"
   },
   "external_review": {
     "required": false,
@@ -26,6 +26,6 @@
   "human_gate": null,
   "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/8",
-  "integration_commit": "d329a8d4395fb68769bfeaea1cdad19bb5378d1e",
+  "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "issue_4": "CLOSED"
 }
