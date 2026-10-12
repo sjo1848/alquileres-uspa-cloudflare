@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "DISCOVERY_FEASIBILITY",
-  "runtime_status": "HUMAN_GATE",
-  "resume_authorized": false,
-  "active_task": null,
+  "phase": "FULL_CLOUDFLARE_ARCHITECTURE",
+  "runtime_status": "READY_TO_RESUME",
+  "resume_authorized": true,
+  "active_task": "CF-AU-I01-P0P1",
   "last_completed_task": "CF-AU-I00",
   "last_completed_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
-  "work_branch": "rework/cf-au-i00-rework-1",
-  "next_action": "AWAIT_HUMAN_ARCHITECTURE_COST_TOPOLOGY_DECISION_AND_SOURCE_I13_PRODUCT_ACCEPTANCE_BEFORE_ANY_FUNCTIONAL_MIGRATION",
-  "stop_reason": "HUMAN_GATE_ARCHITECTURE_COST_AND_I13_PRODUCT_ACCEPTANCE",
+  "work_branch": null,
+  "next_action": "EXECUTE_LOCAL_CF_AU_I01_P0P1_BASELINE_AUTH_COMPATIBILITY_AND_PAID_COST_MODEL_UNDER_.orchestration/contracts/CF-AU-I01-P0P1.md",
+  "stop_reason": null,
   "event": {
-    "seq": 11,
-    "id": "CF-AU-I00@INTEGRATED-TECHNICAL-CLOSEOUT",
-    "type": "INTEGRATION_VERIFIED_AND_TASK_CLOSED"
+    "seq": 12,
+    "id": "CF-AU-I01@BOUNDED-LOCAL-RESEARCH-START",
+    "type": "HUMAN_ARCHITECTURE_DIRECTION_CONTROLLER_TASK_AUTHORIZATION"
   },
   "external_review": {
     "required": false,
@@ -23,11 +23,7 @@
     "artifact_tag": "CF-AU-I00-Artifact-A5",
     "pending_verdict": null
   },
-  "human_gate": {
-    "required": true,
-    "reason": "Material zero-cost architecture/topology decision after narrow H5 rejection, plus source I13 Product Acceptance, before any functional migration.",
-    "paid_production_or_real_data_authorized": false
-  },
+  "human_gate": null,
   "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/6",
   "integration_commit": "d329a8d4395fb68769bfeaea1cdad19bb5378d1e",

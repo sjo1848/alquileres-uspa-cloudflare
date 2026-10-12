@@ -93,8 +93,17 @@ Binding findings and exit criteria are in:
 - **Integration only authorized**: Codex may merge PR #6 preserving A5/A4/A3 ancestry, verify exact artifact and verdict reachability on `main`, persist closeout and close Issue #4. Never squash/rebase/cherry-pick only boundary. Do not implement next migration/runtime watch increment as part of this authority.
 - **Human Gate after integration**: material zero-cost architecture/topology decision following H5 negative result and I13 Product Acceptance before migration. No paid, production, real-data or security weakening authorized.
 
+## Cloudflare platform decision and bounded CF-AU-I01-P0P1 authorization (2026-10-12)
+
+- Human product direction is now **100% Cloudflare, complete application**. A static recruiter demo is NOT the destination. Strict USD 0 requirement is explicitly lifted; paid Cloudflare services may be evaluated, **but no cost has been authorized**.
+- Decision with financial safeguards: `.orchestration/decisions/CF-AU-I01-CLOUDFLARE-COST-POLICY.md`.
+- I13 Human Product Acceptance PASS was explicitly issued on source [Issue #24 comment](https://github.com/sjo1848/alquileres-uspa/issues/24#issuecomment-5891503272). Source `STATUS.json` still says pending; it is an existing *state reconciliation task*, **not** a new pending Human Product Acceptance decision. Source remains read-only here.
+- New bounded lab Task Contract: `.orchestration/contracts/CF-AU-I01-P0P1.md`. Codex is authorized for **local synthetic P0 source pin/parity + P1 source-compatible authentication proof and Workers Paid cost study ONLY**. No functional migration, source writes, remote Cloudflare resources, payment or public deployment.
+- Canonical transition from I00 closed Human Gate is **only into this local authorized research task**. Future payment/overage/deploy and data migration decisions remain gated independently; no blanket spending authorization is implied.
+- After internal critics, integration, evidence and Pre-Critic, publish immutable Artifact for External Independent Critic and STOP. Preserve I00 PASS historical evidence; H1-H4 etc not falsely resolved.
+
 ## Next action
 
-CF-AU-I00 is technically complete. PR #6 was merged preserving the complete A3/A4/A5 history; the A5 PASS and immutable artifact were verified on `main`. Issue #4 is closed. Stop for the separate Human Gate: choose the material zero-cost architecture/topology direction after the narrow H5 rejection and obtain source I13 Product Acceptance before any functional migration. No new migration increment, Runtime Watch, paid resource, production deployment, or real-data action is authorized.
+CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must execute only `.orchestration/contracts/CF-AU-I01-P0P1.md` (local/synthetic source baseline and auth compatibility with Workers Paid candidate plus cost model), then stop at immutable External Independent Critic review. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
 
 Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
