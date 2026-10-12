@@ -6,21 +6,22 @@
   "resume_authorized": false,
   "active_task": "CF-AU-I00",
   "last_completed_task": "CF-AU-I00",
-  "last_completed_head": "1081b3a4170e84ea7cd0dc1221d6ef96e37747e1",
+  "last_completed_head": "d935616bb5634a7e357b5da2747767119b2c3464",
   "work_branch": "rework/cf-au-i00-rework-1",
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/6",
-  "next_action": "WAIT_FOR_EXTERNAL_INDEPENDENT_CRITIC_ON_ARTIFACT_A_1081b3a4170e84ea7cd0dc1221d6ef96e37747e1",
+  "next_action": "WAIT_FOR_EXTERNAL_INDEPENDENT_CRITIC_ON_ARTIFACT_A_d935616bb5634a7e357b5da2747767119b2c3464",
   "stop_reason": "EXTERNAL_INDEPENDENT_CRITIC",
   "event": {
-    "seq": 4,
-    "id": "CF-AU-I00@ARTIFACT-A2",
+    "seq": 5,
+    "id": "CF-AU-I00@ARTIFACT-A3",
     "type": "PENDING_EXTERNAL_REVIEW"
   },
   "external_review": {
     "required": true,
     "last_audited_head": "08fbf91f6e87c45db1d2f97fbb5793f75e1881b7",
     "last_verdict": "REWORK-1",
-    "artifact_head": "1081b3a4170e84ea7cd0dc1221d6ef96e37747e1",
+    "artifact_head": "d935616bb5634a7e357b5da2747767119b2c3464",
+    "artifact_tag": "CF-AU-I00-Artifact-A3",
     "pending_verdict": null
   },
   "human_gate": null,
