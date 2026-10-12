@@ -121,9 +121,17 @@ Binding findings and exit criteria are in:
 - Existing 23/23 synthetic A2 auth evidence and npm audit 0 preserved by exact matching blobs; no unchanged auth rerun needed. No Human Gate/blocker. Codex may fix only QA validator and related criticism/Pre-Critic within P0P1, publish immutable A4 for External Independent Critic and STOP.
 - No PR merge, migration, remote/paid/production/data action or new task authorized.
 
+## External Independent Critic — CF-AU-I01-P0P1 Artifact A4 PASS (2026-10-12)
+
+- Immutable A4 `c7c5704e606bda704140c972a1ca5032b09b0627`, annotated tag `CF-AU-I01-P0P1-Artifact-A4`, SHA-pinning PR #8 boundary `58e4b9dc881b4198a8889879f5ac59bd17f09444`. **External PASS for bounded P0/P1 evidence-only research**, exact verdict `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A4-PASS.md`.
+- A2-F1 registration and A2-F2 image-delete/reorder cost omissions are closed. A3-F1 QA mutant now correctly rejects absent R2 prefetch while retaining public/ADMIN GET operations; independent QA reviewed. A3 calculator/JSON and auth/dependency inputs unchanged. Inherited A2 23/23 synthetic auth and audit zero remain prior evidence, not new executions.
+- The hypothesis is **not** production-proven: Cloudflare provider CPU, cost ceiling, full API parity, D1 concurrency/migration, R2 lifecycle, security fixes and source I13 status reconciliation remain separate work. Workers Paid design is a budgetable candidate only, no billing/deployment authorization.
+- **Integration only** authorized: Codex may merge PR #8 preserving all A1–A4 commits and this review, verify main reachability, persist closeout and stop at Controller's next contract. No automatic P2, deploy, spend, source edit or Runtime Watch activation.
+- Process retrospective: keep independent critics and Human gates; reduce cycles for nonblocking micro findings through severity/risk triage and focus next increments on **executable D1/R2 + API vertical-slice parity**, not additional broad research.
+
 ## Next action
 
-CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must execute only the **single QA mutation-test correction** in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-CRITIC.md` under existing `.orchestration/contracts/CF-AU-I01-P0P1.md`, then publish immutable Artifact A4 and stop at External Independent Critic. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
+CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must consume `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A4-PASS.md` and integrate the **approved PR #8 only** with true history-preserving merge, reconcile External PASS state, verify A1/A2/A3/A4 ancestry, persist closeout and STOP for next bounded P2 implementation contract. No remote deployment or payment. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
 
 Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
 

@@ -1,0 +1,32 @@
+# CF-AU-I01-P0P1 — External Independent Critic: Artifact A4
+
+Date: 2026-10-12
+**Verdict: PASS — bounded P0 source-baseline / P1 local-auth feasibility and modeled cost evidence ONLY**
+**Exact immutable Artifact A4:** `c7c5704e606bda704140c972a1ca5032b09b0627`
+**Annotated tag:** `CF-AU-I01-P0P1-Artifact-A4`, verified dereference to exact A4 commit.
+**Boundary:** `58e4b9dc881b4198a8889879f5ac59bd17f09444` (direct A4 child; `PENDING_EXTERNAL_REVIEW` / `resume_authorized=false`, event seq 22).
+**PR:** https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/8 — open/unmerged at review.
+**Task contract:** `.orchestration/contracts/CF-AU-I01-P0P1.md`.
+**Prior finding:** `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-CRITIC.md` — A3-F1.
+
+## Independent examination
+
+1. **A3-F1 CLOSED.** In A4 `.orchestration/evidence/fixtures/validate-i01-cost.mjs`, the source map requires `GetObject before free DeleteObject`. Each scenario enforces `r2ClassBGetObjectBeforeFreeDeletePerOperation === 1` and `imageDeleteObjectReads === routeDrivers.imageDelete × factor`. The mutant now uses the high scenario and removes *only* prefetch reads, retaining all public and ADMIN GETs, and recomputes R2 aggregate+rounded billing units. It fails specifically on the source-bound prefetch invariant. The A3 false guard (which zeroed all R2 Class B) is gone. The correct/mutated operation counts 11.65M/11.50M both round to 12M, so no fabricated change to R2 Class B overage is claimed. Internal independent QA critic and closure report confirm.
+2. **A2-F1/F2 remain closed.** A3's registration request/hash/D1 writes and image delete/reorder cost drivers stay included. A4 differs from A3 solely in validator QA and orchestration/review evidence: exact calculator blob `311db67dc8d12b5dbcd5aab14db5d25347a65f93`, result JSON blob `1016772bfadb14586bc05a2752042f71c6999de6` are identical A3→A4. Prior Controller independent arithmetic check reconciled **all nine scenario/sensitivity points**: USD 5 low/base, and high USD 23.1467 / 26.8367 / 47.3367 at *hypothetical provider* 10/100/600 CPU-ms per auth operation. Those values are conditional *sensitivity scenarios*, NOT billing observation, fixed subscription quote, cost guarantee, or spend cap.
+3. **Authentication unchanged and provenance correctly preserved.** Auth Worker blob `2420ca39a24dcdb0b75c6e5ae84533fe81e06b3a`, auth tests blob `71dc57fa4dfd3f90d5f3d56506cb9457fd23696e`, `package-lock.json` blob `1e7c75ce25dce7e22dccc58adc0d7f92f85f5bf1` unchanged A3→A4 and A2→A3. The 23/23 grouped local synthetic auth PASS and npm audit 0 vulnerabilities are **inherited A2 implementation reports**, not newly rerun by Codex or independently executed by Controller during A4 review.
+4. **Review completeness/integrity.** Read actual A4 source validator, closeout, independent cost-QA critic, Integration Review, Pre-Critic, validation ledger and tagged/PR-boundary `STATUS.json`; confirmed annotated tag dereferences exactly to A4; A3 is A4 ancestor; direct A4-boundary ancestry; `main` retained prior critic reviews. PR automated review for `58e4b9d` reported no major issues. GitHub only verifies submitted evidence/reviews; no external Cloudflare runtime/traffic/CPU meter was independently accessed by Controller.
+5. **Explicit outstanding conditions:** provider billed CPU and password latency/p95, true `class-validator` email parity, numeric JWT expiry configuration divergence, missing-account timing differential, malformed-URI 500, CSRF/rate-limits/account enumeration, token revocation, full Worker API and Vue parity, data schema/migration/locking, D1 query metering, R2 compensations, optional Durable Objects workload, spend exposure, and source I13 canonical-status reconciliation remain unproven/not included. The I13 HUMAN PASS already exists on the source Issue #24 and does not need repeating; its status drift requires a separate audited technical fix.
+
+## Bounded PASS and next allowed work
+
+**PASS CF-AU-I01-P0P1 as a completed evidence-producing research increment.** It is **NOT** an architectural readiness certification, production Cloudflare acceptance, paid subscription authority, remote deployment authority, source-code mutation permission, or proof of complete application functionality.
+
+- Authorized next: Codex **mechanically integrate PR #8**, preserving **every A1/A2/A3/A4 artifact ancestry**, exact A4 tag and exact External Critic verdict. Use a true two-parent history-preserving merge commit or actual fast-forward; **never squash/rebase away/cherry-pick only boundary**.
+- Reconcile `.orchestration/STATUS.json` and `STATE.md` to preserve this External PASS on `main` instead of overwriting it with the PR's stale pending-review state. Check refs, pre-existing PR reviews/CI and no substantive conflicts. If merge conflicts affect source/auth/calculator/results, STOP for new External review; don't silently self-approve.
+- Persist final integration closeout, set `last_completed_task=CF-AU-I01-P0P1`, `resume_authorized=false`, `HUMAN_GATE` or bounded `AWAIT_CONTROLLER_NEXT_CONTRACT` as appropriate; then close this research increment within Issue #7 (leave overarching Issue #7 open for full migration). Do not automatically begin P2, full API port or public deployment.
+- Next proposed high-value work (new independent Task Contract after mechanical close): local real-source schema/data invariants and **D1 transactional/concurrency / R2 compensation proof**, followed by vertical end-to-end API route slices and Vue integration. Migrate meaningful behavior rather than producing another general feasibility report. No payment/remote/public resource until explicit Human gate.
+- Process improvement recommended, NOT a retroactive change to evidence acceptance: use a risk-tiered critic policy. P0/P1 security/data-integrity/source-contract issues **block**. P2 internal QA/documentation improvements may be tracked as follow-ups when they do not falsify the main evidence, instead of always forcing an immutable rework round. Batch noncritical fixes, preserve independent evaluation, auto-run routine tests, and require each future increment to deliver executable product parity evidence. No automatic bypass of Human or security gates.
+
+## Disposition
+
+All binding findings from A1/A2/A3 are closed in A4. **No further cost-model or QA-only rework requested.** The next legitimate engineering progress is a source-aligned data/concurrency and API implementation slice, with explicit gates.
