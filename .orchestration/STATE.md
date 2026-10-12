@@ -76,8 +76,16 @@ Binding findings and exit criteria are in:
 - Previously accepted research and uncertainties remain: H1/H2/H3/H4/H6 UNRESOLVED, H5 narrow bcryptjs cost-12 Workers Free rejection; source I13 Product Acceptance pending.
 - Main is canonical for the review event, while PR #6 retains the immutable A3 lineage; preserve that lineage when reconciling branches. No merge, production, real data or paid resources.
 
+## External Independent Critic — Artifact A4 REWORK-3 (2026-10-12)
+
+- Immutable reviewed artifact: `8e707eadca25e47827b6bc81adaa4f272192af2e`, annotated tag `CF-AU-I00-Artifact-A4`; PR #6 at boundary `323365c19f68200c08521f56e467bd4273cc9167` remains OPEN/unmerged.
+- **Verdict: REWORK-3, only one bounded evidence-document correction.** Roles negative mutation and D1/R2 orphan-compensation negative mutation close substantive A3 findings. Reachability is preserved on PR branch; future integration must retain ancestry.
+- **A4-F1:** latest appended `research-cost-method-critic.md` spot check incorrectly calls historical bcrypt 539 ms the *current* REWORK-2 result despite final A4 624/642 ms async and 613 ms sync. Label/reconcile historical observation and align latest evidence; see `.orchestration/reviews/CF-AU-I00-ARTIFACT-A4-CRITIC.md`. Do not redo unchanged code or cost calculator work.
+- No Human Gate or technical blocker. Codex may autonomously repair A4-F1 under existing CF-AU-I00 and publish immutable A5/next boundary for external review. No feature migration, source changes, merge, production, paid resources, or Runtime Watch implementation.
+- H1/H2/H3/H4/H6 remain UNRESOLVED, H5 narrow source bcrypt cost-12 Workers Free rejection only; I13 Product Acceptance pending.
+
 ## Next action
 
-Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A3-CRITIC.md` directly, repair REWORK-2 autonomously under existing CF-AU-I00, reconcile canonical main into PR #6 without losing immutable A3 ancestry, re-run Pre-Critic, and publish a new immutable Artifact A4 for External Independent Critic.
+Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A4-CRITIC.md`, repair only A4-F1 under CF-AU-I00, preserve A3/A4 ancestry in PR #6, document exact unchanged test provenance, and publish immutable Artifact A5 for External Independent Critic.
 
 Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
