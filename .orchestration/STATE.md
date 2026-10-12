@@ -129,6 +129,17 @@ Binding findings and exit criteria are in:
 - **Integration only** authorized: Codex may merge PR #8 preserving all A1–A4 commits and this review, verify main reachability, persist closeout and stop at Controller's next contract. No automatic P2, deploy, spend, source edit or Runtime Watch activation.
 - Process retrospective: keep independent critics and Human gates; reduce cycles for nonblocking micro findings through severity/risk triage and focus next increments on **executable D1/R2 + API vertical-slice parity**, not additional broad research.
 
+## CF-AU-I01-P2 — executable OWNER + local D1/R2 image vertical slice authorization (2026-10-12)
+
+- CF-AU-I01-P0P1 PR #8 integrated at `aa84e42d1b43b3e8fc5fbe7a95038a2073217f67`, preserved External Independent Critic bounded PASS and closed work. Umbrella Issue #7 remains OPEN.
+- New task **CF-AU-I01-P2** under `.orchestration/contracts/CF-AU-I01-P2.md` / Issue #9: implement a **real local Cloudflare Worker/Hono/TypeScript API + D1 + R2** OWNER image lifecycle, 20-image cap, ordinal invariants, concurrent mutation safety, compensation and synthetic HTTP tests. Source repository stays READ-ONLY.
+- Distinct from any static/demo-only implementation. This is the **first executable backend slice** of the full all-Cloudflare product; not completion of full API, Vue, staging or production.
+- Delivery process tuned: independent critic blocking for security, authorization, real data consistency/compensation and source semantics; nonmaterial doc/style QA nits can be follow-ups. Do not waive false-positive tests of critical invariants.
+- Workers Paid budget remains **research only**. No remote D1/R2/DO/Worker bindings, provider account, billing, deployment, production or real customer data. Wrangler bindings must remain local-only. Cloudflare docs support local D1/R2 simulation and D1 batch atomicity, but not equivalence to PostgreSQL advisory locks.
+- Source I13 Human PASS exists but source canonical status is stale: independent reconciliation needed before source change/cutover, not a request to reapprove I13.
+- Codex may act autonomously within P2 contract, publish one immutable reviewed artifact and STOP in `PENDING_EXTERNAL_REVIEW`. P2 migration itself is now authorized **only in lab/local synthetic implementation**.
+- Source/official docs: https://developers.cloudflare.com/workers/local-development/bindings-per-env/ ; https://developers.cloudflare.com/d1/worker-api/d1-database/ ; https://developers.cloudflare.com/r2/api/workers/workers-api-usage/.
+
 ## Next action
 
 CF-AU-I00 remains technically closed with a bounded research PASS. CF-AU-I01-P0P1 is integrated and closed under the Artifact A4 External Independent Critic PASS. `main` now records `AWAIT_CONTROLLER_NEXT_CONTRACT`, `resume_authorized=false`. The full Cloudflare product objective remains, but no next Task Contract, migration work, paid service, remote deploy, production, real-data action or Runtime Watch is authorized by this closeout. Source I13 Product Acceptance already has Human PASS; its status drift remains a separately auditable prerequisite and must not be treated as a request to repeat acceptance.
@@ -197,4 +208,4 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - PR #8 was merged without squash or rebase in merge commit `c57ebfab5b97606c91a746a7e02a9528a2018205`, with parents `fe79cddb8db3776f0fadd96de9c56bb253257645` (PASS-bearing canonical main) and `f6ee262ba88d96872b671c084c7cd0cdd0b72160` (reviewed PR branch). A1/A2/A3/A4 artifact ancestry and the exact A4 verdict remain reachable from main.
 - PR #8 is MERGED; overarching Issue #7 remains OPEN for the broader full-Cloudflare objective. CF-AU-I01-P0P1 research is the completed increment, not authorization to start P2 or other implementation.
 - Integration check found only the expected `.orchestration/STATUS.json` state conflict while incorporating PASS-bearing main. Resolution retained External PASS (seq 23) and the authorized integration action; no substantive source, auth, calculator, result, or evidence conflict occurred. No tests were rerun for this mechanical merge/state closeout; the final A4 verification ledger and external review remain authoritative.
-- **Canonical next action:** await a new Controller-issued Task Contract. `resume_authorized=false`; no Human Gate was newly opened. No production, payment, remote resource, real data, source write or Runtime Watch action occurred.
+- **Canonical next action (superseded by Controller event seq 25):** CF-AU-I01-P2 local vertical slice authorized with explicit contract/Issue #9; no remote/paid action. No production, payment, remote resource, real data, source write or Runtime Watch action occurred.

@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "FULL_CLOUDFLARE_ARCHITECTURE",
-  "runtime_status": "AWAIT_CONTROLLER_NEXT_CONTRACT",
-  "resume_authorized": false,
-  "active_task": null,
+  "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
+  "runtime_status": "READY_TO_RESUME",
+  "resume_authorized": true,
+  "active_task": "CF-AU-I01-P2",
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
-  "work_branch": "main",
-  "next_action": "AWAIT_CONTROLLER_NEXT_CONTRACT; DO_NOT_START_P2_OR_MIGRATION",
-  "stop_reason": "AWAIT_CONTROLLER_NEXT_CONTRACT",
+  "work_branch": null,
+  "next_action": "EXECUTE_FIRST_LOCAL_OWNER_LISTING_IMAGE_VERTICAL_SLICE_UNDER_.orchestration/contracts/CF-AU-I01-P2.md",
+  "stop_reason": null,
   "event": {
-    "seq": 24,
-    "id": "CF-AU-I01-P0P1@INTEGRATED-CLOSEOUT",
-    "type": "INTEGRATION_VERIFIED_AND_TASK_CLOSED"
+    "seq": 25,
+    "id": "CF-AU-I01-P2@LOCAL-VERTICAL-SLICE-AUTHORIZED",
+    "type": "CONTROLLER_NEW_TASK_CONTRACT"
   },
   "external_review": {
     "required": false,

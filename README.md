@@ -1,6 +1,6 @@
 # Alquileres Uspallata — Cloudflare Lab
 
-Laboratorio de migración y validación de `sjo1848/alquileres-uspa` sobre infraestructura Cloudflare con objetivo de costo operativo cercano a USD 0 dentro de los límites gratuitos aplicables.
+Laboratorio de migración y validación de `sjo1848/alquileres-uspa` con objetivo final de ejecutar **toda la plataforma en Cloudflare**. El plan Paid de Cloudflare puede ser necesario; se evaluará costo, seguridad y operación antes de contratar.
 
 ## Propósito
 
@@ -24,7 +24,7 @@ La arquitectura es una hipótesis verificable, no una conclusión anticipada.
 
 ## Restricción económica
 
-Objetivo: `USD 0` de costo operativo del laboratorio dentro de los free tiers de Cloudflare. El laboratorio debe medir uso y registrar cualquier condición que obligue a pasar a pago. Dominio, correo, servicios externos u otros costos no se consideran gratuitos por defecto.
+**La plataforma final no tiene un requisito estricto de USD 0.** Workers Paid + D1 + R2 es la topología candidata, sujeta a verificación. Los experimentos autorizados son **locales y con datos sintéticos**, sin cargos ni recursos remotos. Cualquier suscripción, gasto, consumo excedente o despliegue requiere un Human Gate explícito. Dominio, correo y otros servicios no se consideran gratuitos por defecto.
 
 ## Método
 
@@ -44,6 +44,6 @@ No se declarará una tesis general hasta acumular evidencia suficiente de este l
 
 ## Estado
 
-Inicio del laboratorio: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`.
+CF-AU-I00 y CF-AU-I01-P0P1 están cerrados con PASS acotado de investigación. **CF-AU-I01-P2** está autorizado para la primera funcionalidad ejecutable local de OWNER, D1 y R2; contrato en `.orchestration/contracts/CF-AU-I01-P2.md`.
 
 Ver `.orchestration/STATE.md` y `.orchestration/STATUS.json` para el estado canónico.
