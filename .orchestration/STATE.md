@@ -153,5 +153,5 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 
 - Canonical main at rework start: `66a56a193ec418e28b17ca871df2289bf706edef`; merged into the open PR branch without rewriting A1/A2 history at `f2f3e08223807bdecfb4640dd480920391a90f2d`.
 - External REWORK-1 findings A2-F1/F2 are closed in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-REWORK1-CLOSURE.md`; independent cost-method review is bounded PASS in `.orchestration/evidence/critics/i01-cost-method-critic.md`. Integration Review, invariant matrix and Pre-Critic PASS are included in this artifact.
-- Artifact A3: commit SHA is pinned by the immediately following boundary commit; annotated tag `CF-AU-I01-P0P1-Artifact-A3`; PR #8 remains open and unmerged. External review is requested for this exact immutable artifact.
+- Immutable Artifact A3: commit `917119138433fd1f413331970fe4ccc7ce660841`, annotated tag `CF-AU-I01-P0P1-Artifact-A3`; PR #8 remains open and unmerged. This boundary pins the exact artifact SHA for external review.
 - **Next action: await the External Independent Critic verdict on Artifact A3.** No merge, functional migration, paid service, remote resource, production, real data or source write is authorized by this boundary.
