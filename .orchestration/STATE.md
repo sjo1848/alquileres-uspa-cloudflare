@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
+State: `HUMAN_GATE`
 Phase: `DISCOVERY / FEASIBILITY`
 Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
 
@@ -95,6 +95,6 @@ Binding findings and exit criteria are in:
 
 ## Next action
 
-Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A5-PASS.md`, integrate technically approved PR #6 by preserving A5/A4/A3 ancestry, verify result, close I00/Issue #4, and stop at the architecture/I13 Human Gate. No new migration increment or paid/production actions.
+CF-AU-I00 is technically complete. PR #6 was merged preserving the complete A3/A4/A5 history; the A5 PASS and immutable artifact were verified on `main`. Issue #4 is closed. Stop for the separate Human Gate: choose the material zero-cost architecture/topology direction after the narrow H5 rejection and obtain source I13 Product Acceptance before any functional migration. No new migration increment, Runtime Watch, paid resource, production deployment, or real-data action is authorized.
 
-Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
+Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
