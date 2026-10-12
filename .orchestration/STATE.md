@@ -179,5 +179,5 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 
 - Canonical authorization: `main@b7f49a6`, event seq 20. A3-F1 was the only authorized change; the PR branch includes main through merge commit `d2eb6e0` without rewriting A1/A2/A3 ancestry.
 - The coherent prefetch mutation defect is closed in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-REWORK2-CLOSURE.md`; focused independent QA verdict is in `.orchestration/evidence/critics/i01-cost-qa-critic-a3-f1.md`. Integration Review, invariant evidence and Pre-Critic PASS are included for publication only.
-- Artifact A4 tag: `CF-AU-I01-P0P1-Artifact-A4`. Its exact commit SHA is pinned in the following boundary commit; PR #8 remains open and unmerged.
+- Immutable Artifact A4: commit `c7c5704e606bda704140c972a1ca5032b09b0627`, annotated tag `CF-AU-I01-P0P1-Artifact-A4`. This boundary pins the exact SHA; PR #8 remains open and unmerged.
 - **Next action: await External Independent Critic verdict on exact Artifact A4.** No merge, deployment, paid service, production, real data or new task is authorized.

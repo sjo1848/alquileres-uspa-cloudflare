@@ -11,15 +11,15 @@
   "next_action": "AWAIT_EXTERNAL_INDEPENDENT_CRITIC_VERDICT_ON_CF-AU-I01-P0P1-ARTIFACT-A4",
   "stop_reason": "EXTERNAL_INDEPENDENT_CRITIC_REVIEW",
   "event": {
-    "seq": 21,
-    "id": "CF-AU-I01-P0P1@ARTIFACT-A4-PUBLISHED",
-    "type": "ARTIFACT_PUBLISHED"
+    "seq": 22,
+    "id": "CF-AU-I01-P0P1@ARTIFACT-A4-EXTERNAL-REVIEW-BOUNDARY",
+    "type": "EXTERNAL_REVIEW_BOUNDARY"
   },
   "external_review": {
     "required": true,
     "last_audited_head": "917119138433fd1f413331970fe4ccc7ce660841",
     "last_verdict": "REWORK-2",
-    "artifact_head": null,
+    "artifact_head": "c7c5704e606bda704140c972a1ca5032b09b0627",
     "artifact_tag": "CF-AU-I01-P0P1-Artifact-A4",
     "pending_verdict": "PENDING_EXTERNAL_REVIEW"
   },
