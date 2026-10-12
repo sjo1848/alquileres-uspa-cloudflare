@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
+State: `PENDING_EXTERNAL_REVIEW`
 Phase: `DISCOVERY / FEASIBILITY`
 Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
 
@@ -84,8 +84,19 @@ Binding findings and exit criteria are in:
 - No Human Gate or technical blocker. Codex may autonomously repair A4-F1 under existing CF-AU-I00 and publish immutable A5/next boundary for external review. No feature migration, source changes, merge, production, paid resources, or Runtime Watch implementation.
 - H1/H2/H3/H4/H6 remain UNRESOLVED, H5 narrow source bcrypt cost-12 Workers Free rejection only; I13 Product Acceptance pending.
 
+## External Independent Critic — Artifact A4 REWORK-3 disposition
+
+- A4-F1 repaired under the existing CF-AU-I00 contract: the stale trailing cost-critic note no longer presents intermediate timing values as current. It explicitly withdraws the 539 ms / 645/552 ms attribution and points to final immutable A4 evidence (624/642 ms async, 613 ms sync local elapsed proxy).
+- No test, cost calculation, application code or dependency changed. A4 test/evidence blobs are recorded and unchanged; the External Critic explicitly instructed not to repeat them for this documentation-only correction.
+- Independent cost-provenance verification is persisted in `.orchestration/evidence/critics/a5-cost-provenance-critic.md`; Integration Review and Pre-Critic were refreshed for the exact evidence correction.
+- No Human Gate or blocker. No source changes, product migration, real data, production deployment, paid resources or merge.
+
+## External Independent Critic — Artifact A5 (2026-10-12)
+
+- Exact immutable Artifact A5 commit: `2b09ee585f24102b03bd6d6b7f44d6c5f61ad053`; annotated tag `CF-AU-I00-Artifact-A5` dereferences to this SHA.
+- Artifact A4 `8e707eadca25e47827b6bc81adaa4f272192af2e`, A3, and canonical main A4 review event are preserved in PR #6 ancestry.
+- Final result provenance is unchanged from A4: 17/17 local synthetic checks, 624/642 ms async and 613 ms sync bcrypt elapsed proxy. No test/cost/audit rerun was needed or claimed.
+
 ## Next action
 
-Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A4-CRITIC.md`, repair only A4-F1 under CF-AU-I00, preserve A3/A4 ancestry in PR #6, document exact unchanged test provenance, and publish immutable Artifact A5 for External Independent Critic.
-
-Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
+Await External Independent Critic review of exact Artifact A5 `2b09ee585f24102b03bd6d6b7f44d6c5f61ad053` (tag `CF-AU-I00-Artifact-A5`). Do not merge PR #6 or start another increment before the external verdict and any required gates.

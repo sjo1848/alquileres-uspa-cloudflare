@@ -2,7 +2,7 @@
 
 Candidate: one-file evidence-provenance correction under REWORK-3. Gate status: `PASS` for publication of this exact immutable evidence artifact to External Independent Critic only. This does not accept migration feasibility or override unresolved hypotheses.
 
-Artifact A5 exact commit: **to be sealed in the publication boundary after this evidence commit**. Immutable Artifact A4 `8e707eadca25e47827b6bc81adaa4f272192af2e` and A3 `d935616bb5634a7e357b5da2747767119b2c3464` remain ancestors with tags unchanged. PR #6 remains open and unmerged.
+Artifact A5 exact commit: `2b09ee585f24102b03bd6d6b7f44d6c5f61ad053`; annotated tag: `CF-AU-I00-Artifact-A5`. Immutable Artifact A4 `8e707eadca25e47827b6bc81adaa4f272192af2e` and A3 `d935616bb5634a7e357b5da2747767119b2c3464` remain ancestors with tags unchanged. PR #6 remains open and unmerged.
 
 ## Contract, source and scope
 
