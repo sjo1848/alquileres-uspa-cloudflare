@@ -1,8 +1,10 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `HUMAN_GATE`
-Phase: `DISCOVERY / FEASIBILITY`
-Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
+State: `PENDING_EXTERNAL_REVIEW`
+Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
+Active task: `CF-AU-I01-P0P1 — local baseline, synthetic auth feasibility and cost model`
+
+> Historical note: the bootstrap and CF-AU-I00 details immediately below record the lab's earlier state and remain as audit history. The latest canonical transition is the CF-AU-I01-P0P1 Artifact A1 review boundary at the end of this file, mirrored in `.orchestration/STATUS.json`.
 
 ## Source baseline
 
