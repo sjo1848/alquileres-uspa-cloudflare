@@ -56,3 +56,14 @@ Date: 2026-10-12. Canonical review event: `origin/main` `0af0ab4fa368d8b7faf4c7b
 Final REWORK-2 test evidence: `.orchestration/evidence/CF-AU-I00-REWORK2-TEST-RESULTS.json`, Node v24.18.0, Wrangler 4.149.0, Workerd 1.20261006.1, compatibility date 2026-10-06, local synthetic D1/R2: 17/17 passed, 0 failed. Cost calculator rerun `.orchestration/evidence/CF-AU-I00-REWORK2-COST-RERUN.json` byte-matches `CF-AU-I00-COST-CALCULATIONS.json`; `npm audit --audit-level=moderate` reports 0 vulnerabilities. No source repository changes, remote Cloudflare resources, real data, paid resources, or deployments occurred.
 
 The two internal critics reviewed this repaired candidate independently; findings and scope limits remain in their dated follow-ups. The A3 exit criteria are met for submission to External Independent Critic, subject to exact A4 publication boundary. H1/H2/H3/H4/H6 remain UNRESOLVED and H5 remains narrowly REJECTED for the current source bcryptjs cost-12 Workers Free path. No migration increment is authorized here.
+
+## REWORK-3 integration — Artifact A5 candidate (A4-F1 evidence provenance only)
+
+Canonical event: Artifact A4 review from `main` `cbd521f940722ba2ab108c9d0d2c50cf4e9d3ff0` (integrated in merge commit `4dbfd52`; A4/A3 ancestry remains intact).
+
+- **A4-F1 repaired:** the trailing section in `critics/research-cost-method-critic.md` now explicitly withdraws its 539 ms sync / 645/552 ms async claims as current A4 evidence and identifies the paragraph as a superseded, misattributed intermediate note. The immediately prior final-run section and the correction state the A4 JSON values: async 624/642 ms, sync 613 ms. The local elapsed-proxy/no Cloudflare CPU telemetry caveat remains.
+- The original note's calculator verification is not invalidated; its cost conclusion is already corroborated by the exact byte-identical calculation/rerun JSON recorded in Artifact A4. No calculator formulas, code, tests, dependencies or result files changed.
+- Per the external critic's bounded exit criteria, the Worker suite, cost script and npm audit were not rerun for this documentation-only correction. Their exact unchanged A4 provenance is referenced in the REWORK-3 Pre-Critic Gate; no new execution result is claimed.
+- No additional scope, implementation, source change, migration, remote Cloudflare activity, paid resource, production or real data was introduced. Existing I00 hypotheses and residual limitations remain unchanged.
+
+The independent internal cost-document critic checked the corrected section against A4's immutable test JSON; the result is persisted in `critics/a5-cost-provenance-critic.md`. This is a narrow evidence integration check, not overall I00 approval or External Independent Critic acceptance.

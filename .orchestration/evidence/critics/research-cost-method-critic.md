@@ -155,7 +155,9 @@ No new external limit claim was needed for the arithmetic review. The previous o
 
 This spot check is not an overall I00 approval, External Independent Critic verdict, or Pre-Critic re-run. The timing-text mismatch should be repaired or reconciled before PR #6 is treated as an exact, internally consistent evidence package.
 
-## D1 image-read cost follow-up — 2026-10-12
+## D1 image-read cost follow-up — 2026-10-12 (historical pre-final timing snapshot)
+
+This dated D1 arithmetic follow-up predates the final A4 runner/config timing record below. Its 539 ms reference is a point-in-time historical observation and is superseded as current test evidence by the final A4 JSON (624/642 ms async; 613 ms sync) and the A4-F1 correction at the end of this report. The D1 arithmetic verification remains applicable.
 
 I independently checked the revised `.orchestration/evidence/fixtures/calculate-cost.mjs`, regenerated JSON, `COST-ZERO-MODEL.md`, and EXP-003 update. The script now adds `2 × mediated image GETs/day` to D1 reads. Recalculation gives lab/demo `2,147 + 2×140 = 2,427` reads/day (99.95146% headroom); early adoption `78,150 + 2×5,000 = 88,150` (98.237%); growth crossover `1,072,500 + 2×70,000 = 1,212,500` (75.75%). I reran the script; its output matches `CF-AU-I00-COST-CALCULATIONS.json`. The test result JSON remains 17/17 passed, 0 failed, with synchronous bcrypt elapsed 539 ms. The EXP-003 count is corrected to 17/17.
 
@@ -179,10 +181,10 @@ The D1/cost model is unaffected: I reran `calculate-cost.mjs`; its output byte-m
 
 This is a metric-consistency and reproducibility check only, not overall I00 approval. The local elapsed result is not Cloudflare CPU telemetry; workload, peak, routing and actual D1 metering limitations remain as previously recorded.
 
-## REWORK-2 F3 / cost-file spot check — 2026-10-12
+## Superseded intermediate timing note — 2026-10-12 (A4-F1 corrected)
 
-The A3-F3 issue is repaired in the working PR branch: `TARGET-ARCHITECTURE.md` now reports 539 ms local elapsed, calls it a CPU-bound proxy, and explicitly says it is not Cloudflare CPU telemetry. The current REWORK-2 result JSON records 539 ms synchronous elapsed, `cpu_ms=10` configured, and 17/17 checks passed. The original Artifact A test JSON also records 539 ms sync. H5 language remains narrow to the current source bcryptjs cost-12 Workers Free path; no statement claims direct production CPU measurement.
+The prior version of this section described **539 ms synchronous** and **645/552 ms asynchronous** bcrypt elapsed values as the current REWORK-2 result. That attribution and current-result wording were incorrect: these values do not match immutable Artifact A4's final test JSON, and this note does not establish their run provenance. They are withdrawn as current A4 evidence and retained here only to record the stale note that prompted A4-F1.
 
-**Metric caveat:** REWORK-2 JSON's async compare timings are 645/552 ms, whereas `COST-ZERO-MODEL.md` and the original Artifact A JSON report 513/592 ms. The synchronous F3 metric is consistent at 539 ms. If REWORK-2 JSON is the final run cited by the new artifact, label the async values by run or reconcile the summary so “final” does not imply they match; if the original JSON remains the canonical final test artifact, identify REWORK-2 as a separate follow-up run. This does not change H5's sync-proxy basis.
+The final A4 run is `.orchestration/evidence/CF-AU-I00-REWORK2-TEST-RESULTS.json`: 17/17 checks passed, async correct/wrong elapsed **624/642 ms**, sync elapsed **613 ms**, with `cpu_ms=10` configured. The value is a local elapsed-time proxy, not Cloudflare CPU telemetry. The preceding `Final runner/config rerun check` records its reconciliation with the mutable research summaries. No newer executable evidence supersedes that JSON.
 
-The D1 cost calculator, generated cost JSON and cost model are unchanged in the current worktree. I reran `calculate-cost.mjs`; its JSON output byte-matches the checked-in calculations, including D1 reads 2,427 / 88,150 / 1,212,500 per day and headroom 99.95146% / 98.237% / 75.75%. No D1 arithmetic mismatch found. This spot check does not approve overall I00 or close the existing workload/routing caveats.
+The cost-calculator verification in the superseded note remains valid and is recorded accurately in the later runner/config and post-hardening checks: the calculator output matches the cost calculations JSON and captured REWORK-2 rerun. No test, cost calculation or application code was rerun/changed for this documentation-only correction; those exact unchanged inputs and outputs were reviewed by the External Critic for A4. This correction is not overall I00 approval or an External Independent Critic verdict.
