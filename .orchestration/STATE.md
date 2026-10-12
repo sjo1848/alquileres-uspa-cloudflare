@@ -71,6 +71,7 @@ Binding findings and exit criteria are in:
 ## REWORK-1 publication boundary
 
 - Artifact A: `e367a9790070b8ecd905037c16e660d9043d8fc8`.
+- External-review PR: `https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/6` (open; not merged).
 - Artifact A is an immutable descendant of canonical `main` `452d764` and contains the integrated research, tests and review evidence.
 - Pre-Critic is green for external review only; no task/product PASS is claimed. H1/H2/H3/H4/H6 remain unresolved; H5 is narrowly rejected for source bcryptjs cost-12 on Workers Free based on qualified local proxy evidence.
 - Human Gate: none. Blocker: none. I13 Product Acceptance remains pending.

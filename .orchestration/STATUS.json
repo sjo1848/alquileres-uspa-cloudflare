@@ -8,6 +8,7 @@
   "last_completed_task": "CF-AU-I00",
   "last_completed_head": "e367a9790070b8ecd905037c16e660d9043d8fc8",
   "work_branch": "rework/cf-au-i00-rework-1",
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/6",
   "next_action": "WAIT_FOR_EXTERNAL_INDEPENDENT_CRITIC_ON_ARTIFACT_A_e367a9790070b8ecd905037c16e660d9043d8fc8",
   "stop_reason": "EXTERNAL_INDEPENDENT_CRITIC",
   "event": {
