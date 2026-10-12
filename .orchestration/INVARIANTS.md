@@ -23,3 +23,4 @@
 16. External Independent Critic reviews exact immutable artifacts, not implementer summaries.
 17. A runtime/session ending is not a product/task boundary when authorized routine work remains.
 18. Reusable failures discovered by critics should be promoted into this registry.
+19. Cost scenarios must be independently recalculated and their modeled request/data paths reconciled with source behavior before a cost verdict is stated.

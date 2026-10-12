@@ -70,3 +70,7 @@ The hypothesis is supported only if:
 - operational complexity is lower or at least justified.
 
 If evidence contradicts any of these, revise the target rather than forcing the source application into the hypothesis.
+
+## REWORK-1 feasibility evidence — 2026-10-12
+
+The full target remains `UNRESOLVED`. Local Workerd plus D1/R2 fixtures demonstrated selected JWT/cookie/role and image lifecycle paths, but did not port Hono routes or the source product. The source bcryptjs cost-12 synchronous verification proxy elapsed 521 ms locally against the 10 ms Workers Free per-request CPU allowance; this rejects the current source-auth, zero-cost Free path. Preserve the work factor and auth meaning. The source uses PostgreSQL per-listing advisory locks; the D1 batch/two-phase reorder fixture does not establish a concurrent-safe equivalent. No broad migration implementation is authorized by these findings.
