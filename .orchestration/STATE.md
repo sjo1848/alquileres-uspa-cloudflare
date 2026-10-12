@@ -1,9 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `PENDING_EXTERNAL_REVIEW`
+State: `READY_TO_RESUME`
 Phase: `DISCOVERY / FEASIBILITY`
 Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
-Resume authorized: `false` (awaiting External Independent Critic)
 
 ## Source baseline
 
@@ -68,18 +67,17 @@ Binding findings and exit criteria are in:
 
 `.orchestration/reviews/CF-AU-I00-REWORK-1.md`
 
-## REWORK-1 publication boundary
+## External Independent Critic — Artifact A3 REWORK-2 (2026-10-12)
 
-- Superseded prepublication candidates: `e367a9790070b8ecd905037c16e660d9043d8fc8` (stale async bcrypt timing text) and `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1` (omitted D1 image lookup reads and stale test count). Both remain unchanged.
-- Immutable Artifact A for External Independent Critic: `d935616bb5634a7e357b5da2747767119b2c3464` (tag `CF-AU-I00-Artifact-A3`).
-- External-review PR: `https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/6` (open; not merged).
-- The artifact commit is on the PR's linear ancestry from `452d764`; eventual integration must preserve commits (merge commit or fast-forward), not squash/cherry-pick only the boundary.
-- Artifact A is an immutable descendant of canonical `main` `452d764` and contains the integrated research, tests and review evidence.
-- Pre-Critic is green for external review only; no task/product PASS is claimed. H1/H2/H3/H4/H6 remain unresolved; H5 is narrowly rejected for source bcryptjs cost-12 on Workers Free based on qualified local proxy evidence.
-- Human Gate: none. Blocker: none. I13 Product Acceptance remains pending.
+- Reviewed exact immutable Artifact A3: `d935616bb5634a7e357b5da2747767119b2c3464`, annotated tag `CF-AU-I00-Artifact-A3`; PR #6 boundary `db4902ebef4e03af72c41a4e3fc27622d004fccf` remains OPEN/unmerged.
+- **Verdict: REWORK-2**. Three bounded evidence defects: invalid enum test false-PASS; R2 insert-failure compensation lacks orphan-absence assertion; architecture bcrypt measurement 521 ms disagrees with final 539 ms.
+- Verdict and corrective acceptance criteria: `.orchestration/reviews/CF-AU-I00-ARTIFACT-A3-CRITIC.md`.
+- No Human Gate; no technical blocker; `resume_authorized=true` to let Codex repair **within CF-AU-I00**. External review resumes only after a new immutable Artifact A4 and green Pre-Critic.
+- Previously accepted research and uncertainties remain: H1/H2/H3/H4/H6 UNRESOLVED, H5 narrow bcryptjs cost-12 Workers Free rejection; source I13 Product Acceptance pending.
+- Main is canonical for the review event, while PR #6 retains the immutable A3 lineage; preserve that lineage when reconciling branches. No merge, production, real data or paid resources.
 
 ## Next action
 
-Wait for External Independent Critic to review exact Artifact A `d935616bb5634a7e357b5da2747767119b2c3464` and the evidence package in this boundary commit. Do not start the next migration increment before external PASS.
+Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A3-CRITIC.md` directly, repair REWORK-2 autonomously under existing CF-AU-I00, reconcile canonical main into PR #6 without losing immutable A3 ancestry, re-run Pre-Critic, and publish a new immutable Artifact A4 for External Independent Critic.
 
 Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
