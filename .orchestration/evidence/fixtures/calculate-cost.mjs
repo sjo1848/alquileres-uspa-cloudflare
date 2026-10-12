@@ -9,7 +9,7 @@ const rows = scenarios.map((s) => {
   const apiWorkerRequestsPerDay = s.catalog + s.detail + s.ownerAdmin + s.login + s.contacts;
   const imageWorkerRequestsPerDay = s.catalog + 3 * s.detail;
   const workerRequestsPerDay = apiWorkerRequestsPerDay + imageWorkerRequestsPerDay;
-  const d1ReadsPerDay = 30 * s.catalog + 8 * s.detail + 20 * s.ownerAdmin + s.login + s.contacts;
+  const d1ReadsPerDay = 30 * s.catalog + 8 * s.detail + 20 * s.ownerAdmin + s.login + s.contacts + 2 * imageWorkerRequestsPerDay;
   const d1WritesPerDay = 2 * s.edits + s.contacts + 2 * s.imagePuts;
   const r2ClassAPerMonth = Math.ceil(30 * s.imagePuts * 1.01);
   const r2ClassBPerMonth = 30 * imageWorkerRequestsPerDay;
@@ -47,7 +47,7 @@ const output = {
   formulas: {
     totalWorkerRequestsPerDay: 'catalog + detail + owner/admin + login + contacts + catalog image GETs + detail image GETs',
     imageGetsPerDay: 'catalog * 1 + detail * 3; all image bytes are served through Worker to preserve source API-mediated delivery',
-    d1ReadsPerDay: 'catalog * 30 + detail * 8 + owner/admin * 20 + login * 1 + contacts * 1',
+    d1ReadsPerDay: 'catalog * 30 + detail * 8 + owner/admin * 20 + login * 1 + contacts * 1 + image GETs * 2 (image metadata row + joined listing visibility row; minimum model)',
     d1WritesPerDay: 'listing edits * 2 (listing + audit) + contact submissions * 1 + image puts * 2 (metadata + position index); excludes unmeasured additional index amplification',
     r2ClassAPerMonth: 'ceil(image puts/day * 30 * 1.01) (one put/upload and 1% replacement puts; no multipart because source cap is 5 MiB)',
     r2ClassBPerMonth: 'image GETs/day * 30',

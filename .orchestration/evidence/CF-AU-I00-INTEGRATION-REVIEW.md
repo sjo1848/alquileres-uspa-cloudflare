@@ -4,7 +4,7 @@ Date: 2026-10-12
 Branch: `rework/cf-au-i00-rework-1`
 Basis: canonical `main` at `452d764` and its review contract
 
-Post-publication QA found that the async bcrypt timings in the first immutable candidate (`e367a9790070b8ecd905037c16e660d9043d8fc8`) lagged its final test JSON. That candidate is superseded for external review by the corrected immutable Artifact A recorded in the publication boundary; the original commit and tag remain unchanged for auditability.
+Post-publication QA successively found stale async bcrypt timings in candidate `e367a9790070b8ecd905037c16e660d9043d8fc8`, then found that candidate A2 `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1` omitted D1 lookup reads from mediated image delivery and retained an obsolete 16/16 log count. Both candidates are preserved unchanged for auditability and superseded for external review by the corrected Artifact A recorded in the current publication boundary.
 
 ## Integrated tracks and role boundaries
 
@@ -35,5 +35,9 @@ Post-publication QA found that the async bcrypt timings in the first immutable c
 - Cost scenarios are average daily arithmetic, not peaks or forecasts; query-plan metering, exact per-route query/subrequest shape, initial R2 setup and static asset routing configuration are not measured (cost critic findings remain open/partial).
 
 Post-repair spot checks by the independent technical and cost critics are included in their dated follow-up sections. The cost report was reconciled to the final test JSON: async bcrypt elapsed is 513/592 ms and synchronous elapsed is 539 ms. Their spot checks do not approve the overall task.
+
+## PR review findings reconciled
+
+The repository's automated PR review on earlier branch head `3e1c590` raised three concrete findings. The D1 cost formula now includes two row reads per mediated image GET as a minimum for the indexed image metadata row and joined listing visibility row; regenerated totals are 2,427 / 88,150 / 1,212,500 D1 reads/day, independently recomputed by the cost critic. This is not an upper bound or measured `meta.rows_read`; scans/query-plan amplification remains open. EXP-003 now records the final 17/17 result JSON. The immutable artifact is a tagged commit in the linear PR branch ancestry from `452d764`; `.orchestration/STATUS.json` records the exact commit and tag. Do not cherry-pick only the boundary commit or squash the artifact away when eventually integrating; preserve the artifact commit as reachable canonical history. No merge is authorized at this external-review boundary.
 
 These uncertainties are represented by unresolved hypotheses and are not hidden by the 17/17 harness result. No migration implementation, real data, paid resource or production deployment was used. The completed scope remains CF-AU-I00 discovery/feasibility only.

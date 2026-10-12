@@ -46,7 +46,7 @@ Formulas:
 - API Worker requests/day = catalog + detail + OWNER/ADMIN + login + contact.
 - Mediated image Worker requests/day = catalog × 1 + detail × 3.
 - Total Worker requests/day = API requests + mediated image requests.
-- D1 rows read/day estimate = catalog × 30 + detail × 8 + OWNER/ADMIN × 20 + login × 1 + contact × 1. These multipliers are assumptions awaiting query-plan and `meta.rows_read` validation.
+- D1 rows read/day estimate = catalog × 30 + detail × 8 + OWNER/ADMIN × 20 + login × 1 + contact × 1 + mediated image GETs × 2. Each public image GET executes a D1 join to check image metadata and listing visibility before reading R2; the two-row minimum assumes one image metadata row and one joined listing row. Actual `meta.rows_read` may be higher due to query plans/scans and must be measured in a target proof.
 - D1 rows written/day estimate = listing edits × 2 (listing + audit) + contact submissions × 1 + image uploads × 2 (metadata row + position index). This omits additional index amplification on other indexed columns and therefore is not an upper bound.
 - R2 Class A/month = `ceil(image uploads/day × 30 × 1.01)`, assuming one put per upload plus 1% replacement puts. Source's 5 MiB maximum is below multipart thresholds, so multipart operation amplification is excluded; retries and other bucket operations remain unmeasured.
 - R2 Class B/month = mediated image GETs/day × 30. Each object GET passes through the Worker and reads R2; no CDN cache savings are assumed.
@@ -55,7 +55,7 @@ Formulas:
 | Meter | Free allowance | Lab/demo | Early adoption | Growth crossover |
 |---|---:|---:|---:|---:|
 | Worker requests/day (API + image delivery) | 100,000 | 247 (99.75% headroom) | 8,650 (91.35%) | 122,500 (**22,500 over limit**) |
-| D1 rows read/day | 5,000,000 | 2,147 (99.96%) | 78,150 (98.44%) | 1,072,500 (78.55%) |
+| D1 rows read/day | 5,000,000 | 2,427 (99.95%) | 88,150 (98.24%) | 1,212,500 (75.75%) |
 | D1 rows written/day | 100,000 | 6 (99.994%) | 170 (99.83%) | 2,000 (98%) |
 | R2 Class A operations/month | 1,000,000 | 31 (99.997%) | 909 (99.91%) | 11,363 (98.86%) |
 | R2 Class B operations/month | 10,000,000 | 4,200 (99.958%) | 150,000 (98.5%) | 2,100,000 (79%) |

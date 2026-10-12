@@ -3,7 +3,7 @@
 Candidate: REWORK-1 discovery/feasibility evidence package.
 Gate status: `PASS` for publication to External Independent Critic only. This does not accept the migration or override unresolved hypotheses.
 
-Immutable Artifact A: `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1` (commit `research: reconcile final CF-AU-I00 evidence`). Earlier candidate `e367a9790070b8ecd905037c16e660d9043d8fc8` is retained unchanged but superseded after the independent cost spot check found timing text drift.
+Exact immutable Artifact A SHA is recorded in the publication boundary commit after finalizing this corrected candidate. Earlier prepublication candidates are retained unchanged for auditability and are superseded.
 
 ## Contract and scope
 
@@ -48,6 +48,7 @@ Immutable Artifact A: `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1` (commit `resear
 - [x] Publish candidate as immutable Artifact A; do not amend it after recording its SHA.
 - [x] Boundary commit records exact Artifact A SHA in this file and canonical state/status; it is evidence packaging only and does not change substantive artifact A.
 - [x] State/status must agree: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, `external_review.required=true`, exact `artifact_head`, event sequence advanced, next action explicitly External Independent Critic.
+- [x] Exact artifact commit is tagged and remains an ancestor in the PR branch; any eventual integration must preserve commit ancestry (no squash or boundary-only cherry-pick). No merge is performed at this gate.
 - [x] Do not begin migration increment before external PASS.
 
 This gate is green only for sending the immutable CF-AU-I00 research artifact to external review. `H1/H2/H3/H4/H6` remain `UNRESOLVED`; `H5` is narrowly `REJECTED` for source bcryptjs cost-12 on Workers Free on the qualified local proxy evidence. Product acceptance and deployment decisions remain outside this gate.
