@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
+State: `PENDING_EXTERNAL_REVIEW`
 Phase: `DISCOVERY / FEASIBILITY`
 Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
 
@@ -76,8 +76,16 @@ Binding findings and exit criteria are in:
 - Previously accepted research and uncertainties remain: H1/H2/H3/H4/H6 UNRESOLVED, H5 narrow bcryptjs cost-12 Workers Free rejection; source I13 Product Acceptance pending.
 - Main is canonical for the review event, while PR #6 retains the immutable A3 lineage; preserve that lineage when reconciling branches. No merge, production, real data or paid resources.
 
+## External Independent Critic — Artifact A4 (2026-10-12)
+
+- Artifact A4 exact immutable commit: `8e707eadca25e47827b6bc81adaa4f272192af2e`; annotated tag `CF-AU-I00-Artifact-A4` dereferences to that exact commit.
+- A4 preserves A3 as an ancestor and includes the canonical main review event `0af0ab4fa368d8b7faf4c7b287ba0d021182bed6`; same PR #6 remains OPEN/unmerged.
+- A3 REWORK-2 criteria F1/F2/F3 are repaired and retested. The final local synthetic suite reports 17/17; captured cost rerun matches the canonical calculator JSON; npm audit reports 0 vulnerabilities. Integration Review, all 19 applicable invariants and Pre-Critic are complete.
+- Internal independent technical/security/data and research/cost/method critiques and source/runtime specialists have recorded findings and follow-ups. Their evidence does not substitute for the External Independent Critic.
+- Final test runtime: Node 24.18.0, Wrangler 4.149.0, Workerd 1.20261006.1; bcrypt latest local elapsed proxy 624/642 ms async and 613 ms sync, not Cloudflare CPU telemetry.
+- No Human Gate or material blocker. No merge, production deployment, paid resource, real data, source change or functional migration occurred.
+- H1/H2/H3/H4/H6 remain UNRESOLVED; H5 remains narrowly REJECTED for current source-compatible bcryptjs cost-12 on Workers Free. I13 Product Acceptance remains pending.
+
 ## Next action
 
-Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A3-CRITIC.md` directly, repair REWORK-2 autonomously under existing CF-AU-I00, reconcile canonical main into PR #6 without losing immutable A3 ancestry, re-run Pre-Critic, and publish a new immutable Artifact A4 for External Independent Critic.
-
-Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
+Await External Independent Critic review of exact Artifact A4 `8e707eadca25e47827b6bc81adaa4f272192af2e` (tag `CF-AU-I00-Artifact-A4`). Do not merge PR #6 or begin another increment before the external verdict and any required gates.

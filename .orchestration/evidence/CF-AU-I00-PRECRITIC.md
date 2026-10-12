@@ -2,7 +2,7 @@
 
 Candidate: REWORK-2 feasibility evidence package. Gate status: `PASS` for publication of this exact immutable research artifact to External Independent Critic only. This does not accept migration feasibility or override unresolved hypotheses.
 
-Artifact A4 exact commit: **to be sealed in the publication boundary after this evidence commit**. A3 `d935616bb5634a7e357b5da2747767119b2c3464` remains an immutable ancestor and its tag is unchanged. PR #6 remains open and unmerged.
+Artifact A4 exact commit: `8e707eadca25e47827b6bc81adaa4f272192af2e`; annotated tag: `CF-AU-I00-Artifact-A4`. A3 `d935616bb5634a7e357b5da2747767119b2c3464` remains an immutable ancestor and its tag is unchanged. PR #6 remains open and unmerged.
 
 ## Contract, source and scope
 
@@ -36,7 +36,7 @@ Artifact A4 exact commit: **to be sealed in the publication boundary after this 
 ## Publication boundary
 
 - [x] Substantive A4 candidate will be committed once; no amendments after its SHA is recorded.
-- [x] This gate and canonical state/status boundary will identify the exact Artifact A4 SHA and annotated tag `CF-AU-I00-Artifact-A4`.
+- [x] This gate and canonical state/status boundary identify the exact Artifact A4 SHA and annotated tag `CF-AU-I00-Artifact-A4`.
 - [x] State/status agree at boundary: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, `external_review.required=true`, exact artifact head/tag, sequence advanced, next action names External Independent Critic.
 - [x] A4 exact commit and A3 ancestry remain in PR #6; no merge, squash, or boundary-only cherry-pick.
 - [x] Stop at External Independent Critic review. Do not begin migration before external PASS and any required gates.
