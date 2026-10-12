@@ -60,6 +60,8 @@ Use one entry per bounded experiment. Do not rewrite history after results are k
 
 ### EXP-003 — REWORK-1 auth, D1/R2 lifecycle, and route-derived cost
 
+This entry records the earlier REWORK-1 run and is retained as historical evidence. REWORK-2 corrections and latest measurements are recorded in EXP-004 and `.orchestration/evidence/CF-AU-I00-REWORK2-TEST-RESULTS.json`.
+
 - Date: 2026-10-12
 - Related task: CF-AU-I00 REWORK-1
 - Hypothesis: current Worker-compatible primitives preserve the source auth and image lifecycle contracts while fitting the Workers Free CPU/request and D1/R2 envelope.
@@ -71,7 +73,7 @@ Use one entry per bounded experiment. Do not rewrite history after results are k
 - Evidence: `.orchestration/evidence/CF-AU-I00-REWORK1-TEST-RESULTS.json` (17/17 passed); `.orchestration/evidence/CF-AU-I00-COST-CALCULATIONS.json`; specialist and critic reports; official Cloudflare links in `COST-ZERO-MODEL.md`.
 - Result: `REJECTED` for source bcrypt cost-12 on the Workers Free cost-zero path; `UNRESOLVED` for full H2/H3/H4/H6. Tested JWT interoperability, selected cookie/role/OWNER checks and selected R2/D1 lifecycle paths passed. The source-parity mediated-image growth case is 122,500 Worker requests/day, 22,500 over Free allowance. D1 daily Free quota exhaustion rejects queries until reset and is not automatic paid overage.
 - Unexpected findings: initial cost-specialist calculations had inconsistent R2 read/write headroom and used direct public image reads that conflicted with the source API delivery path. An independent critic identified both; integration corrected the arithmetic and counted each image response as a Worker request. An initial fixture constrained temporary negative positions; the local schema was corrected to reflect source two-phase reorder staging, and the final rerun passed.
-- Cost/usage observation: local only; no usage against a Cloudflare account. Synchronous bcryptjs cost 12 elapsed at 539 ms (final synchronous comparison); local Workerd did not provide the production CPU meter. Treat as a very large local CPU proxy exceedance, not account telemetry.
+- Cost/usage observation: local only; no usage against a Cloudflare account. REWORK-1 synchronous bcryptjs cost 12 elapsed at 539 ms in this historical experiment; the first REWORK-2 rerun was 675 ms; the final REWORK-2 comparison is 613 ms (EXP-004); local Workerd did not provide the production CPU meter. Treat as a very large local CPU proxy exceedance, not account telemetry.
 - Conclusion: JWT/HMAC and D1/R2 bindings are technically available. The current auth CPU behavior falsifies the zero-cost Free path. Full relational migration and D1 replacement for PostgreSQL advisory locking remain unresolved. Do not begin migration from this evidence.
 - Transferable learning: count API-mediated image delivery as Worker invocations; local primitives do not prove cross-service concurrency or production billing; internal cost critics must independently recompute every derived row.
 - Follow-up: wait for External Independent Critic verdict; do not start a functional migration increment before PASS and resolution of any Human Gate.
@@ -88,3 +90,17 @@ Use one entry per bounded experiment. Do not rewrite history after results are k
 - Setup: separate repository `sjo1848/alquileres-uspa-cloudflare`; separate Drive lab archive.
 - Result: pending bootstrap review/merge.
 - Conclusion: pending.
+
+### EXP-004 — CF-AU-I00 REWORK-2 falsification and local-only boundary
+
+- Date: 2026-10-12
+- Related task: CF-AU-I00 REWORK-2 from External Independent Critic Artifact A3 review.
+- Hypothesis: corrected negative controls detect missing D1 role constraints and R2 orphan cleanup failures, while privileged fixture inspection endpoints remain disabled by tracked default configuration and supported runner rejects remote-mode argument forwarding.
+- Falsification criterion: unconstrained SQL mutant passes the invalid-role assertion; injected skipped R2 cleanup is not detected by object-key/metadata snapshots; tracked Wrangler config or `.dev.vars` enables `LOCAL_FIXTURE_ONLY`; `npm run dev -- --remote` reaches Wrangler; or any of 17 Worker checks fails.
+- Setup: Wrangler 4.149.0 / Workerd 1.20261006.1 / Node v24.18.0; compatibility date 2026-10-06; local-only D1/R2, synthetic data. `run-local-fixture.mjs` writes synthetic variables to ignored `.dev.vars` without the fixture flag, rejects all extra arguments, then launches Wrangler with fixed `--var LOCAL_FIXTURE_ONLY:true` and `--local`; tracked `wrangler.jsonc` has no fixture flag. Tests assert that tracked config and `.dev.vars` lack the flag and the npm script uses the argument-rejecting runner.
+- Procedure: `npm run dev --prefix .orchestration/evidence/fixtures`; expected-reject check `npm run dev --prefix .orchestration/evidence/fixtures -- --remote`; `npm test --prefix .orchestration/evidence/fixtures`; `npm run cost --prefix .orchestration/evidence/fixtures`; `npm audit --prefix .orchestration/evidence/fixtures --audit-level=moderate`.
+- Evidence: `.orchestration/evidence/CF-AU-I00-REWORK2-TEST-RESULTS.json`; `CF-AU-I00-COST-CALCULATIONS.json` and byte-identical rerun `.orchestration/evidence/CF-AU-I00-REWORK2-COST-RERUN.json`; fixture `run-local-fixture.mjs`, `wrangler.jsonc`, `package.json`, tests and Worker.
+- Result: all 17/17 checks passed. Role mutant is accepted by unconstrained table and the assertion rejects it; normal invalid enum insert is rejected by CHECK and leaves no row. Normal D1 insert failure preserves exact R2 key and D1 metadata snapshots; no-cleanup mutant creates exactly one detectable orphan, then test hook removes it and verifies baseline. Tracked config and `.dev.vars` lack `LOCAL_FIXTURE_ONLY`; only the argument-rejecting local runner injects it and forces `--local`. `npm run dev -- --remote` exits 1 at the runner assertion before Wrangler starts. A direct deliberate Wrangler invocation with a manually supplied remote hook flag is outside this bounded proof. Latest bcrypt elapsed values were async correct/wrong 624/642 ms and sync 613 ms with 10 ms configured; local elapsed is not Cloudflare CPU telemetry. Fresh captured cost rerun byte-matches checked-in JSON; npm audit reported zero vulnerabilities.
+- Conclusion: A3-F1/F2/F3 and local-hook boundary findings are addressed at their bounded scope. Overall target hypotheses remain as registered; this experiment does not prove full parity or authorize migration.
+- Transferable learning: assert rejected operations using observed rejection predicates and persistent-state snapshots; include a controlled defect mutation to prove the assertions are sensitive; keep local inspection privileges out of deploy config and `.dev.vars`; make their supported local activation explicit and reproducible.
+- Follow-up: publish exact immutable Artifact A4 and await External Independent Critic; no merge or new task.

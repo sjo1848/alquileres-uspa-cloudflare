@@ -16,7 +16,7 @@ Hypothesis: NestJS route/domain behavior can be moved to Workers/Hono/TypeScript
 
 Falsification: a required behavior depends on a Node/PostgreSQL primitive that cannot be replaced with parity, or auth/security behavior is weakened.
 
-I00 verdict: `UNRESOLVED`. Local Worker tests verified JSON Web Token interoperability with `jsonwebtoken` HS256, token expiration/tampering rejection, source cookie name/flags/default, Bearer precedence, database-backed role freshness shape, OWNER/ADMIN positive and negative checks, and OWNER isolation. Password hashing with source `bcryptjs` cost 12 took 539 ms synchronous local Workerd elapsed in the latest run against a 10 ms Free CPU limit. This local metric is not production CPU telemetry, but strongly falsifies the current zero-cost auth path. No route-wide NestJS parity port exists.
+I00 verdict: `UNRESOLVED`. Local Worker tests verified JSON Web Token interoperability with `jsonwebtoken` HS256, token expiration/tampering rejection, source cookie name/flags/default, Bearer precedence, database-backed role freshness shape, OWNER/ADMIN positive and negative checks, and OWNER isolation. Password hashing with source `bcryptjs` cost 12 took 613 ms synchronous local Workerd elapsed in the latest run against a 10 ms Free CPU limit. This local metric is not production CPU telemetry, but strongly falsifies the current zero-cost auth path. No route-wide NestJS parity port exists.
 
 ## H3 — D1 relational parity
 
@@ -40,7 +40,7 @@ Hypothesis: the lab and plausible early low-traffic use can run at USD 0 within 
 
 Falsification: representative required auth exceeds Free CPU, route/image volume exceeds quotas, or any required behavior needs paid capacity.
 
-I00 verdict: `REJECTED` for the current Workers Free path. The local bcryptjs cost-12 synchronous proxy was 539 ms versus the documented 10 ms per-request Free CPU allowance. Illustrative lab and early-adoption request/row/storage arithmetic remains below the non-CPU quotas, but it is not a measured forecast. The growth crossover exceeds the Worker request allowance when source-parity API-mediated image GETs are counted. D1 Free daily row exhaustion rejects queries until reset rather than charging automatically.
+I00 verdict: `REJECTED` for the current Workers Free path. The local bcryptjs cost-12 synchronous proxy was 613 ms versus the documented 10 ms per-request Free CPU allowance. Illustrative lab and early-adoption request/row/storage arithmetic remains below the non-CPU quotas, but it is not a measured forecast. The growth crossover exceeds the Worker request allowance when source-parity API-mediated image GETs are counted. D1 Free daily row exhaustion rejects queries until reset rather than charging automatically.
 
 ## H6 — Method portability
 

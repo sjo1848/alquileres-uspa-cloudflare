@@ -72,8 +72,30 @@ export default {
       const { sql } = await request.json();
       const statements = sql.split(";").map((statement) => statement.trim()).filter(Boolean);
       const results = [];
-      for (const statement of statements) results.push(await env.DB.prepare(statement).run());
+      for (const statement of statements) {
+        const query = env.DB.prepare(statement);
+        results.push(/^(SELECT|WITH)\b/i.test(statement) ? await query.all() : await query.run());
+      }
       return json({ results });
+    }
+
+    if (url.pathname === "/fixture/r2-keys" && (request.method === "GET" || request.method === "DELETE")) {
+      if (env.LOCAL_FIXTURE_ONLY !== "true") return json({ error: "fixture route disabled" }, 404);
+      const prefix = url.searchParams.get("prefix") ?? "";
+      const listing = await env.IMAGES.list({ prefix });
+      const keys = listing.objects.map((object) => object.key).sort();
+      if (request.method === "DELETE") {
+        await Promise.all(keys.map((key) => env.IMAGES.delete(key)));
+        return json({ deleted: keys.length });
+      }
+      return json({ keys });
+    }
+
+    if (url.pathname === "/fixture/r2-object" && request.method === "DELETE") {
+      if (env.LOCAL_FIXTURE_ONLY !== "true") return json({ error: "fixture route disabled" }, 404);
+      const { key } = await request.json();
+      await env.IMAGES.delete(key);
+      return json({ deleted: true });
     }
 
     if (url.pathname === "/auth/session" && request.method === "POST") {
@@ -120,7 +142,7 @@ export default {
     if (url.pathname === "/images" && request.method === "POST") {
       const user = await currentUser(request, env);
       if (!user) return json({ error: "unauthorized" }, 401);
-      const { listingId, bytes, contentType, position, failDb } = await request.json();
+      const { listingId, bytes, contentType, position, failDb, mutateNoCleanup } = await request.json();
       const listing = await env.DB.prepare("SELECT id FROM listings WHERE id = ? AND owner_id = ? AND status IN ('DRAFT','REJECTED')")
         .bind(listingId, user.id).first();
       if (!listing) return json({ error: "not found" }, 404);
@@ -133,7 +155,8 @@ export default {
         await env.DB.prepare("INSERT INTO listing_images(id, listing_id, object_key, content_type, byte_size, position) VALUES(?,?,?,?,?,?)")
           .bind(id, listingId, key, contentType, body.byteLength, position).run();
       } catch (error) {
-        await env.IMAGES.delete(key);
+        const skipCleanupForMutation = mutateNoCleanup === true && env.LOCAL_FIXTURE_ONLY === "true";
+        if (!skipCleanupForMutation) await env.IMAGES.delete(key);
         return json({ error: error.message }, 500);
       }
       return json({ id, listingId, contentType, byteSize: body.byteLength, position });

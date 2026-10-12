@@ -1,54 +1,44 @@
-# CF-AU-I00 Pre-Critic Gate
+# CF-AU-I00 Pre-Critic Gate — REWORK-2 / Artifact A4
 
-Candidate: REWORK-1 discovery/feasibility evidence package.
-Gate status: `PASS` for publication to External Independent Critic only. This does not accept the migration or override unresolved hypotheses.
+Candidate: REWORK-2 feasibility evidence package. Gate status: `PASS` for publication of this exact immutable research artifact to External Independent Critic only. This does not accept migration feasibility or override unresolved hypotheses.
 
-Immutable Artifact A: `d935616bb5634a7e357b5da2747767119b2c3464` (commit `research: reconcile image lookup D1 cost and review findings`). Earlier candidates `e367a9790070b8ecd905037c16e660d9043d8fc8` and `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1` remain unchanged for auditability and are superseded.
+Artifact A4 exact commit: **to be sealed in the publication boundary after this evidence commit**. A3 `d935616bb5634a7e357b5da2747767119b2c3464` remains an immutable ancestor and its tag is unchanged. PR #6 remains open and unmerged.
 
-## Contract and scope
+## Contract, source and scope
 
-- [x] Active authorized contract exists: `.orchestration/contracts/CF-AU-I00.md`.
-- [x] Scope stayed within source inventory, parity/feasibility research, local synthetic proofs, current-limit research and cost model.
-- [x] Acceptance criteria are addressed in source/parity inventory, hypotheses, cost model, target architecture, specialist/critic reports, Integration Review, test evidence and invariant evidence.
-- [x] No product migration, real data, production deployment, paid Cloudflare resource or unapproved product/security/cost decision.
-- [x] I13 Product Acceptance dependency remains explicit.
+- [x] Authorized active contract `.orchestration/contracts/CF-AU-I00.md`; External Independent Critic REWORK-2 criteria are recorded in `.orchestration/reviews/CF-AU-I00-ARTIFACT-A3-CRITIC.md`.
+- [x] Canonical main review event `0af0ab4fa368d8b7faf4c7b287ba0d021182bed6` is integrated through a merge commit that preserves A3 ancestry.
+- [x] Work remains within feasibility research, synthetic local evidence, bounded REWORK and publication. No functional migration, source changes, real data, production deployment, paid Cloudflare resource, or new task.
+- [x] I13 Product Acceptance remains an explicit dependency.
 
-## Invariants
+## External REWORK-2 exit criteria
 
-- [x] All 19 invariants are classified `APPLIES` or `N/A` with rationale in `CF-AU-I00-INVARIANTS.md`.
-- [x] Every applicable invariant is PASS for this bounded lab artifact and its publication discipline; this is not a PASS on target hypotheses.
-- [x] No invariant remains PENDING, FAIL or UNPROVEN.
+- [x] F1: invalid role test requires observed CHECK-constraint rejection and absent row; unconstrained mutation proves the assertion fails on an accepted invalid role.
+- [x] F2: injected D1 insert failure compares R2 key set and D1 metadata snapshots; no-cleanup mutation proves detection of exactly one orphan, followed by fixture-only cleanup and baseline recheck.
+- [x] F3: mutable current summaries report latest REWORK-2 bcrypt values (624/642 ms async; 613 ms sync) and label local elapsed CPU proxy, not Cloudflare CPU telemetry. Historical A3 evidence is preserved and distinguished.
+- [x] Additional internal finding: tracked Wrangler config has no `LOCAL_FIXTURE_ONLY`; ignored synthetic `.dev.vars` contains no hook flag; `run-local-fixture.mjs` rejects all forwarded arguments and launches Wrangler with fixed `--local` and `--var` arguments. Tests assert absence from tracked config and `.dev.vars`, and assert the exact runner script. `npm run dev -- --remote` was attempted and rejected with exit 1 before Wrangler started. A direct deliberate Wrangler invocation with manual remote flag override is outside this bounded proof.
 
-## Research truthfulness
+## Tests and evidence
 
-- [x] Each H1-H6 entry states falsification criteria and only `SUPPORTED`, `REJECTED`, or `UNRESOLVED` verdicts.
-- [x] Local observation is distinguished from inference; local Workerd elapsed time is not described as Cloudflare CPU telemetry.
-- [x] Unresolved source/runtime/data/R2/cost findings remain visible; earlier specialist output is not silently overwritten.
-- [x] Platform limits/pricing link official Cloudflare sources and use observed-at date 2026-10-12.
-- [x] Cost-zero claims state assumptions, route drivers, quotas, thresholds, D1 exhaustion behavior and H5's narrow rejection.
-
-## Technical evidence
-
-- [x] Final local Worker/D1/R2 synthetic suite: 17/17 pass; exact output in `CF-AU-I00-REWORK1-TEST-RESULTS.json`.
-- [x] Cost calculator rerun; its JSON output independently recomputed by cost critic and integrated with source API-mediated image path.
+- [x] `.orchestration/evidence/CF-AU-I00-REWORK2-TEST-RESULTS.json`: Node v24.18.0, Wrangler 4.149.0, Workerd 1.20261006.1, compatibility date 2026-10-06; local D1/R2, synthetic data only; 17/17 pass, 0 fail.
+- [x] Cost calculation rerun `.orchestration/evidence/CF-AU-I00-REWORK2-COST-RERUN.json` is byte-identical to `.orchestration/evidence/CF-AU-I00-COST-CALCULATIONS.json`; internal cost critic independently recomputed the D1 image-read adjustment. Inputs remain assumptions, not a forecast or account metering.
 - [x] `npm audit --prefix .orchestration/evidence/fixtures --audit-level=moderate`: 0 vulnerabilities.
-- [x] Local fixture uses only synthetic local D1/R2; no remote bindings or account interaction.
-- [x] Technical critic follow-up findings are resolved where bounded repairs were possible; residual concurrency, full schema/migration and failure-injection cases are explicitly partial/open in Integration Review.
-- [x] API-level synthetic evidence is not represented as browser/UI proof.
+- [x] No remote Cloudflare account or resource interaction. Test suite and calculator use local fixtures only.
 
-## Role separation and integration
+## Method, integration and invariant evidence
 
-- [x] Source/parity/data and runtime/cost specialist evidence is distinct.
-- [x] Technical/security/data and research/cost/method criticisms are independent and persisted with follow-ups.
-- [x] Integration Review reconciles contradictory route/cost assumptions and records repairs and open findings.
-- [x] Codex does not claim External Independent Critic acceptance.
+- [x] Source/parity/data specialist and runtime/cost specialist evidence are separate from the independent technical and research/cost critic reviews; dated findings and follow-ups are preserved.
+- [x] Integration Review `.orchestration/evidence/CF-AU-I00-INTEGRATION-REVIEW.md` reconciles REWORK-2 findings, current metrics, local fixture security boundary and residual scope.
+- [x] All 19 invariants in `.orchestration/evidence/CF-AU-I00-INVARIANTS.md` are classified APPLIES or N/A with rationale; no PENDING, FAIL or UNPROVEN invariant remains for this bounded lab artifact.
+- [x] H1/H2/H3/H4/H6 remain `UNRESOLVED`; H5 is narrowly `REJECTED` for the current source-compatible bcryptjs cost-12 path on Workers Free. No target architecture or full app parity PASS is claimed.
+- [x] Cost claims remain conditional and quantified; quota, CPU proxy, static routing, concurrency and query metering caveats remain explicit.
 
 ## Publication boundary
 
-- [x] Publish candidate as immutable Artifact A; do not amend it after recording its SHA.
-- [x] Boundary commit records exact Artifact A SHA in this file and canonical state/status; it is evidence packaging only and does not change substantive artifact A.
-- [x] State/status must agree: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, `external_review.required=true`, exact `artifact_head`, event sequence advanced, next action explicitly External Independent Critic.
-- [x] Exact artifact commit is tagged and remains an ancestor in the PR branch; any eventual integration must preserve commit ancestry (no squash or boundary-only cherry-pick). No merge is performed at this gate.
-- [x] Do not begin migration increment before external PASS.
+- [x] Substantive A4 candidate will be committed once; no amendments after its SHA is recorded.
+- [x] This gate and canonical state/status boundary will identify the exact Artifact A4 SHA and annotated tag `CF-AU-I00-Artifact-A4`.
+- [x] State/status agree at boundary: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, `external_review.required=true`, exact artifact head/tag, sequence advanced, next action names External Independent Critic.
+- [x] A4 exact commit and A3 ancestry remain in PR #6; no merge, squash, or boundary-only cherry-pick.
+- [x] Stop at External Independent Critic review. Do not begin migration before external PASS and any required gates.
 
-This gate is green only for sending the immutable CF-AU-I00 research artifact to external review. `H1/H2/H3/H4/H6` remain `UNRESOLVED`; `H5` is narrowly `REJECTED` for source bcryptjs cost-12 on Workers Free on the qualified local proxy evidence. Product acceptance and deployment decisions remain outside this gate.
+This gate is limited to preparing the research evidence package for external review. It is not external acceptance, product acceptance, authorization to pay, deployment approval, or authorization for a functional migration.

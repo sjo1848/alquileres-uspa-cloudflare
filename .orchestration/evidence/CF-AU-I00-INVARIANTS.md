@@ -1,6 +1,6 @@
 # CF-AU-I00 Invariant Evidence
 
-Candidate: REWORK-1 evidence package, based on canonical `main` `452d764`.
+Candidate: REWORK-2 evidence package, based on canonical `main` `0af0ab4` with A3 ancestry retained.
 Scope: discovery/feasibility only. PASS means the laboratory artifact respects the invariant; it does not turn unresolved target-parity hypotheses into proven architecture.
 
 | # | Classification | Result | Evidence |
@@ -13,7 +13,7 @@ Scope: discovery/feasibility only. PASS means the laboratory artifact respects t
 | 6 | APPLIES | PASS | Local D1/R2 test exercises metadata link, ordering, owner/state gate, public visibility and failure compensation; `H3/H4` remain unresolved for concurrency, full migration, and untested failure modes. |
 | 7 | N/A | PASS | No ADMIN audit operation is implemented or claimed; the fixture only checks role gating. |
 | 8 | APPLIES | PASS | Auth fixture preserves tested cookie/JWT/role semantics, never weakens bcrypt cost, and labels source login/register parity unresolved; see `HYPOTHESES.md` and tests. |
-| 9 | APPLIES | PASS | Wrangler config is local with synthetic D1/R2, no remote flag/account, and no real data or production deployment. H5 rejects current Free auth on a qualified local proxy. |
+| 9 | APPLIES | PASS | Tracked `wrangler.jsonc` and ignored `.dev.vars` lack `LOCAL_FIXTURE_ONLY`; `run-local-fixture.mjs` rejects forwarded args and starts Wrangler with fixed `--local`/flag args. `npm run dev -- --remote` was rejected before Wrangler launch. Direct manual remote invocation with an explicit hook override is outside this evidence. D1/R2 are local synthetic bindings; no deployment or real data. H5 rejects current Free auth on a qualified local proxy. |
 | 10 | APPLIES | PASS | Cost report records observed-at date, official limits, explicit route/data assumptions, failure behavior and stop thresholds; model is not forecast. |
 | 11 | APPLIES | PASS | Work branch descends from canonical `main`; state publication will reference exact immutable Artifact A SHA. |
 | 12 | N/A | PASS | No Drive artifact is used as runtime authority. |

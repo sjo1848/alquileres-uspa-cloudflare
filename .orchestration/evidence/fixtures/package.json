@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --config wrangler.jsonc --local --port 8791",
+    "dev": "node run-local-fixture.mjs",
     "test": "node rework1-tests.mjs",
     "cost": "node calculate-cost.mjs"
   },

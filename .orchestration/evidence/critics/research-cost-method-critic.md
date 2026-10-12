@@ -162,3 +162,27 @@ I independently checked the revised `.orchestration/evidence/fixtures/calculate-
 **Assessment of the two-row assumption:** two rows is a reasonable minimum for a successful public-image lookup if `listing_images.id` and `listings.id` are indexed/primary keys and the join resolves one image metadata row plus one listing visibility row. The fixture schema has primary keys on both IDs and the public image query is the corresponding join. It is not a general upper bound or measured D1 row count: missing objects/IDs, schema/index differences, query plan scans, or additional visibility/filter logic can change metering. The model correctly labels this a minimum and says actual `meta.rows_read` may be higher; keep the app-wide cost conclusion conditional because the other route multipliers and target query plans remain unmeasured.
 
 No arithmetic defect found in this D1 adjustment. This does not close peak/burst, route-query metering, static-asset routing, or the other previously open feasibility items, and it is not an overall I00 approval or External Independent Critic verdict.
+
+## Post-hardening final-summary check — 2026-10-12
+
+After the local fixture config hardening rerun, `.orchestration/evidence/CF-AU-I00-REWORK2-TEST-RESULTS.json` records **17/17 passed**, async correct/wrong elapsed **664/673 ms**, synchronous elapsed **675 ms**, and `cpu_ms=10` configured. Current mutable summaries (Cost-Zero Model, Hypothesis Registry, Parity Matrix, Target Architecture, EXP-004, Pre-Critic, and the current REWORK-2 section of Integration Review) reconcile to those timings and retain the caveat that elapsed time is a local CPU-bound proxy, not Cloudflare CPU telemetry. H5 remains narrowly rejected for the current source-compatible bcryptjs cost-12 Workers Free path; this is not a verdict on all possible parity-preserving designs.
+
+I reran `.orchestration/evidence/fixtures/calculate-cost.mjs`; its output byte-matches `.orchestration/evidence/CF-AU-I00-COST-CALCULATIONS.json`, including the mediated-image D1 read additions. No cost arithmetic mismatch found. Earlier A3/R1 and pre-hardening REWORK-2 timing paragraphs in this report are preserved as point-in-time evidence; the prior REWORK-2 F3 spot check's 539 ms measurement is superseded by this post-hardening run.
+
+This follow-up checks metric reconciliation and cost-output reproducibility only. It is not overall I00 approval, Pre-Critic self-approval, or an External Independent Critic verdict; previously recorded workload, routing, and data-metering uncertainties remain open.
+
+## Final runner/config rerun check — 2026-10-12
+
+After the latest runner/config-boundary change, `.orchestration/evidence/CF-AU-I00-REWORK2-TEST-RESULTS.json` records **17/17 passed**, async correct/wrong elapsed **624/642 ms**, and sync elapsed **613 ms** (`cpu_ms=10` configured). Current mutable summaries in Cost-Zero Model, Hypotheses, Parity Matrix, Target Architecture, EXP-004, Pre-Critic and the current REWORK-2 Integration Review section use 613 ms and correctly retain the local elapsed-proxy/no Cloudflare CPU telemetry caveat. H5 is scoped to the current source-compatible bcryptjs cost-12 Workers Free path.
+
+The D1/cost model is unaffected: I reran `calculate-cost.mjs`; its output byte-matches `CF-AU-I00-COST-CALCULATIONS.json`, which also byte-matches the captured `CF-AU-I00-REWORK2-COST-RERUN.json`. No calculator or quota arithmetic mismatch found. The prior post-hardening paragraph in this report that cites 664/673/675 ms is superseded by this later runner/config rerun and retained only as a point-in-time observation.
+
+This is a metric-consistency and reproducibility check only, not overall I00 approval. The local elapsed result is not Cloudflare CPU telemetry; workload, peak, routing and actual D1 metering limitations remain as previously recorded.
+
+## REWORK-2 F3 / cost-file spot check — 2026-10-12
+
+The A3-F3 issue is repaired in the working PR branch: `TARGET-ARCHITECTURE.md` now reports 539 ms local elapsed, calls it a CPU-bound proxy, and explicitly says it is not Cloudflare CPU telemetry. The current REWORK-2 result JSON records 539 ms synchronous elapsed, `cpu_ms=10` configured, and 17/17 checks passed. The original Artifact A test JSON also records 539 ms sync. H5 language remains narrow to the current source bcryptjs cost-12 Workers Free path; no statement claims direct production CPU measurement.
+
+**Metric caveat:** REWORK-2 JSON's async compare timings are 645/552 ms, whereas `COST-ZERO-MODEL.md` and the original Artifact A JSON report 513/592 ms. The synchronous F3 metric is consistent at 539 ms. If REWORK-2 JSON is the final run cited by the new artifact, label the async values by run or reconcile the summary so “final” does not imply they match; if the original JSON remains the canonical final test artifact, identify REWORK-2 as a separate follow-up run. This does not change H5's sync-proxy basis.
+
+The D1 cost calculator, generated cost JSON and cost model are unchanged in the current worktree. I reran `calculate-cost.mjs`; its JSON output byte-matches the checked-in calculations, including D1 reads 2,427 / 88,150 / 1,212,500 per day and headroom 99.95146% / 98.237% / 75.75%. No D1 arithmetic mismatch found. This spot check does not approve overall I00 or close the existing workload/routing caveats.

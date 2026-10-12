@@ -2,12 +2,8 @@
   "name": "cf-au-i00-rework-proof",
   "main": "rework1-worker.js",
   "compatibility_date": "2026-10-06",
-  "limits": { "cpu_ms": 10 },
-  "vars": {
-    "JWT_SECRET": "synthetic-fixture-secret-only",
-    "LOCAL_FIXTURE_ONLY": "true",
-    "COOKIE_SAME_SITE": "lax",
-    "NODE_ENV": "development"
+  "limits": {
+    "cpu_ms": 10
   },
   "d1_databases": [
     {
@@ -17,6 +13,9 @@
     }
   ],
   "r2_buckets": [
-    { "binding": "IMAGES", "bucket_name": "cf-au-i00-local-images" }
+    {
+      "binding": "IMAGES",
+      "bucket_name": "cf-au-i00-local-images"
+    }
   ]
 }

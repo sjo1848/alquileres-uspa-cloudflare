@@ -6,14 +6,38 @@ import { readFile } from 'node:fs/promises';
 
 const fixtureDir = path.dirname(fileURLToPath(import.meta.url));
 const base = 'http://127.0.0.1:8791';
+const packageLock = JSON.parse(await readFile(path.join(fixtureDir, 'package-lock.json'), 'utf8'));
+const wranglerConfig = JSON.parse(await readFile(path.join(fixtureDir, 'wrangler.jsonc'), 'utf8'));
+const fixturePackage = JSON.parse(await readFile(path.join(fixtureDir, 'package.json'), 'utf8'));
+assert.equal(wranglerConfig.vars?.LOCAL_FIXTURE_ONLY, undefined, 'tracked Wrangler config must not enable local inspection hooks');
+assert.equal(fixturePackage.scripts.dev, 'node run-local-fixture.mjs', 'tests must use the argument-rejecting local runner');
+assert.doesNotMatch(await readFile(path.join(fixtureDir, '.dev.vars'), 'utf8'), /LOCAL_FIXTURE_ONLY/, 'dev vars loaded by remote dev must not enable inspection hooks');
+const wranglerVersion = JSON.parse(await readFile(path.join(fixtureDir, 'node_modules/wrangler/package.json'), 'utf8')).version;
+const workerdVersion = packageLock.packages['node_modules/@cloudflare/workerd-linux-64'].version;
 const sql = async (statement) => { const response = await post('/fixture/sql', { sql: statement }); if (!response.ok) throw new Error(await response.text()); return response.json(); };
 const cookie = (response) => response.headers.get('set-cookie');
 const request = (path, init) => fetch(`${base}${path}`, init);
 const post = (path, body, headers = {}) => request(path, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
 await sql(await readFile(path.join(fixtureDir, 'rework1-schema.sql'), 'utf8'));
 await sql(await readFile(path.join(fixtureDir, 'rework1-seed.sql'), 'utf8'));
+const bucketReset = await request('/fixture/r2-keys?prefix=listings/', { method: 'DELETE' });
+assert.equal(bucketReset.status, 200, 'local R2 test namespace reset must be available');
 const results = [];
 const measurements = {};
+const rows = (result) => result.results?.[0]?.results ?? [];
+async function assertRejectedRoleInsert(runInsert, rowExists) {
+  await assert.rejects(runInsert, (error) => /CHECK constraint failed/i.test(error.message));
+  assert.equal(await rowExists(), false, 'invalid-role row must not exist');
+}
+async function imageSnapshot() {
+  const keys = (await (await request('/fixture/r2-keys?prefix=listings/listing-1/')).json()).keys;
+  const metadata = rows(await sql("SELECT id, object_key FROM listing_images WHERE listing_id='listing-1' ORDER BY id"));
+  return { keys, metadata };
+}
+function assertImageSnapshotUnchanged(before, after) {
+  assert.deepEqual(after.keys, before.keys, 'R2 object key set changed');
+  assert.deepEqual(after.metadata, before.metadata, 'D1 image metadata changed');
+}
 async function check(name, fn) {
   try { await fn(); results.push({ name, result: 'PASS' }); }
   catch (error) { results.push({ name, result: 'FAIL', error: String(error) }); }
@@ -21,10 +45,17 @@ async function check(name, fn) {
 
 await check('health on local Worker', async () => assert.deepEqual(await (await request('/health')).json(), { ok: true }));
 await check('schema enum checks reject invalid role', async () => {
-  try {
-    await sql("INSERT INTO users(id,email,role) VALUES('bad','bad@example.test','SUPERUSER')");
-    assert.fail('invalid role unexpectedly inserted');
-  } catch (error) { assert.notEqual(error.status, 0); }
+  const forbiddenInsert = () => sql("INSERT INTO users(id,email,role) VALUES('bad','bad@example.test','SUPERUSER')");
+  const badRowExists = async () => rows(await sql("SELECT id FROM users WHERE id='bad'")).some((row) => row.id === 'bad');
+  await assertRejectedRoleInsert(forbiddenInsert, badRowExists);
+
+  // Mutation check: an unconstrained SQL table accepts SUPERUSER, and the same assertion must fail.
+  await sql('CREATE TABLE role_enum_mutation_probe(id TEXT PRIMARY KEY, email TEXT NOT NULL, role TEXT NOT NULL)');
+  const mutantInsert = () => sql("INSERT INTO role_enum_mutation_probe(id,email,role) VALUES('mutant','mutant@example.test','SUPERUSER')");
+  const mutantRowExists = async () => rows(await sql("SELECT id FROM role_enum_mutation_probe WHERE id='mutant'")).some((row) => row.id === 'mutant');
+  await assert.rejects(assertRejectedRoleInsert(mutantInsert, mutantRowExists), /Missing expected rejection/);
+  assert.equal(await mutantRowExists(), true, 'mutation probe must demonstrate that SQL accepted the forbidden role');
+  await sql('DROP TABLE role_enum_mutation_probe');
 });
 await check('JWT cookie semantics and revalidated OWNER', async () => {
   const session = await post('/auth/session', { userId: 'owner-1' });
@@ -112,9 +143,23 @@ await check('R2 put plus D1 metadata retains ordered public-safe fields', async 
   imageIds = [a.id, b.id];
 });
 await check('R2 write is compensated after injected D1 insert failure', async () => {
+  const before = await imageSnapshot();
   const failed = await post('/images', { listingId: 'listing-1', bytes, contentType: 'image/jpeg', position: 4, failDb: true }, auth);
   assert.equal(failed.status, 500);
   assert.match(await failed.text(), /injected D1 insert failure/);
+  assertImageSnapshotUnchanged(before, await imageSnapshot());
+
+  // Mutation check: skip R2 cleanup locally and prove the same assertion detects the orphan.
+  const mutantFailure = await post('/images', { listingId: 'listing-1', bytes, contentType: 'image/jpeg', position: 4, failDb: true, mutateNoCleanup: true }, auth);
+  assert.equal(mutantFailure.status, 500);
+  const leaked = await imageSnapshot();
+  assert.deepEqual(leaked.metadata, before.metadata, 'failed D1 insert must leave no metadata row');
+  const orphanKeys = leaked.keys.filter((key) => !before.keys.includes(key));
+  assert.equal(orphanKeys.length, 1, 'no-cleanup mutation should leave exactly one detectable R2 orphan');
+  await assert.rejects(Promise.resolve().then(() => assertImageSnapshotUnchanged(before, leaked)), /R2 object key set changed/);
+  const cleanup = await request('/fixture/r2-object', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: orphanKeys[0] }) });
+  assert.equal(cleanup.status, 200);
+  assertImageSnapshotUnchanged(before, await imageSnapshot());
 });
 await check('image ownership is enforced before R2 mutation', async () => {
   const outsider = (await (await post('/auth/session', { userId: 'owner-2' })).json()).token;
@@ -163,5 +208,5 @@ await check('successful R2 delete compacts image positions', async () => {
   assert.doesNotMatch(output, /\"position\":1/);
 });
 
-console.log(JSON.stringify({ total: results.length, passed: results.filter((r) => r.result === 'PASS').length, failed: results.filter((r) => r.result === 'FAIL').length, measurements, results }, null, 2));
+console.log(JSON.stringify({ runtime: { node: process.version, wrangler: wranglerVersion, workerd: workerdVersion, compatibilityDate: '2026-10-06', bindings: 'local D1/R2; synthetic records only' }, total: results.length, passed: results.filter((r) => r.result === 'PASS').length, failed: results.filter((r) => r.result === 'FAIL').length, measurements, results }, null, 2));
 if (results.some((r) => r.result === 'FAIL')) process.exitCode = 1;
