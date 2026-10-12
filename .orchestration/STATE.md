@@ -70,7 +70,8 @@ Binding findings and exit criteria are in:
 
 ## REWORK-1 publication boundary
 
-- Artifact A: `e367a9790070b8ecd905037c16e660d9043d8fc8`.
+- Superseded prepublication candidate: `e367a9790070b8ecd905037c16e660d9043d8fc8` (retained unchanged; async bcrypt timing text was stale).
+- Immutable Artifact A for External Independent Critic: `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1`.
 - External-review PR: `https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/6` (open; not merged).
 - Artifact A is an immutable descendant of canonical `main` `452d764` and contains the integrated research, tests and review evidence.
 - Pre-Critic is green for external review only; no task/product PASS is claimed. H1/H2/H3/H4/H6 remain unresolved; H5 is narrowly rejected for source bcryptjs cost-12 on Workers Free based on qualified local proxy evidence.
@@ -78,6 +79,6 @@ Binding findings and exit criteria are in:
 
 ## Next action
 
-Wait for External Independent Critic to review exact Artifact A `e367a9790070b8ecd905037c16e660d9043d8fc8` and the evidence package in this boundary commit. Do not start the next migration increment before external PASS.
+Wait for External Independent Critic to review exact Artifact A `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1` and the evidence package in this boundary commit. Do not start the next migration increment before external PASS.
 
 Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.

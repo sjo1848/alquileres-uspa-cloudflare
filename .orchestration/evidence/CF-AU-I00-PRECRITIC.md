@@ -3,7 +3,7 @@
 Candidate: REWORK-1 discovery/feasibility evidence package.
 Gate status: `PASS` for publication to External Independent Critic only. This does not accept the migration or override unresolved hypotheses.
 
-Exact immutable Artifact A SHA is recorded in the publication boundary commit after finalizing this candidate.
+Immutable Artifact A: `1081b3a4170e84ea7cd0dc1221d6ef96e37747e1` (commit `research: reconcile final CF-AU-I00 evidence`). Earlier candidate `e367a9790070b8ecd905037c16e660d9043d8fc8` is retained unchanged but superseded after the independent cost spot check found timing text drift.
 
 ## Contract and scope
 
