@@ -84,8 +84,17 @@ Binding findings and exit criteria are in:
 - No Human Gate or technical blocker. Codex may autonomously repair A4-F1 under existing CF-AU-I00 and publish immutable A5/next boundary for external review. No feature migration, source changes, merge, production, paid resources, or Runtime Watch implementation.
 - H1/H2/H3/H4/H6 remain UNRESOLVED, H5 narrow source bcrypt cost-12 Workers Free rejection only; I13 Product Acceptance pending.
 
+## External Independent Critic — Artifact A5 PASS (2026-10-12)
+
+- Immutable reviewed Artifact A5 `2b09ee585f24102b03bd6d6b7f44d6c5f61ad053`, tag `CF-AU-I00-Artifact-A5`; PR #6 boundary `7c6db892822e0fdd069d302d45d1c0f2451be043` remains OPEN/unmerged.
+- **PASS of the bounded CF-AU-I00 feasibility/discovery contract only**. Exact review: `.orchestration/reviews/CF-AU-I00-ARTIFACT-A5-PASS.md`; A4-F1 timing-provenance correction is closed and previous test/compensation findings remain closed.
+- No executable change or test/audit rerun between A4/A5. A4's 17/17 local synthetic checks and 0 npm vulnerabilities are reported historic evidence, **not new Controller runtime tests**.
+- H1/H2/H3/H4/H6 remain UNRESOLVED and H5 remains narrowly REJECTED for source bcryptjs cost-12 Workers Free. No Cloudflare Free operational or product-parity approval is implied.
+- **Integration only authorized**: Codex may merge PR #6 preserving A5/A4/A3 ancestry, verify exact artifact and verdict reachability on `main`, persist closeout and close Issue #4. Never squash/rebase/cherry-pick only boundary. Do not implement next migration/runtime watch increment as part of this authority.
+- **Human Gate after integration**: material zero-cost architecture/topology decision following H5 negative result and I13 Product Acceptance before migration. No paid, production, real-data or security weakening authorized.
+
 ## Next action
 
-Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A4-CRITIC.md`, repair only A4-F1 under CF-AU-I00, preserve A3/A4 ancestry in PR #6, document exact unchanged test provenance, and publish immutable Artifact A5 for External Independent Critic.
+Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A5-PASS.md`, integrate technically approved PR #6 by preserving A5/A4/A3 ancestry, verify result, close I00/Issue #4, and stop at the architecture/I13 Human Gate. No new migration increment or paid/production actions.
 
 Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
