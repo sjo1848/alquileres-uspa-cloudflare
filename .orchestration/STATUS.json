@@ -2,23 +2,23 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "DISCOVERY_FEASIBILITY",
-  "runtime_status": "PENDING_EXTERNAL_REVIEW",
-  "resume_authorized": false,
+  "runtime_status": "READY_TO_RESUME",
+  "resume_authorized": true,
   "active_task": "CF-AU-I00",
   "last_completed_task": "CF-AU-I00",
   "last_completed_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
   "work_branch": "rework/cf-au-i00-rework-1",
-  "next_action": "AWAIT_EXTERNAL_INDEPENDENT_CRITIC_REVIEW_OF_ARTIFACT_A5",
-  "stop_reason": "EXTERNAL_INDEPENDENT_CRITIC_REVIEW",
+  "next_action": "INTEGRATE_APPROVED_CF_AU_I00_PR_6_WITH_HISTORY_PRESERVING_MERGE_VERIFY_SHA_AND_STOP_FOR_ARCHITECTURE_HUMAN_GATE",
+  "stop_reason": null,
   "event": {
-    "seq": 9,
-    "id": "CF-AU-I00@ARTIFACT-A5-EXTERNAL-REVIEW",
-    "type": "ARTIFACT_PUBLISHED_FOR_EXTERNAL_REVIEW"
+    "seq": 10,
+    "id": "CF-AU-I00@ARTIFACT-A5-EXTERNAL-PASS",
+    "type": "EXTERNAL_REVIEW_PASS"
   },
   "external_review": {
-    "required": true,
-    "last_audited_head": "8e707eadca25e47827b6bc81adaa4f272192af2e",
-    "last_verdict": "REWORK-3",
+    "required": false,
+    "last_audited_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
+    "last_verdict": "PASS",
     "artifact_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
     "artifact_tag": "CF-AU-I00-Artifact-A5",
     "pending_verdict": null

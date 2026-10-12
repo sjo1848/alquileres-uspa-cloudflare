@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `PENDING_EXTERNAL_REVIEW`
+State: `READY_TO_RESUME`
 Phase: `DISCOVERY / FEASIBILITY`
 Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
 
@@ -84,19 +84,17 @@ Binding findings and exit criteria are in:
 - No Human Gate or technical blocker. Codex may autonomously repair A4-F1 under existing CF-AU-I00 and publish immutable A5/next boundary for external review. No feature migration, source changes, merge, production, paid resources, or Runtime Watch implementation.
 - H1/H2/H3/H4/H6 remain UNRESOLVED, H5 narrow source bcrypt cost-12 Workers Free rejection only; I13 Product Acceptance pending.
 
-## External Independent Critic — Artifact A4 REWORK-3 disposition
+## External Independent Critic — Artifact A5 PASS (2026-10-12)
 
-- A4-F1 repaired under the existing CF-AU-I00 contract: the stale trailing cost-critic note no longer presents intermediate timing values as current. It explicitly withdraws the 539 ms / 645/552 ms attribution and points to final immutable A4 evidence (624/642 ms async, 613 ms sync local elapsed proxy).
-- No test, cost calculation, application code or dependency changed. A4 test/evidence blobs are recorded and unchanged; the External Critic explicitly instructed not to repeat them for this documentation-only correction.
-- Independent cost-provenance verification is persisted in `.orchestration/evidence/critics/a5-cost-provenance-critic.md`; Integration Review and Pre-Critic were refreshed for the exact evidence correction.
-- No Human Gate or blocker. No source changes, product migration, real data, production deployment, paid resources or merge.
-
-## External Independent Critic — Artifact A5 (2026-10-12)
-
-- Exact immutable Artifact A5 commit: `2b09ee585f24102b03bd6d6b7f44d6c5f61ad053`; annotated tag `CF-AU-I00-Artifact-A5` dereferences to this SHA.
-- Artifact A4 `8e707eadca25e47827b6bc81adaa4f272192af2e`, A3, and canonical main A4 review event are preserved in PR #6 ancestry.
-- Final result provenance is unchanged from A4: 17/17 local synthetic checks, 624/642 ms async and 613 ms sync bcrypt elapsed proxy. No test/cost/audit rerun was needed or claimed.
+- Immutable reviewed Artifact A5 `2b09ee585f24102b03bd6d6b7f44d6c5f61ad053`, tag `CF-AU-I00-Artifact-A5`; PR #6 boundary `7c6db892822e0fdd069d302d45d1c0f2451be043` remains OPEN/unmerged.
+- **PASS of the bounded CF-AU-I00 feasibility/discovery contract only**. Exact review: `.orchestration/reviews/CF-AU-I00-ARTIFACT-A5-PASS.md`; A4-F1 timing-provenance correction is closed and previous test/compensation findings remain closed.
+- No executable change or test/audit rerun between A4/A5. A4's 17/17 local synthetic checks and 0 npm vulnerabilities are reported historic evidence, **not new Controller runtime tests**.
+- H1/H2/H3/H4/H6 remain UNRESOLVED and H5 remains narrowly REJECTED for source bcryptjs cost-12 Workers Free. No Cloudflare Free operational or product-parity approval is implied.
+- **Integration only authorized**: Codex may merge PR #6 preserving A5/A4/A3 ancestry, verify exact artifact and verdict reachability on `main`, persist closeout and close Issue #4. Never squash/rebase/cherry-pick only boundary. Do not implement next migration/runtime watch increment as part of this authority.
+- **Human Gate after integration**: material zero-cost architecture/topology decision following H5 negative result and I13 Product Acceptance before migration. No paid, production, real-data or security weakening authorized.
 
 ## Next action
 
-Await External Independent Critic review of exact Artifact A5 `2b09ee585f24102b03bd6d6b7f44d6c5f61ad053` (tag `CF-AU-I00-Artifact-A5`). Do not merge PR #6 or start another increment before the external verdict and any required gates.
+Codex must consume `.orchestration/reviews/CF-AU-I00-ARTIFACT-A5-PASS.md`, integrate technically approved PR #6 by preserving A5/A4/A3 ancestry, verify result, close I00/Issue #4, and stop at the architecture/I13 Human Gate. No new migration increment or paid/production actions.
+
+Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
