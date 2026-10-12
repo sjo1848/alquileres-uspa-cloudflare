@@ -7,25 +7,25 @@
   "active_task": "CF-AU-I01-P0P1",
   "last_completed_task": "CF-AU-I00",
   "last_completed_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
-  "work_branch": null,
-  "next_action": "EXECUTE_LOCAL_CF_AU_I01_P0P1_BASELINE_AUTH_COMPATIBILITY_AND_PAID_COST_MODEL_UNDER_.orchestration/contracts/CF-AU-I01-P0P1.md",
+  "work_branch": "work/cf-au-i01-p0p1",
+  "next_action": "APPLY_CF_AU_I01_P0P1_ARTIFACT_A2_REWORK_1_FROM_.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-CRITIC.md",
   "stop_reason": null,
   "event": {
-    "seq": 12,
-    "id": "CF-AU-I01@BOUNDED-LOCAL-RESEARCH-START",
-    "type": "HUMAN_ARCHITECTURE_DIRECTION_CONTROLLER_TASK_AUTHORIZATION"
+    "seq": 17,
+    "id": "CF-AU-I01-P0P1@ARTIFACT-A2-EXTERNAL-REWORK-1",
+    "type": "EXTERNAL_REVIEW_REWORK"
   },
   "external_review": {
     "required": false,
-    "last_audited_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
-    "last_verdict": "PASS",
-    "artifact_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
-    "artifact_tag": "CF-AU-I00-Artifact-A5",
+    "last_audited_head": "f9d8bfa9afb39555649365596be467d88f18d7a8",
+    "last_verdict": "REWORK-1",
+    "artifact_head": "f9d8bfa9afb39555649365596be467d88f18d7a8",
+    "artifact_tag": "CF-AU-I01-P0P1-Artifact-A2",
     "pending_verdict": null
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/6",
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/8",
   "integration_commit": "d329a8d4395fb68769bfeaea1cdad19bb5378d1e",
   "issue_4": "CLOSED"
 }
