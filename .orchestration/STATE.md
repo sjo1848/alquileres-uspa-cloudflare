@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `PENDING_EXTERNAL_REVIEW`
+State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
 Active task: `CF-AU-I01-P0P1 — local baseline, synthetic auth feasibility and cost model`
 
@@ -110,7 +110,7 @@ CF-AU-I00 remains technically closed with a bounded research PASS. The Human has
 
 Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
 
-## CF-AU-I01-P0P1 — Artifact A1 awaiting External Independent Critic (2026-10-12)
+## CF-AU-I01-P0P1 — Artifact A1 external-review REWORK (2026-10-12)
 
 - Bounded task contract: `.orchestration/contracts/CF-AU-I01-P0P1.md`; authorization is local/synthetic P0 source baseline + P1 auth feasibility and Workers Paid cost sensitivity only.
 - Canonical lab `main` at task start: `84930c4ba59d133e40099aebb0edd0a8584fb6ab`. Exact source repository `main` checked through GitHub: `267c531f3e3d5869240894063d3a194fa1f9680b`; no API semantic drift from accepted I13 candidate found. Source repo remains unchanged. Its I13 `STATUS.json` discrepancy is a separate reconciliation prerequisite before migration.
@@ -120,4 +120,6 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Internal technical/auth critic and cost-method critic closed their bounded findings. Integration Review, all-invariant matrix and Pre-Critic publication gate are included. Pre-Critic PASS means the evidence package is ready for external review only; it is not a feasibility/product/security PASS.
 - Preserved unresolved limits: full `class-validator` email parity; malformed percent URI source 500; account-enumeration timing; logout does not revoke issued bearer JWT; provider-billed CPU and burst traffic unmeasured; D1 production row counts and R2 lifecycle not exercised; full API migration unimplemented; source I13 canonical status remains stale.
 - No paid plan/billing, remote Cloudflare resource, source write, production, real customer data, migration feature, P2/P3, or Runtime Watch was started.
-- **Canonical next action:** External Independent Critic audits exact `CF-AU-I01-P0P1-Artifact-A1` (`db0f18f062635d687e72ced0d0d405b9faa351ab`) and issues PASS/REWORK/BLOCKED/HUMAN_GATE. `resume_authorized=false` until that verdict is recorded. Do not merge or begin another task before review.
+- GitHub automated review of exact Artifact A1 (reviewed commit `db0f18f062635d687e72ced0d0d405b9faa351ab`) posted bounded rework findings at PR #8 discussion IDs `4252024073`, `4252024082`, `4252024089`: make the state boundary visible with the reviewed package, refresh the independent cost critic report against final timings, and include/exclude explicitly the optional DO SQLite row-read/write meters. No Human Gate or material blocker was classified.
+- **Authorized routine rework:** continue under the same CF-AU-I01-P0P1 contract. Preserve A1 tag/commit ancestry, close all three findings, rerun cost calculations, independently re-review changed evidence, repeat Integration Review and Pre-Critic, then publish immutable Artifact A2 and a new external-review boundary. No migration, merge, paid service, remote resource, production, real data or source write.
+- **Canonical next action:** finish the three bounded review findings on `work/cf-au-i01-p0p1`, update the critic evidence against final measurements, and prepare Artifact A2 for external review.
