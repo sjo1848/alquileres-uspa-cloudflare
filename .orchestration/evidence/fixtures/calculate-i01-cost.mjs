@@ -134,6 +134,21 @@ const result = {
       ...calculate(scenario, perLoginMs),
     })),
   })),
+  optionalDurableObjects: {
+    status: "UNRESOLVED_NOT_INCLUDED_IN_SCENARIO_TOTALS",
+    pricingObservedAt: "2026-10-12",
+    storageBackend: "SQLite-backed",
+    meters: {
+      requests: { includedPerMonth: 1_000_000, usdPerAdditionalMillion: 0.15 },
+      activeDuration: { includedGbSecondsPerMonth: 400_000, usdPerAdditionalMillionGbSeconds: 12.5, allocatedMemoryMb: 128 },
+      rowsRead: { includedPerMonth: 25_000_000_000, usdPerAdditionalMillion: 0.001 },
+      rowsWritten: { includedPerMonth: 50_000_000, usdPerAdditionalMillion: 1.0 },
+      storedData: { includedGbMonth: 5, usdPerAdditionalGbMonth: 0.2 },
+    },
+    unresolvedBecause: "No DO actor/lock topology or monthly request count, active GB-s, SQLite rows-read/written, or storage volume is established. If introduced, these charges are additive to Workers and D1/R2 scenario use; no DO cost is assumed to be zero.",
+    billingNotes: ["Inactive objects do not incur duration until active; idle objects not eligible for hibernation remain billable.", "Billable excess for each dimension rounds up to the provider billing unit.", "Deletes count as SQLite rows written; key-value-style operations use hidden SQLite rows."],
+    source: "https://developers.cloudflare.com/durable-objects/platform/pricing/",
+  },
   caveats: [
     "Not a quote, forecast, or authorization to buy/enable billing; traffic and data counts are hypothetical.",
     "Workers Static Assets are excluded from Worker request count; all listed dynamic routes, including API-mediated image reads, invoke a Worker.",
@@ -143,7 +158,7 @@ const result = {
     "R2 operation billing rounds total operations up to whole million-operation units before included units are subtracted; storage is rounded to whole GB-month in this model.",
     "R2 deletes are treated as free; retries, object listing, metadata HEAD, multipart and account-shared usage are omitted.",
     "No account hard spend ceiling or automatic hard cap is assumed. Workers per-invocation CPU limits are not monthly bill caps.",
-    "Durable Objects are excluded from base costs: current source contract is transaction-scoped per-listing serialization; no DO necessity/proof exists in this task.",
+    "Durable Objects are excluded from scenario totals and explicitly unresolved: their request, active duration, SQLite row-read/write and storage meters are listed separately; no DO workload or necessity/proof exists in this task.",
   ],
 };
 

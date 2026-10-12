@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
+State: `PENDING_EXTERNAL_REVIEW`
 Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
 Active task: `CF-AU-I01-P0P1 — local baseline, synthetic auth feasibility and cost model`
 
@@ -122,4 +122,11 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - No paid plan/billing, remote Cloudflare resource, source write, production, real customer data, migration feature, P2/P3, or Runtime Watch was started.
 - GitHub automated review of exact Artifact A1 (reviewed commit `db0f18f062635d687e72ced0d0d405b9faa351ab`) posted bounded rework findings at PR #8 discussion IDs `4252024073`, `4252024082`, `4252024089`: make the state boundary visible with the reviewed package, refresh the independent cost critic report against final timings, and include/exclude explicitly the optional DO SQLite row-read/write meters. No Human Gate or material blocker was classified.
 - **Authorized routine rework:** continue under the same CF-AU-I01-P0P1 contract. Preserve A1 tag/commit ancestry, close all three findings, rerun cost calculations, independently re-review changed evidence, repeat Integration Review and Pre-Critic, then publish immutable Artifact A2 and a new external-review boundary. No migration, merge, paid service, remote resource, production, real data or source write.
-- **Canonical next action:** finish the three bounded review findings on `work/cf-au-i01-p0p1`, update the critic evidence against final measurements, and prepare Artifact A2 for external review.
+- The A1 rework corrections are now included in the A2 candidate: refreshed independent cost-critic report and final timing alignment; official optional SQLite DO rows-read/write meters with DO total still explicitly unresolved; and in-tag publication stop state.
+
+## CF-AU-I01-P0P1 — Artifact A2 publication state (2026-10-12)
+
+- Artifact A1 commit/tag remains immutable and reachable. All three A1 automated-review findings are resolved in the A2 candidate as recorded in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A1-AUTOMATED-REVIEW-REWORK.md`.
+- The tagged Artifact A2 commit itself contains `runtime_status=PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and `artifact_tag=CF-AU-I01-P0P1-Artifact-A2`. Its exact commit SHA is pinned in the immediately following publication-boundary commit; no self-referential hash is written into the artifact commit.
+- PR #8 remains the open, unmerged review surface. The reviewer is asked to inspect the exact A2 tag and the following commit that pins its SHA.
+- **Canonical next action:** await External Independent Critic on Artifact A2. No further work is authorized until that review verdict; do not merge or start another task.
