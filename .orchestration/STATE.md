@@ -127,6 +127,6 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 ## CF-AU-I01-P0P1 — Artifact A2 publication state (2026-10-12)
 
 - Artifact A1 commit/tag remains immutable and reachable. All three A1 automated-review findings are resolved in the A2 candidate as recorded in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A1-AUTOMATED-REVIEW-REWORK.md`.
-- The tagged Artifact A2 commit itself contains `runtime_status=PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and `artifact_tag=CF-AU-I01-P0P1-Artifact-A2`. Its exact commit SHA is pinned in the immediately following publication-boundary commit; no self-referential hash is written into the artifact commit.
-- PR #8 remains the open, unmerged review surface. The reviewer is asked to inspect the exact A2 tag and the following commit that pins its SHA.
+- Immutable Artifact A2: commit `f9d8bfa9afb39555649365596be467d88f18d7a8`, annotated tag `CF-AU-I01-P0P1-Artifact-A2`. The artifact commit itself contains `runtime_status=PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and the known tag; the exact SHA is pinned in the following boundary commit.
+- PR #8 remains the open, unmerged review surface. Review is requested on exact commit `f9d8bfa9afb39555649365596be467d88f18d7a8` and tag `CF-AU-I01-P0P1-Artifact-A2`; the boundary commit records the SHA.
 - **Canonical next action:** await External Independent Critic on Artifact A2. No further work is authorized until that review verdict; do not merge or start another task.

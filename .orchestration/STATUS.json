@@ -8,18 +8,18 @@
   "last_completed_task": "CF-AU-I00",
   "last_completed_head": "2b09ee585f24102b03bd6d6b7f44d6c5f61ad053",
   "work_branch": "work/cf-au-i01-p0p1",
-  "next_action": "WAIT_FOR_EXTERNAL_INDEPENDENT_CRITIC_VERDICT_ON_TAG_CF-AU-I01-P0P1-Artifact-A2;_EXACT_SHA_PINNED_IN_FOLLOWING_BOUNDARY_COMMIT",
+  "next_action": "WAIT_FOR_EXTERNAL_INDEPENDENT_CRITIC_VERDICT_ON_ARTIFACT_A2_SHA_f9d8bfa9afb39555649365596be467d88f18d7a8_AND_TAG_CF-AU-I01-P0P1-Artifact-A2",
   "stop_reason": "EXTERNAL_INDEPENDENT_CRITIC_REVIEW",
   "event": {
-    "seq": 15,
-    "id": "CF-AU-I01-P0P1@ARTIFACT-A2-TAGGED-PENDING-EXTERNAL-REVIEW",
-    "type": "IMMUTABLE_ARTIFACT_EXTERNAL_REVIEW_BOUNDARY"
+    "seq": 16,
+    "id": "CF-AU-I01-P0P1@ARTIFACT-A2-SHA-PINNED-EXTERNAL-REVIEW-BOUNDARY",
+    "type": "EXTERNAL_REVIEW_BOUNDARY_SHA_PINNED"
   },
   "external_review": {
     "required": true,
     "last_audited_head": "db0f18f062635d687e72ced0d0d405b9faa351ab",
     "last_verdict": "REWORK",
-    "artifact_head": null,
+    "artifact_head": "f9d8bfa9afb39555649365596be467d88f18d7a8",
     "artifact_tag": "CF-AU-I01-P0P1-Artifact-A2",
     "pending_verdict": "PENDING_EXTERNAL_REVIEW"
   },
