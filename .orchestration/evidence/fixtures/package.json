@@ -1,0 +1,19 @@
+{
+  "name": "cf-au-i00-rework-proof",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node run-local-fixture.mjs",
+    "test": "node rework1-tests.mjs",
+    "cost": "node calculate-cost.mjs"
+  },
+  "devDependencies": {
+    "bcryptjs": "3.0.2",
+    "jsonwebtoken": "9.0.2",
+    "wrangler": "4.149.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261006.1": true
+  }
+}

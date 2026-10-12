@@ -1,0 +1,127 @@
+{
+  "observedAt": "2026-10-12",
+  "formulas": {
+    "totalWorkerRequestsPerDay": "catalog + detail + owner/admin + login + contacts + catalog image GETs + detail image GETs",
+    "imageGetsPerDay": "catalog * 1 + detail * 3; all image bytes are served through Worker to preserve source API-mediated delivery",
+    "d1ReadsPerDay": "catalog * 30 + detail * 8 + owner/admin * 20 + login * 1 + contacts * 1 + image GETs * 2 (image metadata row + joined listing visibility row; minimum model)",
+    "d1WritesPerDay": "listing edits * 2 (listing + audit) + contact submissions * 1 + image puts * 2 (metadata + position index); excludes unmeasured additional index amplification",
+    "r2ClassAPerMonth": "ceil(image puts/day * 30 * 1.01) (one put/upload and 1% replacement puts; no multipart because source cap is 5 MiB)",
+    "r2ClassBPerMonth": "image GETs/day * 30",
+    "r2StorageGbMonth": "inventory image count * 0.4 MB / 1000; decimal GB"
+  },
+  "limits": {
+    "workerRequestsPerDay": 100000,
+    "workerCpuMsPerRequest": 10,
+    "d1ReadsPerDay": 5000000,
+    "d1WritesPerDay": 100000,
+    "d1DbMb": 500,
+    "d1AccountGb": 5,
+    "r2ClassAPerMonth": 1000000,
+    "r2ClassBPerMonth": 10000000,
+    "r2StorageGbMonth": 10
+  },
+  "scenarios": [
+    {
+      "name": "lab-demo",
+      "driversPerDay": {
+        "name": "lab-demo",
+        "catalog": 50,
+        "detail": 30,
+        "ownerAdmin": 20,
+        "login": 5,
+        "contacts": 2,
+        "edits": 1,
+        "imagePuts": 1,
+        "inventoryImages": 100
+      },
+      "apiWorkerRequestsPerDay": 107,
+      "mediatedPublicImageWorkerRequestsPerDay": 140,
+      "totalWorkerRequestsPerDay": 247,
+      "workerRequestHeadroomPct": 99.753,
+      "d1ReadsPerDay": 2427,
+      "d1ReadHeadroomPct": 99.95146,
+      "d1WritesPerDay": 6,
+      "d1WriteHeadroomPct": 99.994,
+      "r2ClassAPerMonth": 31,
+      "r2ClassAHeadroomPct": 99.9969,
+      "r2ClassBPerMonth": 4200,
+      "r2ClassBHeadroomPct": 99.958,
+      "r2StorageGbMonth": 0.04,
+      "r2StorageHeadroomPct": 99.6
+    },
+    {
+      "name": "early-adoption",
+      "driversPerDay": {
+        "name": "early-adoption",
+        "catalog": 2000,
+        "detail": 1000,
+        "ownerAdmin": 500,
+        "login": 100,
+        "contacts": 50,
+        "edits": 30,
+        "imagePuts": 30,
+        "inventoryImages": 2000
+      },
+      "apiWorkerRequestsPerDay": 3650,
+      "mediatedPublicImageWorkerRequestsPerDay": 5000,
+      "totalWorkerRequestsPerDay": 8650,
+      "workerRequestHeadroomPct": 91.35,
+      "d1ReadsPerDay": 88150,
+      "d1ReadHeadroomPct": 98.237,
+      "d1WritesPerDay": 170,
+      "d1WriteHeadroomPct": 99.83,
+      "r2ClassAPerMonth": 909,
+      "r2ClassAHeadroomPct": 99.9091,
+      "r2ClassBPerMonth": 150000,
+      "r2ClassBHeadroomPct": 98.5,
+      "r2StorageGbMonth": 0.8,
+      "r2StorageHeadroomPct": 92
+    },
+    {
+      "name": "growth-crossover",
+      "driversPerDay": {
+        "name": "growth-crossover",
+        "catalog": 25000,
+        "detail": 15000,
+        "ownerAdmin": 10000,
+        "login": 2000,
+        "contacts": 500,
+        "edits": 375,
+        "imagePuts": 375,
+        "inventoryImages": 8000
+      },
+      "apiWorkerRequestsPerDay": 52500,
+      "mediatedPublicImageWorkerRequestsPerDay": 70000,
+      "totalWorkerRequestsPerDay": 122500,
+      "workerRequestHeadroomPct": -22.500000000000007,
+      "d1ReadsPerDay": 1212500,
+      "d1ReadHeadroomPct": 75.75,
+      "d1WritesPerDay": 2000,
+      "d1WriteHeadroomPct": 98,
+      "r2ClassAPerMonth": 11363,
+      "r2ClassAHeadroomPct": 98.8637,
+      "r2ClassBPerMonth": 2100000,
+      "r2ClassBHeadroomPct": 79,
+      "r2StorageGbMonth": 3.2,
+      "r2StorageHeadroomPct": 68
+    }
+  ],
+  "databaseSizing": {
+    "assumedRecords": {
+      "listings": 1000,
+      "contacts": 50000,
+      "adminAuditLogs": 50000,
+      "users": 100,
+      "listingImages": 3000
+    },
+    "assumedRawMb": 159.6,
+    "planningFactor": 2,
+    "plannedMb": 319.2,
+    "headroomMbPerDatabase": 180.8
+  },
+  "falsification": {
+    "workerGrowthCrossoverExceeded": true,
+    "workerGrowthExcessPerDay": 22500,
+    "d1FreeDailyLimitBehavior": "exceeding daily read/write quotas rejects D1 queries until daily reset; no automatic paid overage"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "cf-au-i00-rework-proof",
+  "main": "rework1-worker.js",
+  "compatibility_date": "2026-10-06",
+  "limits": {
+    "cpu_ms": 10
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cf-au-i00-local",
+      "database_id": "00000000-0000-0000-0000-000000000001"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "cf-au-i00-local-images"
+    }
+  ]
+}

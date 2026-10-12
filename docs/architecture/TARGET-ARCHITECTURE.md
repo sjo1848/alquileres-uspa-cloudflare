@@ -70,3 +70,7 @@ The hypothesis is supported only if:
 - operational complexity is lower or at least justified.
 
 If evidence contradicts any of these, revise the target rather than forcing the source application into the hypothesis.
+
+## REWORK-1 feasibility evidence — 2026-10-12
+
+The full target remains `UNRESOLVED`. Local Workerd plus D1/R2 fixtures demonstrated selected JWT/cookie/role and image lifecycle paths, but did not port Hono routes or the source product. The source bcryptjs cost-12 synchronous comparison took 613 ms of local elapsed time in the final recorded run; this is a CPU-bound local proxy, not Cloudflare CPU telemetry. It is about 61.3 times the documented 10 ms Workers Free per-request CPU allowance and supports rejection of the current source-auth, zero-cost Free path. Preserve the work factor and auth meaning. The source uses PostgreSQL per-listing advisory locks; the D1 batch/two-phase reorder fixture does not establish a concurrent-safe equivalent. No broad migration implementation is authorized by these findings.

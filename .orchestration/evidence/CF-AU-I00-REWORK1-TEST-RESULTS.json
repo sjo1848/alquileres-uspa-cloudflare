@@ -1,0 +1,83 @@
+{
+  "total": 17,
+  "passed": 17,
+  "failed": 0,
+  "measurements": {
+    "bcryptCost12Compare": {
+      "asyncCorrectPasswordElapsedMs": 513,
+      "asyncWrongPasswordElapsedMs": 592,
+      "syncCompareElapsedMs": 539,
+      "workerCpuBudgetConfiguredMs": 10
+    }
+  },
+  "results": [
+    {
+      "name": "health on local Worker",
+      "result": "PASS"
+    },
+    {
+      "name": "schema enum checks reject invalid role",
+      "result": "PASS"
+    },
+    {
+      "name": "JWT cookie semantics and revalidated OWNER",
+      "result": "PASS"
+    },
+    {
+      "name": "JWT rejects tampering, expiry and malformed input",
+      "result": "PASS"
+    },
+    {
+      "name": "ADMIN role guard and OWNER denial",
+      "result": "PASS"
+    },
+    {
+      "name": "OWNER isolation hides foreign listing",
+      "result": "PASS"
+    },
+    {
+      "name": "bcryptjs source cost-12 hash verify reveals Free CPU incompatibility",
+      "result": "PASS"
+    },
+    {
+      "name": "source-compatible JWT from jsonwebtoken verifies in Worker",
+      "result": "PASS"
+    },
+    {
+      "name": "Bearer takes precedence over cookie",
+      "result": "PASS"
+    },
+    {
+      "name": "R2 put plus D1 metadata retains ordered public-safe fields",
+      "result": "PASS"
+    },
+    {
+      "name": "R2 write is compensated after injected D1 insert failure",
+      "result": "PASS"
+    },
+    {
+      "name": "image ownership is enforced before R2 mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "R2 public delivery requires approved and published listing",
+      "result": "PASS"
+    },
+    {
+      "name": "D1 reorder keeps unique contiguous image positions",
+      "result": "PASS"
+    },
+    {
+      "name": "R2 delete is denied for published listing before object mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "R2 delete is compensated after injected D1 delete failure",
+      "result": "PASS"
+    },
+    {
+      "name": "successful R2 delete compacts image positions",
+      "result": "PASS"
+    }
+  ]
+}
