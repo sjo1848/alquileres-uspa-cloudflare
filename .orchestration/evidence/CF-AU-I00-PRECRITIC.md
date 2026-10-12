@@ -3,6 +3,8 @@
 Candidate: REWORK-1 discovery/feasibility evidence package.
 Gate status: `PASS` for publication to External Independent Critic only. This does not accept the migration or override unresolved hypotheses.
 
+Immutable Artifact A: `e367a9790070b8ecd905037c16e660d9043d8fc8` (commit `research: complete CF-AU-I00 REWORK-1 evidence`).
+
 ## Contract and scope
 
 - [x] Active authorized contract exists: `.orchestration/contracts/CF-AU-I00.md`.

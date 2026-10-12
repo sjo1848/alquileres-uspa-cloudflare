@@ -1,8 +1,9 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
+State: `PENDING_EXTERNAL_REVIEW`
 Phase: `DISCOVERY / FEASIBILITY`
 Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
+Resume authorized: `false` (awaiting External Independent Critic)
 
 ## Source baseline
 
@@ -67,8 +68,15 @@ Binding findings and exit criteria are in:
 
 `.orchestration/reviews/CF-AU-I00-REWORK-1.md`
 
+## REWORK-1 publication boundary
+
+- Artifact A: `e367a9790070b8ecd905037c16e660d9043d8fc8`.
+- Artifact A is an immutable descendant of canonical `main` `452d764` and contains the integrated research, tests and review evidence.
+- Pre-Critic is green for external review only; no task/product PASS is claimed. H1/H2/H3/H4/H6 remain unresolved; H5 is narrowly rejected for source bcryptjs cost-12 on Workers Free based on qualified local proxy evidence.
+- Human Gate: none. Blocker: none. I13 Product Acceptance remains pending.
+
 ## Next action
 
-Codex must consume `.orchestration/reviews/CF-AU-I00-REWORK-1.md` directly, execute REWORK-1 autonomously under the existing CF-AU-I00 contract, re-run the mandatory Pre-Critic Gate, and publish a new immutable artifact descendant from current canonical `main` for External Independent Critic.
+Wait for External Independent Critic to review exact Artifact A `e367a9790070b8ecd905037c16e660d9043d8fc8` and the evidence package in this boundary commit. Do not start the next migration increment before external PASS.
 
 Do not start the next migration increment before CF-AU-I00 receives External Independent Critic PASS.
