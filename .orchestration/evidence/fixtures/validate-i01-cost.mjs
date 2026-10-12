@@ -11,6 +11,8 @@ assert.match(result.routeSourceMap.publicImageGet, /public\/listings.*GetObject 
 assert.match(result.routeSourceMap.adminImageGet, /GET \/admin\/listings.*AuthGuard user revalidation.*owner-role lookup.*GetObject Class B/);
 assert.match(result.routeSourceMap.imageDelete, /DELETE \/listings.*AuthGuard user revalidation.*GetObject.*DeleteObject.*compaction/);
 assert.match(result.routeSourceMap.imageReorder, /PATCH \/listings.*AuthGuard user revalidation.*position updates/);
+assert.match(result.routeSourceMap.imageDelete, /GetObject before free DeleteObject/,
+  "pinned source must retain its GetObject-before-delete cost driver");
 
 function validateScenario(scenario) {
   const routes = scenario.routeDrivers;
@@ -22,6 +24,11 @@ function validateScenario(scenario) {
   assert.equal(readsPerRoute.register, 0, `${scenario.name}: register has no source-level read query; keep engine uniqueness work unresolved`);
   assert.ok(readsPerRoute.adminImageGet > readsPerRoute.publicImageGet, `${scenario.name}: admin image role lookup needs its distinct D1 read factor`);
   assert.equal(scenario.assumptions.imageDeletes, routes.imageDelete, `${scenario.name}: delete D1/R2 driver diverges from route count`);
+  assert.equal(scenario.assumptions.imageDeleteAssumptions.r2ClassBGetObjectBeforeFreeDeletePerOperation, 1,
+    `${scenario.name}: pinned source requires one GetObject before each free DeleteObject`);
+  assert.equal(scenario.assumptions.imageDeleteObjectReads,
+    routes.imageDelete * scenario.assumptions.imageDeleteAssumptions.r2ClassBGetObjectBeforeFreeDeletePerOperation,
+    `${scenario.name}: source-bound delete prefetch reads must equal imageDelete route count × GetObject factor`);
   assert.equal(scenario.assumptions.imageReorders, routes.imageReorder, `${scenario.name}: reorder D1 driver diverges from route count`);
   assert.match(scenario.assumptions.ownerAdminRouteDriverScope, /excludes ADMIN image GET and image DELETE\/PATCH reorder/);
   assert.equal(readsPerRoute.publicImageGet, 2, `${scenario.name}: public image read should count image + listing rows`);
@@ -60,14 +67,23 @@ function validateScenario(scenario) {
 
 for (const scenario of result.scenarios) validateScenario(scenario);
 
-// Mutation checks: the guards must reject the exact classes of omission found in A2.
+// Mutation checks: reject source-cost omissions even when the output aggregate is internally coherent.
 const registrationMutation = structuredClone(result.scenarios[0]);
 registrationMutation.routeDrivers.register = 0;
 assert.throws(() => validateScenario(registrationMutation), /nonzero register driver/);
-const deleteMutation = structuredClone(result.scenarios[0]);
+const deleteMutation = structuredClone(result.scenarios.at(-1));
 deleteMutation.assumptions.imageDeleteObjectReads = 0;
-deleteMutation.cpuSensitivity.forEach(point => { point.r2ClassBIncludingDeletePrefetchReads = 0; });
-assert.throws(() => validateScenario(deleteMutation), /read-before-delete omitted/);
+for (const point of deleteMutation.cpuSensitivity) {
+  const imageGets = deleteMutation.routeDrivers.publicImageGet + deleteMutation.routeDrivers.adminImageGet;
+  point.r2ClassBIncludingDeletePrefetchReads = imageGets;
+  point.r2ClassBRoundedForBilling = Math.ceil(imageGets / 1_000_000) * 1_000_000;
+  // The missing prefetch is below the first billable unit in this scenario, so
+  // its existing R2 Class B line item and total legitimately remain unchanged.
+}
+assert.equal(deleteMutation.cpuSensitivity[0].r2ClassBIncludingDeletePrefetchReads,
+  deleteMutation.routeDrivers.publicImageGet + deleteMutation.routeDrivers.adminImageGet,
+  "delete mutant must preserve both ordinary public and ADMIN image GET operations");
+assert.throws(() => validateScenario(deleteMutation), /source-bound delete prefetch reads/);
 const reorderMutation = structuredClone(result.scenarios[0]);
 reorderMutation.assumptions.imageReorders = 0;
 assert.throws(() => validateScenario(reorderMutation), /reorder D1 driver diverges/);
@@ -75,4 +91,4 @@ const adminImageReadMutation = structuredClone(result.scenarios[0]);
 adminImageReadMutation.assumptions.d1RowsReadPerRoute.adminImageGet = adminImageReadMutation.assumptions.d1RowsReadPerRoute.publicImageGet;
 assert.throws(() => validateScenario(adminImageReadMutation), /admin image role lookup needs its distinct/);
 
-console.log(`Cost model validation PASS: ${result.scenarios.length} scenarios × 3 CPU sensitivities; 4 omission mutations rejected.`);
+console.log(`Cost model validation PASS: ${result.scenarios.length} scenarios × 3 CPU sensitivities; 4 omission mutations rejected, including coherent missing-delete-prefetch mutant.`);

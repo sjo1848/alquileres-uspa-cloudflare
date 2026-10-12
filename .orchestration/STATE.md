@@ -170,4 +170,14 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Canonical authorization is from `main@b7f49a6`; event seq 20, no Human Gate or blocker. The binding scope is solely A3-F1 in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-CRITIC.md`.
 - Main was integrated into the same PR #8 branch with merge commit recorded in history; A1/A2/A3 ancestry is retained. STATUS conflict was resolved in favor of canonical main REWORK-2 and its `READY_TO_RESUME` authorization.
 - Repair required: make `imageDeleteObjectReads = imageDelete × source GetObject-before-delete factor` a validated invariant and replace the old broad zero-R2 negative case with a coherent missing-prefetch mutant preserving public/ADMIN GET operations.
-- **Next action:** implement only that validator/mutation-proof repair, get independent QA critique, refresh validation/Integration/Pre-Critic evidence, then publish immutable A4 and an exact external-review boundary on PR #8. No merge, deployment, paid services, or new task.
+- The validator now pins the source GetObject factor to one and binds each scenario's prefetch reads to the image-delete route driver. A coherent high-scenario mutant preserves public/ADMIN GETs, recomputes the R2 aggregate and rounding, and is rejected specifically by that source-binding invariant. The independent QA critique is `.orchestration/evidence/critics/i01-cost-qa-critic-a3-f1.md`; closure experiment is `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-REWORK2-CLOSURE.md`.
+- Pre-Critic Gate is PASS to publish exact immutable A4. The artifact commit is prepared to carry `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and the known A4 tag; the next boundary commit will pin its exact SHA on PR #8.
+- **Next action:** await External Independent Critic verdict on Artifact A4. No merge, deployment, paid services, or new task.
+
+
+## CF-AU-I01-P0P1 — Artifact A4 external-review boundary (2026-10-12)
+
+- Canonical authorization: `main@b7f49a6`, event seq 20. A3-F1 was the only authorized change; the PR branch includes main through merge commit `d2eb6e0` without rewriting A1/A2/A3 ancestry.
+- The coherent prefetch mutation defect is closed in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-REWORK2-CLOSURE.md`; focused independent QA verdict is in `.orchestration/evidence/critics/i01-cost-qa-critic-a3-f1.md`. Integration Review, invariant evidence and Pre-Critic PASS are included for publication only.
+- Artifact A4 tag: `CF-AU-I01-P0P1-Artifact-A4`. Its exact commit SHA is pinned in the following boundary commit; PR #8 remains open and unmerged.
+- **Next action: await External Independent Critic verdict on exact Artifact A4.** No merge, deployment, paid service, production, real data or new task is authorized.
