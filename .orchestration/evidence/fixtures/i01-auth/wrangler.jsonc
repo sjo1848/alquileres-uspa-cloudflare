@@ -1,0 +1,11 @@
+{
+  "name": "cf-au-i01-auth-local-proof",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-12",
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "cf-au-i01-auth-local",
+    "database_id": "00000000-0000-0000-0000-000000000011",
+    "migrations_dir": "migrations"
+  }]
+}

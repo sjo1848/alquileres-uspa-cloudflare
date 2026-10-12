@@ -1,0 +1,347 @@
+{
+  "task": "CF-AU-I01-P0P1",
+  "observedAt": "2026-10-12",
+  "currency": "USD",
+  "pricingBasis": "Cloudflare Workers Paid Standard account minimum plus included usage and listed overage rates; D1 and R2 independently metered",
+  "sensitivityOnly": "Per-login provider CPU is unmeasured. 10ms and 100ms are illustrative; 600ms is a conservative sensitivity near but not equal to local bcryptjs Workerd elapsed samples, and is NOT billed CPU evidence.",
+  "scenarios": [
+    {
+      "name": "low",
+      "routeDrivers": {
+        "catalog": 40000,
+        "detail": 20000,
+        "login": 5000,
+        "ownerAdmin": 20000,
+        "contact": 1000,
+        "imageGet": 14000
+      },
+      "assumptions": {
+        "d1RowsReadPerRoute": {
+          "catalog": 30,
+          "detail": 8,
+          "login": 1,
+          "ownerAdmin": 20,
+          "contact": 1,
+          "imageGet": 2
+        },
+        "listingEdits": 3000,
+        "contacts": 1000,
+        "imageUploads": 2000,
+        "d1StorageGb": 0.2,
+        "r2StorageGb": 3,
+        "nonLoginCpuMsPerRequest": 5,
+        "loginCpuModel": "Each modeled login is conservatively assumed to reach the bcrypt compare path (existing account with wrong password or equivalent costly verification); unknown-account paths observed in source skip bcrypt and would cost less.",
+        "attackSensitivity": "Monthly request-volume sensitivity only. Burst concurrency, provider throttling, source IP reputation, anti-abuse controls, and account-wide shared traffic are not quantified."
+      },
+      "cpuSensitivity": [
+        {
+          "assumedCpuMsPerLogin": 10,
+          "label": "illustrative provider-CPU assumption; not measured",
+          "workerRequests": 100000,
+          "workersCpuMs": 525000,
+          "d1RowsRead": 1794000,
+          "d1RowsWritten": 16000,
+          "d1StorageGb": 0.2,
+          "r2StorageGb": 3,
+          "r2ClassA": 2000,
+          "r2ClassARoundedForBilling": 1000000,
+          "r2ClassB": 14000,
+          "r2ClassBRoundedForBilling": 1000000,
+          "monthlyCostUsd": 5,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 0,
+            "workersCpu": 0,
+            "d1RowsRead": 0,
+            "d1RowsWritten": 0,
+            "d1Storage": 0,
+            "r2Storage": 0,
+            "r2ClassA": 0,
+            "r2ClassB": 0
+          }
+        },
+        {
+          "assumedCpuMsPerLogin": 100,
+          "label": "illustrative provider-CPU assumption; not measured",
+          "workerRequests": 100000,
+          "workersCpuMs": 975000,
+          "d1RowsRead": 1794000,
+          "d1RowsWritten": 16000,
+          "d1StorageGb": 0.2,
+          "r2StorageGb": 3,
+          "r2ClassA": 2000,
+          "r2ClassARoundedForBilling": 1000000,
+          "r2ClassB": 14000,
+          "r2ClassBRoundedForBilling": 1000000,
+          "monthlyCostUsd": 5,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 0,
+            "workersCpu": 0,
+            "d1RowsRead": 0,
+            "d1RowsWritten": 0,
+            "d1Storage": 0,
+            "r2Storage": 0,
+            "r2ClassA": 0,
+            "r2ClassB": 0
+          }
+        },
+        {
+          "assumedCpuMsPerLogin": 600,
+          "label": "elapsed-proxy sensitivity only; not metered CPU",
+          "workerRequests": 100000,
+          "workersCpuMs": 3475000,
+          "d1RowsRead": 1794000,
+          "d1RowsWritten": 16000,
+          "d1StorageGb": 0.2,
+          "r2StorageGb": 3,
+          "r2ClassA": 2000,
+          "r2ClassARoundedForBilling": 1000000,
+          "r2ClassB": 14000,
+          "r2ClassBRoundedForBilling": 1000000,
+          "monthlyCostUsd": 5,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 0,
+            "workersCpu": 0,
+            "d1RowsRead": 0,
+            "d1RowsWritten": 0,
+            "d1Storage": 0,
+            "r2Storage": 0,
+            "r2ClassA": 0,
+            "r2ClassB": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "base",
+      "routeDrivers": {
+        "catalog": 500000,
+        "detail": 300000,
+        "login": 20000,
+        "ownerAdmin": 300000,
+        "contact": 30000,
+        "imageGet": 1850000
+      },
+      "assumptions": {
+        "d1RowsReadPerRoute": {
+          "catalog": 500,
+          "detail": 25,
+          "login": 1,
+          "ownerAdmin": 20,
+          "contact": 1,
+          "imageGet": 2
+        },
+        "listingEdits": 30000,
+        "contacts": 30000,
+        "imageUploads": 30000,
+        "d1StorageGb": 1.5,
+        "r2StorageGb": 8,
+        "nonLoginCpuMsPerRequest": 5,
+        "loginCpuModel": "Each modeled login is conservatively assumed to reach the bcrypt compare path (existing account with wrong password or equivalent costly verification); unknown-account paths observed in source skip bcrypt and would cost less.",
+        "attackSensitivity": "Monthly request-volume sensitivity only. Burst concurrency, provider throttling, source IP reputation, anti-abuse controls, and account-wide shared traffic are not quantified."
+      },
+      "cpuSensitivity": [
+        {
+          "assumedCpuMsPerLogin": 10,
+          "label": "illustrative provider-CPU assumption; not measured",
+          "workerRequests": 3000000,
+          "workersCpuMs": 15100000,
+          "d1RowsRead": 267250000,
+          "d1RowsWritten": 210000,
+          "d1StorageGb": 1.5,
+          "r2StorageGb": 8,
+          "r2ClassA": 30000,
+          "r2ClassARoundedForBilling": 1000000,
+          "r2ClassB": 1850000,
+          "r2ClassBRoundedForBilling": 2000000,
+          "monthlyCostUsd": 5,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 0,
+            "workersCpu": 0,
+            "d1RowsRead": 0,
+            "d1RowsWritten": 0,
+            "d1Storage": 0,
+            "r2Storage": 0,
+            "r2ClassA": 0,
+            "r2ClassB": 0
+          }
+        },
+        {
+          "assumedCpuMsPerLogin": 100,
+          "label": "illustrative provider-CPU assumption; not measured",
+          "workerRequests": 3000000,
+          "workersCpuMs": 16900000,
+          "d1RowsRead": 267250000,
+          "d1RowsWritten": 210000,
+          "d1StorageGb": 1.5,
+          "r2StorageGb": 8,
+          "r2ClassA": 30000,
+          "r2ClassARoundedForBilling": 1000000,
+          "r2ClassB": 1850000,
+          "r2ClassBRoundedForBilling": 2000000,
+          "monthlyCostUsd": 5,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 0,
+            "workersCpu": 0,
+            "d1RowsRead": 0,
+            "d1RowsWritten": 0,
+            "d1Storage": 0,
+            "r2Storage": 0,
+            "r2ClassA": 0,
+            "r2ClassB": 0
+          }
+        },
+        {
+          "assumedCpuMsPerLogin": 600,
+          "label": "elapsed-proxy sensitivity only; not metered CPU",
+          "workerRequests": 3000000,
+          "workersCpuMs": 26900000,
+          "d1RowsRead": 267250000,
+          "d1RowsWritten": 210000,
+          "d1StorageGb": 1.5,
+          "r2StorageGb": 8,
+          "r2ClassA": 30000,
+          "r2ClassARoundedForBilling": 1000000,
+          "r2ClassB": 1850000,
+          "r2ClassBRoundedForBilling": 2000000,
+          "monthlyCostUsd": 5,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 0,
+            "workersCpu": 0,
+            "d1RowsRead": 0,
+            "d1RowsWritten": 0,
+            "d1Storage": 0,
+            "r2Storage": 0,
+            "r2ClassA": 0,
+            "r2ClassB": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "high_unindexed_growth_and_auth_abuse_sensitivity",
+      "routeDrivers": {
+        "catalog": 2000000,
+        "detail": 1000000,
+        "login": 2000000,
+        "ownerAdmin": 3000000,
+        "contact": 500000,
+        "imageGet": 11500000
+      },
+      "assumptions": {
+        "d1RowsReadPerRoute": {
+          "catalog": 15000,
+          "detail": 50,
+          "login": 1,
+          "ownerAdmin": 100,
+          "contact": 1,
+          "imageGet": 2
+        },
+        "listingEdits": 1000000,
+        "contacts": 500000,
+        "imageUploads": 1500000,
+        "d1StorageGb": 7,
+        "r2StorageGb": 25,
+        "nonLoginCpuMsPerRequest": 8,
+        "loginCpuModel": "Each modeled login is conservatively assumed to reach the bcrypt compare path (existing account with wrong password or equivalent costly verification); unknown-account paths observed in source skip bcrypt and would cost less.",
+        "attackSensitivity": "Monthly request-volume sensitivity only. Burst concurrency, provider throttling, source IP reputation, anti-abuse controls, and account-wide shared traffic are not quantified."
+      },
+      "cpuSensitivity": [
+        {
+          "assumedCpuMsPerLogin": 10,
+          "label": "illustrative provider-CPU assumption; not measured",
+          "workerRequests": 20000000,
+          "workersCpuMs": 164000000,
+          "d1RowsRead": 30375500000,
+          "d1RowsWritten": 8000000,
+          "d1StorageGb": 7,
+          "r2StorageGb": 25,
+          "r2ClassA": 1500000,
+          "r2ClassARoundedForBilling": 2000000,
+          "r2ClassB": 11500000,
+          "r2ClassBRoundedForBilling": 12000000,
+          "monthlyCostUsd": 23.0005,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 3,
+            "workersCpu": 2.68,
+            "d1RowsRead": 5.3755,
+            "d1RowsWritten": 0,
+            "d1Storage": 1.5,
+            "r2Storage": 0.225,
+            "r2ClassA": 4.5,
+            "r2ClassB": 0.72
+          }
+        },
+        {
+          "assumedCpuMsPerLogin": 100,
+          "label": "illustrative provider-CPU assumption; not measured",
+          "workerRequests": 20000000,
+          "workersCpuMs": 344000000,
+          "d1RowsRead": 30375500000,
+          "d1RowsWritten": 8000000,
+          "d1StorageGb": 7,
+          "r2StorageGb": 25,
+          "r2ClassA": 1500000,
+          "r2ClassARoundedForBilling": 2000000,
+          "r2ClassB": 11500000,
+          "r2ClassBRoundedForBilling": 12000000,
+          "monthlyCostUsd": 26.6005,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 3,
+            "workersCpu": 6.28,
+            "d1RowsRead": 5.3755,
+            "d1RowsWritten": 0,
+            "d1Storage": 1.5,
+            "r2Storage": 0.225,
+            "r2ClassA": 4.5,
+            "r2ClassB": 0.72
+          }
+        },
+        {
+          "assumedCpuMsPerLogin": 600,
+          "label": "elapsed-proxy sensitivity only; not metered CPU",
+          "workerRequests": 20000000,
+          "workersCpuMs": 1344000000,
+          "d1RowsRead": 30375500000,
+          "d1RowsWritten": 8000000,
+          "d1StorageGb": 7,
+          "r2StorageGb": 25,
+          "r2ClassA": 1500000,
+          "r2ClassARoundedForBilling": 2000000,
+          "r2ClassB": 11500000,
+          "r2ClassBRoundedForBilling": 12000000,
+          "monthlyCostUsd": 46.6005,
+          "lineItemsUsd": {
+            "workersMinimum": 5,
+            "workersRequests": 3,
+            "workersCpu": 26.28,
+            "d1RowsRead": 5.3755,
+            "d1RowsWritten": 0,
+            "d1Storage": 1.5,
+            "r2Storage": 0.225,
+            "r2ClassA": 4.5,
+            "r2ClassB": 0.72
+          }
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "Not a quote, forecast, or authorization to buy/enable billing; traffic and data counts are hypothetical.",
+    "Workers Static Assets are excluded from Worker request count; all listed dynamic routes, including API-mediated image reads, invoke a Worker.",
+    "D1 rows-read factors are route-level scan assumptions; only local/production meta.rows_read and query plans can validate them.",
+    "D1 write factors are simplified: edits = listing+audit+one average index row; image upload = metadata+two average index rows; contacts = one row; real indexing/transactions may write more.",
+    "High case deliberately models a large unindexed catalog scan (15,000 rows/query) and abuse-sensitive login volume to expose cost and availability risk.",
+    "R2 operation billing rounds total operations up to whole million-operation units before included units are subtracted; storage is rounded to whole GB-month in this model.",
+    "R2 deletes are treated as free; retries, object listing, metadata HEAD, multipart and account-shared usage are omitted.",
+    "No account hard spend ceiling or automatic hard cap is assumed. Workers per-invocation CPU limits are not monthly bill caps.",
+    "Durable Objects are excluded from base costs: current source contract is transaction-scoped per-listing serialization; no DO necessity/proof exists in this task."
+  ]
+}

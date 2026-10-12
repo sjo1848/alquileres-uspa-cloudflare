@@ -1,0 +1,14 @@
+PRAGMA foreign_keys = ON;
+DROP TABLE IF EXISTS listings;
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('OWNER','ADMIN'))
+);
+CREATE TABLE listings (
+  id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL
+);

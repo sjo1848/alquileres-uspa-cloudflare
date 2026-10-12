@@ -1,0 +1,135 @@
+{
+  "task": "CF-AU-I01-P0P1",
+  "scope": "synthetic local Workerd + D1 only",
+  "runtime": "v24.18.0",
+  "wrangler": "4.149.0",
+  "bcryptjs": "3.0.2",
+  "total": 23,
+  "passed": 23,
+  "results": [
+    {
+      "name": "first and repeated successful bcrypt compares in fresh local Workerd process",
+      "result": "PASS",
+      "detail": "cold 567.0 ms; warm 542.0 ms"
+    },
+    {
+      "name": "first and repeated wrong-password bcrypt compares in fresh local Workerd process",
+      "result": "PASS",
+      "detail": "cold 631.0 ms; warm 557.0 ms"
+    },
+    {
+      "name": "register normalizes email, hashes cost 12, returns OWNER without hash, issues Node-verifiable JWT",
+      "result": "PASS",
+      "detail": "elapsed 644.0 ms; hash rounds 12"
+    },
+    {
+      "name": "login accepts source-normalized email and bcrypt cost-12 hash",
+      "result": "PASS",
+      "detail": "success compare 536.0 ms elapsed"
+    },
+    {
+      "name": "wrong-password and unknown-email share response; timing enumeration differential observed",
+      "result": "PASS",
+      "detail": "bcrypt wrong-password 558.0 ms vs absent account 0.0 ms"
+    },
+    {
+      "name": "duplicate registration after trim/lowercase is rejected",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "email/password DTO invalid cases (malformed email, short/non-string/missing password) rejected",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "seeded existing source-compatible bcryptjs cost-12 hash authenticates and sets session cookie",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "Node jsonwebtoken token accepted; role is reloaded live and a DB downgrade revokes ADMIN immediately",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "OWNER own listing allowed and foreign listing hidden",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "Bearer precedence and URI decoding verified; malformed cookie/Bearer reproduces source-style unhandled decode error (500), unresolved security/error-contract risk",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "expired, tampered, alg=none, malformed and empty bearer tokens denied",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "logout clears cookie; bearer JWT remains valid until expiry or failed DB revalidation, matching source semantics",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "deleted account and changed email invalidate previously issued JWT on next request",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "fixture mutation route is present only behind local explicit flag",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "configured JWT_EXPIRES_IN=1m controls issued JWT lifetime",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "unsupported bare-numeric JWT_EXPIRES_IN fails closed before hashing or database writes",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "fixture mutation endpoint hidden when normal configuration omits local-only flag",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "cookie issue/clear attributes development default Lax",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "cookie issue/clear attributes development Strict",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "cookie issue/clear attributes None auto-Secure",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "cookie issue/clear attributes production auto-Secure",
+      "result": "PASS",
+      "detail": "PASS"
+    },
+    {
+      "name": "cookie issue/clear attributes explicit Secure",
+      "result": "PASS",
+      "detail": "PASS"
+    }
+  ],
+  "limitations": [
+    "not source API implementation",
+    "email validator is deliberately narrow and not a full class-validator replacement",
+    "JWT_EXPIRES_IN proof supports unit-bearing s/m/h/d strings; bare numeric text is explicitly rejected by this fixture because jsonwebtoken interprets it as millisecond text rather than numeric seconds",
+    "no provider-billed CPU telemetry",
+    "no brute-force/rate-limit or CSRF proof",
+    "logout clears client cookie but does not revoke bearer JWT",
+    "timing differential for unknown account vs wrong password remains a security finding"
+  ]
+}
