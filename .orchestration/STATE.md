@@ -1,8 +1,10 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `HUMAN_GATE`
-Phase: `DISCOVERY / FEASIBILITY`
-Active task: `CF-AU-I00 — Baseline, feasibility and cost-zero validation`
+State: `PENDING_EXTERNAL_REVIEW`
+Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
+Active task: `CF-AU-I01-P0P1 — local baseline, synthetic auth feasibility and cost model`
+
+> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
 ## Source baseline
 
@@ -132,3 +134,58 @@ Binding findings and exit criteria are in:
 CF-AU-I00 remains technically closed with a bounded research PASS. The Human has now selected full Cloudflare as the destination and waived strict free-only design, without authorizing spending. Codex must consume `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A4-PASS.md` and integrate the **approved PR #8 only** with true history-preserving merge, reconcile External PASS state, verify A1/A2/A3/A4 ancestry, persist closeout and STOP for next bounded P2 implementation contract. No remote deployment or payment. Source I13 product acceptance already received Human PASS and awaits technical state reconciliation; do not repeat that gate. No broad migration, paid resource, remote deploy, production, real-data action, or Runtime Watch activation is authorized.
 
 Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md`.
+
+## CF-AU-I01-P0P1 — Artifact A1 external-review REWORK (2026-10-12)
+
+- Bounded task contract: `.orchestration/contracts/CF-AU-I01-P0P1.md`; authorization is local/synthetic P0 source baseline + P1 auth feasibility and Workers Paid cost sensitivity only.
+- Canonical lab `main` at task start: `84930c4ba59d133e40099aebb0edd0a8584fb6ab`. Exact source repository `main` checked through GitHub: `267c531f3e3d5869240894063d3a194fa1f9680b`; no API semantic drift from accepted I13 candidate found. Source repo remains unchanged. Its I13 `STATUS.json` discrepancy is a separate reconciliation prerequisite before migration.
+- Immutable evidence Artifact A1: commit `db0f18f062635d687e72ced0d0d405b9faa351ab`, annotated tag `CF-AU-I01-P0P1-Artifact-A1`.
+- External-review boundary: PR #8, `https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/8`, base `main`, head `work/cf-au-i01-p0p1`; unmerged. Review the exact artifact commit/tag, not a moving summary.
+- Local Workerd/synthetic D1 auth proof: 23/23 grouped checks; npm audit found 0 vulnerabilities; syntax and whitespace checks passed. Cost calculator output was independently recomputed and matches the result JSON. See `.orchestration/evidence/CF-AU-I01-P0P1-VALIDATION.md`.
+- Internal technical/auth critic and cost-method critic closed their bounded findings. Integration Review, all-invariant matrix and Pre-Critic publication gate are included. Pre-Critic PASS means the evidence package is ready for external review only; it is not a feasibility/product/security PASS.
+- Preserved unresolved limits: full `class-validator` email parity; malformed percent URI source 500; account-enumeration timing; logout does not revoke issued bearer JWT; provider-billed CPU and burst traffic unmeasured; D1 production row counts and R2 lifecycle not exercised; full API migration unimplemented; source I13 canonical status remains stale.
+- No paid plan/billing, remote Cloudflare resource, source write, production, real customer data, migration feature, P2/P3, or Runtime Watch was started.
+- GitHub automated review of exact Artifact A1 (reviewed commit `db0f18f062635d687e72ced0d0d405b9faa351ab`) posted bounded rework findings at PR #8 discussion IDs `4252024073`, `4252024082`, `4252024089`: make the state boundary visible with the reviewed package, refresh the independent cost critic report against final timings, and include/exclude explicitly the optional DO SQLite row-read/write meters. No Human Gate or material blocker was classified.
+- **Authorized routine rework:** continue under the same CF-AU-I01-P0P1 contract. Preserve A1 tag/commit ancestry, close all three findings, rerun cost calculations, independently re-review changed evidence, repeat Integration Review and Pre-Critic, then publish immutable Artifact A2 and a new external-review boundary. No migration, merge, paid service, remote resource, production, real data or source write.
+- The A1 rework corrections are now included in the A2 candidate: refreshed independent cost-critic report and final timing alignment; official optional SQLite DO rows-read/write meters with DO total still explicitly unresolved; and in-tag publication stop state.
+
+## CF-AU-I01-P0P1 — Artifact A2 publication state (2026-10-12)
+
+- Artifact A1 commit/tag remains immutable and reachable. All three A1 automated-review findings are resolved in the A2 candidate as recorded in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A1-AUTOMATED-REVIEW-REWORK.md`.
+- Immutable Artifact A2: commit `f9d8bfa9afb39555649365596be467d88f18d7a8`, annotated tag `CF-AU-I01-P0P1-Artifact-A2`. The artifact commit itself contains `runtime_status=PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and the known tag; the exact SHA is pinned in the following boundary commit.
+- PR #8 remains the open, unmerged review surface. Review is requested on exact commit `f9d8bfa9afb39555649365596be467d88f18d7a8` and tag `CF-AU-I01-P0P1-Artifact-A2`; the boundary commit records the SHA.
+- At publication time the next action was to await the External Independent Critic. This historical A2 boundary was superseded by the canonical REWORK-1 event below.
+
+## CF-AU-I01-P0P1 — Artifact A2 REWORK-1 execution (2026-10-12)
+
+- Canonical authorization is `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-CRITIC.md` from `main@66a56a193ec418e28b17ca871df2289bf706edef`, event seq 17. It authorizes only the two bounded cost-model repairs A2-F1/A2-F2 under the existing P0P1 contract.
+- Main was merged into the same open PR branch by merge commit `f2f3e08223807bdecfb4640dd480920391a90f2d`; A1 and A2 lineage remains reachable. The STATUS conflict was resolved in favor of canonical main's REWORK-1 verdict and `READY_TO_RESUME` authorization.
+- A3 candidate now has nonzero registration Worker/bcrypt/D1 user+index drivers, image delete read-before-delete R2 Class B plus D1 lookup/compaction, and image reorder D1 read/write assumptions. Dispositions and exact formulas are in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-REWORK1-CLOSURE.md`.
+- Auth implementation/tests and fixture dependencies remain byte-identical to A2 and were not rerun, per the external critic's scope direction. Independent cost review recorded bounded PASS; Integration Review and Pre-Critic are complete for publication only.
+- Immutable Artifact A3 will contain `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and the known tag; its exact SHA is pinned in the following boundary commit on PR #8. No merge, functional migration, paid service, remote resource, production, real data or source write.
+
+
+## CF-AU-I01-P0P1 — Artifact A3 external-review boundary (2026-10-12)
+
+- Canonical main at rework start: `66a56a193ec418e28b17ca871df2289bf706edef`; merged into the open PR branch without rewriting A1/A2 history at `f2f3e08223807bdecfb4640dd480920391a90f2d`.
+- External REWORK-1 findings A2-F1/F2 are closed in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A2-REWORK1-CLOSURE.md`; independent cost-method review is bounded PASS in `.orchestration/evidence/critics/i01-cost-method-critic.md`. Integration Review, invariant matrix and Pre-Critic PASS are included in this artifact.
+- Immutable Artifact A3: commit `917119138433fd1f413331970fe4ccc7ce660841`, annotated tag `CF-AU-I01-P0P1-Artifact-A3`; PR #8 remains open and unmerged. This boundary pins the exact artifact SHA for external review.
+- **Next action: await the External Independent Critic verdict on Artifact A3.** No merge, functional migration, paid service, remote resource, production, real data or source write is authorized by this boundary.
+
+
+## CF-AU-I01-P0P1 — Artifact A3 REWORK-2 execution
+
+- Canonical authorization is from `main@b7f49a6`; event seq 20, no Human Gate or blocker. The binding scope is solely A3-F1 in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-CRITIC.md`.
+- Main was integrated into the same PR #8 branch with merge commit recorded in history; A1/A2/A3 ancestry is retained. STATUS conflict was resolved in favor of canonical main REWORK-2 and its `READY_TO_RESUME` authorization.
+- Repair required: make `imageDeleteObjectReads = imageDelete × source GetObject-before-delete factor` a validated invariant and replace the old broad zero-R2 negative case with a coherent missing-prefetch mutant preserving public/ADMIN GET operations.
+- The validator now pins the source GetObject factor to one and binds each scenario's prefetch reads to the image-delete route driver. A coherent high-scenario mutant preserves public/ADMIN GETs, recomputes the R2 aggregate and rounding, and is rejected specifically by that source-binding invariant. The independent QA critique is `.orchestration/evidence/critics/i01-cost-qa-critic-a3-f1.md`; closure experiment is `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-REWORK2-CLOSURE.md`.
+- Pre-Critic Gate is PASS to publish exact immutable A4. The artifact commit is prepared to carry `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, and the known A4 tag; the next boundary commit will pin its exact SHA on PR #8.
+- **Next action:** await External Independent Critic verdict on Artifact A4. No merge, deployment, paid services, or new task.
+
+
+## CF-AU-I01-P0P1 — Artifact A4 external-review boundary (2026-10-12)
+
+- Canonical authorization: `main@b7f49a6`, event seq 20. A3-F1 was the only authorized change; the PR branch includes main through merge commit `d2eb6e0` without rewriting A1/A2/A3 ancestry.
+- The coherent prefetch mutation defect is closed in `.orchestration/reviews/CF-AU-I01-P0P1-ARTIFACT-A3-REWORK2-CLOSURE.md`; focused independent QA verdict is in `.orchestration/evidence/critics/i01-cost-qa-critic-a3-f1.md`. Integration Review, invariant evidence and Pre-Critic PASS are included for publication only.
+- Immutable Artifact A4: commit `c7c5704e606bda704140c972a1ca5032b09b0627`, annotated tag `CF-AU-I01-P0P1-Artifact-A4`. This boundary pins the exact SHA; PR #8 remains open and unmerged.
+- **Next action: await External Independent Critic verdict on exact Artifact A4.** No merge, deployment, paid service, production, real data or new task is authorized.
