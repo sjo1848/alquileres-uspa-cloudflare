@@ -42,3 +42,19 @@ Those two baseline suites ran sequentially against distinct PID-specific tempora
 The first REWORK-1 test process was intentionally interrupted before completion after static review found that the active forged-token control expired after 60 seconds while its assertion occurs later in the long suite. It is not counted as a pass or failure. The control expiration was extended to one hour, the independent security critic re-reviewed the timing/falsifiability, and the complete suite was rerun from a new local persistence directory.
 
 Final REWORK-1 result: `node --check tests/http.mjs` exit 0; `npm test` exit 0; exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (636.4s)`. This run includes an accepted, correctly signed active token for seeded `owner-a`, rejection of an otherwise matching correctly signed expired token, and rejection of same-claims active token with wrong HMAC. No Worker or dependency changed; prior audit remains applicable.
+
+## REWORK-2 — D1 lease release after confirmed operations
+
+The lease cleanup is now bounded and token-fenced: it retries DELETE three times, checks whether the same token still owns the row, and attempts a token-scoped expiry fallback. All cleanup failures are contained within `unlock()` so a confirmed upload/reorder/delete response is not replaced by a cleanup exception. Logging uses a random correlation identifier and does not include listing identifiers or tokens. The local fault harness injects a D1 lock DELETE failure before the effect and after the actual DELETE effect.
+
+HTTP coverage asserts status 201 for both upload faults, 200 for both reorder and delete faults, exact image cardinality, HTTP/D1 id and position agreement, dense positions, R2 byte availability/content, committed/cleaned operation state, lock absence, and a successful follow-up upload after the delete faults. A one-shot delete-effect-loss models the D1 operation succeeding while its caller receives an exception. The tests use actual Wrangler local D1 and R2; test-only fault injection is confined to `tests/fault-worker.ts` and the test config.
+
+- `npm run typecheck`: PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs`: PASS after final test edits.
+- `git diff --check`: PASS after final test edits.
+- `npm audit`: not rerun; dependencies and lockfile are unchanged.
+- A preliminary full suite was stopped after independent review identified the need for explicit cardinality evidence; it is not counted as a result.
+- A subsequent full suite exposed fixture interference: the new deletion case removed `faultImage`, which later R2 failure scenarios require. The test now selects other rows and asserts that fixture remains. That run is recorded as a failed test, not a pass.
+- Final `npm test` on fresh PID-specific Wrangler local D1/R2 persistence: PASS, exit 0, 562.5 s. Exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (562.5s)`.
+
+Independent integrity critique: bounded PASS, static review only, recorded at `critics/CF-AU-I01-P2-REWORK2-INTEGRITY.md`. Token replacement during cleanup was not race-injected; both DELETE and fallback UPDATE match `listing_id` plus token, providing static fencing evidence. The critic did not run the HTTP suite; the runtime result above is separate.

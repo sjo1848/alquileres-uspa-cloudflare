@@ -32,7 +32,30 @@ app.post('/listings',async c=>{
 });
 async function owned(c:any,listingId:string) {return c.env.DB.prepare("SELECT id FROM listings WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED')").bind(listingId,c.get('user').id).first();}
 async function lock(db:D1Database,lid:string) { const token=id(),n=Math.floor(Date.now()/1000);const r=await db.prepare('INSERT INTO listing_locks(listing_id,token,expires_at) VALUES(?,?,?) ON CONFLICT(listing_id) DO UPDATE SET token=excluded.token,expires_at=excluded.expires_at WHERE listing_locks.expires_at < ? RETURNING token').bind(lid,token,n+3600,n).first();return r?token:null; }
-async function unlock(db:D1Database,lid:string,t:string) {await db.prepare('DELETE FROM listing_locks WHERE listing_id=? AND token=?').bind(lid,t).run();}
+async function unlock(db:D1Database,lid:string,t:string) {
+  const correlationId=crypto.randomUUID(),attempts=3;
+  let stillOwnsLease=false;
+  for(let attempt=0;attempt<attempts;attempt++){
+    try{await db.prepare('DELETE FROM listing_locks WHERE listing_id=? AND token=?').bind(lid,t).run();}catch{}
+    try{
+      const current=await db.prepare('SELECT token,expires_at FROM listing_locks WHERE listing_id=?').bind(lid).first<{token:string;expires_at:number}>();
+      if(!current||current.token!==t)return;
+      stillOwnsLease=true;
+    }catch{stillOwnsLease=false;}
+  }
+  if(stillOwnsLease){
+    const nowSeconds=Math.floor(Date.now()/1000);
+    try{
+      await db.prepare('UPDATE listing_locks SET expires_at=? WHERE listing_id=? AND token=?').bind(nowSeconds,lid,t).run();
+      const current=await db.prepare('SELECT token,expires_at FROM listing_locks WHERE listing_id=?').bind(lid).first<{token:string;expires_at:number}>();
+      if(!current||current.token!==t||current.expires_at<=nowSeconds){
+        console.warn(JSON.stringify({event:'listing_lease_release_deferred_to_expiry',correlationId}));
+        return;
+      }
+    }catch{}
+  }
+  console.error(JSON.stringify({event:'listing_lease_release_unconfirmed',correlationId,attempts}));
+}
 async function ownsLock(db:D1Database,lid:string,t:string) { return !!await db.prepare('SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>?').bind(lid,t,Math.floor(Date.now()/1000)).first(); }
 function imageDto(x:ImageRow){return {id:x.id,originalName:x.original_name,contentType:x.mime_type,sizeBytes:x.byte_size,position:x.position,createdAt:x.created_at};}
 async function ordered(db:D1Database,lid:string){return (await db.prepare('SELECT * FROM listing_images WHERE listing_id=? ORDER BY position').bind(lid).all<ImageRow>()).results;}

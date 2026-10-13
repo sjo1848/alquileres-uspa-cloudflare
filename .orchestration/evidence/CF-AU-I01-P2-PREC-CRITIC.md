@@ -1,10 +1,10 @@
 # CF-AU-I01-P2 Pre-Critic Gate — publication readiness
 
-Date: 2026-10-13. Artifact A2: to be pinned by the publication boundary commit.
+Date: 2026-10-13. Artifact A3: exact SHA is pinned by the following publication boundary commit.
 
 ## Contract and authorization
 
-- Active contract `.orchestration/contracts/CF-AU-I01-P2.md` authorizes this local synthetic Worker + actual local D1/R2 slice, tests, critics and one immutable external-review artifact.
+- Active contract `.orchestration/contracts/CF-AU-I01-P2.md` plus canonical External REWORK-2 verdict `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A2-CRITIC.md` authorize only committed-response D1 lease-release repair, associated tests/evidence, independent integrity QA and one immutable external-review artifact.
 - Source `alquileres-uspa` remains read-only. No paid service, remote resource, deployment, production or real data used.
 - Scope remains OWNER draft listing and images; no Vue, broader API migration or next task.
 
@@ -16,9 +16,10 @@ Date: 2026-10-13. Artifact A2: to be pinned by the publication boundary commit.
 - Source/method invariant matrix: `CF-AU-I01-P2-INVARIANTS.md`.
 - Integration Review: `CF-AU-I01-P2-INTEGRATION-REVIEW.md`.
 - Independent security, integrity and technical review records: `critics/CF-AU-I01-P2-{SECURITY,INTEGRITY,INTEGRATION}.md`.
-- Critical negative cases include OWNER isolation, CSRF origin checks, 20-image cap/race, D1/R2 fault injection, compensation/recovery, and no fixture route on the product Worker.
+- Critical negative cases include OWNER isolation, CSRF origin checks, 20-image cap/race, D1/R2 fault injection, compensation/recovery, and no fixture route on the product Worker. REWORK-2 specifically tests pre-effect and post-effect D1 lock-delete faults on upload, reorder and delete; checks intended HTTP status, exact cardinality, D1/R2 consistency, lock release, terminal operation records and follow-up recovery.
 - REWORK-1 JWT controls: active seeded owner and correctly signed claims accepted; same-identity correctly signed expired JWT denied; same-identity active valid-shape wrong-HMAC JWT denied. One-hour active lifetime covers the later signature assertion. Independent security critique bounded PASS: `critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`.
-- After the JWT-only test edit: `node --check tests/http.mjs` PASS and one complete fresh-state `npm test` PASS in 636.4 s. A preliminary run was stopped before completion when review caught an insufficient 60-second control lifetime; it is explicitly not counted as a test result.
+- REWORK-2 independent integrity critique is bounded PASS in `critics/CF-AU-I01-P2-REWORK2-INTEGRITY.md`. It is static-only; token replacement during release is not race-injected, while both cleanup statements are token-fenced.
+- Final candidate: `npm run typecheck`, `node --check tests/http.mjs`, `git diff --check` PASS; one complete fresh-state `npm test` PASS in 562.5 s. The ledger records the earlier interrupted and failed attempts without presenting them as passes. Dependencies were unchanged; npm audit was not rerun.
 
 ## Truthful limits
 
@@ -26,4 +27,4 @@ External review must decide the substantive candidate. This gate does not assert
 
 ## Disposition
 
-**PRE-CRITIC PASS for immutable Artifact A2 publication only.** The REWORK-1 security controls have independent bounded PASS and the final fresh-state full suite and syntax check passed. Historical baseline runs (522.0 s, 543.7 s) and the final REWORK-1 run (636.4 s) are distinguished in the validation ledger. Required stop state: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, open unmerged PR #10, exact A2 artifact SHA/tag.
+**PRE-CRITIC PASS for immutable Artifact A3 publication only.** A2-F1 is closed within the authorized boundary, the independent integrity critic is bounded PASS, and all final candidate checks including the full HTTP suite passed. Historical runs and unsuccessful REWORK-2 attempts are distinguished from the final result in the validation ledger. Required stop state after the publication boundary: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, open unmerged PR #10, exact A3 artifact SHA/tag. Do not merge or start another task before the external verdict.
