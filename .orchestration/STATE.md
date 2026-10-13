@@ -4,7 +4,7 @@ State: `PENDING_EXTERNAL_REVIEW`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
 Active task: `CF-AU-I01-P2 — local synthetic OWNER/D1/R2 image slice`
 
-> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
+> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent task section at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
 ## Source baseline
 
@@ -218,5 +218,5 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Exact test ledger, limitations and source mapping: `.orchestration/evidence/CF-AU-I01-P2-VALIDATION.md`, `CF-AU-I01-P2-INTEGRATION-REVIEW.md`, `CF-AU-I01-P2-INVARIANTS.md`; independent security, integrity and technical critic records under `.orchestration/evidence/critics/`.
 - Independent internal reviews closed bounded P0/P1 findings. Pre-Critic is PASS for publication readiness only; this is not external PASS, full parity, or production approval. Explicit unresolved source divergence: private OWNER image-byte GET route; ContactEvent/AdminAuditLog remain unimplemented. Local evidence does not establish PostgreSQL lock equivalence or atomic D1/R2 writes.
 - Verification: `npm run typecheck`, `node --check tests/http.mjs`, `npm audit` (0 vulnerabilities), `git diff --check`; two sequential clean-state `npm test` runs use actual local Worker/D1/R2. Exact outcomes are in the validation ledger.
-- Immutable artifact A1: see `CF-AU-I01-P2-Artifact-A1` tag and its exact SHA in the following publication boundary record. PR #9 is to remain OPEN/unmerged and pins the artifact SHA.
+- Immutable artifact A1: commit `4ea23b9931ebd15936af4473997cc1ecacc2bb1b`, annotated tag `CF-AU-I01-P2-Artifact-A1`. The publication boundary commit records this exact SHA. A new PR will remain OPEN/unmerged and pin the artifact SHA.
 - **Next action:** await External Independent Critic review of the exact Artifact A1 SHA. No merge, deployment, paid service, source write, new task or migration increment.

@@ -19,7 +19,7 @@
     "required": true,
     "last_audited_head": "c7c5704e606bda704140c972a1ca5032b09b0627",
     "last_verdict": "PASS",
-    "artifact_head": null,
+    "artifact_head": "4ea23b9931ebd15936af4473997cc1ecacc2bb1b",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A1",
     "pending_verdict": "PENDING"
   },
