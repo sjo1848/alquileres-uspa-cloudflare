@@ -229,9 +229,18 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - No Human Gate or payment, remote resource, deployment, production, real data, source repo changes, PR merge or full API expansion authorized. New next action supersedes original P2 start: fix P1 test falsifiability before external PASS.
 
 
-### REWORK-1 checkpoint — in progress (2026-10-12)
+### REWORK-1 execution checkpoint — completed (2026-10-13)
 
-- Integrated canonical `main@3e9e47f91f7dc190d39af4473997cc1ecacc2bb1b` into PR #10 in merge commit `81946e0`; retained A1 tag/history and the authoritative REWORK-1 verdict. State conflict resolution follows main's `READY_TO_RESUME` authorization.
-- Updated only `apps/worker/tests/http.mjs` for the two findings: expired JWT now uses existing seeded `owner-a` and matching email with a valid signature; a same-claims active signed control expects 200 before expiry rejection. Forged token now has valid HS256 header/payload and active owner claims but a wrong-key HMAC, with expected 401. Worker code unchanged.
-- These edits have **not yet been run or independently critiqued**. No A2 artifact/evidence claim is made.
-- **Next action:** run `node --check tests/http.mjs` and one full fresh-state `npm test`; then obtain an independent security critic for the falsifiability and positive/negative controls, update only associated evidence/Pre-Critic, and continue toward Artifact A2 on PR #10.
+- Integrated canonical `main@3e9e47f91f7dc190d39af4473997cc1ecacc2bb1b` into PR #10 in merge commit `81946e0`; retained A1 tag/history and the authoritative REWORK-1 verdict.
+- Updated only the two JWT regression scenarios in `apps/worker/tests/http.mjs`: active seeded owner token is correctly signed and accepted; same identity correctly signed but expired is denied; same identity active token with wrong HMAC is denied. Active control expiry is one hour to remain valid through the later signature assertion. Worker implementation/dependencies were unchanged.
+- Independent security critique passed the test falsifiability and one-hour window (`.orchestration/evidence/critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`). `node --check tests/http.mjs` passed. One full fresh local Worker/D1/R2 HTTP suite passed in 636.4 s; exact output and the intentionally cancelled preliminary run are recorded in `.orchestration/evidence/CF-AU-I01-P2-VALIDATION.md`.
+- Integration Review and Pre-Critic were narrowly refreshed. Pre-Critic PASS is publication readiness only; no substantive self-PASS. Source behavior and all unrelated implementation remain unchanged.
+- **Next action:** await External Independent Critic verdict on immutable Artifact A2 in PR #10. No merge, deployment, paid service or new task.
+
+
+## CF-AU-I01-P2 — Artifact A2 external-review boundary (2026-10-13)
+
+- A1 REWORK-1 findings A1-F1/A1-F2 are closed with only the two JWT regression-test corrections and their directly associated evidence. Canonical review is `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md`; no Worker/auth semantics or dependencies changed.
+- Security re-review: bounded PASS for positive/negative control validity and isolation. Evidence: `.orchestration/evidence/critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`. Full fresh-state test passed in 636.4 s; syntax check passed. Pre-Critic is PASS for external publication only.
+- Immutable Artifact A2: annotated tag `CF-AU-I01-P2-Artifact-A2`; exact commit SHA is pinned in the following publication-boundary commit. PR #10 remains OPEN/unmerged.
+- **Next action:** await External Independent Critic review of the exact Artifact A2 SHA. No merge, deployment, paid services, production, real data, source changes or next task.

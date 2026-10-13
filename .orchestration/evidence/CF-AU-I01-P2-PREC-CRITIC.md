@@ -1,6 +1,6 @@
 # CF-AU-I01-P2 Pre-Critic Gate — publication readiness
 
-Date: 2026-10-12. Artifact: to be pinned by the publication boundary commit.
+Date: 2026-10-13. Artifact A2: to be pinned by the publication boundary commit.
 
 ## Contract and authorization
 
@@ -17,6 +17,8 @@ Date: 2026-10-12. Artifact: to be pinned by the publication boundary commit.
 - Integration Review: `CF-AU-I01-P2-INTEGRATION-REVIEW.md`.
 - Independent security, integrity and technical review records: `critics/CF-AU-I01-P2-{SECURITY,INTEGRITY,INTEGRATION}.md`.
 - Critical negative cases include OWNER isolation, CSRF origin checks, 20-image cap/race, D1/R2 fault injection, compensation/recovery, and no fixture route on the product Worker.
+- REWORK-1 JWT controls: active seeded owner and correctly signed claims accepted; same-identity correctly signed expired JWT denied; same-identity active valid-shape wrong-HMAC JWT denied. One-hour active lifetime covers the later signature assertion. Independent security critique bounded PASS: `critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`.
+- After the JWT-only test edit: `node --check tests/http.mjs` PASS and one complete fresh-state `npm test` PASS in 636.4 s. A preliminary run was stopped before completion when review caught an insufficient 60-second control lifetime; it is explicitly not counted as a test result.
 
 ## Truthful limits
 
@@ -24,4 +26,4 @@ External review must decide the substantive candidate. This gate does not assert
 
 ## Disposition
 
-**PRE-CRITIC PASS for immutable artifact publication only.** Both sequential fresh-state suites passed (522.0 s and 543.7 s) and are recorded in the validation ledger. Required stop state: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, open unmerged PR, exact artifact SHA/tag.
+**PRE-CRITIC PASS for immutable Artifact A2 publication only.** The REWORK-1 security controls have independent bounded PASS and the final fresh-state full suite and syntax check passed. Historical baseline runs (522.0 s, 543.7 s) and the final REWORK-1 run (636.4 s) are distinguished in the validation ledger. Required stop state: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, open unmerged PR #10, exact A2 artifact SHA/tag.
