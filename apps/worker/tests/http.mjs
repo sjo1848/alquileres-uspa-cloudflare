@@ -20,8 +20,9 @@ try{
   const noOrigin=await fetch(`${base}/listings`,{method:'POST',headers:{'content-type':'application/json',cookie:a.cookie},body:listingBody});assert.equal(noOrigin.status,403,'cookie mutation requires Origin');
   const crossOrigin=await fetch(`${base}/listings`,{method:'POST',headers:{'content-type':'text/plain',origin:'https://attacker.example',cookie:a.cookie},body:listingBody});assert.equal(crossOrigin.status,403,'cross-origin simple POST cannot cause cookie-authenticated mutation');
   assert.deepEqual(await (await req('/listings')).json(),[],'rejected cookie requests did not create listings');
-  const jwtHeader=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url'),jwtPayload=Buffer.from(JSON.stringify({id:'fixture-owner-a',email:'owner.a@example.test',iat:1,exp:1})).toString('base64url'),jwtInput=`${jwtHeader}.${jwtPayload}`,expiredJwt=`${jwtInput}.${createHmac('sha256','local-test-secret-not-for-production').update(jwtInput).digest('base64url')}`;
-  assert.equal((await fetch(`${base}/listings`,{headers:{cookie:`alquileres_session=${expiredJwt}`}})).status,401,'expired signed JWT is denied');
+  const jwtNow=Math.floor(Date.now()/1000),jwtClaims={id:'owner-a',email:'owner.a@example.test',iat:jwtNow-30,exp:jwtNow+60},jwtHeader=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url'),encodeJwt=(claims,secret)=>{const input=`${jwtHeader}.${Buffer.from(JSON.stringify(claims)).toString('base64url')}`;return `${input}.${createHmac('sha256',secret).update(input).digest('base64url')}`;},validJwt=encodeJwt(jwtClaims,'local-test-secret-not-for-production');
+  assert.equal((await fetch(`${base}/listings`,{headers:{authorization:`Bearer ${validJwt}`}})).status,200,'correctly signed active owner JWT is accepted as the positive control');
+  const expiredJwt=encodeJwt({...jwtClaims,iat:1,exp:1},'local-test-secret-not-for-production');assert.equal((await fetch(`${base}/listings`,{headers:{authorization:`Bearer ${expiredJwt}`}})).status,401,'expired JWT for the existing owner is rejected by expiry validation');
   assert.equal((await fetch(`${base}/listings`,{headers:{cookie:'alquileres_session=%'}})).status,401,'malformed cookie encoding is denied');
   assert.equal((await fetch(`${base}/listings`,{headers:{cookie:a.cookie,authorization:'Bearer invalid'}})).status,401,'invalid Bearer takes precedence over valid cookie');
   const bearerToken=decodeURIComponent(a.cookie.match(/alquileres_session=([^;]+)/)[1]);assert.equal((await fetch(`${base}/listings`,{headers:{authorization:`Bearer ${bearerToken}`}})).status,200,'valid Bearer session works without cookie or Origin');
@@ -61,7 +62,7 @@ try{
   const del=await req(`/listings/${listing}/images/${rows[0].id}`,{method:'DELETE'});assert.equal(del.status,200);assert.equal(await del.text(),'','source DELETE response is empty');
   const dense=await (await req(`/listings/${listing}/images`)).json();assert.equal(dense.length,19);assert.deepEqual(dense.map(x=>x.position),Array.from({length:19},(_,i)=>i));
   const unauth=await fetch(`${base}/listings/${listing}/images`);assert.equal(unauth.status,401);
-  const forged=await fetch(`${base}/listings/${listing}/images`,{headers:{authorization:'Bearer fake.jwt.token'}});assert.equal(forged.status,401);
+  const forged=encodeJwt(jwtClaims,'deliberately-wrong-test-key'),forgedResponse=await fetch(`${base}/listings`,{headers:{authorization:`Bearer ${forged}`}});assert.equal(forgedResponse.status,401,'well-formed active owner JWT with incorrect HMAC is rejected');
   await run(['d1','execute','DB','--local','--command',"CREATE TRIGGER fail_image_insert BEFORE INSERT ON listing_images BEGIN SELECT RAISE(ABORT, 'injected D1 insert failure'); END;"]);
   r=await upload();assert.equal(r.status,503,`D1 insert failure is observable: ${await r.clone().text()}`);
   const ops=await run(['d1','execute','DB','--local','--command',"SELECT state,object_key FROM image_operations ORDER BY created_at DESC LIMIT 1"]);assert.match(ops,/COMPENSATED/,'upload compensation is durably recorded');

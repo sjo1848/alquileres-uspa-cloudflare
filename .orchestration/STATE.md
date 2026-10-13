@@ -227,3 +227,11 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - **Verdict: REWORK-1 — two P1 test-coverage false positives only.** Canonical review: `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md`. Expired signed JWT uses nonexistent ID `fixture-owner-a` rather than seeded `owner-a`; forged Bearer test `fake.jwt.token` fails JSON parsing before signature verification. Neither proves actual crypto bypass; both fail to guard genuine security regressions.
 - Codex authorized only to replace those tests with valid-account/valid-shape positive and negative controls, rerun final local HTTP suite, obtain independent security critic for test quality, refresh brief validation and Pre-Critic, and publish immutable A2 on existing PR. Worker implementation, full D1/R2 flows and prior 522/543s execution evidence are preserved. If real security defect discovered, repair and re-critique before next artifact.
 - No Human Gate or payment, remote resource, deployment, production, real data, source repo changes, PR merge or full API expansion authorized. New next action supersedes original P2 start: fix P1 test falsifiability before external PASS.
+
+
+### REWORK-1 checkpoint — in progress (2026-10-12)
+
+- Integrated canonical `main@3e9e47f91f7dc190d39af4473997cc1ecacc2bb1b` into PR #10 in merge commit `81946e0`; retained A1 tag/history and the authoritative REWORK-1 verdict. State conflict resolution follows main's `READY_TO_RESUME` authorization.
+- Updated only `apps/worker/tests/http.mjs` for the two findings: expired JWT now uses existing seeded `owner-a` and matching email with a valid signature; a same-claims active signed control expects 200 before expiry rejection. Forged token now has valid HS256 header/payload and active owner claims but a wrong-key HMAC, with expected 401. Worker code unchanged.
+- These edits have **not yet been run or independently critiqued**. No A2 artifact/evidence claim is made.
+- **Next action:** run `node --check tests/http.mjs` and one full fresh-state `npm test`; then obtain an independent security critic for the falsifiability and positive/negative controls, update only associated evidence/Pre-Critic, and continue toward Artifact A2 on PR #10.

@@ -8,7 +8,7 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "APPLY_CF_AU_I01_P2_ARTIFACT_A1_REWORK_1_TWO_SECURITY_NEGATIVE_TESTS_FROM_.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md",
+  "next_action": "RUN_NODE_CHECK_AND_ONE_FRESH_LOCAL_NPM_TEST_FOR_CF_AU_I01_P2_JWT_REWORK1_THEN_OBTAIN_INDEPENDENT_SECURITY_CRITIQUE",
   "stop_reason": null,
   "event": {
     "seq": 27,
