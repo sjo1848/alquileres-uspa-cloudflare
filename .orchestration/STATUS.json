@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "RESUME_EXISTING_P2_REWORK3_AND_SPAWN_PROJECT_CONTROLLER_GPT6_LUNA_HIGH_AFTER_RUNTIME_SMOKE",
-  "stop_reason": null,
+  "next_action": "REPAIR_PR10_IDEMPOTENCY_REPLAY_RECORD_FINDINGS_THEN_OBTAIN_SUPPORTED_GPT6_LUNA_HIGH_READ_ONLY_REVIEW_OF_NEW_EXACT_SHA",
+  "stop_reason": "BLOCKED_MODEL_CONFIG_UNTIL_RUNTIME_REVIEWER_VERIFIED",
   "event": {
-    "seq": 33,
-    "id": "CF-AU-PROJECT-CONTROLLER@LUNA6-HIGH",
-    "type": "HUMAN_DELEGATION_OF_LOCAL_TECHNICAL_REVIEW"
+    "seq": 34,
+    "id": "CF-AU-P2@AUTOMATED-REVIEW-COMPLETE-REVIEWER-RUNTIME-CORRECTION",
+    "type": "TECHNICAL_REVIEW_GATE_UPDATE"
   },
   "external_review": {
     "required": false,
@@ -36,6 +36,9 @@
     "sandbox": "read-only",
     "runtime_verified": false,
     "scope": "LOCAL_SYNTHETIC_TECHNICAL",
-    "may_auto_merge_main": false
+    "may_auto_merge_main": false,
+    "custom_agent_sandbox_enforced": false,
+    "separate_cli_option_documented": true,
+    "backend_model_attestation": "UNVERIFIED"
   }
 }
