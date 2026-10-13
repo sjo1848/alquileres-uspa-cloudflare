@@ -25,7 +25,7 @@
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": null,
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10",
   "integration_commit": null,
   "issue_9": "OPEN",
   "issue_4": "CLOSED"
