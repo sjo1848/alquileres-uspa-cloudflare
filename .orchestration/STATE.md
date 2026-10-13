@@ -261,3 +261,10 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Independent integrity critique is bounded PASS at `.orchestration/evidence/critics/CF-AU-I01-P2-REWORK2-INTEGRITY.md`; token replacement during cleanup is statically token-fenced but not separately race-injected. Full final suite and all checks are in `.orchestration/evidence/CF-AU-I01-P2-VALIDATION.md`. One earlier attempt exposed fixture interference and was repaired; only the later 562.5 s complete HTTP suite is a PASS.
 - Integration Review and Pre-Critic Gate are complete for publication only. The exact immutable A3 commit SHA and tag will be pinned by the following external-review boundary commit on the same open PR #10.
 - No merge, deployment, paid/remote resource, real data, source write, JWT rewrite or scope expansion occurred. **Next action after publishing the boundary: await the External Independent Critic verdict on Artifact A3.**
+
+## CF-AU-I01-P2 — Artifact A3 external-review boundary (2026-10-13)
+
+- Immutable Artifact A3: commit `8e5b67668686f8543a8facc632d53f4535837c3c`, annotated tag `CF-AU-I01-P2-Artifact-A3`.
+- The immediately following boundary commit pins this exact artifact SHA in canonical status and the open PR #10 review surface. It preserves the A1/A2 ancestry and A2 REWORK-2 verdict. PR #10 remains unmerged.
+- REWORK-2 A2-F1 is closed within scope with full local HTTP verification, independent bounded integrity PASS, Integration Review and Pre-Critic PASS. See the validation ledger for exact commands, 562.5 s final suite output, and failed/interrupted attempts excluded from PASS evidence.
+- **Next action: await External Independent Critic verdict on exact Artifact A3 SHA.** Do not merge or start another task. No deployment, paid resource, real data, source write, auth/JWT rewrite or scope expansion occurred.

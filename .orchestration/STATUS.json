@@ -8,18 +8,18 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "PUBLISH_CF_AU_I01_P2_ARTIFACT_A3_IMMUTABLE_AND_PIN_EXACT_SHA_FOR_EXTERNAL_REVIEW_IN_PR_10",
+  "next_action": "AWAIT_EXTERNAL_INDEPENDENT_CRITIC_VERDICT_ON_CF-AU-I01-P2-ARTIFACT-A3_EXACT_SHA",
   "stop_reason": "EXTERNAL_REVIEW",
   "event": {
-    "seq": 30,
-    "id": "CF-AU-I01-P2@ARTIFACT-A3-PENDING-EXTERNAL-REVIEW",
-    "type": "IMMUTABLE_ARTIFACT_PUBLICATION"
+    "seq": 31,
+    "id": "CF-AU-I01-P2@ARTIFACT-A3-EXTERNAL-REVIEW-BOUNDARY",
+    "type": "IMMUTABLE_ARTIFACT_PUBLICATION_BOUNDARY"
   },
   "external_review": {
     "required": true,
     "last_audited_head": "5d888e177d3ba7c6ecd73bb96cc70434268c2abf",
     "last_verdict": "REWORK-2",
-    "artifact_head": null,
+    "artifact_head": "8e5b67668686f8543a8facc632d53f4535837c3c",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A3",
     "pending_verdict": "PENDING"
   },
