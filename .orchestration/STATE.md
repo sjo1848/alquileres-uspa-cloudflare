@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `AWAIT_CONTROLLER_NEXT_CONTRACT`
-Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
-Active task: `none — CF-AU-I01-P0P1 integrated and closed`
+State: `PENDING_EXTERNAL_REVIEW`
+Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
+Active task: `CF-AU-I01-P2 — local synthetic OWNER/D1/R2 image slice`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -209,3 +209,14 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - PR #8 is MERGED; overarching Issue #7 remains OPEN for the broader full-Cloudflare objective. CF-AU-I01-P0P1 research is the completed increment, not authorization to start P2 or other implementation.
 - Integration check found only the expected `.orchestration/STATUS.json` state conflict while incorporating PASS-bearing main. Resolution retained External PASS (seq 23) and the authorized integration action; no substantive source, auth, calculator, result, or evidence conflict occurred. No tests were rerun for this mechanical merge/state closeout; the final A4 verification ledger and external review remain authoritative.
 - **Canonical next action (superseded by Controller event seq 25):** CF-AU-I01-P2 local vertical slice authorized with explicit contract/Issue #9; no remote/paid action. No production, payment, remote resource, real data, source write or Runtime Watch action occurred.
+
+
+## CF-AU-I01-P2 — immutable Artifact A1 external-review boundary (2026-10-12)
+
+- Authorized contract: `.orchestration/contracts/CF-AU-I01-P2.md`, Controller event seq 25. Canonical lab base `main@4a8e86f06081cd9bd23369663449045cf84bdefd`; source GitHub main pin `267c531f3e3d5869240894063d3a194fa1f9680b`. Source worktree remained clean.
+- Implemented a local-only Hono/TypeScript Worker with actual local D1 and R2 bindings for the OWNER draft listing/image lifecycle. No remote Cloudflare resources, billing, deployment, production or real data.
+- Exact test ledger, limitations and source mapping: `.orchestration/evidence/CF-AU-I01-P2-VALIDATION.md`, `CF-AU-I01-P2-INTEGRATION-REVIEW.md`, `CF-AU-I01-P2-INVARIANTS.md`; independent security, integrity and technical critic records under `.orchestration/evidence/critics/`.
+- Independent internal reviews closed bounded P0/P1 findings. Pre-Critic is PASS for publication readiness only; this is not external PASS, full parity, or production approval. Explicit unresolved source divergence: private OWNER image-byte GET route; ContactEvent/AdminAuditLog remain unimplemented. Local evidence does not establish PostgreSQL lock equivalence or atomic D1/R2 writes.
+- Verification: `npm run typecheck`, `node --check tests/http.mjs`, `npm audit` (0 vulnerabilities), `git diff --check`; two sequential clean-state `npm test` runs use actual local Worker/D1/R2. Exact outcomes are in the validation ledger.
+- Immutable artifact A1: see `CF-AU-I01-P2-Artifact-A1` tag and its exact SHA in the following publication boundary record. PR #9 is to remain OPEN/unmerged and pins the artifact SHA.
+- **Next action:** await External Independent Critic review of the exact Artifact A1 SHA. No merge, deployment, paid service, source write, new task or migration increment.

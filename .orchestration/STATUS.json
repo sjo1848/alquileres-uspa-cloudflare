@@ -2,30 +2,31 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
-  "runtime_status": "READY_TO_RESUME",
-  "resume_authorized": true,
+  "runtime_status": "PENDING_EXTERNAL_REVIEW",
+  "resume_authorized": false,
   "active_task": "CF-AU-I01-P2",
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
-  "work_branch": null,
-  "next_action": "EXECUTE_FIRST_LOCAL_OWNER_LISTING_IMAGE_VERTICAL_SLICE_UNDER_.orchestration/contracts/CF-AU-I01-P2.md",
-  "stop_reason": null,
+  "work_branch": "work/cf-au-i01-p2",
+  "next_action": "AWAIT_EXTERNAL_INDEPENDENT_CRITIC_VERDICT_ON_CF-AU-I01-P2-ARTIFACT-A1_EXACT_SHA",
+  "stop_reason": "EXTERNAL_REVIEW",
   "event": {
-    "seq": 25,
-    "id": "CF-AU-I01-P2@LOCAL-VERTICAL-SLICE-AUTHORIZED",
-    "type": "CONTROLLER_NEW_TASK_CONTRACT"
+    "seq": 26,
+    "id": "CF-AU-I01-P2@ARTIFACT-A1-PENDING-EXTERNAL-REVIEW",
+    "type": "IMMUTABLE_ARTIFACT_PUBLICATION_BOUNDARY"
   },
   "external_review": {
-    "required": false,
+    "required": true,
     "last_audited_head": "c7c5704e606bda704140c972a1ca5032b09b0627",
     "last_verdict": "PASS",
-    "artifact_head": "c7c5704e606bda704140c972a1ca5032b09b0627",
-    "artifact_tag": "CF-AU-I01-P0P1-Artifact-A4",
-    "pending_verdict": null
+    "artifact_head": null,
+    "artifact_tag": "CF-AU-I01-P2-Artifact-A1",
+    "pending_verdict": "PENDING"
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/8",
-  "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
+  "pull_request": null,
+  "integration_commit": null,
+  "issue_9": "OPEN",
   "issue_4": "CLOSED"
 }

@@ -1,0 +1,13 @@
+# PostgreSQL → D1 slice map
+
+Source pin: `sjo1848/alquileres-uspa@267c531f3e3d5869240894063d3a194fa1f9680b`, Prisma schema and its historical migrations. D1 stores CUID `String` identifiers as `TEXT`; timestamps use ISO-8601 UTC `TEXT`. No historical data is copied in P2.
+
+| Source entity / fields | D1 representation | P2 disposition |
+|---|---|---|
+| `User`: `id`, `email`, `passwordHash`, `role`, `createdAt`, `updatedAt` (all required) | `users.id TEXT PK`, unique `email`, `password_hash TEXT`, checked `role OWNER/ADMIN`, nonnull ISO time strings | Operational for synthetic auth; auth reads password hash and revalidates role/email from D1. |
+| `Listing`: `id`, `ownerId`, `title`, `description`, `location`; nullable `priceAmount`, `pricePeriod`, `rentalDuration`, `maxOccupants`, `currency`, `lastConfirmedAt`, `rejectionReason`; `status`, `publicationStatus`, `availabilityStatus`, times | `listings`; FK to `users` with delete cascade; all three enums checked; every optional source field remains SQL `NULL`; integer amount remains integer | Operational only for owner draft creation/list and DRAFT/REJECTED image access. P2 does not implement other listing workflows. |
+| `ListingImage`: `id`, `listingId`, `objectKey`, `originalName`, `contentType`, `sizeBytes`, `position`, times (all required) | `listing_images`; FK cascade; unique `object_key` and `(listing_id, position)`; D1 `mime_type` ← `contentType`, `byte_size` ← `sizeBytes`; R2 holds bytes | Operational for the local image lifecycle. D1 metadata and R2 are separate stores; compensation ledger records recoverable windows. |
+| `ContactEvent`: required `id`, `listingId`, `ownerId`, `visitorName`, `visitorEmail`, `message`, `state`, `createdAt`; two cascading FKs and three source indexes | No D1 product table/index created in this increment | **NOT IMPLEMENTED / NOT MIGRATED** in P2. |
+| `AdminAuditLog`: required `id`, `actorId`, `action`, `entityType`, JSON `metadata`, `createdAt`; nullable `entityId`, `listingId`, `targetOwnerId`; actor/target FKs use RESTRICT and three source indexes | No D1 product table/index created in this increment | **NOT IMPLEMENTED / NOT MIGRATED** in P2. |
+
+P2 also creates lab-only `listing_locks` and `image_operations`; they have no PostgreSQL product-entity equivalent. They are runtime coordination/recovery metadata, not claims of schema parity. D1/SQLite constraints are executable in `migrations/0001_core.sql`.
