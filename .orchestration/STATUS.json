@@ -19,7 +19,7 @@
     "required": true,
     "last_audited_head": "4ea23b9931ebd15936af4473997cc1ecacc2bb1b",
     "last_verdict": "REWORK-1",
-    "artifact_head": null,
+    "artifact_head": "5d888e177d3ba7c6ecd73bb96cc70434268c2abf",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A2",
     "pending_verdict": "PENDING"
   },

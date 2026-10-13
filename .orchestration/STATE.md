@@ -242,5 +242,5 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 
 - A1 REWORK-1 findings A1-F1/A1-F2 are closed with only the two JWT regression-test corrections and their directly associated evidence. Canonical review is `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md`; no Worker/auth semantics or dependencies changed.
 - Security re-review: bounded PASS for positive/negative control validity and isolation. Evidence: `.orchestration/evidence/critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`. Full fresh-state test passed in 636.4 s; syntax check passed. Pre-Critic is PASS for external publication only.
-- Immutable Artifact A2: annotated tag `CF-AU-I01-P2-Artifact-A2`; exact commit SHA is pinned in the following publication-boundary commit. PR #10 remains OPEN/unmerged.
+- Immutable Artifact A2: commit `5d888e177d3ba7c6ecd73bb96cc70434268c2abf`, annotated tag `CF-AU-I01-P2-Artifact-A2`. This publication-boundary commit pins its exact SHA. PR #10 remains OPEN/unmerged.
 - **Next action:** await External Independent Critic review of the exact Artifact A2 SHA. No merge, deployment, paid services, production, real data, source changes or next task.
