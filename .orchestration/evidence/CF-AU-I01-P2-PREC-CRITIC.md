@@ -1,30 +1,26 @@
-# CF-AU-I01-P2 Pre-Critic Gate — publication readiness
+# CF-AU-I01-P2 Pre-Critic Gate — REWORK-3 candidate
 
-Date: 2026-10-13. Artifact A3: exact SHA is pinned by the following publication boundary commit.
+Date: 2026-10-13. Scope: P2 mutation acknowledgment, retry, compensation and recovery defect family. This gate is for publication to the configured delegated Controller review only; it is not an external or product PASS.
 
-## Contract and authorization
+## Authorization and boundaries
 
-- Active contract `.orchestration/contracts/CF-AU-I01-P2.md` plus canonical External REWORK-2 verdict `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A2-CRITIC.md` authorize only committed-response D1 lease-release repair, associated tests/evidence, independent integrity QA and one immutable external-review artifact.
-- Source `alquileres-uspa` remains read-only. No paid service, remote resource, deployment, production or real data used.
-- Scope remains OWNER draft listing and images; no Vue, broader API migration or next task.
+- Canonical `main` event seq 33 delegates local/synthetic technical review to `.codex/agents/project-controller.toml` (`gpt-6-luna`, `high`, `read-only`) following the runtime smoke. The recorded source policy is `.orchestration/decisions/DELEGATED-CONTROLLER-GPT6-LUNA-HIGH.md`.
+- Existing P2 REWORK-3 authorization and contract remain the only functional scope. No source repository writes, remote Cloudflare resources, billing, deployment, real data, merge, or next task.
+- A1–A3 history and tags remain preserved; the final candidate is on PR #10 and has latest canonical main as an ancestor.
 
-## Acceptance and invariant evidence
+## Evidence and checks
 
-- Executable routes/mapping: `apps/worker/src/index.ts`, `apps/worker/docs/postgres-d1-map.md`.
-- Actual D1/R2 migrations, local bindings, HTTP tests: `apps/worker/migrations`, `wrangler*.jsonc`, `tests/http.mjs`.
-- Final commands and clean-run details: `CF-AU-I01-P2-VALIDATION.md`.
-- Source/method invariant matrix: `CF-AU-I01-P2-INVARIANTS.md`.
-- Integration Review: `CF-AU-I01-P2-INTEGRATION-REVIEW.md`.
-- Independent security, integrity and technical review records: `critics/CF-AU-I01-P2-{SECURITY,INTEGRITY,INTEGRATION}.md`.
-- Critical negative cases include OWNER isolation, CSRF origin checks, 20-image cap/race, D1/R2 fault injection, compensation/recovery, and no fixture route on the product Worker. REWORK-2 specifically tests pre-effect and post-effect D1 lock-delete faults on upload, reorder and delete; checks intended HTTP status, exact cardinality, D1/R2 consistency, lock release, terminal operation records and follow-up recovery.
-- REWORK-1 JWT controls: active seeded owner and correctly signed claims accepted; same-identity correctly signed expired JWT denied; same-identity active valid-shape wrong-HMAC JWT denied. One-hour active lifetime covers the later signature assertion. Independent security critique bounded PASS: `critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`.
-- REWORK-2 independent integrity critique is bounded PASS in `critics/CF-AU-I01-P2-REWORK2-INTEGRITY.md`. It is static-only; token replacement during release is not race-injected, while both cleanup statements are token-fenced.
-- Final candidate: `npm run typecheck`, `node --check tests/http.mjs`, `git diff --check` PASS; one complete fresh-state `npm test` PASS in 562.5 s. The ledger records the earlier interrupted and failed attempts without presenting them as passes. Dependencies were unchanged; npm audit was not rerun.
+- Implementation/recovery semantics: `apps/worker/src/index.ts`, `apps/worker/migrations/0002_idempotency.sql`, `apps/worker/docs/mutation-retry-semantics.md`, `apps/worker/tests/fault-worker.ts`, and `apps/worker/tests/http.mjs`.
+- Final commands and exact clean full-suite output: `CF-AU-I01-P2-VALIDATION.md`. Typecheck, test syntax, diff whitespace and fresh local HTTP suite all passed; earlier unsuccessful REWORK-3 suite attempts are excluded and disclosed.
+- Independent security/integrity critique: `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`; final post-fix reviewer found no concrete P0/P1 or material blocker.
+- GitHub automatic review: PR #10 at `976a670340cc931898492a591c7b066ccdc9a516` completed without code suggestions. Review evidence is recorded in the validation ledger.
+- Integration Review and invariant matrix: `CF-AU-I01-P2-INTEGRATION-REVIEW.md` and `CF-AU-I01-P2-INVARIANTS.md` reconcile D1/R2 state, HTTP acknowledgment, retry identity, cleanup, and recovery limits.
+- Runtime model availability/config and read-only smoke are recorded by the orchestrator; the Controller verdict on the eventual exact artifact remains pending and must not be inferred from smoke evidence.
 
-## Truthful limits
+## Limits
 
-External review must decide the substantive candidate. This gate does not assert external PASS, full parity, production readiness, atomic D1/R2 dual-write semantics, Postgres lock equivalence, or remote Cloudflare behavior. The private image GET divergence and unmigrated source entities are explicit.
+This candidate proves only the bounded synthetic local P2 behavior exercised by its tests. It does not prove arbitrary crash atomicity across D1/R2, remote Cloudflare behavior, PostgreSQL advisory-lock equivalence, complete product parity, or production readiness. Documented divergences remain explicit.
 
 ## Disposition
 
-**PRE-CRITIC PASS for immutable Artifact A3 publication only.** A2-F1 is closed within the authorized boundary, the independent integrity critic is bounded PASS, and all final candidate checks including the full HTTP suite passed. Historical runs and unsuccessful REWORK-2 attempts are distinguished from the final result in the validation ledger. Required stop state after the publication boundary: `PENDING_EXTERNAL_REVIEW`, `resume_authorized=false`, open unmerged PR #10, exact A3 artifact SHA/tag. Do not merge or start another task before the external verdict.
+**PRE-CRITIC GATE: PASS to freeze one immutable P2 candidate for delegated `project_controller` review only.** Do not claim a substantive PASS until that independent read-only review audits the exact artifact. If it returns REWORK, resolve the bounded finding and rerun affected checks before freezing the final candidate. After a Controller PASS, publish the exact immutable tag and SHA-pinning boundary, then stop at the required external-review boundary; do not merge or begin another task.

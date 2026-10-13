@@ -58,3 +58,20 @@ HTTP coverage asserts status 201 for both upload faults, 200 for both reorder an
 - Final `npm test` on fresh PID-specific Wrangler local D1/R2 persistence: PASS, exit 0, 562.5 s. Exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (562.5s)`.
 
 Independent integrity critique: bounded PASS, static review only, recorded at `critics/CF-AU-I01-P2-REWORK2-INTEGRITY.md`. Token replacement during cleanup was not race-injected; both DELETE and fallback UPDATE match `listing_id` plus token, providing static fencing evidence. The critic did not run the HTTP suite; the runtime result above is separate.
+
+## REWORK-3 — mutation acknowledgment, retry, compensation and recovery
+
+Implementation commit: `21433103e8b8b201a442963401f10dc202b405fc`. Canonical merge commit: `976a670340cc931898492a591c7b066ccdc9a516`, whose second parent is latest `main@be60c4efbe5412d8a5317ba4d200b9a772c0cbd5`. Source repo remained unchanged at pinned source revision; all D1/R2 state was synthetic and local.
+
+The final candidate checks completed successfully:
+
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm test` — PASS, exit 0, fresh local persistence; exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (835.4s)`.
+
+The suite includes same-key create/upload/add/reorder/delete retry and changed-fingerprint conflict cases; D1 batch failures before and after effects plus zero-change acknowledgments; R2 compensation/delete failures; operation-state and lock-readback faults; sparse ADD repair; DELETE recovery with failed densification retaining its backup and nonterminal state; and later convergence. Assertions inspect HTTP status, D1 rows/order/operation state, R2 bytes or absence, and follow-up recovery. Existing JWT, isolation, concurrency and local HTTP cases remain in the full suite.
+
+Earlier REWORK-3 full-suite attempts that failed or were stopped during fault-matrix expansion are not counted as passing evidence. They were repaired before the clean final run above. The pre-REWORK-3 results retained earlier in this ledger are historical and are not substitutes for this final run. The run did not use remote bindings or real data. No dependency changed; `npm audit` was not rerun for REWORK-3.
+
+Independent reviews and scope limits: `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md` reports the final bounded internal security/integrity critique with no concrete residual P0/P1. GitHub automatic Codex review of PR #10 at `976a670340cc931898492a591c7b066ccdc9a516` completed without code suggestions (PR review submitted 2026-10-13T17:47:32Z). The separate configured `project_controller` review remains required on the exact frozen artifact; it is not represented here as completed. No claim of remote Cloudflare behavior, PostgreSQL advisory-lock equivalence, complete parity, or atomic D1/R2 dual writes is made.

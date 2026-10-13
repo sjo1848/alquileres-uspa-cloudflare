@@ -19,5 +19,5 @@
 | 15 Invariant evidence + Pre-Critic before external review | APPLIES | This matrix, Integration Review, critic evidence and Pre-Critic package. PASS for publication readiness only. |
 | 16 External critic audits immutable artifact | APPLIES | New artifact tag/SHA and open PR boundary; pending external review. PASS as process boundary. |
 | 17 Session end is not task boundary | APPLIES | State records exact pending external-review action. PASS. |
-| 18 Reusable critic failures promoted | APPLIES | Lease fencing, cleanup fairness, D1/R2 fault postconditions and cross-listing checks are incorporated and evidenced. PASS. |
+| 18 Reusable critic failures promoted | APPLIES | Prior lease fencing plus REWORK-3 idempotency, acknowledgment readback, cleanup semantics, retained backups, dense-order recovery, D1/R2 fault postconditions and convergence cases are incorporated and evidenced in the validation ledger and independent critique. PASS within tested local paths. |
 | 19 Cost model source reconciliation | N/A | No new cost model in P2. |

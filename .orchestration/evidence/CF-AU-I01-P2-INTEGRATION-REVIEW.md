@@ -21,6 +21,16 @@ The result is an executable local synthetic P2 slice, not full application parit
 
 Integration disposition: **candidate meets the bounded P2 technical contract for external review**, subject to the exact final test results in the validation ledger. This review is not a self-issued external PASS.
 
+## REWORK-3 — mutation acknowledgment, retry, compensation and recovery
+
+The consolidated REWORK-3 implementation is commit `21433103e8b8b201a442963401f10dc202b405fc`, integrated with canonical method/policy update `main@be60c4efbe5412d8a5317ba4d200b9a772c0cbd5` by merge commit `976a670340cc931898492a591c7b066ccdc9a516`. It preserves the A1–A3 artifact ancestry. The source repository remains at its pinned read-only revision.
+
+Across listing create and image add/reorder/delete, the review checked the relationship between durable D1/R2 effects, returned HTTP status, retry identity and operation-ledger recovery. Idempotency keys replay confirmed results and reject changed request fingerprints. Post-commit readback reconciles ambiguous D1 acknowledgments. DELETE backup cleanup failures no longer turn a committed deletion into an error response; failed densification keeps recovery state and backup available. ADD repairs sparse positions before append and checks resulting order. Recovery handles failed state writes and does not restore an orphan object when its D1 row is already absent.
+
+The REWORK-3 HTTP suite exercises before-effect, after-effect and zero-change acknowledgments, R2 compensation/deletion, operation-state failures, lock readback failures, confirmed-request replay, and sparse-order repair/reaper recovery. It checks HTTP status, D1 state, R2 bytes/object absence and convergence after retry. Exact commands, final duration, and excluded earlier unsuccessful attempts are recorded in the validation ledger. Independent security/integrity critiques are recorded in `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`; GitHub automatic review of PR #10 head `976a670` completed without code suggestions.
+
+Remaining limits are unchanged: local synthetic Workerd/D1/R2 does not establish remote multi-instance timing, impossible-to-rule-out arbitrary crash windows, full product parity, or production readiness. Disclosed divergences and deferred source entities remain unresolved.
+
 ## REWORK-1 delta
 
 The two JWT security regression controls were repaired without changing Worker or dependency code. Active claims identify seeded `owner-a`/matching email and remain valid for one hour; the same-claims active positive control returns 200, its correctly signed expired counterpart returns 401, and the same active claims signed with a wrong HMAC return 401. `node --check tests/http.mjs` and one full fresh-state local HTTP suite passed after this edit; exact result and the deliberately interrupted preliminary run are transparently recorded in `CF-AU-I01-P2-VALIDATION.md`. Independent security QA bounded PASS is in `critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`.
