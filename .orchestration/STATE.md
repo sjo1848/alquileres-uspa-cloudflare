@@ -243,4 +243,12 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - A1 REWORK-1 findings A1-F1/A1-F2 are closed with only the two JWT regression-test corrections and their directly associated evidence. Canonical review is `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md`; no Worker/auth semantics or dependencies changed.
 - Security re-review: bounded PASS for positive/negative control validity and isolation. Evidence: `.orchestration/evidence/critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`. Full fresh-state test passed in 636.4 s; syntax check passed. Pre-Critic is PASS for external publication only.
 - Immutable Artifact A2: commit `5d888e177d3ba7c6ecd73bb96cc70434268c2abf`, annotated tag `CF-AU-I01-P2-Artifact-A2`. This publication-boundary commit pins its exact SHA. PR #10 remains OPEN/unmerged.
-- **Next action:** await External Independent Critic review of the exact Artifact A2 SHA. No merge, deployment, paid services, production, real data, source changes or next task.
+- This A2 publication boundary is historical and was superseded by External REWORK-2 recorded below.
+
+## CF-AU-I01-P2 — Artifact A2 External Independent Critic REWORK-2 (2026-10-13)
+
+- Audited exact immutable A2 `5d888e177d3ba7c6ecd73bb96cc70434268c2abf`, tag `CF-AU-I01-P2-Artifact-A2`, boundary `d5346ada61287637987c5372fe6c9e9d323de7b2`; PR #10 OPEN/unmerged.
+- **A1-F1/F2 JWT security QA: CLOSED.** Valid seeded owner claims, correctly signed active positive 200, same-identity expired 401 and well-formed wrong-HMAC 401 demonstrated in test source and reported final fresh-state suite PASS (636.4s). Canceled preliminary run is explicitly excluded.
+- **New P1 A2-F1**: D1 token-fenced `unlock()` awaited in `finally` after durable mutation can fail and overwrite a committed 201/200 with 500, permitting duplicate retry and stalled one-hour lease. Binding review: `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A2-CRITIC.md`. Automated PR review independently found same defect.
+- **External verdict: REWORK-2**, bounded ONLY to lease release/ack consistency, recovery, realistic D1 before/after lock-delete fault injection and independent integrity QA. No previous auth/cost/other modules rewrite. Preserve A1/A2 history. Publish exact immutable A3 on PR #10 with fresh full suite and Pre-Critic; STOP for External Independent Critic.
+- Filename hyphen limitation inherited from source regex is nonblocking P2 usability follow-up, not part of this P1 repair. No Human Gate, remote/billing/deployment/real-data/source changes.
