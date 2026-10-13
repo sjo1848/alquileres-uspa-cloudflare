@@ -8,19 +8,19 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "APPLY_CF_AU_I01_P2_ARTIFACT_A1_REWORK_1_TWO_SECURITY_NEGATIVE_TESTS_FROM_.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md",
+  "next_action": "APPLY_CF_AU_I01_P2_ARTIFACT_A2_REWORK_2_LOCK_RELEASE_COMMITTED_RESPONSE_FROM_.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A2-CRITIC.md",
   "stop_reason": null,
   "event": {
-    "seq": 27,
-    "id": "CF-AU-I01-P2@ARTIFACT-A1-EXTERNAL-REWORK-1",
+    "seq": 29,
+    "id": "CF-AU-I01-P2@ARTIFACT-A2-EXTERNAL-REWORK-2",
     "type": "EXTERNAL_REVIEW_REWORK"
   },
   "external_review": {
     "required": false,
-    "last_audited_head": "4ea23b9931ebd15936af4473997cc1ecacc2bb1b",
-    "last_verdict": "REWORK-1",
-    "artifact_head": "4ea23b9931ebd15936af4473997cc1ecacc2bb1b",
-    "artifact_tag": "CF-AU-I01-P2-Artifact-A1",
+    "last_audited_head": "5d888e177d3ba7c6ecd73bb96cc70434268c2abf",
+    "last_verdict": "REWORK-2",
+    "artifact_head": "5d888e177d3ba7c6ecd73bb96cc70434268c2abf",
+    "artifact_tag": "CF-AU-I01-P2-Artifact-A2",
     "pending_verdict": null
   },
   "human_gate": null,
