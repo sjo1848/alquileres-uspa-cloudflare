@@ -24,3 +24,6 @@
 17. A runtime/session ending is not a product/task boundary when authorized routine work remains.
 18. Reusable failures discovered by critics should be promoted into this registry.
 19. Cost scenarios must be independently recalculated and their modeled request/data paths reconciled with source behavior before a cost verdict is stated.
+
+20. Review granularity is risk-based: Codex must close entire P0/P1 defect classes and obtain internal independent criticism *before* a milestone external artifact; minor nonmaterial P2 polish is backlog, not an automatic external REWORK.
+21. Local P3/P4 parity development is conditionally delegated only after P2 External PASS/integration; no local delegation authorizes deployment, billing, source repo writes or self-approval of release checkpoints.

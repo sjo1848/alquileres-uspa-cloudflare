@@ -41,6 +41,10 @@ Source application reference: `sjo1848/alquileres-uspa`. Treat it as read-only f
 
 GitHub canonical state outranks conversational summaries. Drive is a research/archive mirror and never overrides runtime authorization.
 
+## Autonomous local delivery train — delegated authority (2026-10-13)
+
+The Human explicitly requested greater Codex autonomy. Binding policy: `.orchestration/decisions/AUTONOMOUS-LOCAL-DELIVERY-TRAIN-V1.md`. It overrides **the frequency of routine local implementation handoffs**, not source/parity/security gates. Codex repairs entire defect classes, runs independent internal criticism and GitHub automated review before publishing the next immutable milestone. Each final **substantive** P2/P3/P4 milestone still needs ChatGPT External Independent Critic PASS before main integration. After actual P2 PASS and integration, P3/P4 local synthetic phases may start autonomously within the standing delegated scope without asking Human/Controller for each new micro-contract. No auto-merge to main on critical code, no remote/paid resources or unattended execution. Runtime Watch Issue #5 is separate and disabled.
+
 ## Autonomous execution loop
 
 Once an authorized Task Contract exists, Codex owns:
@@ -105,7 +109,7 @@ Any substantive integration change, changed product/schema/security semantics, o
 - Source repository is read-only reference.
 - Current target hypothesis: Vue/Vite Static Assets + Workers/Hono/TypeScript + D1 + R2.
 - Application auth semantics must be preserved unless an explicit decision authorizes a change.
-- Cost target is USD 0 inside free-tier limits; exceeding free-tier or requiring billing is a Human Gate.
+- Strict USD 0 is not a product requirement. Workers Paid is an accepted candidate for local planning, but any actual subscription, charge, remotely provisioned resource or deployment requires a Human Gate.
 - No production, real customer data or irreversible cutover during laboratory BUILD.
 - GitHub is canonical technical state; Drive is research/archive mirror and must not override GitHub runtime state.
 

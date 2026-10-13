@@ -1,10 +1,10 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `PENDING_EXTERNAL_REVIEW`
-Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `CF-AU-I01-P2 — local synthetic OWNER/D1/R2 image slice`
+State: `AWAIT_CONTROLLER_NEXT_CONTRACT`
+Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
+Active task: `none — CF-AU-I01-P0P1 integrated and closed`
 
-> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent task section at the end of this file and mirrored in `.orchestration/STATUS.json`.
+> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
 ## Source baseline
 
@@ -210,40 +210,12 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Integration check found only the expected `.orchestration/STATUS.json` state conflict while incorporating PASS-bearing main. Resolution retained External PASS (seq 23) and the authorized integration action; no substantive source, auth, calculator, result, or evidence conflict occurred. No tests were rerun for this mechanical merge/state closeout; the final A4 verification ledger and external review remain authoritative.
 - **Canonical next action (superseded by Controller event seq 25):** CF-AU-I01-P2 local vertical slice authorized with explicit contract/Issue #9; no remote/paid action. No production, payment, remote resource, real data, source write or Runtime Watch action occurred.
 
-
-## CF-AU-I01-P2 — immutable Artifact A1 external-review boundary (2026-10-12)
-
-- Authorized contract: `.orchestration/contracts/CF-AU-I01-P2.md`, Controller event seq 25. Canonical lab base `main@4a8e86f06081cd9bd23369663449045cf84bdefd`; source GitHub main pin `267c531f3e3d5869240894063d3a194fa1f9680b`. Source worktree remained clean.
-- Implemented a local-only Hono/TypeScript Worker with actual local D1 and R2 bindings for the OWNER draft listing/image lifecycle. No remote Cloudflare resources, billing, deployment, production or real data.
-- Exact test ledger, limitations and source mapping: `.orchestration/evidence/CF-AU-I01-P2-VALIDATION.md`, `CF-AU-I01-P2-INTEGRATION-REVIEW.md`, `CF-AU-I01-P2-INVARIANTS.md`; independent security, integrity and technical critic records under `.orchestration/evidence/critics/`.
-- Independent internal reviews closed bounded P0/P1 findings. Pre-Critic is PASS for publication readiness only; this is not external PASS, full parity, or production approval. Explicit unresolved source divergence: private OWNER image-byte GET route; ContactEvent/AdminAuditLog remain unimplemented. Local evidence does not establish PostgreSQL lock equivalence or atomic D1/R2 writes.
-- Verification: `npm run typecheck`, `node --check tests/http.mjs`, `npm audit` (0 vulnerabilities), `git diff --check`; two sequential clean-state `npm test` runs use actual local Worker/D1/R2. Exact outcomes are in the validation ledger.
-- Immutable artifact A1: commit `4ea23b9931ebd15936af4473997cc1ecacc2bb1b`, annotated tag `CF-AU-I01-P2-Artifact-A1`. The publication boundary commit records this exact SHA. PR #10 (`https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10`) is OPEN/unmerged and pins the artifact SHA.
-- This A1 publication boundary is historical and was superseded by the External Independent Critic REWORK-1 recorded below.
-
 ## CF-AU-I01-P2 — Artifact A1 External Independent Critic REWORK-1 (2026-10-12)
 
 - Immutable A1 `4ea23b9931ebd15936af4473997cc1ecacc2bb1b`, annotated tag `CF-AU-I01-P2-Artifact-A1`, pinned in boundary `d301b6cb6743bafd2761ce0780090b1aa1f75d68`; PR #10 current HEAD `e6b664e90be59c5a09c487dd46e80f1da35cd82a` adds only the PR reference. PR remains OPEN/unmerged.
 - **Verdict: REWORK-1 — two P1 test-coverage false positives only.** Canonical review: `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md`. Expired signed JWT uses nonexistent ID `fixture-owner-a` rather than seeded `owner-a`; forged Bearer test `fake.jwt.token` fails JSON parsing before signature verification. Neither proves actual crypto bypass; both fail to guard genuine security regressions.
 - Codex authorized only to replace those tests with valid-account/valid-shape positive and negative controls, rerun final local HTTP suite, obtain independent security critic for test quality, refresh brief validation and Pre-Critic, and publish immutable A2 on existing PR. Worker implementation, full D1/R2 flows and prior 522/543s execution evidence are preserved. If real security defect discovered, repair and re-critique before next artifact.
 - No Human Gate or payment, remote resource, deployment, production, real data, source repo changes, PR merge or full API expansion authorized. New next action supersedes original P2 start: fix P1 test falsifiability before external PASS.
-
-
-### REWORK-1 execution checkpoint — completed (2026-10-13)
-
-- Integrated canonical `main@3e9e47f91f7dc190d39af4473997cc1ecacc2bb1b` into PR #10 in merge commit `81946e0`; retained A1 tag/history and the authoritative REWORK-1 verdict.
-- Updated only the two JWT regression scenarios in `apps/worker/tests/http.mjs`: active seeded owner token is correctly signed and accepted; same identity correctly signed but expired is denied; same identity active token with wrong HMAC is denied. Active control expiry is one hour to remain valid through the later signature assertion. Worker implementation/dependencies were unchanged.
-- Independent security critique passed the test falsifiability and one-hour window (`.orchestration/evidence/critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`). `node --check tests/http.mjs` passed. One full fresh local Worker/D1/R2 HTTP suite passed in 636.4 s; exact output and the intentionally cancelled preliminary run are recorded in `.orchestration/evidence/CF-AU-I01-P2-VALIDATION.md`.
-- Integration Review and Pre-Critic were narrowly refreshed. Pre-Critic PASS is publication readiness only; no substantive self-PASS. Source behavior and all unrelated implementation remain unchanged.
-- **Next action:** await External Independent Critic verdict on immutable Artifact A2 in PR #10. No merge, deployment, paid service or new task.
-
-
-## CF-AU-I01-P2 — Artifact A2 external-review boundary (2026-10-13)
-
-- A1 REWORK-1 findings A1-F1/A1-F2 are closed with only the two JWT regression-test corrections and their directly associated evidence. Canonical review is `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A1-CRITIC.md`; no Worker/auth semantics or dependencies changed.
-- Security re-review: bounded PASS for positive/negative control validity and isolation. Evidence: `.orchestration/evidence/critics/CF-AU-I01-P2-REWORK1-JWT-SECURITY.md`. Full fresh-state test passed in 636.4 s; syntax check passed. Pre-Critic is PASS for external publication only.
-- Immutable Artifact A2: commit `5d888e177d3ba7c6ecd73bb96cc70434268c2abf`, annotated tag `CF-AU-I01-P2-Artifact-A2`. This publication-boundary commit pins its exact SHA. PR #10 remains OPEN/unmerged.
-- This A2 publication boundary is historical and was superseded by External REWORK-2 recorded below.
 
 ## CF-AU-I01-P2 — Artifact A2 External Independent Critic REWORK-2 (2026-10-13)
 
@@ -253,18 +225,15 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - **External verdict: REWORK-2**, bounded ONLY to lease release/ack consistency, recovery, realistic D1 before/after lock-delete fault injection and independent integrity QA. No previous auth/cost/other modules rewrite. Preserve A1/A2 history. Publish exact immutable A3 on PR #10 with fresh full suite and Pre-Critic; STOP for External Independent Critic.
 - Filename hyphen limitation inherited from source regex is nonblocking P2 usability follow-up, not part of this P1 repair. No Human Gate, remote/billing/deployment/real-data/source changes.
 
-## CF-AU-I01-P2 — Artifact A2 REWORK-2 execution and A3 publication candidate (2026-10-13)
+## A3 External Critic + Autonomy Policy — 2026-10-13 (event seq 32)
 
-- Continued from canonical `main@ce55ab2b5c26d506b648eae64cc6c4cce0d34538`; preserved A1/A2 and the External REWORK-2 verdict in same-PR merge `6c27b39be35ce60883375d616cc5d803a71a11a1` (parents `d5346ada61287637987c5372fe6c9e9d323de7b2`, `ce55ab2b5c26d506b648eae64cc6c4cce0d34538`).
-- Repaired bounded A2-F1 in `unlock()`: token-scoped bounded DELETE retries, ownership verification, token-scoped lease-expiry fallback, and contained cleanup failures so `finally` cannot replace an already confirmed route response. The fault proxy is test-only and injects D1 lock DELETE exceptions before and after the effect.
-- Added HTTP cases for upload, reorder and delete under both faults. Assertions cover intended HTTP status, exact cardinality, API/D1 identity and order, dense positions, actual R2 bytes/removal, terminal operation state, lock absence and subsequent successful mutation. JWT tests and auth implementation were not changed in this rework.
-- Independent integrity critique is bounded PASS at `.orchestration/evidence/critics/CF-AU-I01-P2-REWORK2-INTEGRITY.md`; token replacement during cleanup is statically token-fenced but not separately race-injected. Full final suite and all checks are in `.orchestration/evidence/CF-AU-I01-P2-VALIDATION.md`. One earlier attempt exposed fixture interference and was repaired; only the later 562.5 s complete HTTP suite is a PASS.
-- Integration Review and Pre-Critic Gate are complete for publication only. The exact immutable A3 commit SHA and tag will be pinned by the following external-review boundary commit on the same open PR #10.
-- No merge, deployment, paid/remote resource, real data, source write, JWT rewrite or scope expansion occurred. **Next action after publishing the boundary: await the External Independent Critic verdict on Artifact A3.**
+- Exact P2 A3 `8e5b67668686f8543a8facc632d53f4535837c3c` tag and boundary `dceff5071a8be19acfc3a423a601f8b98e025264` verified. **REWORK-3** on postcommit DELETE-backup cleanup acknowledging 503 after successful D1/R2 removal (confirmed in code, fault test and Codex PR review). Binding verdict `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A3-CRITIC.md`. Prior A2-F1 unlock response issue is closed within tested scope; final fresh local suite recorded PASS 562.5 s, not independently rerun by Controller.
+- Human asked to stop micro-review ping-pong and increase Codex autonomy. New binding delegated policy `.orchestration/decisions/AUTONOMOUS-LOCAL-DELIVERY-TRAIN-V1.md`. Codex owns *whole failure-response/acknowledgment class*, internal expert critique, tests, GitHub automated PR feedback and bounded rework without external review per patch. Re-present **one final P2 candidate** after all material findings are cleared, no auto-merge and no self-PASS.
+- Following P2 External PASS and deterministic integration: Codex is conditionally authorized to plan/implement P3 Marketplace API and P4 Vue-connected local synthetic parity slices in lab, staging work on non-main branch and seeking one independent external review at each coherent functional checkpoint. No new Human message per ticket.
+- No Remote/Cloudflare billing/public preview or prod, no source writes/real data, no Runtime Watch activation, no self-granted security exception. Strict USD 0 is no longer required, but paid action still requires Human Gate. This appended state supersedes older zero-cost research instructions.
 
-## CF-AU-I01-P2 — Artifact A3 external-review boundary (2026-10-13)
+## Historical CF-AU-I01-P2 Artifact A3 publication and A2 REWORK-2 execution
 
-- Immutable Artifact A3: commit `8e5b67668686f8543a8facc632d53f4535837c3c`, annotated tag `CF-AU-I01-P2-Artifact-A3`.
-- The immediately following boundary commit pins this exact artifact SHA in canonical status and the open PR #10 review surface. It preserves the A1/A2 ancestry and A2 REWORK-2 verdict. PR #10 remains unmerged.
-- REWORK-2 A2-F1 is closed within scope with full local HTTP verification, independent bounded integrity PASS, Integration Review and Pre-Critic PASS. See the validation ledger for exact commands, 562.5 s final suite output, and failed/interrupted attempts excluded from PASS evidence.
-- **Next action: await External Independent Critic verdict on exact Artifact A3 SHA.** Do not merge or start another task. No deployment, paid resource, real data, source write, auth/JWT rewrite or scope expansion occurred.
+- Artifact A3 was `8e5b67668686f8543a8facc632d53f4535837c3c`, tag `CF-AU-I01-P2-Artifact-A3`, boundary `dceff5071a8be19acfc3a423a601f8b98e025264` on PR #10. It preserved A1/A2 ancestry and carried Pre-Critic PASS for publication only.
+- A2 REWORK-2 repaired token-fenced bounded `unlock()` cleanup, tested before/after DELETE effect for upload/reorder/delete, and passed the fresh full local suite in 562.5s. Its final evidence and independent bounded integrity critique remain in the P2 validation ledger and `critics/CF-AU-I01-P2-REWORK2-INTEGRITY.md`.
+- Main event seq 32 supersedes that A3 pending-review boundary with REWORK-3 authorization. The new bounded class is postcommit acknowledgment, idempotency, compensation and recovery across the complete P2 image journey as defined in `.orchestration/reviews/CF-AU-I01-P2-ARTIFACT-A3-CRITIC.md` and `.orchestration/decisions/AUTONOMOUS-LOCAL-DELIVERY-TRAIN-V1.md`.
