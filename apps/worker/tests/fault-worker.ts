@@ -21,6 +21,8 @@ type Fault =
   | 'batch-before'
   | 'batch-after'
   | 'batch-zero-changes'
+  | 'idem-commit-before'
+  | 'idem-commit-after'
   | 'operation-state-before'
   | 'operation-state-after'
   | 'delete-compensation-before'
@@ -41,6 +43,7 @@ export default {
     const isLockRelease=(query:string)=>/^\s*DELETE\s+FROM\s+listing_locks\b/i.test(query);
     const isLockReadback=(query:string)=>/^\s*SELECT\s+token\s*,\s*expires_at\s+FROM\s+listing_locks\b/i.test(query);
     const isOperationStateUpdate=(query:string)=>/^\s*UPDATE\s+image_operations\s+SET\s+state\s*=/i.test(query);
+    const isIdempotencyCommit=(query:string)=>/^\s*UPDATE\s+idempotency_records\s+SET\s+state\s*=\s*'COMMITTED'/i.test(query);
 
     const db=new Proxy(env.DB,{get(target,property){
       const value=Reflect.get(target,property,target);
@@ -67,6 +70,7 @@ export default {
         const interceptLockRelease=isLockRelease(query);
         const interceptLockReadback=isLockReadback(query);
         const interceptOperationState=isOperationStateUpdate(query);
+        const interceptIdempotencyCommit=isIdempotencyCommit(query);
         return new Proxy(statement,{get(stmt,stmtProperty){
           const stmtValue=Reflect.get(stmt,stmtProperty,stmt);
           if(stmtProperty!=='bind')return typeof stmtValue==='function'?stmtValue.bind(stmt):stmtValue;
@@ -83,6 +87,7 @@ export default {
                 if(!injected&&interceptLockRelease&&isWrite&&fault==='lock-delete-before')failBefore();
                 if(!injected&&interceptLockReadback&&isRead&&fault==='lock-select-before')failBefore();
                 if(!injected&&interceptOperationState&&isWrite&&fault==='operation-state-before')failBefore();
+                if(!injected&&interceptIdempotencyCommit&&isWrite&&fault==='idem-commit-before')failBefore();
                 if(!injected&&interceptListingInsert&&isWrite&&fault==='listing-insert-after'){
                   injected=true;
                   await boundValue.apply(boundStatement,args);
@@ -99,6 +104,11 @@ export default {
                   failAfter();
                 }
                 if(!injected&&interceptOperationState&&isWrite&&fault==='operation-state-after'){
+                  injected=true;
+                  await boundValue.apply(boundStatement,args);
+                  failAfter();
+                }
+                if(!injected&&interceptIdempotencyCommit&&isWrite&&fault==='idem-commit-after'){
                   injected=true;
                   await boundValue.apply(boundStatement,args);
                   failAfter();
