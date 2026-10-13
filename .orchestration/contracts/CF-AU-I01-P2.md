@@ -65,3 +65,7 @@ A different OWNER must never view/mutate the first owner's private data; public 
 ## Completion criterion and follow-on
 
 **PASS requires actual local Worker API + D1 + R2 bytes + tested owner image lifecycle, concurrency and failure recovery**, not merely documentation. Negative results are legitimate but must be reported as UNSOLVED with evidence; cannot claim product readiness. This is partial platform functionality: next planned increments are public listings/admin/contact and **real Vue frontend integration**, then remote staging on Cloudflare after budget/operational Human Gate.
+
+## Human Amendment — 2026-10-13: delegated technical review authority
+
+For *future local/synthetic milestone reviews only*, the Human directed Codex to invoke `.codex/agents/project-controller.toml` (`gpt-6-luna`, `high`, `read-only`) as routine Controller/Critic instead of sending each review to this ChatGPT conversation. This supersedes the previous line requiring ChatGPT for those future technical verdicts, but not prior historical verdicts, P2 product acceptance criteria, payment/remote/production gates, or main protected-merge requirements. Exact policy: `.orchestration/decisions/DELEGATED-CONTROLLER-GPT6-LUNA-HIGH.md`. Verify actual model/sandbox at runtime; no fallback/self-PASS. Current A3 remains REWORK-3 until corrected.

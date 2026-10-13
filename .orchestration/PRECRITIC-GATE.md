@@ -1,6 +1,6 @@
 # Mandatory Pre-Critic Gate
 
-Before publishing any substantive artifact for External Independent Critic, Codex must prove:
+Before publishing a local substantive artifact for `project_controller` delegated review, Codex must prove:
 
 ## Contract
 
@@ -38,6 +38,6 @@ As applicable:
 
 ## Publication
 
-Only after this gate passes may the task be published as an immutable artifact awaiting External Independent Critic.
+Only after this gate passes may a local artifact be presented to `project_controller` for read-only review. Verify agent model/effort and sandbox before first verdict.
 
 Codex cannot use this gate to self-declare substantive PASS.
