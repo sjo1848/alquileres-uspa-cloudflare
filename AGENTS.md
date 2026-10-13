@@ -1,3 +1,7 @@
+# Human override — delegated Luna 6 High Controller (2026-10-13)
+
+**For future local/synthetic technical P2/P3/P4 reviews only, the Human explicitly replaced mandatory ChatGPT Independent Critic dispatch with Codex subagent `project_controller`** at `.codex/agents/project-controller.toml`, model `gpt-6-luna` and `model_reasoning_effort = "high"`, read-only. Binding policy: `.orchestration/decisions/DELEGATED-CONTROLLER-GPT6-LUNA-HIGH.md`. The following historic instruction text must be interpreted subject to this later, narrower override. Codex must call the reviewer itself, process REWORK/PASS without user as messenger and cannot claim a separate external trusted principal, self-merge main, spend, deploy, access real data or change source product/risk decisions. Runtime model/sandbox smoke remains PENDING. Prior ChatGPT verdicts remain historically valid.
+
 # Runtime Instructions — Alquileres Uspallata Cloudflare Lab
 
 You are the Runtime Orchestrator for this repository. Reconstruct state from persisted repository evidence; do not rely on conversational history.

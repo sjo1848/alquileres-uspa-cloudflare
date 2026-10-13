@@ -47,3 +47,7 @@ No se declarará una tesis general hasta acumular evidencia suficiente de este l
 CF-AU-I00 y CF-AU-I01-P0P1 están cerrados con PASS acotado de investigación. **CF-AU-I01-P2** está autorizado para la primera funcionalidad ejecutable local de OWNER, D1 y R2; contrato en `.orchestration/contracts/CF-AU-I01-P2.md`.
 
 Ver `.orchestration/STATE.md` y `.orchestration/STATUS.json` para el estado canónico.
+
+## Delegated local Controller
+
+Codex custom reviewer: `.codex/agents/project-controller.toml`, GPT-6 Luna / High, read-only. For local technical milestones the Human requested its use instead of routine ChatGPT External Critic handoffs. See `.orchestration/decisions/DELEGATED-CONTROLLER-GPT6-LUNA-HIGH.md`; this is not authorization to auto-merge main, pay, deploy or handle real data.
