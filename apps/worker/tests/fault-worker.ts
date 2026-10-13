@@ -8,6 +8,8 @@ type Fault =
   | 'delete-target-after'
   | 'delete-backup-before'
   | 'delete-backup-after'
+  | 'delete-head-before'
+  | 'delete-head-after'
   | 'restore-put-before'
   | 'lock-delete-before'
   | 'lock-delete-after'
@@ -117,6 +119,11 @@ export default {
     };
     const bucket=new Proxy(env.IMAGES,{get(target,property){
       const value=Reflect.get(target,property,target);
+      if(property==='head')return async(key:string)=>{
+        if(!injected&&fault==='delete-head-before'&&key.startsWith('listings/'))failBefore();
+        if(!injected&&fault==='delete-head-after'&&key.startsWith('listings/')){injected=true;await value.call(target,key);failAfter();}
+        return value.call(target,key);
+      };
       if(property==='put')return async(key:string,...args:unknown[])=>{
         if(!injected&&fault==='put-after'&&key.startsWith('listings/')){injected=true;await value.call(target,key,...args);failAfter();}
         if(!injected&&fault==='restore-put-before'&&key.startsWith('listings/'))failBefore();

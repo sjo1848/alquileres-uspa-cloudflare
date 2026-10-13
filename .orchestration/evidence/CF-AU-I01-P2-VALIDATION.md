@@ -75,3 +75,18 @@ The suite includes same-key create/upload/add/reorder/delete retry and changed-f
 Earlier REWORK-3 full-suite attempts that failed or were stopped during fault-matrix expansion are not counted as passing evidence. They were repaired before the clean final run above. The pre-REWORK-3 results retained earlier in this ledger are historical and are not substitutes for this final run. The run did not use remote bindings or real data. No dependency changed; `npm audit` was not rerun for REWORK-3.
 
 Independent reviews and scope limits: `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md` reports the final bounded internal security/integrity critique with no concrete residual P0/P1. GitHub automatic Codex review of PR #10 at `976a670340cc931898492a591c7b066ccdc9a516` completed without code suggestions (PR review submitted 2026-10-13T17:47:32Z). The separate configured `project_controller` review remains required on the exact frozen artifact; it is not represented here as completed. No claim of remote Cloudflare behavior, PostgreSQL advisory-lock equivalence, complete parity, or atomic D1/R2 dual writes is made.
+
+### Consolidated REWORK-3 candidate after Controller and internal rework
+
+The `835.4s` result above belongs to the earlier `2143310` implementation candidate. It is retained as history and is **not** the final verification for this candidate. The configured delegated Controller reviewed `98cec68d81c7f80a7371ec5d60c80467d1cee476` and returned REWORK with a P1 concerning DELETE acknowledgment after D1 target removal but ignored survivor compaction. That finding and repair are detailed in `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`.
+
+After the Controller review, subsequent full-suite attempts exposed and fixed test/runtime issues. One run reached an expired synthetic login cookie; the test-only `JWT_EXPIRES_IN` was raised to two hours in `wrangler.test.jsonc` (production defaults and explicit JWT expiration/forgery controls are unchanged). A later run exposed reassignment of the test's operation record and loss of its `.id`; this was fixed by retaining the immutable operation ID. These attempts are historical and are not counted as final passes.
+
+Final current-candidate checks, after all code changes and independent internal re-critiques:
+
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm test` — PASS, exit 0, clean PID-specific local D1/R2 persistence; exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (797.1s)`.
+
+The final suite adds DELETE target-absent replay coverage for R2 HEAD errors before/after effect, proves those errors return 503 and preserve `NEEDS_REPAIR` plus the recovery backup, gates sparse-order list reads with 503, then verifies same-key acknowledgment and scheduled recovery to dense order, backup cleanup and `CLEANED`. The `798.4s` run passed an intermediate fix before these final tri-state/read-gate cases and is not the final result. Dependencies did not change; `npm audit` was not rerun.

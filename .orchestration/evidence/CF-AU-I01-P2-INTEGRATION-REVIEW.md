@@ -21,6 +21,14 @@ The result is an executable local synthetic P2 slice, not full application parit
 
 Integration disposition: **candidate meets the bounded P2 technical contract for external review**, subject to the exact final test results in the validation ledger. This review is not a self-issued external PASS.
 
+### Consolidated REWORK-3 review after delegated Controller feedback
+
+The delegated Controller reviewed the prior candidate `98cec68d81c7f80a7371ec5d60c80467d1cee476` and returned REWORK. Its P1 on ignored survivor compaction after a committed DELETE was repaired with an explicit `RAISE(IGNORE)` HTTP/recovery case. Two subsequent independent internal security/integrity critiques identified and then closed additional risks: treating failed R2 HEAD as confirmed absence, and exposing sparse image ordinals through GET. The implementation now retains `NEEDS_REPAIR` and its backup on uncertain HEAD, returns 503 while image order is sparse, and allows same-key replay plus scheduled recovery to converge. Detailed critique history and dispositions: `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`.
+
+Final integration evidence is the current validation ledger's fresh full-suite result (797.1s), typecheck, HTTP test syntax and whitespace checks. Both latest internal critics found no remaining P0/P1 in the bounded failure/acknowledgment/retry/compensation/recovery class; their review is static and independent of the runtime suite. Prior GitHub automatic review at `976a670` is stale relative to this candidate, so it does not count as final review evidence. Material limitations remain unchanged: local synthetic bindings do not establish remote multi-instance behavior, arbitrary crash-window elimination, atomic cross-service writes, full product parity, or production readiness.
+
+Integration disposition: **Pre-Critic candidate only**. Await fresh GitHub automatic review and delegated read-only Controller review on the exact current frozen SHA. No substantive PASS is claimed here.
+
 ## REWORK-3 — mutation acknowledgment, retry, compensation and recovery
 
 The consolidated REWORK-3 implementation is commit `21433103e8b8b201a442963401f10dc202b405fc`, integrated with canonical method/policy update `main@be60c4efbe5412d8a5317ba4d200b9a772c0cbd5` by merge commit `976a670340cc931898492a591c7b066ccdc9a516`. It preserves the A1–A3 artifact ancestry. The source repository remains at its pinned read-only revision.
