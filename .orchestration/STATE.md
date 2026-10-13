@@ -237,3 +237,10 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Human explicitly replaced routine ChatGPT external technical critique with a read-only Codex subagent named `project_controller`. New `.codex/agents/project-controller.toml` pins `gpt-6-luna`, effort `high`, sandbox `read-only`; `.codex/config.toml` enables agents. Binding policy `.orchestration/decisions/DELEGATED-CONTROLLER-GPT6-LUNA-HIGH.md` supersedes old review dispatch only for future LOCAL/SYNTHETIC milestones.
 - PR #10 A3 remains REWORK-3, never PASS. Codex continues full image ack/cleanup/recovery defect class and uses the new subagent as local technical Controller, not ChatGPT messages. It must verify actual model and sandbox in Codex CLI before reporting delegated PASS; nothing has been executed with the new agent yet.
 - Same Codex security domain: no independent authenticated release authority and no auto-merge to main without branch protections. No remote/paid/production/source/real-data authority, and Runtime Watch remains inactive.
+
+## Event 34 — local reviewer runtime correction, PR #10 automated review complete (2026-10-13)
+
+- GitHub review of PR #10 head `9d58295c173f95d69c4cfcbb9626ec5d2d212dc1` completed with two new idempotency acknowledgments: upload 201 and reorder 200 without proven durable replay record, both requiring triage and tests before A4.
+- Removed false custom TOML sandbox guarantee. Native subagents inherit parent permissions, as explained in `.orchestration/decisions/CONTROLLER-RUNTIME-CORRECTION.md`.
+- Documented an explicit GPT-6 Luna High `codex exec` subprocess in read-only CLI mode as alternate local reviewer when native spawn cannot be verified. Not run here; backend identity not attested. `BLOCKED_MODEL_CONFIG` remains unresolved until an actual supported local reviewer run.
+- No merge, spend, deployment, original repo edits, or Human product risk decisions.

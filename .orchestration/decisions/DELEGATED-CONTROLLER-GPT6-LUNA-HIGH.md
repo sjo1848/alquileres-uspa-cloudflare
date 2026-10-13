@@ -21,3 +21,7 @@ Human instruction: a Codex subagent now takes over the routine technical Control
 No actual billing/Workers Paid subscription or overage, remote Cloudflare D1/R2/Workers resource, public staging/production, real customer data, source repo writes, changed security/product acceptance or irreversible cutover without Human Gate. Strict USD 0 is NOT a requirement; this does NOT authorize spending. Runtime Watch Issue #5 remains NOT ENABLED.
 
 Official configuration docs: https://developers.openai.com/codex/subagents and https://developers.openai.com/api/docs/models/gpt-6-luna.
+
+## Superseding sandbox correction — 2026-10-13
+
+The earlier claim that a standalone custom agent TOML could enforce `sandbox_mode=read-only` was INCORRECT. Codex's current docs state sandbox/approval settings are inherited from the parent. The key is removed, and for operationally separated review the supported alternative is explicit `codex exec --model gpt-6-luna -c 'model_reasoning_effort="high"' --sandbox read-only` in a separate process, as described in `.orchestration/decisions/CONTROLLER-RUNTIME-CORRECTION.md`. This is NOT native agent sandboxing or independently verified provider model identity. A4 still requires closing fresh GitHub automated P2 findings plus an actual supported reviewer run.
