@@ -8,8 +8,8 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "RESUME_EXISTING_P2_REWORK3_AND_SPAWN_PROJECT_CONTROLLER_GPT6_LUNA_HIGH_AFTER_RUNTIME_SMOKE",
-  "stop_reason": null,
+  "next_action": "PROCESS_GITHUB_REVIEW_FOR_37E9860; THEN_OBTAIN_SUPPORTED_VERIFIED_READ_ONLY_PROJECT_CONTROLLER_REVIEW_ON_EXACT_SHA; PUBLISH_A4_ONLY_AFTER_NONBLOCKED_PASS",
+  "stop_reason": "BLOCKED_MODEL_CONFIG",
   "event": {
     "seq": 33,
     "id": "CF-AU-PROJECT-CONTROLLER@LUNA6-HIGH",
@@ -37,5 +37,15 @@
     "runtime_verified": false,
     "scope": "LOCAL_SYNTHETIC_TECHNICAL",
     "may_auto_merge_main": false
+  },
+  "candidate_review": {
+    "sha": "37e9860170e0958e4ab5b9bfef0e8b82f2e2bad1",
+    "artifact_published": false,
+    "delegated_controller_verdict": "BLOCKED_MODEL_CONFIG",
+    "actual_runtime_model_evidence": "unverified",
+    "runtime_banner": "gpt-6-luna / openai / high / read-only",
+    "prior_delegated_controller_verdict": "BLOCKED_MODEL_CONFIG_ON_D4445C2",
+    "github_automatic_review": "RUNNING_AT_LAST_POLL",
+    "next_action": "PROCESS_GITHUB_REVIEW_FOR_37E9860; THEN_OBTAIN_SUPPORTED_VERIFIED_READ_ONLY_PROJECT_CONTROLLER_REVIEW_ON_EXACT_SHA; PUBLISH_A4_ONLY_AFTER_NONBLOCKED_PASS"
   }
 }

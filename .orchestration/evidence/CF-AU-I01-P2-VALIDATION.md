@@ -90,3 +90,36 @@ Final current-candidate checks, after all code changes and independent internal 
 - `npm test` — PASS, exit 0, clean PID-specific local D1/R2 persistence; exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (797.1s)`.
 
 The final suite adds DELETE target-absent replay coverage for R2 HEAD errors before/after effect, proves those errors return 503 and preserve `NEEDS_REPAIR` plus the recovery backup, gates sparse-order list reads with 503, then verifies same-key acknowledgment and scheduled recovery to dense order, backup cleanup and `CLEANED`. The `798.4s` run passed an intermediate fix before these final tri-state/read-gate cases and is not the final result. Dependencies did not change; `npm audit` was not rerun.
+
+### GitHub automatic review and final reorder-replay repair
+
+GitHub's automatic review of candidate `d4445c2af1abbfef813f0f8e06b630c4e981cf4e` completed at 2026-10-13T19:19:37Z. It identified that a committed idempotent reorder was checked only after current cardinality validation, so deleting a different image could make a same-key retry return 400 instead of its stored result. The fix moves the matching `COMMITTED` replay ahead of list cardinality validation, validates the stored response is an array, and preserves owner checks, request fingerprint checking, and the listing lease. A regression case performs a real three-image reorder, deletes another image, retries with the now-out-of-range position, and verifies the historical response plus unchanged dense D1 state. Review thread: `https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10#discussion_r4262996076`.
+
+Independent `p2_security_integrity_critic` then found a related P1 on the no-op reorder path: the handler swallowed an idempotency COMMITTED-write failure and still returned 200, permitting a later same-key retry to apply after intervening state changes. The no-op path now only returns 200 if its owner/scope/key/fingerprint/state-fenced D1 update reports one changed row or a readback proves the exact matching COMMITTED result; otherwise it returns 503. Test-only `idem-commit-before` and `idem-commit-after` controls cover failure before and after D1 effect. HTTP tests verify 503 + PENDING on pre-effect loss and a later retry, and verified 200 + COMMITTED on post-effect loss followed by a cardinality change and exact replay.
+
+Two independent read-only re-critiques (`p2_postfix_critic`, `p2_security_integrity_critic`) found no remaining P0/P1 or material blocker in the reorder replay repair. Their exact bounded verdicts and the optional follow-up note are in `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`. The first two complete-suite attempts on these added tests were intentionally stopped during subsequent adversarial review/test-strengthening and are not counted as passes. Final latest candidate checks:
+
+- `npm run typecheck` — PASS.
+- `node --check tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm test` — PASS, exit 0, fresh PID-specific local D1/R2 persistence; exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (891.9s)`.
+
+This final run includes the new before/after idempotency-record faults, real reorder replay after deletion, D1 state/HTTP assertions, and all prior JWT, isolation, concurrency, R2/D1 compensation and scheduled-recovery cases. No dependency changed. A fresh GitHub automatic review has been requested on commit `a7cbd8087576c3229267c5d60c2326eb0e08ceb2`; its state is recorded in canonical status and must be resolved before freezing an artifact.
+
+### DELETE dense-order acknowledgment and confirmed replay rework
+
+GitHub automatic review on `a7cbd80` completed at 2026-10-13T19:45:17Z and identified two findings:
+
+- P1: after D1 removed the target but failed survivor compaction, the handler returned 200 while image-list GET remained 503 and recovery was pending. The handler now returns 503, keeps the operation/idempotency state repairable, and only acknowledges after exact dense order is established and a same-key retry confirms the result. If repair marker writes themselves are ignored and stale `COMMITTED` values remain, replay performs a fresh dense-order check before any success.
+- P2: an already-confirmed same-key DELETE replay rechecked R2 HEAD and could turn a durable 200 into 503 on transient R2 errors. A matching committed idempotency record and terminal/cleanup-pending DELETE operation now replay 200 only after current D1 order is confirmed dense; R2 backup cleanup remains reaper work.
+
+The independent security/integrity re-critique found a deeper P1: the original atomic D1 batch can write `COMMITTED` markers even when a trigger ignores survivor compaction; subsequent `NEEDS_REPAIR` marker writes can also be ignored. A later replay must not trust stale markers while order is sparse. The replay shortcut now requires `orderIs(...)`; if false it attempts bounded repair and remains 503 if density cannot be proven. HTTP tests inject ignored compaction and ignored operation/idempotency repair-state updates, prove stale COMMITTED markers still return 503, then remove the faults, run scheduled recovery to dense order/backup cleanup, and confirm same-key success. The same fixtures test R2 HEAD before/after errors on uncommitted repair and confirmed replay without R2 reads for already-committed requests.
+
+Both independent internal reviewers re-reviewed the final behavior and found no remaining P0/P1 or material blocker; they did not run tests. The final fresh local test run after these changes is:
+
+- `npm run typecheck` — PASS.
+- `node --check tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm test` — PASS, exit 0; exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (828.8s)`.
+
+Final code commit is `37e9860170e0958e4ab5b9bfef0e8b82f2e2bad1`, preserving A1–A3 ancestry on PR #10. A fresh GitHub automatic review has been requested for this SHA; no A4 is frozen or tagged while it runs and while the delegated runtime-verification block remains unresolved.
