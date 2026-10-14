@@ -1,18 +1,24 @@
 # CF-AU-I01-P2 local OWNER image slice
 
-This is a local-only Hono Worker. It requires Node 24+, npm, and Wrangler 4.149.0. It uses synthetic accounts and Wrangler's local D1/R2 stores; configuration has no remote binding or production secret. The test harness uses `wrangler dev --local` and never calls `--remote`.
+This is a local-only Hono Worker. It requires Node 24+, npm, and Wrangler 4.149.0. It uses synthetic accounts and Wrangler's local D1/R2 stores; configuration has no remote binding or production secret. Authentication fails closed unless `JWT_SECRET` is provided with at least 32 UTF-8 bytes. The test harness uses `wrangler dev --local` and never calls `--remote`.
 
 ```sh
 npm ci && npm run local:up -- --var JWT_SECRET:replace-with-a-local-only-secret
 ```
 
-`local:up` applies the D1 migration, seeds synthetic users, and starts the local Worker. Keep this terminal running. Login/logout and cookie-authenticated POST/PATCH/DELETE requests must carry an `Origin` exactly matching the Worker origin; browser same-origin requests do this automatically. This check blocks cross-origin form/fetch and login-CSRF side effects. Bearer-authenticated API mutations do not use cookies and are not subject to the Origin check.
+`local:up` applies the D1 migration, seeds synthetic users, and starts the local Worker. The command-line value above is a local-only placeholder; use a different random secret of at least 32 bytes outside test runs, and never commit it. Login and `/listings/*` return 503 when the secret is absent or too short; no empty-key JWT is accepted. Keep this terminal running. Login/logout and cookie-authenticated POST/PATCH/DELETE requests must carry an `Origin` exactly matching the Worker origin; browser same-origin requests do this automatically. This check blocks cross-origin form/fetch and login-CSRF side effects. Bearer-authenticated API mutations do not use cookies and are not subject to the Origin check.
 
 In another terminal, run the one-command HTTP integration suite (it applies migrations, resets/seeds synthetic users and starts its own local Worker):
 
 ```sh
 npm test
 npm run typecheck
+```
+
+The focused local replay fault test exercises ignored D1 idempotency updates for keyed upload/reorder, a later mutation, and historical response replay:
+
+```sh
+npm run test:retry
 ```
 
 Seed owners use `synthetic-owner-password-1`; password hashes are bcrypt cost 12 and are inherited from the earlier source-compatible local auth fixture. Never reuse these users or secret outside the local lab.

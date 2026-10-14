@@ -6,6 +6,7 @@
     "dev": "wrangler dev --local",
     "local:up": "wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --file tests/seed.sql && wrangler dev --local",
     "test": "node tests/http.mjs",
+    "test:retry": "node tests/retry-idempotency.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": { "bcryptjs": "3.0.3", "hono": "4.13.13" },
