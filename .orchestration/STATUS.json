@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "WAIT_FOR_GITHUB_AUTOMATED_REVIEW_OF_5ae63d70f10acc74d9c594aad348f8b8fe4accc6_THEN_REQUEST_READ_ONLY_GPT6_LUNA_HIGH_CONTROLLER_REVIEW_OF_EXACT_FINAL_SHA",
+  "next_action": "POLL_GITHUB_AUTOMATED_REVIEW_OF_CURRENT_PR10_HEAD_THEN_RUN_READ_ONLY_GPT6_LUNA_HIGH_CONTROLLER_ON_THAT_EXACT_SHA",
   "stop_reason": "WAITING_AUTOMATED_REVIEW_AND_EXACT_SHA_CONTROLLER",
   "event": {
-    "seq": 35,
-    "id": "CF-AU-P2@REORDER-RECOVERY-CANDIDATE-PUBLISHED",
-    "type": "CANDIDATE_PUBLISHED_FOR_AUTOMATED_REVIEW"
+    "seq": 36,
+    "id": "CF-AU-P2@STATE-BOUNDARY-AFTER-CANDIDATE-PUSH",
+    "type": "STATE_BOUNDARY_UPDATE"
   },
   "external_review": {
     "required": false,
