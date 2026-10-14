@@ -199,3 +199,20 @@ The separate CLI Controller completed read-only static inspection of exact candi
 ## Superseding exact-SHA Controller verdict — `cdb8970`
 
 The delegated separate-process Controller reviewed exact candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` against canonical `main@91db05fb343d0bc020335bfc05790a2f3f824b82` and returned **PASS for the bounded local technical review**, with no P0/P1 found in its static audit. Its session `turn_context` verified `model=gpt-6-luna`, `effort=high`, and `sandbox_policy.type=read-only`; provider/backend identity remains without cryptographic attestation. It did not run tests. It confirmed source/test tree hashes match the tested `e1b9350` / `5b9fe7d` tree; `npm test` is recorded PASS in 3557.1s with synthetic local Wrangler D1/R2 and the other verification commands listed above. The Controller’s exact verdict, paths and limits are in `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`. The earlier runtime BLOCKED attempt is superseded; no Artifact A4 is yet tagged.
+
+## Latest automatic-review rework — recovery log privacy and retired NULL replay repair (2026-10-14)
+
+GitHub automatic review of exact candidate `30c126e516f223dd798e448b68a757a08a2a8bfd` identified two P2 findings. First, four scheduled reorder recovery warnings logged the caller-controlled `Idempotency-Key`; these now emit only static event names. `tests/retry-idempotency.mjs` adds a source regression guard against `request_key` or `operationId` in those recovery error logs. Second, a retired `NEEDS_REPAIR/retryable=0` operation could strand a matching PENDING idempotency row whose `result_json` was NULL. Retirement repair now fills only NULL (or already-identical) result data for a matching fingerprint and recoverable state, and verifies exact state/result afterward. A new HTTP case seeds this legacy state, invokes scheduled recovery, checks the copied operation plan, and proves same-key replay reaches terminal 409 rather than permanent 503.
+
+Independent read-only re-review by the auth/runtime specialist confirmed recovery logs no longer contain client-controlled values; remaining operation IDs are generated internally. A separate D1/R2 saga/recovery specialist confirmed the conditional NULL repair, exact readback, terminal replay result, and regression case. Both found no P0/P1/P2; reviewers did not edit or execute tests.
+
+Verification after both changes:
+
+- `git diff --check` — PASS.
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `node --check tests/retry-idempotency.mjs` — PASS.
+- `npm run test:retry` — PASS: `PASS focused keyed upload/reorder ignored-marker and historical-replay checks`.
+- `npm test` — PASS, exit 0, fresh PID-specific local Wrangler D1/R2 persistence; focused suite plus full HTTP suite: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1366.7s)`.
+
+No dependencies changed; the prior `npm audit --audit-level=high` result remains applicable. Tests use only synthetic local D1/R2 and Worker bindings. This is not remote Cloudflare, production, full parity, or atomic D1/R2 evidence. These two findings are resolved locally; fresh GitHub automatic review and separate GPT-6 Luna High read-only Controller review are still required on the final evidence candidate. No Artifact A4 is yet published.

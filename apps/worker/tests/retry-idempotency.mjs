@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { rm } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 
 const root=new URL('../',import.meta.url).pathname,port=9900+(process.pid%500),base=`http://127.0.0.1:${port}`,persist=`/tmp/cf-au-p2-retry-${process.pid}`;
+const workerSource=await readFile(new URL('../src/index.ts',import.meta.url),'utf8');
+const reorderRecovery=workerSource.slice(workerSource.indexOf('async function reconcilePendingReorders'),workerSource.indexOf('export default'));
+assert.doesNotMatch(reorderRecovery,/console\.error\([^\n]*(?:request_key|operationId)/,'reorder recovery logs exclude caller-controlled idempotency keys');
 const run=args=>new Promise((resolve,reject)=>{const p=spawn('npx',['wrangler','--config','wrangler.test.jsonc','--persist-to',persist,...args],{cwd:root,env:{...process.env,NO_COLOR:'1'},stdio:['ignore','pipe','pipe']});let out='',err='';p.stdout.on('data',x=>out+=x);p.stderr.on('data',x=>err+=x);p.on('error',reject);p.on('close',code=>code===0?resolve(out+err):reject(Error(`${args.join(' ')}: ${out}${err}`)));});
 const rows=async sql=>{const out=await run(['d1','execute','DB','--local','--command',sql]);return JSON.parse(out.slice(out.indexOf('['),out.lastIndexOf(']')+1))[0].results;};
 await run(['d1','migrations','apply','DB','--local']);await run(['d1','execute','DB','--local','--file','tests/seed.sql']);

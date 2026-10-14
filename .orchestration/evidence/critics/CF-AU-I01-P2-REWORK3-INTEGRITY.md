@@ -81,3 +81,9 @@ Reviewed tree: source/tests committed in `e1b935042e044a7f32f21b08f09463b866902f
 - **Auth/runtime/API:** no actionable auth/runtime/API regression on exact implementation commit `e1b935042e044a7f32f21b08f09463b866902fe7`. The review confirms fallback for legacy NULL `listing_id`, guarded NULL `result_json` repair, pair readback, and unchanged auth handlers. The reviewer did not test or edit.
 
 Critics did not edit or execute tests. The complete local synthetic `npm test` on checkpoint `5b9fe7d5e6ea756f94267f321cbf12b61805bc8d` passed in 3557.1 seconds. This is internal evidence, not the GitHub automatic review or the delegated Controller verdict.
+
+## 2026-10-14 — independent review of latest automatic-review findings
+
+**Auth/runtime review:** No remaining caller-controlled idempotency key or other sensitive field appears in scheduled reorder recovery logs. The four warnings now serialize only static event names; remaining production log fields are static or generated internally. Regression guard covers the recovery error-log patterns. No P0/P1/P2 found. Read-only; no tests run.
+
+**D1/R2 saga/recovery review:** Retired reorder repair accepts a NULL `result_json` only for a row with the exact operation fingerprint and PENDING/NEEDS_REPAIR state; the conditional write uses the same fence and readback confirms exact fingerprint/state/result. Existing mismatched results, fingerprints, and terminal states are rejected. The new HTTP regression seeds a retired operation with a matching PENDING NULL replay row, runs scheduled recovery, asserts the copied plan, and verifies same-key replay returns terminal 409. No P0/P1/P2 found. Read-only; no tests run. A separate explicit test asserting no-overwrite for mismatched fingerprint/non-NULL result would strengthen coverage but is not blocking given the SQL predicates and readback.
