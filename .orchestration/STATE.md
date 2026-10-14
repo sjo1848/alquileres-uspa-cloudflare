@@ -244,3 +244,9 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Removed false custom TOML sandbox guarantee. Native subagents inherit parent permissions, as explained in `.orchestration/decisions/CONTROLLER-RUNTIME-CORRECTION.md`.
 - Documented an explicit GPT-6 Luna High `codex exec` subprocess in read-only CLI mode as alternate local reviewer when native spawn cannot be verified. Not run here; backend identity not attested. `BLOCKED_MODEL_CONFIG` remains unresolved until an actual supported local reviewer run.
 - No merge, spend, deployment, original repo edits, or Human product risk decisions.
+
+## Event 41 — feasible Luna High Controller gate + PR #10 privacy finding (2026-10-14)
+
+- User choice remains exact GPT-6 Luna/High/read-only. Previous method required unavailable provider-signed backend identity; this was NOT requested by Human. New binding `.orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md` accepts an actually executed, explicitly selected no-fallback read-only CLI reviewer with full command/session/test provenance as an operational local technical review, while recording backend identity as UNVERIFIED (never fabricating cryptographic certainty). Prior `BLOCKED_MODEL_CONFIG` is historical, NOT retroactive PASS.
+- Latest GitHub automatic review on PR #10 head `5dce70aa9065feb74dbf2f61ccf54241b9cdb815` found raw user-controlled Idempotency-Key in scheduled reorder recovery logs; repair before next candidate and obtain new independent reviewer verdict on NEW SHA. Existing candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` with 3557.1s local HTTP PASS remains recorded evidence, not newly rerun Controller tests.
+- No Artifact A4 yet, no PR merge, remote/cloud service, payment, source writes or real data. Codex may resume routine P2 review and repair without Human courier.
