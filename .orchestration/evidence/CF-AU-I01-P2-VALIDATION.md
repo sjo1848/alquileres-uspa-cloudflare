@@ -182,3 +182,10 @@ Runtime: Node `v24.18.0`, npm `12.0.2`, Wrangler `4.149.0`. All bindings, data, 
 Independent reviewers rechecked the final recovery paths: reorder/idempotency/concurrency, D1/R2 saga/integrity, and auth/runtime. They found no actionable P0/P1/P2; they did not modify code or execute tests. Their full exact-tree review notes are appended to `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`.
 
 This verification is local evidence only. GitHub automatic review and a fresh separate-process `project_controller` GPT-6 Luna High read-only review on the frozen exact candidate remain required. Artifact A4 is not yet published; no merge, deployment, paid service, real data or source-repository write occurred.
+
+
+## Exact candidate review boundary — `cdb8970` (2026-10-14)
+
+GitHub automatic review of PR #10 candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` completed at `2026-10-14T15:11:59Z`; no new review suggestions or comments were posted for the run. Older comment threads were distinguished by their original commit and creation time.
+
+A separate `project_controller` run was attempted twice with requested `gpt-6-luna`, HIGH reasoning, and read-only sandbox. Both failed before reviewer initialization because the CLI could not initialize its app-server under the read-only filesystem (`os error 30`). No code review, verdict, or test execution occurred in that process. Model backend identity and sandbox enforcement remain unverified; exact details are in `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`. Consequently no technical PASS or Artifact A4 is claimed.

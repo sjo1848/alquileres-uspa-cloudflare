@@ -280,3 +280,13 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - `origin/main` was freshly verified at `91db05fb343d0bc020335bfc05790a2f3f824b82` and remains an ancestor; PR #10 is OPEN/CLEAN and all A1–A3 commits remain reachable.
 - Next action: push the evidence and state boundary commit to the existing PR branch, request/poll GitHub automated review on its exact SHA, resolve any material finding autonomously with revalidation, then invoke the separate read-only GPT-6 Luna High Controller on the exact final pushed SHA. No A4 until exact-SHA Controller PASS and final Pre-Critic.
 - No merge, deployment, paid resource, real data or source-repository write.
+
+
+## CF-AU-I01-P2 REWORK-3 — exact candidate review boundary (2026-10-14)
+
+- Reconstructed canonical GitHub `main` at `91db05fb343d0bc020335bfc05790a2f3f824b82`; it is an ancestor of PR #10 candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e`. PR #10 remains OPEN, no merge. A1–A3 history/tags remain preserved.
+- GitHub automated review for exact candidate `cdb8970` completed at `2026-10-14T15:11:59Z`; there are no new review comments or suggestions for that run. Older review threads were checked by timestamp/original commit and are not new findings for this candidate.
+- Attempted documented separate CLI review with requested `gpt-6-luna`, `model_reasoning_effort=high`, `--sandbox read-only`, `--json`; retried with `--ignore-user-config --ephemeral` while retaining the same model, effort and sandbox. Both attempts failed before a reviewer session initialized: `failed to initialize in-process app-server client: Read-only file system (os error 30)`. The CLI process flags were observed, but reviewer startup, runtime model identity and sandbox enforcement were not verified. No code review verdict or technical PASS resulted; exact run notes are in `evidence/critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.
+- Candidate local test evidence remains that recorded in `evidence/CF-AU-I01-P2-VALIDATION.md`; no tests were rerun in this continuation. No A4/tag was published.
+- Exact next action: rerun `project_controller` via the documented separate `codex exec` in an execution runtime where the app-server can initialize without relaxing `--sandbox read-only`; inspect the exact candidate SHA and obtain a non-blocked verdict. Only an evidence-backed PASS permits A4 publication.
+- Canonical runtime status: `READY_TO_RESUME`, resume authorized. No Human Gate, merge, deployment, paid service, remote Cloudflare resource, real data, or source-repository write occurred.

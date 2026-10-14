@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "PUSH the state/evidence-updated candidate on work/cf-au-i01-p2 to PR #10; request/poll GitHub automatic review on exact pushed SHA; resolve any findings with focused and complete local revalidation; then run separate read-only project_controller GPT-6 Luna High on that exact final SHA.",
+  "next_action": "Rerun the separate project_controller CLI review on exact PR #10 candidate cdb8970ce06fb03d841bd9b2ba32769d78c5629e in a runtime that allows Codex app-server initialization while preserving --sandbox read-only; verify the process actually starts, then review exact SHA and only publish A4 after an evidence-backed PASS.",
   "stop_reason": null,
   "event": {
-    "seq": 38,
-    "id": "CF-AU-P2@PRECRITIC-PASS-READY-FOR-GITHUB-REVIEW",
-    "type": "CANDIDATE_READY_FOR_REVIEW"
+    "seq": 39,
+    "id": "CF-AU-P2@GITHUB-REVIEW-CLEAN-CONTROLLER-RUNTIME-BLOCKED",
+    "type": "READY_TO_RESUME"
   },
   "external_review": {
     "required": false,
@@ -39,7 +39,9 @@
     "may_auto_merge_main": false,
     "custom_agent_sandbox_enforced": false,
     "separate_cli_option_documented": true,
-    "backend_model_attestation": "UNVERIFIED"
+    "backend_model_attestation": "UNVERIFIED",
+    "last_attempt_sha": "cdb8970ce06fb03d841bd9b2ba32769d78c5629e",
+    "last_attempt_result": "BLOCKED_MODEL_CONFIG: codex exec failed initializing in-process app-server under read-only filesystem"
   },
-  "candidate_head": "c0e5cb503a9ede218c2edb70dbae8250bf8ce34c"
+  "candidate_head": "cdb8970ce06fb03d841bd9b2ba32769d78c5629e"
 }
