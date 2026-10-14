@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "REPAIR_PR10_IDEMPOTENCY_REPLAY_RECORD_FINDINGS_THEN_OBTAIN_SUPPORTED_GPT6_LUNA_HIGH_READ_ONLY_REVIEW_OF_NEW_EXACT_SHA",
-  "stop_reason": "BLOCKED_MODEL_CONFIG_UNTIL_RUNTIME_REVIEWER_VERIFIED",
+  "next_action": "WAIT_FOR_GITHUB_AUTOMATED_REVIEW_OF_5ae63d70f10acc74d9c594aad348f8b8fe4accc6_THEN_REQUEST_READ_ONLY_GPT6_LUNA_HIGH_CONTROLLER_REVIEW_OF_EXACT_FINAL_SHA",
+  "stop_reason": "WAITING_AUTOMATED_REVIEW_AND_EXACT_SHA_CONTROLLER",
   "event": {
-    "seq": 34,
-    "id": "CF-AU-P2@AUTOMATED-REVIEW-COMPLETE-REVIEWER-RUNTIME-CORRECTION",
-    "type": "TECHNICAL_REVIEW_GATE_UPDATE"
+    "seq": 35,
+    "id": "CF-AU-P2@REORDER-RECOVERY-CANDIDATE-PUBLISHED",
+    "type": "CANDIDATE_PUBLISHED_FOR_AUTOMATED_REVIEW"
   },
   "external_review": {
     "required": false,
@@ -29,7 +29,7 @@
   "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "issue_4": "CLOSED",
   "review_authority": {
-    "reviewer_kind": "delegated_codex_subagent",
+    "reviewer_kind": "delegated_codex_separate_process",
     "agent": "project_controller",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
@@ -40,5 +40,6 @@
     "custom_agent_sandbox_enforced": false,
     "separate_cli_option_documented": true,
     "backend_model_attestation": "UNVERIFIED"
-  }
+  },
+  "candidate_head": "5ae63d70f10acc74d9c594aad348f8b8fe4accc6"
 }
