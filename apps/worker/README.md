@@ -8,7 +8,7 @@ npm ci && npm run local:up -- --var JWT_SECRET:replace-with-a-local-only-secret
 
 `local:up` applies the D1 migration, seeds synthetic users, and starts the local Worker. The command-line value above is a local-only placeholder; use a different random secret of at least 32 bytes outside test runs, and never commit it. Login and `/listings/*` return 503 when the secret is absent or too short; no empty-key JWT is accepted. Keep this terminal running. Login/logout and cookie-authenticated POST/PATCH/DELETE requests must carry an `Origin` exactly matching the Worker origin; browser same-origin requests do this automatically. This check blocks cross-origin form/fetch and login-CSRF side effects. Bearer-authenticated API mutations do not use cookies and are not subject to the Origin check.
 
-In another terminal, run the one-command HTTP integration suite (it applies migrations, resets/seeds synthetic users and starts its own local Worker):
+In another terminal, run the one-command integration suite. It first runs the focused idempotency/replay cases, then applies migrations, resets/seeds synthetic users and starts the full local HTTP Worker suite:
 
 ```sh
 npm test

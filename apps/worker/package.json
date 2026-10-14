@@ -5,10 +5,17 @@
   "scripts": {
     "dev": "wrangler dev --local",
     "local:up": "wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --file tests/seed.sql && wrangler dev --local",
-    "test": "node tests/http.mjs",
+    "test": "node tests/retry-idempotency.mjs && node tests/http.mjs",
     "test:retry": "node tests/retry-idempotency.mjs",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": { "bcryptjs": "3.0.3", "hono": "4.13.13" },
-  "devDependencies": { "@cloudflare/workers-types": "5.20261012.1", "typescript": "5.9.3", "wrangler": "4.149.0" }
+  "dependencies": {
+    "bcryptjs": "3.0.3",
+    "hono": "4.13.13"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261012.1",
+    "typescript": "5.9.3",
+    "wrangler": "4.149.0"
+  }
 }

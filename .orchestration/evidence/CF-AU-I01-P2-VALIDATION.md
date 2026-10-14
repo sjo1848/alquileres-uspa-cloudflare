@@ -123,3 +123,41 @@ Both independent internal reviewers re-reviewed the final behavior and found no 
 - `npm test` — PASS, exit 0; exact output: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (828.8s)`.
 
 Final code commit is `37e9860170e0958e4ab5b9bfef0e8b82f2e2bad1`, preserving A1–A3 ancestry on PR #10. A fresh GitHub automatic review has been requested for this SHA; no A4 is frozen or tagged while it runs and while the delegated runtime-verification block remains unresolved.
+
+## Consolidated REWORK-3 — GitHub JWT-secret finding and D1/R2 retry audit (2026-10-14)
+
+The latest GitHub automatic review of the previously pushed merge head `2ccaaef627bfedcca0f08a3914228a68043160d1` found a P1: missing `JWT_SECRET` became an empty HMAC key. The implementation now rejects missing or fewer than 32 UTF-8-byte secrets before signing or `/listings/*` verification; login/private API return 503 when the binding is misconfigured. Tests cover absent secret, empty configured secret plus an empty-key signed token, and a 31-byte secret. The test-only fault worker strips/overrides the binding and is not selected by `wrangler.jsonc`.
+
+The broader image-mutation audit also closed retry/concurrency/recovery gaps: keyed upload and reorder acknowledgments require durable matching replay records; original reorder plans survive partial D1 writes; another mutation cannot invalidate a pending order; exact `(scope, key)` matching prevents same-text-key bypass; committed historical replay is resolved before gates/current-cardinality checks; add compensation and delete cleanup verify R2 absence; resolved-no-op deletes cannot remove D1 metadata; terminal compensation has an explicit `cleanup_complete` state for reaper fairness. Focused trigger and HTTP checks assert durable D1 rows/order, response status, R2 bytes/absence, retry result and scheduled convergence.
+
+Implementation candidate commit: `408ea30a51bb74a3fc4eab27037292edd9f4f03a`, pushed to PR #10 without modifying main or rewriting the A1–A3 ancestry. The test run was against the identical `apps/worker` source/test tree immediately before that commit:
+
+- `npm run test:retry` — PASS: `PASS focused keyed upload/reorder ignored-marker and historical-replay checks`.
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm audit --audit-level=high` — PASS, 0 vulnerabilities.
+- `npm test` — PASS, exit 0, fresh PID-specific Wrangler local persistence, `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1243.5s)`.
+
+Runtime versions: Node `v24.18.0`, npm `12.0.2`, Wrangler `4.149.0`. All data and D1/R2 operations were local synthetic fixtures. No remote Cloudflare bindings, paid services, deployments, real data or source-repository writes occurred. The first full-suite process was stopped after the new GitHub P1 was discovered and is excluded. Independent internal reviewers found no remaining P0/P1 in the revised auth, reorder, upload/delete and reaper paths; their reviews were read-only and did not substitute for execution.
+
+GitHub automatic review of `408ea30` has been explicitly requested and is pending at this ledger update. No exact-SHA Controller verdict or Pre-Critic PASS is claimed here; publish neither Artifact A4 nor a review boundary until GitHub review completes, exact-SHA delegated Controller review returns technical PASS, and the final Pre-Critic gate is refreshed.
+
+## Consolidated candidate after GitHub reorder-recovery findings (2026-10-14)
+
+GitHub automatic review on `408ea30a51bb74a3fc4eab27037292edd9f4f03a` completed and identified two findings: abandoned `PENDING` reorder reservations could indefinitely block mutations if the original client never retried (P1), and the documented default `npm test` omitted `tests/retry-idempotency.mjs` (P2). The current candidate adds migration `0004_reorder_recovery.sql`, stores a listing association and retryability state for reorder operations, and runs a scheduled reconciliation that obtains the listing lease, validates the exact reserved plan and image set, converges to the saved dense order, and confirms both operation and idempotency records. If the image set makes replay impossible, the old operation becomes `NEEDS_REPAIR` and nonretryable; it no longer blocks other mutations and the same key receives 409. The default `npm test` now runs focused replay checks followed by the full HTTP suite.
+
+The first full-suite attempt found a test-visible recovery gap: when D1 ignored only the operation marker update, the idempotency result update was conditioned on the operation marker already being `COMMITTED`, so it remained `PENDING`. The condition was corrected to require the exact matching operation reservation with `retryable=1`, plus the same live lease and exact dense-order guard. This allows either durable marker to be independently recorded under the verified D1 postcondition, and a subsequent retry or scheduled reconciliation repairs the missing counterpart. `confirmReorderOperation` also verifies `retryable=1` on readback. The failed first attempt is excluded from pass evidence.
+
+Final checks on the current worktree:
+
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm run test:retry` — PASS: `PASS focused keyed upload/reorder ignored-marker and historical-replay checks`.
+- `npm test` — PASS, exit 0, fresh PID-specific Wrangler D1/R2 persistence; the default command ran `tests/retry-idempotency.mjs` and then the full HTTP suite: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1122.2s)`.
+- `npm audit --audit-level=high` — PASS, 0 vulnerabilities (run before this latest source-only recovery delta; dependency files unchanged).
+
+The HTTP tests exercise successful stale-plan reaper convergence, retained exact historical replay, invalidated-plan retirement and nonblocking behavior, same-key rejection, competing-mutation barriers, and the ignored-marker idempotency/operation repair path. Local synthetic fixtures only; no real customer data, remote bindings, payment, deployment, source repository changes or merge. Canonical `main` was fetched and verified at `91db05fb343d0bc020335bfc05790a2f3f824b82`, an ancestor of the existing PR branch. Internal read-only specialists independently reviewed the reaper, D1/R2 saga/retry behavior, and cross-cutting runtime/security; no P0/P1/P2 was found after the final marker-predicate adjustment. Their reviews did not run tests.
+
+This is validation for the current candidate only. GitHub automatic review of the next pushed SHA and the separate `project_controller` process review of that exact SHA are still required; no Artifact A4 or technical PASS is claimed at this ledger entry.
