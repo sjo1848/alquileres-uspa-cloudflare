@@ -271,3 +271,12 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Local checkpoint commit: `e1b935042e044a7f32f21b08f09463b866902fe7` (source and HTTP tests only; not pushed). The suite attempts found and repaired test/setup defects; the latest full `npm test` was explicitly interrupted at the Human's pause request. **No full-suite PASS is claimed for e1b9350.**
 - Current exact next action: run `npm run typecheck`, `node --check tests/http.mjs`, `git diff --check`, `npm run test:retry`, then a fresh `npm test` on `e1b935042e044a7f32f21b08f09463b866902fe7`; inspect and repair any failure before pushing PR #10. Only after a clean suite should evidence and the candidate be published for GitHub review and the separate `project_controller` GPT-6 Luna High read-only process. Artifact A4 is not published.
 - Runtime status: `READY_TO_RESUME` at the Human's request. No paid services, remote Cloudflare resources, real data, source-repository writes, production deployment or merge.
+
+
+## CF-AU-I01-P2 REWORK-3 — local candidate ready for GitHub review (2026-10-14)
+
+- Exact local evidence commit: `c0e5cb503a9ede218c2edb70dbae8250bf8ce34c`. It records the full fresh local suite result (3557.1s), focused retry, typecheck, syntax, diff and audit results, plus Pre-Critic PASS to submit for review. Implementation/test checkpoint is `e1b935042e044a7f32f21b08f09463b866902fe7`; checkpoint state commit is `5b9fe7d5e6ea756f94267f321cbf12b61805bc8d`.
+- Three independent read-only critic tracks found no actionable P0/P1/P2 in reorder/idempotency/concurrency, D1/R2 saga/recovery or auth/runtime/API. Reviewers did not modify or run tests.
+- `origin/main` was freshly verified at `91db05fb343d0bc020335bfc05790a2f3f824b82` and remains an ancestor; PR #10 is OPEN/CLEAN and all A1–A3 commits remain reachable.
+- Next action: push the evidence and state boundary commit to the existing PR branch, request/poll GitHub automated review on its exact SHA, resolve any material finding autonomously with revalidation, then invoke the separate read-only GPT-6 Luna High Controller on the exact final pushed SHA. No A4 until exact-SHA Controller PASS and final Pre-Critic.
+- No merge, deployment, paid resource, real data or source-repository write.
