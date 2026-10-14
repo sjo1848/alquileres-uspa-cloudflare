@@ -268,3 +268,26 @@ Verification after both changes:
 - `npm test` — PASS, exit 0, fresh PID-specific local Wrangler D1/R2 persistence; focused suite plus full HTTP suite: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1366.7s)`.
 
 No dependencies changed; the prior `npm audit --audit-level=high` result remains applicable. Tests use only synthetic local D1/R2 and Worker bindings. This is not remote Cloudflare, production, full parity, or atomic D1/R2 evidence. These two findings are resolved locally; fresh GitHub automatic review and separate GPT-6 Luna High read-only Controller review are still required on the final evidence candidate. No Artifact A4 is yet published.
+
+### Final REWORK-3 replay and D1 staging recovery candidate — 2026-10-14
+
+GitHub automatic review on PR #10 commit `32171d5bc3c615027d423fe3404eb389b9dea11d` raised two P2 findings in the same acknowledgment/replay family:
+
+- `4274412797`: a DELETE whose target-row delete is ignored could leave a stale `COMMITTED` idempotency marker after compensation. The route now confirms target absence plus exact dense survivor order, restores the original ordered ID plan before terminal compensation, and resets the matching marker under the active listing lease. A local test injects misleading positive D1 batch counts, ignored target deletion and blocked compensation updates; it verifies HTTP 503, marker repair state, D1/R2 consistency, backup retention, scheduled convergence, exact original dense order and successful same-key retry.
+- `4277039345`: an ADD can have a durable `COMMITTED` operation and a `PENDING` replay marker when the marker write is ignored; after later DELETE, replay must remain historical. The missing-row branch now accepts the original stored ADD response only from a matching `COMMITTED` operation and valid owner/scope/key/fingerprint, repairs the exact replay marker, and returns 201 before any R2 put or D1 insert. Regression: ignored ADD commit marker → committed DELETE → same-key upload replay; asserts original JSON and no D1 or R2 recreation.
+
+The first complete-suite attempt exposed a real D1 recovery defect: a partially staged position of `1,000,001` collided with the fixed `1,000,001` temporary ordinal used by `writeDenseOrder`, triggering SQLite's unique `(listing_id, position)` constraint and leaving recovery deferred. This was reproduced in a minimal isolated Wrangler local harness with three synthetic images and the same injected ignored writes. Staging now allocates a temporary range strictly above the current maximum position; its upper bound is checked across the entire `2N` range before writes. The HTTP regression verifies scheduled recovery first retains `NEEDS_REPAIR` and backup while blocked, then restores the exact order and terminal compensation after the trigger is removed. A separate near-`Number.MAX_SAFE_INTEGER` case verifies fail-closed 503 with unchanged D1 positions and readable R2 bytes.
+
+One intermediate suite run failed because the new test selected `state,backup_key` and then reused a missing `id` to look up the operation after the next scheduled pass. The query now retains the immutable ID. That run is not a pass. The earlier final suite attempt that detected the real unique-ordinal collision is likewise a failure, not a pass. A focused retry run passed after the test-query correction; the final full suite below ran after all code/test changes.
+
+Final candidate verification:
+
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `npm run test:retry` — PASS: `PASS focused keyed upload/reorder ignored-marker and historical-replay checks`.
+- `node --check apps/worker/tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm test` — PASS, exit 0, fresh local synthetic Wrangler D1/R2 persistence: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1301.9s)`.
+
+The suite covers the new `COMMITTED ADD + PENDING idempotency` history, ignored/misreported D1 results, DELETE recovery with colliding stale ordinals, near-safe-integer fail-closed handling, exact D1 order, R2 byte preservation/absence, HTTP outcomes, backup cleanup and same-key retries, in addition to earlier JWT, isolation, concurrency and image lifecycle tests. All bindings are local and synthetic; no remote account/resources, real data, paid service or deployment was used. The suite was run once on this final code/test candidate; the failed attempts are separately described above and are excluded from the PASS.
+
+Independent read-only critiques of the 4277039345 case and staging recovery found no actionable P0/P1/P2 after the fixes. The overflow reviewer confirmed the `maxPosition + 2N` ceiling and near-limit regression. Their review did not execute tests. Exact GitHub automatic review of the new pushed SHA and delegated Controller review are still required; no PASS or Artifact A4 is claimed by this validation entry.

@@ -23,6 +23,7 @@ type Fault =
   | 'batch-before'
   | 'batch-after'
   | 'batch-zero-changes'
+  | 'batch-report-success'
   | 'idem-commit-before'
   | 'idem-commit-after'
   | 'operation-state-before'
@@ -65,6 +66,11 @@ export default {
           injected=true;
           await value.apply(target,statements);
           failAfter();
+        }
+        if(!injected&&fault==='batch-report-success'){
+          injected=true;
+          const results=await value.apply(target,statements);
+          return results.map(result=>({...result,meta:{...result.meta,changes:1}}));
         }
         return value.apply(target,statements);
       };

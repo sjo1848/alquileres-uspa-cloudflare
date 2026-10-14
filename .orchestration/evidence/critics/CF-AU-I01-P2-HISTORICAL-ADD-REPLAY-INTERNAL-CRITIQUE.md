@@ -18,3 +18,11 @@ Date: 2026-10-14. Scope: uncommitted repair to keyed upload replay after a subse
 ## Verdict and limits
 
 No actionable P0/P1/P2 remains in the reviewed category. These are internal static critiques and do not replace GitHub automated review or the separate exact-SHA Controller review. They do not establish remote Cloudflare behavior, D1/R2 cross-service atomicity, or complete parity.
+
+## Follow-up review — ADD COMMITTED with idempotency PENDING (2026-10-14)
+
+Reviewers `review_idempotency` and `review_recovery` independently inspected the follow-up for GitHub finding `4277039345`. The reproduction leaves the ADD operation `COMMITTED`, its matching replay marker `PENDING`, deletes the image via a separately confirmed DELETE, then retries the original ADD key. The route returns the stored result from the committed operation after owner/scope/fingerprint/resource validation and confirms the marker before returning; this path occurs before D1/R2 creation. The HTTP test asserts original JSON and no D1 row/R2 bytes. Both reviewers found no additional actionable P0/P1/P2. Review was static/read-only; final runtime suite provenance is in the validation ledger.
+
+## Follow-up review — DELETE plan recovery staging (2026-10-14)
+
+The recovery reviewer reproduced and confirmed repair of the D1 unique-ordinal collision from reused staging ordinals. The concurrency reviewer and recovery reviewer checked that staging begins above current MAX(position), includes the full staged interval in the safe-integer bound, and is fenced by the active listing lease. The test retains the operation backup while an injected trigger blocks ordering, then verifies scheduled restoration after the trigger is removed; a near-safe-integer ordinal fails closed without D1/R2 mutation. No actionable P0/P1/P2 remained after this repair. Static review only; the final complete local suite passed separately and is recorded in `CF-AU-I01-P2-VALIDATION.md`.
