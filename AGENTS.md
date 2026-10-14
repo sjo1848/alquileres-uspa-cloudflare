@@ -1,5 +1,10 @@
 # Human override — delegated Luna 6 High Controller (2026-10-13)
 
+## Runtime correction (2026-10-13; event seq 34)
+
+The original `sandbox_mode="read-only"` property in `.codex/agents/project-controller.toml` DID NOT restrict a native subagent, because standalone Codex agents inherit parent sandbox and approval permissions. The setting was removed. Binding correction: `.orchestration/decisions/CONTROLLER-RUNTIME-CORRECTION.md`. Until native model/read-only can be confirmed, the parent can invoke a SEPARATE `codex exec` review process with exact `--model gpt-6-luna`, `-c 'model_reasoning_effort="high"'`, `--sandbox read-only`, passing reviewer instructions and exact SHA. Clearly label this `delegated_codex_separate_process`, NOT native-subagent or external ChatGPT. If model/sandbox unsupported: BLOCKED_MODEL_CONFIG. Current PR #10 automatic review completed on 9d58295, with two new idempotency durability findings; repair before tagging A4. Do not merge, deploy or spend.
+
+
 **For future local/synthetic technical P2/P3/P4 reviews only, the Human explicitly replaced mandatory ChatGPT Independent Critic dispatch with Codex subagent `project_controller`** at `.codex/agents/project-controller.toml`, model `gpt-6-luna` and `model_reasoning_effort = "high"`, read-only. Binding policy: `.orchestration/decisions/DELEGATED-CONTROLLER-GPT6-LUNA-HIGH.md`. The following historic instruction text must be interpreted subject to this later, narrower override. Codex must call the reviewer itself, process REWORK/PASS without user as messenger and cannot claim a separate external trusted principal, self-merge main, spend, deploy, access real data or change source product/risk decisions. Runtime model/sandbox smoke remains PENDING. Prior ChatGPT verdicts remain historically valid.
 
 # Runtime Instructions — Alquileres Uspallata Cloudflare Lab

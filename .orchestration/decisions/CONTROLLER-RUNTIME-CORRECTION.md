@@ -1,0 +1,9 @@
+# P2 runtime Controller correction — 2026-10-13
+
+Current PR #10 head: `9d58295c173f95d69c4cfcbb9626ec5d2d212dc1`. GitHub automated review finished and raised TWO new idempotency durability concerns: keyed image upload may return 201 without a confirmed committed replay record; keyed reorder may return 200 without a confirmed replay record. Resolve and validate before freezing Artifact A4.
+
+Official Codex subagent documentation: https://learn.chatgpt.com/docs/agent-configuration/subagents . Custom-agent TOML **cannot override the parent sandbox**. The earlier `sandbox_mode = "read-only"` was therefore misleading and has been removed. The named reviewer remains configured for `gpt-6-luna` / `high`, but native invocation and enforceable read-only permissions are NOT verified.
+
+Documented Codex CLI alternative (a **separate reviewer process**, not a native subagent): https://learn.chatgpt.com/docs/developer-commands . The implementation owner can invoke `codex exec` on the exact candidate with `--model gpt-6-luna`, `--config 'model_reasoning_effort="high"'`, `--sandbox read-only`, and `--json`, passing the same `project_controller` instructions as the prompt. This permits a reviewer session with an explicitly requested sandbox, without changing the implementation parent's permissions. Such output MUST be labeled `delegated_codex_separate_process`; CLI acceptance does not cryptographically attest the provider backend model. If the selected model is unavailable or read-only is unsupported, retain `BLOCKED_MODEL_CONFIG`, never substitute another model.
+
+Do not publish A4 or merge main until material PR findings are closed, meaningful local tests rerun, and the reviewer process returns a fully evidenced bounded PASS. No remote Cloudflare resources, payment, real user data, original source edits or production.
