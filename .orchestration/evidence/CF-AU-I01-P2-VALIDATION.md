@@ -161,3 +161,24 @@ Final checks on the current worktree:
 The HTTP tests exercise successful stale-plan reaper convergence, retained exact historical replay, invalidated-plan retirement and nonblocking behavior, same-key rejection, competing-mutation barriers, and the ignored-marker idempotency/operation repair path. Local synthetic fixtures only; no real customer data, remote bindings, payment, deployment, source repository changes or merge. Canonical `main` was fetched and verified at `91db05fb343d0bc020335bfc05790a2f3f824b82`, an ancestor of the existing PR branch. Internal read-only specialists independently reviewed the reaper, D1/R2 saga/retry behavior, and cross-cutting runtime/security; no P0/P1/P2 was found after the final marker-predicate adjustment. Their reviews did not run tests.
 
 This is validation for the current candidate only. GitHub automatic review of the next pushed SHA and the separate `project_controller` process review of that exact SHA are still required; no Artifact A4 or technical PASS is claimed at this ledger entry.
+
+## Verification of reservation/reaper recovery delta (2026-10-14)
+
+Exact tree: `5b9fe7d5e6ea756f94267f321cbf12b61805bc8d` (local checkpoint commit, source/tests are in `e1b935042e044a7f32f21b08f09463b866902fe7`; no source change after the test tree). Canonical base remains `origin/main@91db05fb343d0bc020335bfc05790a2f3f824b82`.
+
+The delta closes the latest automated-review/Controller findings: scheduled reorder recovery applies the stored ID order explicitly; paired reservation insertions are read back and incomplete newly created halves are compensated; same-key recovery can reconstruct an absent idempotency row from its durable operation; scheduled recovery reconstructs legacy operation-only reservations; retirement is retried/read back and repairs terminal idempotency state; a matching pending/repair record with a NULL `result_json` is filled only from its durable operation plan. Mismatched fingerprints, non-NULL plans, committed rows and terminal rows are never overwritten. New HTTP cases cover exact reaper order, missing/ignored records, ignored operation retirement, ignored idempotency retirement and later convergence/replay.
+
+Checks on the exact tree:
+
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `git diff --check` — PASS.
+- `npm run test:retry` — PASS: `PASS focused keyed upload/reorder ignored-marker and historical-replay checks`.
+- `npm test` — PASS, exit 0; runs the focused suite then fresh PID-specific local Wrangler HTTP/D1/R2 suite: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (3557.1s)`.
+- `npm audit --audit-level=high` — PASS, 0 vulnerabilities.
+
+Runtime: Node `v24.18.0`, npm `12.0.2`, Wrangler `4.149.0`. All bindings, data, and R2 objects were local synthetic fixtures. Intermediate full-suite attempts exposed and repaired: an inherited NULL `result_json` retirement path; test helpers referenced before declaration; nondeterministic concurrent fixture setup; and a duplicate synthetic request key. Those runs are excluded. One prior run was intentionally interrupted at the Human's pause request and is not counted. The final full run above passed.
+
+Independent reviewers rechecked the final recovery paths: reorder/idempotency/concurrency, D1/R2 saga/integrity, and auth/runtime. They found no actionable P0/P1/P2; they did not modify code or execute tests. Their full exact-tree review notes are appended to `critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`.
+
+This verification is local evidence only. GitHub automatic review and a fresh separate-process `project_controller` GPT-6 Luna High read-only review on the frozen exact candidate remain required. Artifact A4 is not yet published; no merge, deployment, paid service, real data or source-repository write occurred.

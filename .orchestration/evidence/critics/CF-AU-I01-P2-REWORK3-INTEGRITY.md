@@ -71,3 +71,13 @@ The first complete test attempt exposed a marker-recovery mismatch in a trigger 
 Three independent read-only reviewers found no remaining P0/P1/P2 after this delta: reorder concurrency/recovery, saga/D1-R2 integrity (including the final SQL predicate), and cross-cutting auth/runtime. Their verdicts apply to the live worktree and are not a substitute for full execution. The final default `npm test` passed in 1122.2s, including focused replay and the complete local synthetic HTTP D1/R2/fault/recovery suite. The initial failed full-suite attempt is preserved as rework evidence and excluded from pass claims.
 
 GitHub automatic review of the new pushed exact SHA and the requested separate `project_controller` GPT-6 Luna High read-only review remain outstanding. No Artifact A4, technical PASS, merge, deployment, payment or source-repository write is claimed.
+
+## Final candidate re-critique after operation-only recovery test (2026-10-14)
+
+Reviewed tree: source/tests committed in `e1b935042e044a7f32f21b08f09463b866902fe7`, with state checkpoint at `5b9fe7d5e6ea756f94267f321cbf12b61805bc8d`. Three independent read-only tracks were coordinated:
+
+- **Reorder/idempotency/concurrency:** no actionable P0/P1/P2. Confirmed same-key reconstruction of missing record, exact fingerprint/result guards, terminal plan repair and lease-fenced exact stored-order application/readback.
+- **D1/R2 saga/recovery:** no actionable P0/P1/P2. ADD compensation checks R2 absence; DELETE verifies the confirmed D1 outcome and exact dense survivor order before acknowledgement; backup cleanup stays retryable until confirmed. Tests exercise ignored operation/idempotency retirement, later convergence, exact plan recovery, operation-only reservation reconstruction and same-key replay.
+- **Auth/runtime/API:** no actionable auth/runtime/API regression on exact implementation commit `e1b935042e044a7f32f21b08f09463b866902fe7`. The review confirms fallback for legacy NULL `listing_id`, guarded NULL `result_json` repair, pair readback, and unchanged auth handlers. The reviewer did not test or edit.
+
+Critics did not edit or execute tests. The complete local synthetic `npm test` on checkpoint `5b9fe7d5e6ea756f94267f321cbf12b61805bc8d` passed in 3557.1 seconds. This is internal evidence, not the GitHub automatic review or the delegated Controller verdict.
