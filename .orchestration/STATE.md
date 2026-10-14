@@ -262,3 +262,12 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Candidate commit `5ae63d70f10acc74d9c594aad348f8b8fe4accc6` is pushed to PR #10; PR is OPEN and MERGEABLE. GitHub automated review was requested. No GitHub review verdict or GPT-6 Luna High Controller verdict for this new candidate is yet claimed.
 - Exact next action: poll GitHub automatic review; resolve any material code findings autonomously with focused and full revalidation. Then run documented separate-process `codex exec --model gpt-6-luna -c 'model_reasoning_effort="high"' --sandbox read-only --json` on the exact final SHA. Record actual CLI sandbox/process evidence and leave backend identity unverified unless the process exposes attestable metadata. Iterate Controller REWORK internally. Publish immutable A4 only after a verified technical PASS.
 - No merge to `main`, production, paid service, remote Cloudflare resource, real data, source-repository write, functional migration or new task was performed.
+
+
+## CF-AU-I01-P2 REWORK-3 — user pause checkpoint (2026-10-14)
+
+- Canonical `main` remains `91db05fb343d0bc020335bfc05790a2f3f824b82`; PR #10 remains open on `work/cf-au-i01-p2`, with A1–A3 history preserved. No merge or deployment occurred.
+- The latest GitHub findings and exact-SHA Controller REWORK on prior PR head `50c368ecead0fc2d6ffb87b31c4168482a58add9` are recorded in the validation/critic evidence. This checkpoint adds fixes for exact reaper ordering, paired reservation repair, terminal idempotency repair, and inherited null `result_json`; internal reorder, saga, and auth/runtime critics found no actionable P0/P1/P2.
+- Local checkpoint commit: `e1b935042e044a7f32f21b08f09463b866902fe7` (source and HTTP tests only; not pushed). The suite attempts found and repaired test/setup defects; the latest full `npm test` was explicitly interrupted at the Human's pause request. **No full-suite PASS is claimed for e1b9350.**
+- Current exact next action: run `npm run typecheck`, `node --check tests/http.mjs`, `git diff --check`, `npm run test:retry`, then a fresh `npm test` on `e1b935042e044a7f32f21b08f09463b866902fe7`; inspect and repair any failure before pushing PR #10. Only after a clean suite should evidence and the candidate be published for GitHub review and the separate `project_controller` GPT-6 Luna High read-only process. Artifact A4 is not published.
+- Runtime status: `READY_TO_RESUME` at the Human's request. No paid services, remote Cloudflare resources, real data, source-repository writes, production deployment or merge.
