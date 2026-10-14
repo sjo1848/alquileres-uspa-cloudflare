@@ -299,3 +299,12 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Model/effort flags and read-only workspace profile were observed; actual backend model identity remains `UNVERIFIED`. A4 is not published.
 - Exact next action: obtain supported runtime model/effort attestation or a supported delegated `project_controller` runtime that verifies GPT-6 Luna + HIGH while preserving read-only, then repeat review of exact candidate `cdb8970`. Publish A4 only after evidence-backed technical PASS and refreshed Pre-Critic.
 - Canonical status remains `READY_TO_RESUME`, resume authorized; PR #10 remains open, branch history intact. No merge, deployment, paid service, remote resource, real data, or original-source modification.
+
+
+## CF-AU-I01-P2 REWORK-3 — Controller PASS for exact code candidate (2026-10-14)
+
+- A further separate read-only Controller review of exact code candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` against `main@91db05fb343d0bc020335bfc05790a2f3f824b82` returned **PASS for the bounded local technical review**, with no P0/P1 in the audited mutation acknowledgment, idempotency/retry, concurrency, D1/R2 recovery, or auth paths.
+- Runtime configuration was verified from Codex session `01a13b55-e743-7aa3-8a4f-08a45eef8ec6`, `turn_context`: model `gpt-6-luna`, effort `high`, sandbox `read-only`. Provider/backend identity has no cryptographic attestation and remains explicitly unverified. Full evidence and limits are recorded in `evidence/critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.
+- Controller confirmed the candidate Worker tree hashes match tested source/test tree `e1b9350` / `5b9fe7d`; ledger records fresh local synthetic `npm test` PASS in 3557.1s and static/type/audit checks. Controller did not execute tests.
+- The prior `BLOCKED_MODEL_CONFIG` verdict was an earlier attempt where the session metadata had not yet been inspected; this exact-SHA PASS supersedes that runtime attempt. The provider attestation limitation remains.
+- Next: freeze an evidence-updated candidate, get GitHub automated review and Controller review on that exact SHA; refresh Pre-Critic for the exact artifact before tagging A4. No A4 is yet published.

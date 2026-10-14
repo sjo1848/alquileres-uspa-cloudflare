@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Obtain a supported runtime attestation or delegated project_controller invocation that verifies the selected GPT-6 Luna model and HIGH effort while retaining read-only sandbox, then repeat the exact-SHA review for cdb8970ce06fb03d841bd9b2ba32769d78c5629e. Current separate CLI review found no P0/P1 but returned BLOCKED_MODEL_CONFIG because actual model identity could not be verified; publish A4 only after a valid technical PASS.",
+  "next_action": "Freeze the review-evidence update as a candidate commit, await GitHub automatic review for that exact SHA, and run project_controller on the same SHA. The previous exact-code review returned PASS after local turn_context verified gpt-6-luna/high/read-only; provider identity remains without cryptographic attestation. Publish/tag A4 only after exact-candidate reviews and refreshed Pre-Critic pass.",
   "stop_reason": null,
   "event": {
-    "seq": 40,
-    "id": "CF-AU-P2@STATIC-REVIEW-CLEAN-MODEL-ATTESTATION-UNVERIFIED",
-    "type": "READY_TO_RESUME"
+    "seq": 41,
+    "id": "CF-AU-P2@CONTROLLER-PASS-EXACT-CODE-SHA",
+    "type": "CANDIDATE_READY_FOR_REVIEW"
   },
   "external_review": {
     "required": false,
@@ -34,14 +34,14 @@
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
     "sandbox": "read-only",
-    "runtime_verified": false,
+    "runtime_verified": true,
     "scope": "LOCAL_SYNTHETIC_TECHNICAL",
     "may_auto_merge_main": false,
     "custom_agent_sandbox_enforced": false,
     "separate_cli_option_documented": true,
     "backend_model_attestation": "UNVERIFIED",
     "last_attempt_sha": "cdb8970ce06fb03d841bd9b2ba32769d78c5629e",
-    "last_attempt_result": "BLOCKED_MODEL_CONFIG: separate read-only static audit found no P0/P1, but actual backend model identity is not verifiable from CLI session metadata"
+    "last_attempt_result": "PASS: exact-SHA static audit; runtime turn_context verified model gpt-6-luna, effort high, read-only; provider backend has no cryptographic attestation"
   },
   "candidate_head": "cdb8970ce06fb03d841bd9b2ba32769d78c5629e"
 }

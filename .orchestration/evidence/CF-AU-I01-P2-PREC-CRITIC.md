@@ -43,3 +43,8 @@ GitHub automatic review of exact candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5
 ### Controller completed static audit — blocked model evidence (2026-10-14)
 
 The separate Controller process inspected exact candidate `cdb8970` and found no P0/P1 in its bounded static audit, but returned `BLOCKED_MODEL_CONFIG` because actual model/backend identity could not be verified. The read-only CLI/workspace profile was evidenced; model backend identity was not. Therefore the prior freeze-only Pre-Critic does not authorize A4. Exact next action is to obtain verifiable GPT-6 Luna/HIGH runtime evidence in a read-only process and repeat the exact-SHA review. See `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.
+
+
+### Controller PASS with verified runtime configuration — exact code SHA `cdb8970`
+
+The latest separate project_controller process returned PASS on exact candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` against canonical main `91db05fb343d0bc020335bfc05790a2f3f824b82`, with no P0/P1. Local Codex `turn_context` verifies model `gpt-6-luna`, effort `high`, and read-only sandbox; provider/backend identity has no cryptographic attestation and remains unverified. The reviewer verified matching tested Worker-tree hashes and relied on ledgered local synthetic tests without rerunning them. This supersedes the earlier BLOCKED attempt. Artifact A4 still requires a final evidence-updated exact-SHA candidate review, clean GitHub automated review, and refreshed Pre-Critic before tagging. Full Controller evidence is in `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.

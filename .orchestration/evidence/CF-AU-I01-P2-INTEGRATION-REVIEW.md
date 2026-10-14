@@ -70,3 +70,8 @@ The candidate is pushed to PR #10 and descends from canonical `main@91db05fb343d
 ## Controller exact-SHA result — `cdb8970`
 
 A separate read-only project_controller process completed a static audit of `cdb8970` and identified no P0/P1 in the reviewed paths. It returned `BLOCKED_MODEL_CONFIG`, not PASS, because actual model identity could not be attested from available runtime/session metadata. The requested model/effort/sandbox flags and restricted workspace profile are recorded; actual backend model remains unverified. No A4 is authorized by this result. See `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.
+
+
+## Controller PASS on exact code candidate — `cdb8970`
+
+The delegated separate-process Controller returned bounded technical PASS on exact SHA `cdb8970ce06fb03d841bd9b2ba32769d78c5629e`, found no P0/P1 in audited code paths, and verified local Codex runtime context `gpt-6-luna` / `high` / `read-only`. No cryptographic provider/backend attestation exists. The code/test tree is byte-identical to recorded tested tree `e1b9350` / `5b9fe7d`; no tests were run by the Controller. Exact provenance and limitations: `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`. This pass clears the delegated code review for `cdb8970`; a refreshed exact-artifact review candidate, GitHub check, Pre-Critic and publication boundary remain.
