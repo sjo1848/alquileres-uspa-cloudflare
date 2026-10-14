@@ -7,6 +7,12 @@ The original `sandbox_mode="read-only"` property in `.codex/agents/project-contr
 
 **For future local/synthetic technical P2/P3/P4 reviews only, the Human explicitly replaced mandatory ChatGPT Independent Critic dispatch with Codex subagent `project_controller`** at `.codex/agents/project-controller.toml`, model `gpt-6-luna` and `model_reasoning_effort = "high"`, read-only. Binding policy: `.orchestration/decisions/DELEGATED-CONTROLLER-GPT6-LUNA-HIGH.md`. The following historic instruction text must be interpreted subject to this later, narrower override. Codex must call the reviewer itself, process REWORK/PASS without user as messenger and cannot claim a separate external trusted principal, self-merge main, spend, deploy, access real data or change source product/risk decisions. Runtime model/sandbox smoke remains PENDING. Prior ChatGPT verdicts remain historically valid.
 
+## 2026-10-14 — Operational reviewer verification replaces impossible backend attestation
+
+Authoritative decision: `.orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md`. For LOCAL/SYNTHETIC P2/P3/P4 technical reviews, an actual successful **GPT-6 Luna / High / read-only** reviewer process with captured CLI parameters, session/result, exact SHA, and adversarial PASS/REWORK is enough for operational verification; internal provider backend identity not exposed in the CLI remains explicitly **UNVERIFIED** and is **not an automatic BLOCKED_MODEL_CONFIG**. Never claim model cryptographic attestation or silently change selected model. Separate process != natively spawned subagent != structurally independent publisher. P0/P1/test/security issues still block.
+
+Latest GH review of PR #10 HEAD 5dce70a found raw client Idempotency-Key in recovery logs; remove it and request final local Luna High review before A4. No merge/remote/paid/real-data/prod.
+
 # Runtime Instructions — Alquileres Uspallata Cloudflare Lab
 
 You are the Runtime Orchestrator for this repository. Reconstruct state from persisted repository evidence; do not rely on conversational history.

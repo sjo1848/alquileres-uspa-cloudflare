@@ -308,3 +308,16 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Controller confirmed the candidate Worker tree hashes match tested source/test tree `e1b9350` / `5b9fe7d`; ledger records fresh local synthetic `npm test` PASS in 3557.1s and static/type/audit checks. Controller did not execute tests.
 - The prior `BLOCKED_MODEL_CONFIG` verdict was an earlier attempt where the session metadata had not yet been inspected; this exact-SHA PASS supersedes that runtime attempt. The provider attestation limitation remains.
 - Next: freeze an evidence-updated candidate, get GitHub automated review and Controller review on that exact SHA; refresh Pre-Critic for the exact artifact before tagging A4. No A4 is yet published.
+
+## Event 41 — canonical Controller operational gate and privacy finding (main@ed52e7e)
+
+- Canonical policy update `.orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md` replaces an unavailable provider-signed backend identity as a local-review blocker. The Controller still must run as a distinct explicitly selected GPT-6 Luna, High, read-only process with complete invocation/session/input/output evidence; provider backend identity is reported honestly as unverified. Earlier BLOCKED findings are historical and are not retroactively changed.
+- Canonical GitHub review identified caller-controlled `Idempotency-Key` values in scheduled recovery logs. The candidate branch now removes all such values and adds a regression guard. A subsequent automatic comment also identified retired-operation recovery of a matching NULL result row; conditional repair and an HTTP regression are included.
+- Canonical `main` was fetched at `ed52e7e17f6378e62d14896a095f54abb7304f66`. It was not an ancestor of the prior PR head, so this branch is integrating it with a merge commit; no source or artifact history is rewritten.
+
+## Event 42 — PR #10 bounded latest-finding repairs (2026-10-14)
+
+- Resolved both exact-candidate recovery findings: static-only structured reorder recovery events; matching-fingerprint/state repair of a retired idempotency row with NULL result, with exact readback. Tests and two independent read-only critics are recorded in the validation ledger and REWORK-3 integrity critique.
+- Fresh local synthetic `npm test` passed after both fixes (focused retry plus full HTTP/D1/R2 suite, 1366.7s); typecheck, syntax, and diff checks passed. No dependencies changed. The test run preceded canonical-main merge and covers unchanged application/test trees; only orchestration policy/state files changed during the merge.
+- Current next action: resolve/verify this canonical-main merge, commit and push the reviewed fixes/evidence on existing PR #10, then obtain fresh GitHub automatic review and an operationally verified GPT-6 Luna High read-only Controller verdict on that exact SHA. Publish A4 only after both review gates and a final Pre-Critic pass.
+- No merge to main, paid/remote service, deployment, real data, source-repository write, or new functional scope.

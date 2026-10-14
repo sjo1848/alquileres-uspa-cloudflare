@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Freeze the review-evidence update as a candidate commit, await GitHub automatic review for that exact SHA, and run project_controller on the same SHA. The previous exact-code review returned PASS after local turn_context verified gpt-6-luna/high/read-only; provider identity remains without cryptographic attestation. Publish/tag A4 only after exact-candidate reviews and refreshed Pre-Critic pass.",
+  "next_action": "Commit and push the tested P2 repairs and evidence to PR #10; obtain fresh GitHub automatic review and an operationally verified GPT-6 Luna High read-only Controller PASS on the exact new SHA; then publish A4 and stop for External Independent Critic.",
   "stop_reason": null,
   "event": {
-    "seq": 41,
-    "id": "CF-AU-P2@CONTROLLER-PASS-EXACT-CODE-SHA",
-    "type": "CANDIDATE_READY_FOR_REVIEW"
+    "seq": 42,
+    "id": "CF-AU-I01-P2@LATEST-RECOVERY-FINDINGS-REPAIRED",
+    "type": "READY_FOR_EXACT_SHA_REVIEW_AFTER_CANONICAL_MAIN_SYNC"
   },
   "external_review": {
     "required": false,
@@ -29,19 +29,28 @@
   "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "issue_4": "CLOSED",
   "review_authority": {
-    "reviewer_kind": "delegated_codex_separate_process",
+    "reviewer_kind": "delegated_codex_subagent",
     "agent": "project_controller",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
     "sandbox": "read-only",
-    "runtime_verified": true,
+    "runtime_verified": false,
     "scope": "LOCAL_SYNTHETIC_TECHNICAL",
     "may_auto_merge_main": false,
     "custom_agent_sandbox_enforced": false,
     "separate_cli_option_documented": true,
-    "backend_model_attestation": "UNVERIFIED",
-    "last_attempt_sha": "cdb8970ce06fb03d841bd9b2ba32769d78c5629e",
-    "last_attempt_result": "PASS: exact-SHA static audit; runtime turn_context verified model gpt-6-luna, effort high, read-only; provider backend has no cryptographic attestation"
+    "backend_model_attestation": "UNVERIFIED_NOT_BLOCKING_LOCAL",
+    "operational_verification_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
+    "provider_attestation_required_for_local": false,
+    "main_auto_merge": false
   },
-  "candidate_head": "cdb8970ce06fb03d841bd9b2ba32769d78c5629e"
+  "candidate_review": {
+    "sha": "30c126e516f223dd798e448b68a757a08a2a8bfd",
+    "artifact_published": false,
+    "last_report": "PENDING_AFTER_REWORK",
+    "last_report_not_retroactively_passed": true,
+    "pr_head": "30c126e516f223dd798e448b68a757a08a2a8bfd",
+    "pr_latest_review": "P2_RETIRED_NULL_REPLAY_DATA (also P2_CLIENT_CONTROLLED_IDEMPOTENCY_KEY_LOGGING_EXPOSURE)",
+    "next_action": "Commit/push repaired implementation and evidence; review exact new SHA."
+  }
 }
