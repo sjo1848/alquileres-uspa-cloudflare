@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Commit and push the tested P2 repairs and evidence to PR #10; obtain fresh GitHub automatic review and an operationally verified GPT-6 Luna High read-only Controller PASS on the exact new SHA; then publish A4 and stop for External Independent Critic.",
+  "next_action": "Push canonical-main integration and reviewed repair commit to existing PR #10; wait for GitHub automatic review on exact resulting PR HEAD, run project_controller with GPT-6 Luna/High/read-only operational provenance on that same SHA, resolve bounded findings, then publish immutable Artifact A4 only after Controller PASS and final Pre-Critic.",
   "stop_reason": null,
   "event": {
-    "seq": 42,
-    "id": "CF-AU-I01-P2@LATEST-RECOVERY-FINDINGS-REPAIRED",
-    "type": "READY_FOR_EXACT_SHA_REVIEW_AFTER_CANONICAL_MAIN_SYNC"
+    "seq": 43,
+    "id": "CF-AU-I01-P2@CANONICAL-MAIN-MERGED-REWORK-CANDIDATE-READY",
+    "type": "READY_FOR_EXACT_SHA_GITHUB_AND_CONTROLLER_REVIEW"
   },
   "external_review": {
     "required": false,
@@ -29,7 +29,7 @@
   "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "issue_4": "CLOSED",
   "review_authority": {
-    "reviewer_kind": "delegated_codex_subagent",
+    "reviewer_kind": "delegated_codex_separate_process",
     "agent": "project_controller",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
@@ -45,12 +45,12 @@
     "main_auto_merge": false
   },
   "candidate_review": {
-    "sha": "30c126e516f223dd798e448b68a757a08a2a8bfd",
+    "sha": "1a14e41199a2d6123c5962c4c07fc9259323080d",
     "artifact_published": false,
     "last_report": "PENDING_AFTER_REWORK",
     "last_report_not_retroactively_passed": true,
-    "pr_head": "30c126e516f223dd798e448b68a757a08a2a8bfd",
-    "pr_latest_review": "P2_RETIRED_NULL_REPLAY_DATA (also P2_CLIENT_CONTROLLED_IDEMPOTENCY_KEY_LOGGING_EXPOSURE)",
-    "next_action": "Commit/push repaired implementation and evidence; review exact new SHA."
+    "pr_head": "1a14e41199a2d6123c5962c4c07fc9259323080d",
+    "pr_latest_review": "P2 findings resolved locally; fresh review required after canonical main merge",
+    "next_action": "Push branch and review exact resulting PR HEAD."
   }
 }
