@@ -218,6 +218,23 @@ Final fresh local verification after source and test changes:
 
 Three independent read-only critics (ADD/order concurrency, D1/R2 saga recovery, and prior auth/runtime track) found no remaining actionable P0/P1/P2 in their reviewed scopes. They did not edit code or execute tests. All tests used local synthetic D1/R2 only. Fresh GitHub automatic review and exact-SHA GPT-6 Luna/High/read-only Controller review are still outstanding; no technical PASS or A4 is claimed.
 
+### Superseding exact-candidate replay repair — 2026-10-14
+
+GitHub automatic review on `6a4581b71910ec0862b2ec793f8699b572384d15` identified a P2: replaying a confirmed ADD after a later confirmed DELETE returned 503 because its D1 metadata no longer existed. The route now recognizes an owner-, scope-, key-, and fingerprint-matched `COMMITTED` record with absent image metadata, validates the stored historical result, confirms the exact idempotency marker, and returns the original `201` without restoring D1 or R2. A new HTTP regression uploads, deletes, retries the identical upload, compares the complete original response, and verifies D1 absence and image GET 404 after replay.
+
+Three independent read-only reviews (`review_idempotency`, `review_recovery`, and `reorder_concurrency`) inspected the new path and equivalent reorder/delete replay paths. All found no actionable P0/P1/P2. They did not edit files or run tests. `review_recovery` noted only that stored result-shape validation is narrower than a complete DTO check; the JSON is internally generated and bound by exact request fingerprint and committed marker, so it was not assessed as actionable.
+
+Verification on the consolidated source/test candidate:
+
+- Focused `npm run test:retry` — PASS: `PASS focused keyed upload/reorder ignored-marker and historical-replay checks`.
+- `npm test` — PASS, exit 0, fresh PID-specific Wrangler local D1/R2 persistence; focused retry plus complete HTTP suite: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1284.7s)`.
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `node --check tests/retry-idempotency.mjs` — PASS.
+- `git diff --check` — PASS.
+
+No dependencies changed. The full suite used synthetic local Workers/D1/R2 only; no paid, remote, production or real-data resource was used. Fresh GitHub automatic review and exact-SHA Controller review remain required; this evidence is not a technical PASS or Artifact A4 publication.
+
 
 ## Exact candidate review boundary — `cdb8970` (2026-10-14)
 
