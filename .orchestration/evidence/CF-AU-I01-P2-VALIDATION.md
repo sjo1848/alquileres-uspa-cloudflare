@@ -189,3 +189,8 @@ This verification is local evidence only. GitHub automatic review and a fresh se
 GitHub automatic review of PR #10 candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` completed at `2026-10-14T15:11:59Z`; no new review suggestions or comments were posted for the run. Older comment threads were distinguished by their original commit and creation time.
 
 A separate `project_controller` run was attempted twice with requested `gpt-6-luna`, HIGH reasoning, and read-only sandbox. Both failed before reviewer initialization because the CLI could not initialize its app-server under the read-only filesystem (`os error 30`). No code review, verdict, or test execution occurred in that process. Model backend identity and sandbox enforcement remain unverified; exact details are in `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`. Consequently no technical PASS or Artifact A4 is claimed.
+
+
+## Separate Controller static audit — exact SHA `cdb8970`
+
+The separate CLI Controller completed read-only static inspection of exact candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` against canonical `main@91db05fb343d0bc020335bfc05790a2f3f824b82`; it reported no P0/P1 identified in inspected paths. It did not run tests. It returned `BLOCKED_MODEL_CONFIG`, because actual provider/model identity could not be verified from session metadata even though the CLI was invoked with `--model gpt-6-luna`, `model_reasoning_effort="high"`, and `--sandbox read-only`. Read-only inspection ran under the restricted workspace profile. Prior test results remain recorded provenance, not reviewer-executed tests. No technical PASS or A4 is claimed. Full attempt and review details: `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.

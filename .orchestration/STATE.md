@@ -290,3 +290,12 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Candidate local test evidence remains that recorded in `evidence/CF-AU-I01-P2-VALIDATION.md`; no tests were rerun in this continuation. No A4/tag was published.
 - Exact next action: rerun `project_controller` via the documented separate `codex exec` in an execution runtime where the app-server can initialize without relaxing `--sandbox read-only`; inspect the exact candidate SHA and obtain a non-blocked verdict. Only an evidence-backed PASS permits A4 publication.
 - Canonical runtime status: `READY_TO_RESUME`, resume authorized. No Human Gate, merge, deployment, paid service, remote Cloudflare resource, real data, or source-repository write occurred.
+
+
+## CF-AU-I01-P2 REWORK-3 — Controller static audit and model-attestation boundary (2026-10-14)
+
+- A separate `codex exec` session started with requested `gpt-6-luna`, HIGH reasoning, and `--sandbox read-only`. Exact startup setup and result are in `evidence/critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`. Shell inspection ran under a restricted workspace profile; no tests or mutations were performed by the Controller.
+- The Controller inspected exact candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` against canonical `main@91db05fb343d0bc020335bfc05790a2f3f824b82`, including app code, retries, D1/R2 recovery, tests and evidence. It identified no P0/P1 in static review, but returned `BLOCKED_MODEL_CONFIG`: actual provider/model identity is not exposed/attested in available runtime metadata. No technical PASS was issued.
+- Model/effort flags and read-only workspace profile were observed; actual backend model identity remains `UNVERIFIED`. A4 is not published.
+- Exact next action: obtain supported runtime model/effort attestation or a supported delegated `project_controller` runtime that verifies GPT-6 Luna + HIGH while preserving read-only, then repeat review of exact candidate `cdb8970`. Publish A4 only after evidence-backed technical PASS and refreshed Pre-Critic.
+- Canonical status remains `READY_TO_RESUME`, resume authorized; PR #10 remains open, branch history intact. No merge, deployment, paid service, remote resource, real data, or original-source modification.

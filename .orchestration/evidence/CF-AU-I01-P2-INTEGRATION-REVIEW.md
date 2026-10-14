@@ -65,3 +65,8 @@ Final candidate verification: `npm run typecheck`, `node --check tests/http.mjs`
 ## Exact candidate `cdb8970` review status (2026-10-14)
 
 The candidate is pushed to PR #10 and descends from canonical `main@91db05fb343d0bc020335bfc05790a2f3f824b82`. GitHub automated review completed at `2026-10-14T15:11:59Z` without new findings for this exact candidate. The separate Controller could not initialize under `--sandbox read-only` and returned no technical verdict; details are recorded in `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`. The previous gate to publish A4 is therefore not cleared. Exact next action is a successful same-model, same-effort read-only Controller review of `cdb8970` in a runtime that permits app-server initialization.
+
+
+## Controller exact-SHA result — `cdb8970`
+
+A separate read-only project_controller process completed a static audit of `cdb8970` and identified no P0/P1 in the reviewed paths. It returned `BLOCKED_MODEL_CONFIG`, not PASS, because actual model identity could not be attested from available runtime/session metadata. The requested model/effort/sandbox flags and restricted workspace profile are recorded; actual backend model remains unverified. No A4 is authorized by this result. See `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.

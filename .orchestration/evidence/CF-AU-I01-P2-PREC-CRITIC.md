@@ -38,3 +38,8 @@ Automatic review on `a7cbd80` found P1 sparse-order acknowledgment and P2 R2 acc
 ## cdb8970 exact review update — 2026-10-14
 
 GitHub automatic review of exact candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` completed at `2026-10-14T15:11:59Z` without new suggestions. The documented separate `project_controller` CLI invocation was attempted twice with `gpt-6-luna`, HIGH effort and `--sandbox read-only`; both attempts failed before initialization because the app-server could not initialize on the read-only filesystem. The reviewer process therefore did not inspect code, issue a verdict, or establish actual model/sandbox runtime evidence. This is `BLOCKED_MODEL_CONFIG`, not a code PASS. The earlier freeze-only PASS is not sufficient for A4: **do not tag or publish A4**. Exact next action: rerun the same project_controller review on `cdb8970` in a runtime where CLI initialization works while retaining the requested read-only sandbox. See `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md` and `STATUS.json`.
+
+
+### Controller completed static audit — blocked model evidence (2026-10-14)
+
+The separate Controller process inspected exact candidate `cdb8970` and found no P0/P1 in its bounded static audit, but returned `BLOCKED_MODEL_CONFIG` because actual model/backend identity could not be verified. The read-only CLI/workspace profile was evidenced; model backend identity was not. Therefore the prior freeze-only Pre-Critic does not authorize A4. Exact next action is to obtain verifiable GPT-6 Luna/HIGH runtime evidence in a read-only process and repeat the exact-SHA review. See `critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.
