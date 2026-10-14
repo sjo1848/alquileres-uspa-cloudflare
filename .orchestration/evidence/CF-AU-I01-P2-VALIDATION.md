@@ -183,6 +183,41 @@ Independent reviewers rechecked the final recovery paths: reorder/idempotency/co
 
 This verification is local evidence only. GitHub automatic review and a fresh separate-process `project_controller` GPT-6 Luna High read-only review on the frozen exact candidate remain required. Artifact A4 is not yet published; no merge, deployment, paid service, real data or source-repository write occurred.
 
+## GitHub ADD/DELETE ignored-write findings — local rework validation (2026-10-14)
+
+GitHub automatic review on prior PR head `e07241a53635ed9b6f605f5b53ff589d92a8a15f` reported two P2 cases: (1) an ignored guarded ADD insert could leave a committed replay marker despite compensating the R2 object, and (2) an ignored guarded DELETE could leave a committed marker after restoring the R2 object. The Worker now guards ADD operation/idempotency commits on the exact expected D1 image row. DELETE commits additionally require target-row absence and all survivor positions to be within the dense ordinal range. HTTP regressions cover each ignored-write trigger, 503/409 responses, PENDING/COMPENSATED states, R2 restore/removal and successful same-key retry.
+
+One first full-suite attempt stopped at an older DELETE repair-marker fixture assertion that expected COMMITTED markers. Under the new dense-order commit guard, the correct observed state is PENDING until dense recovery succeeds. The test expectation and description were corrected; application code was unchanged in that adjustment. That failed attempt is retained as rework evidence and excluded from pass claims.
+
+Fresh verification after the correction:
+
+- `npm test` — PASS, exit 0; focused replay suite followed by full HTTP suite against fresh local synthetic Wrangler D1/R2 persistence: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1224.6s)`.
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `node --check tests/retry-idempotency.mjs` — PASS.
+- `git diff --check` — PASS.
+
+This remains local/synthetic verification, not a remote runtime claim. Independent reviewers are rechecking the exact current worktree. Fresh GitHub automatic review and a distinct `project_controller` GPT-6 Luna/High/read-only review on the resulting exact pushed SHA remain required. No Artifact A4, technical PASS, merge, deployment, paid service, real data or source-repository write is claimed.
+
+## ADD exact-order acknowledgment finding and recovery proof (2026-10-14)
+
+Independent concurrency critique found an additional P2: keyed ADD could mark its operation/replay row COMMITTED when an AFTER INSERT effect left sparse positions, before the later postcondition check failed. Repairs now make both COMMITTED statements require the exact expected D1 row count and each expected `(id, listing_id, position)`. The request fails closed unless it can restore and read back that exact order. Same-key replay and scheduled recovery restore density while preserving a later valid order, so retrying an older upload does not undo an intervening reorder.
+
+The regression injects a sparse position after INSERT and blocks its repair. It asserts HTTP 503, operation `NEEDS_REPAIR`, idempotency `PENDING`, retained R2 bytes, and another 503 on same-key replay. After the update trigger is removed, scheduled recovery restores dense D1 order and marks the operation COMMITTED; same-key replay returns 201 and confirms idempotency without losing R2 bytes.
+
+An early complete-suite attempt exposed only a test fixture issue: its repair-blocking trigger also suppressed the trigger meant to create the sparse position. The trigger was narrowed to block updates only after position 7 existed. The next run then reached the new case and all recovery assertions passed, but test helper declaration order caused a `ReferenceError` at the last redundant D1/R2 assertion; this was replaced with a direct HTTP read and byte comparison. These attempts are excluded from the final pass.
+
+Final fresh local verification after source and test changes:
+
+- `npm test` — PASS, exit 0, focused idempotency checks plus full local Wrangler HTTP D1/R2 suite: `PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (1188.1s)`.
+- `npm run typecheck` — PASS (`tsc --noEmit`).
+- `node --check tests/http.mjs` — PASS.
+- `node --check tests/retry-idempotency.mjs` — PASS.
+- `git diff --check` — PASS.
+- Separate `npm run test:retry` — PASS: `PASS focused keyed upload/reorder ignored-marker and historical-replay checks`.
+
+Three independent read-only critics (ADD/order concurrency, D1/R2 saga recovery, and prior auth/runtime track) found no remaining actionable P0/P1/P2 in their reviewed scopes. They did not edit code or execute tests. All tests used local synthetic D1/R2 only. Fresh GitHub automatic review and exact-SHA GPT-6 Luna/High/read-only Controller review are still outstanding; no technical PASS or A4 is claimed.
+
 
 ## Exact candidate review boundary — `cdb8970` (2026-10-14)
 

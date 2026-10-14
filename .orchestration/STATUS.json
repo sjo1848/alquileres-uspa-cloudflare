@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I01-P0P1",
   "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Push canonical-main integration and reviewed repair commit to existing PR #10; wait for GitHub automatic review on exact resulting PR HEAD, run project_controller with GPT-6 Luna/High/read-only operational provenance on that same SHA, resolve bounded findings, then publish immutable Artifact A4 only after Controller PASS and final Pre-Critic.",
+  "next_action": "Commit the verified ignored-write and ADD dense-order recovery repairs with evidence on the existing PR #10 branch; push it, request GitHub automatic review and run project_controller with GPT-6 Luna/High/read-only operational provenance on the exact pushed SHA, resolve bounded findings, then publish immutable Artifact A4 only after Controller PASS and final Pre-Critic.",
   "stop_reason": null,
   "event": {
-    "seq": 43,
-    "id": "CF-AU-I01-P2@CANONICAL-MAIN-MERGED-REWORK-CANDIDATE-READY",
+    "seq": 44,
+    "id": "CF-AU-I01-P2@IGNORED-WRITE-AND-ADD-DENSE-ORDER-REWORK-VERIFIED",
     "type": "READY_FOR_EXACT_SHA_GITHUB_AND_CONTROLLER_REVIEW"
   },
   "external_review": {
@@ -45,12 +45,12 @@
     "main_auto_merge": false
   },
   "candidate_review": {
-    "sha": "1a14e41199a2d6123c5962c4c07fc9259323080d",
+    "sha": "e07241a53635ed9b6f605f5b53ff589d92a8a15f",
     "artifact_published": false,
     "last_report": "PENDING_AFTER_REWORK",
     "last_report_not_retroactively_passed": true,
-    "pr_head": "1a14e41199a2d6123c5962c4c07fc9259323080d",
-    "pr_latest_review": "P2 findings resolved locally; fresh review required after canonical main merge",
-    "next_action": "Push branch and review exact resulting PR HEAD."
+    "pr_head": "e07241a53635ed9b6f605f5b53ff589d92a8a15f",
+    "pr_latest_review": "Two P2 findings on this head repaired locally; fresh review required for next pushed SHA",
+    "next_action": "Commit verified repairs and evidence, push PR #10, and review the exact resulting PR HEAD."
   }
 }
