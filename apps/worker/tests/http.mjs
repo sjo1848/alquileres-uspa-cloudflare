@@ -10,7 +10,7 @@ const run=(args)=>new Promise((resolve,reject)=>{const p=spawn('npx',['wrangler'
 const d1Rows=async(sql)=>{const out=await run(['d1','execute','DB','--local','--command',sql]);return JSON.parse(out.slice(out.indexOf('['),out.lastIndexOf(']')+1))[0].results;};
 await run(['d1','migrations','apply','DB','--local']);
 await run(['d1','execute','DB','--local','--file','tests/seed.sql']);
-const server=spawn('npx',['wrangler','--config','wrangler.test.jsonc','--persist-to',persist,'dev','--local','--test-scheduled','--ip','127.0.0.1','--port',String(port),'--var','JWT_SECRET:local-test-secret-not-for-production'],{cwd:root,env:{...process.env,NO_COLOR:'1'},stdio:['ignore','ignore','inherit']});
+const server=spawn(process.execPath,['--no-warnings',new URL('../node_modules/wrangler/wrangler-dist/cli.js',import.meta.url).pathname,'--config','wrangler.test.jsonc','--persist-to',persist,'dev','--local','--test-scheduled','--ip','127.0.0.1','--port',String(port),'--var','JWT_SECRET:local-test-secret-not-for-production'],{cwd:root,env:{...process.env,NO_COLOR:'1'},stdio:['ignore','ignore','inherit']});
 try{
   let ready=false;for(let i=0;i<80;i++){try{ready=(await fetch(`${base}/health`)).ok;if(ready)break;}catch{}await sleep(250);}assert.ok(ready,'local wrangler dev starts');
   const login=async(email)=>{const r=await fetch(`${base}/auth/login`,{method:'POST',headers:{origin:base,'content-type':'application/json'},body:JSON.stringify({email,password:'synthetic-owner-password-1'})});assert.equal(r.status,200);return {cookie:r.headers.get('set-cookie')};};
@@ -210,4 +210,4 @@ const sparseTerminalBefore=await d1Rows(`SELECT updated_at,cleanup_complete FROM
   console.log(`PASS local Wrangler HTTP D1/R2 slice: lifecycle, 19/20 cap race, 10 repeated same-listing add/reorder/delete races, isolation, validation, D1/R2 fault compensation and scheduled recovery (${((performance.now()-started)/1000).toFixed(1)}s)`);
 
   async function uploadFor(lid){const fd=new FormData();fd.append('image',new Blob([png],{type:'image/png'}),'parallel.png');return fetch(`${base}/listings/${lid}/images`,{method:'POST',headers:{origin:base,cookie:a.cookie},body:fd});}
-}finally{server.kill('SIGTERM');await new Promise(resolve=>server.once('exit',resolve));await rm(persist,{recursive:true,force:true});}
+}finally{if(server.exitCode===null&&server.signalCode===null){const exited=new Promise(resolve=>server.once('exit',resolve));server.kill('SIGTERM');await Promise.race([exited,sleep(5000)]);}if(server.exitCode===null&&server.signalCode===null){const exited=new Promise(resolve=>server.once('exit',resolve));server.kill('SIGKILL');await Promise.race([exited,sleep(1000)]);}await rm(persist,{recursive:true,force:true});}
