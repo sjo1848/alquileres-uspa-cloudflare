@@ -91,3 +91,11 @@ Critics did not edit or execute tests. The complete local synthetic `npm test` o
 ### Re-critique after ignored-write findings and ADD sparse-order audit (2026-10-14)
 
 Independent D1/R2 saga and concurrency reviewers rechecked the current worktree. Both found no actionable P0/P1/P2. ADD operation and idempotency commit statements require the exact expected row count and each `(id, listing_id, position)`; with the schema's unique listing ordinal and nonnegative constraint, the batch cannot confirm sparse or unexpected order. If post-insert ordering is incomplete, request recovery fails closed; same-key replay and scheduled recovery densify/read back current order while preserving later valid reorders. DELETE commit markers require the target row to be absent and all surviving ordinals in range. The new HTTP fault case injects a sparse post-insert ordinal and blocks repair, checks 503 and pending replay state with R2 retained, then verifies scheduled convergence, same-key replay, and D1/R2 consistency. Reviewers were read-only and did not run tests; full test result is separately recorded in the validation ledger.
+
+### Final local specialist re-review — 2026-10-15
+
+- **Auth/runtime:** source cookie semantics remain fixed at 900 seconds; JWT verification errors remain 401 while user revalidation D1 failures propagate as 500. Direct `SELECT id,email,role FROM users WHERE id=?` fault injection asserts 500. Reviewer found no additional material issue; read-only, no tests run.
+- **D1/R2 recovery:** DELETE backup-only cleanup after confirmed logical deletion can proceed alongside later ADD/REORDER; reaper checks current dense order and removes only stale object/backup records without replaying stale D1 ordering. Regression coverage checks later order and bytes survive recovery. No material issue found; read-only, no tests run.
+- **GitHub triage:** findings on `db8a1ab` were mapped against current code and source parity. Cookie-lifetime suggestion is not actionable because the source deliberately uses a fixed 15-minute cookie; prior P1/P2 fixes remain present. This does not substitute for review of the new exact commit.
+
+Reviewers did not edit or execute tests. Test provenance and current file hashes are recorded in `CF-AU-I01-P2-VALIDATION.md`.

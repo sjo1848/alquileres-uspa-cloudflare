@@ -291,3 +291,20 @@ Final candidate verification:
 The suite covers the new `COMMITTED ADD + PENDING idempotency` history, ignored/misreported D1 results, DELETE recovery with colliding stale ordinals, near-safe-integer fail-closed handling, exact D1 order, R2 byte preservation/absence, HTTP outcomes, backup cleanup and same-key retries, in addition to earlier JWT, isolation, concurrency and image lifecycle tests. All bindings are local and synthetic; no remote account/resources, real data, paid service or deployment was used. The suite was run once on this final code/test candidate; the failed attempts are separately described above and are excluded from the PASS.
 
 Independent read-only critiques of the 4277039345 case and staging recovery found no actionable P0/P1/P2 after the fixes. The overflow reviewer confirmed the `maxPosition + 2N` ceiling and near-limit regression. Their review did not execute tests. Exact GitHub automatic review of the new pushed SHA and delegated Controller review are still required; no PASS or Artifact A4 is claimed by this validation entry.
+
+## Candidate consolidation after pause — 2026-10-15
+
+The pause checkpoint incorrectly said the complete `npm test` was interrupted. The recorded execution from the prior session completed successfully on the current Worker/test content: focused retry/recovery checks passed, then the local Wrangler HTTP D1/R2 suite passed with exit 0 in 527.4 seconds. No executable file changed after that run. This session verified the current source/test content fingerprints below and reran fast checks; this documents provenance rather than claiming a second full-suite run.
+
+- `npm test` — PASS, exit 0, prior-session run; focused replay plus full synthetic local Wrangler D1/R2 HTTP lifecycle/concurrency/fault-recovery suite (527.4s).
+- `npm run typecheck` — PASS, current session.
+- `node --check tests/http.mjs` — PASS, current session.
+- `node --check tests/retry-idempotency.mjs` — PASS, current session.
+- `npm run test:retry` — PASS, current session: `PASS focused keyed upload/reorder replay and DELETE cleanup barrier/recovery checks`.
+- `git diff --check` — PASS, current session.
+
+Executable file SHA-256 at consolidation: `apps/worker/src/index.ts` `402ec9eea53712b2b47c2c23565d7df4cccf61068a1f38ff2a47c817218c7828`; `apps/worker/tests/fault-worker.ts` `14cd6bc7816d8a52aa637846d95c80988cc5a1e210a2f57ab061bfff8adb0389`; `apps/worker/tests/http.mjs` `3182a41cd343cae10b498ce58fa4f55dbafd65dc68c69a72c3c30acb49c93cf7`; `apps/worker/tests/retry-idempotency.mjs` `06dc7e9c9ce490432ec0a4b3b7cbec4821c07a3fa73fca27a1a6750458b421e0`.
+
+GitHub review on prior PR head `db8a1abf460afe7ee1686f8b3a3c1fa5afe07919` completed without new suggestions on that exact review. Historical inline findings were triaged: lock-release errors are caught/retried and lease-fenced; DELETE ownership is checked before and after locking; create retry uses persisted timestamps; cookie `Max-Age=900` matches read-only source behavior and its regression test (the lifetime-mismatch suggestion is not actionable for this parity contract); post-commit DELETE backup cleanup no longer blocks later mutations and cleanup recovery preserves later D1 order. The new local changes address auth middleware error classification and backup-only DELETE recovery. A fresh exact-head GitHub review remains required.
+
+This candidate remains unapproved until GitHub review, exact-SHA GPT-6 Luna High read-only Controller PASS, and Pre-Critic completion. No Artifact A4 is claimed here.

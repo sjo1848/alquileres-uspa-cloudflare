@@ -346,3 +346,19 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Candidate `c7aaf61101fa9b739e3fff910624e34bcefd8f05` was pushed to PR #10. GitHub automatic review was requested at comment `6181210021`; exact-head result is pending. This candidate is not an Artifact and no Controller PASS is claimed.
 - Exact next action: process GitHub findings on the exact current PR head. Once code is consolidated, run one complete `npm test`, refresh evidence and Pre-Critic, request/inspect GitHub review on the latest exact head, and obtain an operationally verified separate `project_controller` GPT-6 Luna/High/read-only PASS. Only then publish immutable A4 and stop at External Independent Critic.
 - No source repo, merge, deployment, remote Cloudflare resource, paid service, or real data was changed or used.
+
+
+## CF-AU-I01-P2 REWORK-3 — pausa solicitada durante suite final (2026-10-15)
+
+- PR #10 sigue OPEN y sin merge. Último HEAD remoto: `db8a1abf460afe7ee1686f8b3a3c1fa5afe07919`; ancestry de `origin/main@ed52e7e17f6378e62d14896a095f54abb7304f66` preservada. Artifact A4 no publicado.
+- `npm run test:retry` pasó en este ciclo. El `npm test` más reciente corrió sobre ese HEAD, pasó el bloque enfocado y fue interrumpido por solicitud explícita del usuario durante `tests/http.mjs`, antes de completar la suite. No se considera PASS. El proceso Wrangler fue detenido y no quedan procesos de esa suite activos.
+- La prueba HTTP fue ajustada para que el replay REORDER use la misma clave y el mismo imageId después de una reordenación efectiva; un crítico interno independiente confirmó que el escenario comprueba el resultado histórico y que el replay no modifica el orden D1 posterior. También quedaron corregidos el ACK del ledger ADD y la comprobación de identidad de fila durante recuperación.
+- Hallazgo automático GitHub pendiente de revisar en el SHA actual: solicitud `@codex review` `6182050239`. La observación anterior de cleanup del test harness se atendió usando Wrangler directamente y un cierre que comprueba `exitCode`/`signalCode`; revisar cualquier observación nueva sobre el HEAD actual.
+- Próxima acción exacta: al reanudar, obtener y procesar la revisión automática de `db8a1ab`; si no requiere cambio, correr `npm test` completo en ese candidato y continuar con validación, Integration Review, Pre-Critic y Controller GPT-6 Luna High/read-only en proceso separado sobre el SHA exacto. Publicar A4 solo después de PASS verificable de Controller y los demás controles.
+- Este checkpoint está guardado localmente; no se creó un commit adicional para no mover el HEAD sujeto a la revisión automática pendiente. Sin despliegue, servicios pagos, datos reales, cambios al repositorio fuente ni merge.
+
+### Reconciliación del checkpoint — retomada 2026-10-15
+
+- La afirmación anterior de suite interrumpida quedó supersedida: el registro de ejecución de la última sesión confirma `npm test` PASS, exit 0, 527.4s, sobre el contenido ejecutable que permanece sin cambios. En esta sesión pasaron typecheck, sintaxis de pruebas, `npm run test:retry` y `git diff --check`; ver huellas y procedencia en `evidence/CF-AU-I01-P2-VALIDATION.md`.
+- Cambios locales preservados: error de revalidación D1 se propaga como 500; limpieza R2 postcommit no bloquea mutaciones posteriores y su reaper no aplica orden D1 obsoleto. Revisiones independientes auth e integridad no hallaron defectos materiales.
+- Próxima acción: commit/push del candidato al PR #10; luego nueva revisión GitHub y `project_controller` separado GPT-6 Luna High/read-only sobre SHA exacto. A4 todavía no publicado.

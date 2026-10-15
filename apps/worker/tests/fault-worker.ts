@@ -1,9 +1,10 @@
 import worker, { app } from '../src/index';
 
-type LocalEnv = Parameters<typeof app.fetch>[1];
+type LocalEnv = Parameters<typeof app.fetch>[1] & { LOCAL_TEST_SECRET?: string };
 type Fault =
   | 'invalid-max'
   | 'listing-read-before'
+  | 'user-revalidation-before'
   | 'put-after'
   | 'delete-target-before'
   | 'delete-target-after'
@@ -34,6 +35,16 @@ type Fault =
 
 export default {
   async fetch(request: Request, env: LocalEnv, ctx: ExecutionContext) {
+    const url=new URL(request.url);
+    if(url.pathname==='/__local/d1'){
+      if(!['127.0.0.1','localhost','[::1]'].includes(url.hostname)||request.method!=='POST'||!env.LOCAL_TEST_SECRET||request.headers.get('x-local-test-secret')!==env.LOCAL_TEST_SECRET)return Response.json({error:'not found'},{status:404});
+      const input=await request.json().catch(()=>null) as {sql?:unknown}|null;
+      if(typeof input?.sql!=='string'||input.sql.length>100_000)return Response.json({error:'invalid local query'},{status:400});
+      try{
+        if(/^\s*(SELECT|PRAGMA|WITH|EXPLAIN)\b/i.test(input.sql)){const result=await env.DB.prepare(input.sql).all();return Response.json([{results:result.results}]);}
+        const result=await env.DB.exec(input.sql);return Response.json({count:result.count,duration:result.duration});
+      }catch{return Response.json({error:'local query failed'},{status:400});}
+    }
     if(request.headers.get('x-local-missing-jwt-secret')==='true'){const {JWT_SECRET: _omitted,...withoutSecret}=env;return app.fetch(request,withoutSecret as LocalEnv,ctx);}
     if(request.headers.has('x-local-jwt-secret'))return app.fetch(request,{...env,JWT_SECRET:request.headers.get('x-local-jwt-secret')??''},ctx);
     const fault=request.headers.get('x-local-fault') as Fault|null;
@@ -48,6 +59,7 @@ export default {
     const isListingInsert=(query:string)=>/^\s*INSERT\s+INTO\s+listings\b/i.test(query);
     const isListingReadback=(query:string)=>/^\s*SELECT\b[\s\S]*\bFROM\s+listings\s+WHERE\s+id\s*=\s*\?/i.test(query);
     const isOwnerListingRead=(query:string)=>/^\s*SELECT\b[\s\S]*\bFROM\s+listings\s+WHERE\s+owner_id\s*=\s*\?/i.test(query);
+    const isUserRevalidationRead=(query:string)=>/^\s*SELECT\s+id\s*,\s*email\s*,\s*role\s+FROM\s+users\s+WHERE\s+id\s*=\s*\?/i.test(query);
     const isLockRelease=(query:string)=>/^\s*DELETE\s+FROM\s+listing_locks\b/i.test(query);
     const isLockReadback=(query:string)=>/^\s*SELECT\s+token\s*,\s*expires_at\s+FROM\s+listing_locks\b/i.test(query);
     const isOperationStateUpdate=(query:string)=>/^\s*UPDATE\s+image_operations\s+SET\s+state\s*=/i.test(query);
@@ -81,6 +93,7 @@ export default {
         const interceptListingInsert=isListingInsert(query);
         const interceptListingReadback=listingInsertSeen&&isListingReadback(query);
         const interceptOwnerListingRead=isOwnerListingRead(query);
+        const interceptUserRevalidationRead=isUserRevalidationRead(query);
         const interceptLockRelease=isLockRelease(query);
         const interceptLockReadback=isLockReadback(query);
         const interceptOperationState=isOperationStateUpdate(query);
@@ -99,6 +112,7 @@ export default {
                 if(!injected&&interceptListingInsert&&isWrite&&fault==='listing-insert-before')failBefore();
                 if(!injected&&interceptListingReadback&&boundProperty==='first'&&fault==='listing-select-after-insert')failBefore();
                 if(!injected&&interceptOwnerListingRead&&boundProperty==='all'&&fault==='listing-read-before')failBefore();
+                if(!injected&&interceptUserRevalidationRead&&boundProperty==='first'&&fault==='user-revalidation-before')failBefore();
                 if(!injected&&interceptLockRelease&&isWrite&&fault==='lock-delete-before')failBefore();
                 if(!injected&&interceptLockReadback&&isRead&&fault==='lock-select-before')failBefore();
                 if(!injected&&interceptOperationState&&isWrite&&fault==='operation-state-before')failBefore();
