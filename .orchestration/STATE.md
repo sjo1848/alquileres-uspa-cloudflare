@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `AWAIT_CONTROLLER_NEXT_CONTRACT`
+State: `PENDING_EXTERNAL_REVIEW`
 Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
-Active task: `none — CF-AU-I01-P0P1 integrated and closed`
+Active task: `CF-AU-I01-P2 — Artifact A4 awaiting external review`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -362,3 +362,13 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - La afirmación anterior de suite interrumpida quedó supersedida: el registro de ejecución de la última sesión confirma `npm test` PASS, exit 0, 527.4s, sobre el contenido ejecutable que permanece sin cambios. En esta sesión pasaron typecheck, sintaxis de pruebas, `npm run test:retry` y `git diff --check`; ver huellas y procedencia en `evidence/CF-AU-I01-P2-VALIDATION.md`.
 - Cambios locales preservados: error de revalidación D1 se propaga como 500; limpieza R2 postcommit no bloquea mutaciones posteriores y su reaper no aplica orden D1 obsoleto. Revisiones independientes auth e integridad no hallaron defectos materiales.
 - Próxima acción: commit/push del candidato al PR #10; luego nueva revisión GitHub y `project_controller` separado GPT-6 Luna High/read-only sobre SHA exacto. A4 todavía no publicado.
+
+## CF-AU-I01-P2 — Artifact A4 publicado (2026-10-15)
+
+- PR #10 permanece OPEN y sin merge. `main@ed52e7e17f6378e62d14896a095f54abb7304f66` es ancestro y se conserva la historia A1–A3.
+- Artifact A4 inmutable: tag anotado `CF-AU-I01-P2-Artifact-A4` → SHA exacto `c9090202441ecd534f84c2dcc610dc5d86bab4e0`.
+- Validación: suite completa `npm test` PASS, exit 0, 527.4s en Worker local con datos sintéticos; no se repitió porque Controller verificó que los cuatro hashes de código/pruebas coinciden con el árbol ejecutado. En la reanudación: typecheck, sintaxis, retry focalizado y `git diff --check` también PASS.
+- Revisión GitHub automática del SHA exacto: completada; sin nuevos comentarios inline en ese SHA. El resumen de GitHub no expone un booleano explícito de findings, así que no se reporta un PASS independiente de GitHub. Los hallazgos históricos materiales están corregidos; la discrepancia menor de filename está registrada como seguimiento no bloqueante.
+- `project_controller` en proceso separado, invocado con `gpt-6-luna`, `high`, `read-only`, devolvió **PASS técnico acotado local/sintético** para ese SHA. CLI/session start y completion verificados, salida 0; identidad backend no verificada. Verbatim, invocación y límites en `.orchestration/evidence/critics/CF-AU-I01-P2-CONTROLLER-C909020.md`.
+- Pre-Critic PASS para publicar. Se mantiene explícita la limitación de parity de `living-room.png` y la falta de validación de comportamiento multi-instancia remoto/atomicidad D1/R2.
+- Estado: `PENDING_EXTERNAL_REVIEW`, sin nuevas correcciones de P2 autorizadas hasta ese dictamen. Próximo foco, después del cierre: integración de Vue y diseño mínimo de Preview Cloudflare protegido; recursos remotos, despliegue y gasto requieren autorización.

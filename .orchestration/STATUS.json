@@ -2,26 +2,26 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
-  "runtime_status": "READY_FOR_EXACT_SHA_REVIEW",
-  "resume_authorized": true,
-  "active_task": "CF-AU-I01-P2",
-  "last_completed_task": "CF-AU-I01-P0P1",
-  "last_completed_head": "c57ebfab5b97606c91a746a7e02a9528a2018205",
+  "runtime_status": "PENDING_EXTERNAL_REVIEW",
+  "resume_authorized": false,
+  "active_task": "CF-AU-I01-P2 — Artifact A4 awaiting external review",
+  "last_completed_task": "CF-AU-I01-P2",
+  "last_completed_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Commit and push the consolidated local candidate to PR #10, request and process GitHub automatic review on its exact SHA, then run a fresh separate codex exec project_controller with gpt-6-luna/high/read-only on that same exact candidate and verify its session metadata. Publish immutable A4 only after GitHub, Controller PASS, and Pre-Critic are conforming. Full npm test passed on unchanged executable content in the prior session (527.4s, exit 0); current session reran typecheck, syntax, focused retry and diff checks successfully.",
-  "stop_reason": null,
+  "next_action": "Await External Independent Critic verdict on immutable Artifact A4 tag CF-AU-I01-P2-Artifact-A4 at exact SHA c9090202441ecd534f84c2dcc610dc5d86bab4e0. Do not continue P2 or begin Vue/Preview until that boundary closes; next functional priority is Vue connection and protected Cloudflare Preview design, with no remote resource/deployment/payment without Human authorization.",
+  "stop_reason": "EXTERNAL_REVIEW",
   "event": {
-    "seq": 47,
-    "id": "CF-AU-I01-P2@LOCAL-CANDIDATE-CONSOLIDATED",
-    "type": "LOCAL_CANDIDATE_READY_FOR_EXACT_SHA_REVIEW"
+    "seq": 48,
+    "id": "CF-AU-I01-P2@ARTIFACT-A4-PENDING-EXTERNAL-REVIEW",
+    "type": "IMMUTABLE_ARTIFACT_PUBLICATION"
   },
   "external_review": {
-    "required": false,
+    "required": true,
     "last_audited_head": "8e5b67668686f8543a8facc632d53f4535837c3c",
     "last_verdict": "REWORK-3",
-    "artifact_head": "8e5b67668686f8543a8facc632d53f4535837c3c",
-    "artifact_tag": "CF-AU-I01-P2-Artifact-A3",
-    "pending_verdict": null
+    "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
+    "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
+    "pending_verdict": "PENDING"
   },
   "human_gate": null,
   "blocker": null,
@@ -34,7 +34,7 @@
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
     "sandbox": "read-only",
-    "runtime_verified": false,
+    "runtime_verified": true,
     "scope": "LOCAL_SYNTHETIC_TECHNICAL",
     "may_auto_merge_main": false,
     "custom_agent_sandbox_enforced": false,
@@ -45,12 +45,12 @@
     "main_auto_merge": false
   },
   "candidate_review": {
-    "sha": "db8a1abf460afe7ee1686f8b3a3c1fa5afe07919",
-    "artifact_published": false,
-    "last_report": "LOCAL_DIFF_CONSOLIDATED_PENDING_COMMIT_AND_REVIEW",
+    "sha": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
+    "artifact_published": true,
+    "last_report": "CONTROLLER_PASS_GITHUB_REVIEW_COMPLETED_PRECRITIC_PASS",
     "last_report_not_retroactively_passed": true,
-    "pr_head": "db8a1abf460afe7ee1686f8b3a3c1fa5afe07919",
-    "github_review_request": null,
-    "next_action": "Push consolidated candidate; request fresh exact-head GitHub review; run separate GPT-6 Luna High read-only Controller on that SHA; publish A4 only after all gates pass."
+    "pr_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
+    "github_review_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10#issuecomment-6204159194",
+    "next_action": "Await External Independent Critic verdict for Artifact A4; no more P2 changes unless requested."
   }
 }

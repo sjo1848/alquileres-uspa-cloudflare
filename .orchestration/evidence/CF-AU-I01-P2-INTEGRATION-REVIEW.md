@@ -106,3 +106,7 @@ Independent read-only idempotency, recovery and concurrency critiques found no r
 ## Consolidated candidate update — 2026-10-15
 
 The latest complete local synthetic suite passed on the current executable tree in the prior session (527.4s, exit 0); this session reran TypeScript, both test-script syntax checks, focused retry/recovery and whitespace validation successfully. The pause checkpoint that said interrupted was stale and is corrected in the validation ledger. Auth now distinguishes invalid JWTs from D1 revalidation failures (401 vs 500); DELETE recovery releases the mutation fence after logical deletion is confirmed and safely finishes stale R2 cleanup while preserving later operations. Independent read-only auth and D1/R2 reviewers found no material issue. GitHub exact-head review and Controller review remain pending for the new commit. No remote resources or source writes.
+
+## Artifact A4 closeout — 2026-10-15
+
+Artifact A4 tag `CF-AU-I01-P2-Artifact-A4` pins `c9090202441ecd534f84c2dcc610dc5d86bab4e0`. GitHub automatic review completed on this exact candidate with no new inline comments. `project_controller` returned bounded technical PASS on the exact SHA; invocation/runtime limits and the one minor filename parity follow-up are recorded in `evidence/critics/CF-AU-I01-P2-CONTROLLER-C909020.md`. Pre-Critic passed for publication. P2 is stopped at `PENDING_EXTERNAL_REVIEW`; PR #10 remains open/unmerged, and no remote resources, deployment, real data or payment were used.
