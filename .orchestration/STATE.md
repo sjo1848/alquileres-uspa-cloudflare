@@ -1,10 +1,10 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `AWAIT_CONTROLLER_NEXT_CONTRACT`
-Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
-Active task: `none — CF-AU-I01-P0P1 integrated and closed`
+State: `READY_TO_RESUME`
+Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
+Active task: `CF-AU-I01-P2 — External PASS recorded; main integration awaits enforceable protection`
 
-> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
+> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
 ## Source baseline
 
@@ -245,8 +245,141 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Documented an explicit GPT-6 Luna High `codex exec` subprocess in read-only CLI mode as alternate local reviewer when native spawn cannot be verified. Not run here; backend identity not attested. `BLOCKED_MODEL_CONFIG` remains unresolved until an actual supported local reviewer run.
 - No merge, spend, deployment, original repo edits, or Human product risk decisions.
 
-## Event 41 — feasible Luna High Controller gate + PR #10 privacy finding (2026-10-14)
+## CF-AU-I01-P2 — continuation after Event 34 canonical main sync (2026-10-14)
 
-- User choice remains exact GPT-6 Luna/High/read-only. Previous method required unavailable provider-signed backend identity; this was NOT requested by Human. New binding `.orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md` accepts an actually executed, explicitly selected no-fallback read-only CLI reviewer with full command/session/test provenance as an operational local technical review, while recording backend identity as UNVERIFIED (never fabricating cryptographic certainty). Prior `BLOCKED_MODEL_CONFIG` is historical, NOT retroactive PASS.
-- Latest GitHub automatic review on PR #10 head `5dce70aa9065feb74dbf2f61ccf54241b9cdb815` found raw user-controlled Idempotency-Key in scheduled reorder recovery logs; repair before next candidate and obtain new independent reviewer verdict on NEW SHA. Existing candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` with 3557.1s local HTTP PASS remains recorded evidence, not newly rerun Controller tests.
-- No Artifact A4 yet, no PR merge, remote/cloud service, payment, source writes or real data. Codex may resume routine P2 review and repair without Human courier.
+- Canonical `main` advanced through `91db05fb343d0bc020335bfc05790a2f3f824b82` and adds Event 34: automated review of prior PR #10 head `9d58295c173f95d69c4cfcbb9626ec5d2d212dc1` plus the documented separate-process Controller runtime correction. Main was merged into the existing work branch with a merge commit; PR A1–A3 ancestry and all work commits are retained.
+- GitHub review specifically found two replay durability defects: keyed upload may return 201 without confirmed COMMITTED idempotency result; keyed reorder may return 200 without confirmed COMMITTED result. Full review comments are persisted on PR #10. The broader audit also checks create timestamp replay, lease release semantics, retry fingerprints/results, authorization before locks, D1/R2 compensation and terminal recovery states.
+- Existing code candidate `37e9860170e0958e4ab5b9bfef0e8b82f2e2bad1` had typecheck, HTTP-test syntax, whitespace and full local Wrangler D1/R2 HTTP suite pass (828.8s), but this predates the newly surfaced replay findings and is not final verification. No A4 exists.
+- Canonical next action: merge-resolution verification, then repair both idempotency acknowledgment paths and complete the whole bounded acknowledgment/retry/concurrency/compensation/recovery audit with independent security and integrity critics. Run focused regressions and fresh full suite. Invoke `project_controller` through the documented separate `codex exec --model gpt-6-luna -c 'model_reasoning_effort="high"' --sandbox read-only --json` process on the exact final SHA; label provenance `delegated_codex_separate_process` and report runtime evidence honestly. If unavailable, remain BLOCKED_MODEL_CONFIG. Publish one immutable A4 only after review PASS and Pre-Critic.
+- No merge to main, remote resources, payments, deployment, real data, or source repository edits.
+
+## CF-AU-I01-P2 — reorder recovery candidate 2026-10-14
+
+- Canonical `main` was freshly fetched at `91db05fb343d0bc020335bfc05790a2f3f824b82`, still an ancestor of the open PR #10 branch; no merge/rebase or history rewrite was needed, and all A1–A3 ancestry remains intact.
+- GitHub automated review of prior head `408ea30a51bb74a3fc4eab27037292edd9f4f03a` found P1 abandoned reorder reservations blocking mutations forever and P2 omission of focused retry tests from `npm test`. The fixes add migration `0004_reorder_recovery.sql`, scheduled exact-plan/lease-fenced reaping, terminal nonretryable retirement for unrecoverable plans, and include focused retry coverage in default `npm test`.
+- The first full suite run after the fixes exposed a D1 ignored-marker predicate mismatch. That was corrected; the first run remains recorded as failed/rework and is not counted. Final fresh local synthetic Wrangler D1/R2 run passed: `npm test` (focused suite + full HTTP suite) in 1122.2s. `npm run typecheck`, `node --check tests/http.mjs`, `git diff --check`, `npm run test:retry`, and `npm audit --audit-level=high` also passed; audit had zero vulnerabilities and dependencies did not change.
+- Independent reorder-concurrency, saga/integrity, and auth/runtime reviewers re-critiqued the final code; no P0/P1/P2 remained. Their scope and read-only limits are in `evidence/critics/CF-AU-I01-P2-REWORK3-INTEGRITY.md`; they did not execute tests.
+- Candidate commit `5ae63d70f10acc74d9c594aad348f8b8fe4accc6` is pushed to PR #10; PR is OPEN and MERGEABLE. GitHub automated review was requested. No GitHub review verdict or GPT-6 Luna High Controller verdict for this new candidate is yet claimed.
+- Exact next action: poll GitHub automatic review; resolve any material code findings autonomously with focused and full revalidation. Then run documented separate-process `codex exec --model gpt-6-luna -c 'model_reasoning_effort="high"' --sandbox read-only --json` on the exact final SHA. Record actual CLI sandbox/process evidence and leave backend identity unverified unless the process exposes attestable metadata. Iterate Controller REWORK internally. Publish immutable A4 only after a verified technical PASS.
+- No merge to `main`, production, paid service, remote Cloudflare resource, real data, source-repository write, functional migration or new task was performed.
+
+
+## CF-AU-I01-P2 REWORK-3 — user pause checkpoint (2026-10-14)
+
+- Canonical `main` remains `91db05fb343d0bc020335bfc05790a2f3f824b82`; PR #10 remains open on `work/cf-au-i01-p2`, with A1–A3 history preserved. No merge or deployment occurred.
+- The latest GitHub findings and exact-SHA Controller REWORK on prior PR head `50c368ecead0fc2d6ffb87b31c4168482a58add9` are recorded in the validation/critic evidence. This checkpoint adds fixes for exact reaper ordering, paired reservation repair, terminal idempotency repair, and inherited null `result_json`; internal reorder, saga, and auth/runtime critics found no actionable P0/P1/P2.
+- Local checkpoint commit: `e1b935042e044a7f32f21b08f09463b866902fe7` (source and HTTP tests only; not pushed). The suite attempts found and repaired test/setup defects; the latest full `npm test` was explicitly interrupted at the Human's pause request. **No full-suite PASS is claimed for e1b9350.**
+- Current exact next action: run `npm run typecheck`, `node --check tests/http.mjs`, `git diff --check`, `npm run test:retry`, then a fresh `npm test` on `e1b935042e044a7f32f21b08f09463b866902fe7`; inspect and repair any failure before pushing PR #10. Only after a clean suite should evidence and the candidate be published for GitHub review and the separate `project_controller` GPT-6 Luna High read-only process. Artifact A4 is not published.
+- Runtime status: `READY_TO_RESUME` at the Human's request. No paid services, remote Cloudflare resources, real data, source-repository writes, production deployment or merge.
+
+
+## CF-AU-I01-P2 REWORK-3 — local candidate ready for GitHub review (2026-10-14)
+
+- Exact local evidence commit: `c0e5cb503a9ede218c2edb70dbae8250bf8ce34c`. It records the full fresh local suite result (3557.1s), focused retry, typecheck, syntax, diff and audit results, plus Pre-Critic PASS to submit for review. Implementation/test checkpoint is `e1b935042e044a7f32f21b08f09463b866902fe7`; checkpoint state commit is `5b9fe7d5e6ea756f94267f321cbf12b61805bc8d`.
+- Three independent read-only critic tracks found no actionable P0/P1/P2 in reorder/idempotency/concurrency, D1/R2 saga/recovery or auth/runtime/API. Reviewers did not modify or run tests.
+- `origin/main` was freshly verified at `91db05fb343d0bc020335bfc05790a2f3f824b82` and remains an ancestor; PR #10 is OPEN/CLEAN and all A1–A3 commits remain reachable.
+- Next action: push the evidence and state boundary commit to the existing PR branch, request/poll GitHub automated review on its exact SHA, resolve any material finding autonomously with revalidation, then invoke the separate read-only GPT-6 Luna High Controller on the exact final pushed SHA. No A4 until exact-SHA Controller PASS and final Pre-Critic.
+- No merge, deployment, paid resource, real data or source-repository write.
+
+
+## CF-AU-I01-P2 REWORK-3 — exact candidate review boundary (2026-10-14)
+
+- Reconstructed canonical GitHub `main` at `91db05fb343d0bc020335bfc05790a2f3f824b82`; it is an ancestor of PR #10 candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e`. PR #10 remains OPEN, no merge. A1–A3 history/tags remain preserved.
+- GitHub automated review for exact candidate `cdb8970` completed at `2026-10-14T15:11:59Z`; there are no new review comments or suggestions for that run. Older review threads were checked by timestamp/original commit and are not new findings for this candidate.
+- Attempted documented separate CLI review with requested `gpt-6-luna`, `model_reasoning_effort=high`, `--sandbox read-only`, `--json`; retried with `--ignore-user-config --ephemeral` while retaining the same model, effort and sandbox. Both attempts failed before a reviewer session initialized: `failed to initialize in-process app-server client: Read-only file system (os error 30)`. The CLI process flags were observed, but reviewer startup, runtime model identity and sandbox enforcement were not verified. No code review verdict or technical PASS resulted; exact run notes are in `evidence/critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.
+- Candidate local test evidence remains that recorded in `evidence/CF-AU-I01-P2-VALIDATION.md`; no tests were rerun in this continuation. No A4/tag was published.
+- Exact next action: rerun `project_controller` via the documented separate `codex exec` in an execution runtime where the app-server can initialize without relaxing `--sandbox read-only`; inspect the exact candidate SHA and obtain a non-blocked verdict. Only an evidence-backed PASS permits A4 publication.
+- Canonical runtime status: `READY_TO_RESUME`, resume authorized. No Human Gate, merge, deployment, paid service, remote Cloudflare resource, real data, or source-repository write occurred.
+
+
+## CF-AU-I01-P2 REWORK-3 — Controller static audit and model-attestation boundary (2026-10-14)
+
+- A separate `codex exec` session started with requested `gpt-6-luna`, HIGH reasoning, and `--sandbox read-only`. Exact startup setup and result are in `evidence/critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`. Shell inspection ran under a restricted workspace profile; no tests or mutations were performed by the Controller.
+- The Controller inspected exact candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` against canonical `main@91db05fb343d0bc020335bfc05790a2f3f824b82`, including app code, retries, D1/R2 recovery, tests and evidence. It identified no P0/P1 in static review, but returned `BLOCKED_MODEL_CONFIG`: actual provider/model identity is not exposed/attested in available runtime metadata. No technical PASS was issued.
+- Model/effort flags and read-only workspace profile were observed; actual backend model identity remains `UNVERIFIED`. A4 is not published.
+- Exact next action: obtain supported runtime model/effort attestation or a supported delegated `project_controller` runtime that verifies GPT-6 Luna + HIGH while preserving read-only, then repeat review of exact candidate `cdb8970`. Publish A4 only after evidence-backed technical PASS and refreshed Pre-Critic.
+- Canonical status remains `READY_TO_RESUME`, resume authorized; PR #10 remains open, branch history intact. No merge, deployment, paid service, remote resource, real data, or original-source modification.
+
+
+## CF-AU-I01-P2 REWORK-3 — Controller PASS for exact code candidate (2026-10-14)
+
+- A further separate read-only Controller review of exact code candidate `cdb8970ce06fb03d841bd9b2ba32769d78c5629e` against `main@91db05fb343d0bc020335bfc05790a2f3f824b82` returned **PASS for the bounded local technical review**, with no P0/P1 in the audited mutation acknowledgment, idempotency/retry, concurrency, D1/R2 recovery, or auth paths.
+- Runtime configuration was verified from Codex session `01a13b55-e743-7aa3-8a4f-08a45eef8ec6`, `turn_context`: model `gpt-6-luna`, effort `high`, sandbox `read-only`. Provider/backend identity has no cryptographic attestation and remains explicitly unverified. Full evidence and limits are recorded in `evidence/critics/CF-AU-I01-P2-CONTROLLER-RUNTIME-CDB8970.md`.
+- Controller confirmed the candidate Worker tree hashes match tested source/test tree `e1b9350` / `5b9fe7d`; ledger records fresh local synthetic `npm test` PASS in 3557.1s and static/type/audit checks. Controller did not execute tests.
+- The prior `BLOCKED_MODEL_CONFIG` verdict was an earlier attempt where the session metadata had not yet been inspected; this exact-SHA PASS supersedes that runtime attempt. The provider attestation limitation remains.
+- Next: freeze an evidence-updated candidate, get GitHub automated review and Controller review on that exact SHA; refresh Pre-Critic for the exact artifact before tagging A4. No A4 is yet published.
+
+## Event 41 — canonical Controller operational gate and privacy finding (main@ed52e7e)
+
+- Canonical policy update `.orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md` replaces an unavailable provider-signed backend identity as a local-review blocker. The Controller still must run as a distinct explicitly selected GPT-6 Luna, High, read-only process with complete invocation/session/input/output evidence; provider backend identity is reported honestly as unverified. Earlier BLOCKED findings are historical and are not retroactively changed.
+- Canonical GitHub review identified caller-controlled `Idempotency-Key` values in scheduled recovery logs. The candidate branch now removes all such values and adds a regression guard. A subsequent automatic comment also identified retired-operation recovery of a matching NULL result row; conditional repair and an HTTP regression are included.
+- Canonical `main` was fetched at `ed52e7e17f6378e62d14896a095f54abb7304f66`. It was not an ancestor of the prior PR head, so this branch is integrating it with a merge commit; no source or artifact history is rewritten.
+
+## Event 42 — PR #10 bounded latest-finding repairs (2026-10-14)
+
+- Resolved both exact-candidate recovery findings: static-only structured reorder recovery events; matching-fingerprint/state repair of a retired idempotency row with NULL result, with exact readback. Tests and two independent read-only critics are recorded in the validation ledger and REWORK-3 integrity critique.
+- Fresh local synthetic `npm test` passed after both fixes (focused retry plus full HTTP/D1/R2 suite, 1366.7s); typecheck, syntax, and diff checks passed. No dependencies changed. The test run preceded canonical-main merge and covers unchanged application/test trees; only orchestration policy/state files changed during the merge.
+- Current next action: resolve/verify this canonical-main merge, commit and push the reviewed fixes/evidence on existing PR #10, then obtain fresh GitHub automatic review and an operationally verified GPT-6 Luna High read-only Controller verdict on that exact SHA. Publish A4 only after both review gates and a final Pre-Critic pass.
+- No merge to main, paid/remote service, deployment, real data, source-repository write, or new functional scope.
+
+## Event 43 — canonical `main` integrated; latest fixes ready for candidate review
+
+- Safely fetched canonical `origin/main@ed52e7e17f6378e62d14896a095f54abb7304f66`, which was not an ancestor of PR #10, and merged it without rewriting any branch or Artifact A1–A3 commits. Merge-resolution verification retained the complete PR history and the new Controller operational-verification policy; no app-code conflicts occurred.
+- Exact local code/evidence repair commit: `1a14e41199a2d6123c5962c4c07fc9259323080d`; full-suite tree contains the two P2 repairs, regression tests, updated validation, independent critiques, Integration Review, Pre-Critic and canonical state. Full `npm test` passed on that unchanged application/test tree before the orchestration-only main merge; typecheck/syntax/diff and focused retry also passed.
+- Exact next action: commit this current state update, push the complete history to the existing PR #10, wait for GitHub automatic review of its exact HEAD, and run the separate `project_controller` with `gpt-6-luna`, HIGH, read-only on that same exact SHA under operational-verification policy V2. Resolve bounded findings and repeat checks; publish/tag immutable A4 only after Controller technical PASS and refreshed final Pre-Critic. Provider backend identity must remain `UNVERIFIED` unless separately exposed. No A4 yet.
+- No PR merge, deployment, payment, remote Cloudflare resource, real data, source-repository modification or new functional task.
+
+## Event 44 — latest GitHub findings and independent ADD-order defect repaired (2026-10-14)
+
+- The fresh GitHub review on PR #10 head `e07241a53635ed9b6f605f5b53ff589d92a8a15f` reported two P2 ignored-write cases: ADD could commit idempotency after an ignored insert; DELETE could commit after an ignored target delete. ADD markers now require the exact inserted D1 row; DELETE markers require confirmed target absence and dense survivor positions. HTTP fault tests verify same-key recovery and D1/R2 state.
+- Independent concurrency critique found a further P2: ADD markers also needed an exact expected dense order predicate before commit. The SQL now guards exact row count and each expected ID/position. Same-key replay densifies without undoing a later valid reorder; scheduled ADD recovery densifies and reads back before marking the operation committed. A synthetic trigger test covers sparse post-insert order, blocked repair, fail-closed retry, scheduled convergence, replay, and R2 readability.
+- Fresh local synthetic `npm test` passed after these changes in 1188.1s. `npm run typecheck`, both test syntax checks, `git diff --check`, and separate `npm run test:retry` passed. Independent D1/R2 saga and concurrency critics found no remaining actionable P0/P1/P2; they did not run tests. Full commands, failed attempts and exclusions are in the validation ledger; failures were test expectation/fixture issues, diagnosed and corrected, and are not claimed as passes.
+- Exact next action: commit the verified source/tests/evidence on the existing branch, update this state/status to that candidate, push PR #10, request GitHub automatic review and run the documented separate GPT-6 Luna/High/read-only Controller against the exact pushed SHA. Resolve any findings, repeat checks and refresh Pre-Critic. Publish A4 only after an exact-SHA Controller PASS and required review gates. No A4 or technical PASS is claimed yet.
+- No merge, deployment, payment, remote Cloudflare resource, real data, source-repository modification, or new functional scope occurred.
+
+## Event 45 — recovery/idempotency candidate c7aaf61 (2026-10-14)
+
+- Canonical `origin/main` remains `ed52e7e17f6378e62d14896a095f54abb7304f66` and is an ancestor of the PR branch. PR #10 remains open/unmerged; Artifact A1–A3 commits and tags are retained.
+- Addressed the P1/P2 findings on `fae0886`: unrelated ADD/REORDER/DELETE mutations now wait behind every scheduler-reopenable DELETE state, including committed or compensated operations with incomplete backup cleanup. Historical ADD replay no longer repairs current D1 positions; historical target-missing DELETE replay returns its committed response without touching order/storage. Nonhistorical target-missing DELETE checks the pending reorder barrier before any recovery effect.
+- Independent reviews found a further P1: the reorder scheduler also reconciles COMMITTED operations while the exact replay marker is PENDING/NEEDS_REPAIR. The reorder barrier now fences those states, with only the exact scope/key/fingerprint retry exempt. Tests prove ADD, a different REORDER, and DELETE return 503 until scheduled marker recovery, then mutations resume. Direct committed ADD→DELETE→same-key replay asserts the original response and no D1/R2 recreation.
+- Focused `npm run test:retry` passes with local synthetic D1/R2; `npm run typecheck`, both `node --check` commands, and `git diff --check` pass. Independent recovery and idempotency reviewers approve the current code path; they did not run tests. The complete HTTP suite has not yet been rerun on this candidate.
+- Candidate `c7aaf61101fa9b739e3fff910624e34bcefd8f05` was pushed to PR #10. GitHub automatic review was requested at comment `6181210021`; exact-head result is pending. This candidate is not an Artifact and no Controller PASS is claimed.
+- Exact next action: process GitHub findings on the exact current PR head. Once code is consolidated, run one complete `npm test`, refresh evidence and Pre-Critic, request/inspect GitHub review on the latest exact head, and obtain an operationally verified separate `project_controller` GPT-6 Luna/High/read-only PASS. Only then publish immutable A4 and stop at External Independent Critic.
+- No source repo, merge, deployment, remote Cloudflare resource, paid service, or real data was changed or used.
+
+
+## CF-AU-I01-P2 REWORK-3 — pausa solicitada durante suite final (2026-10-15)
+
+- PR #10 sigue OPEN y sin merge. Último HEAD remoto: `db8a1abf460afe7ee1686f8b3a3c1fa5afe07919`; ancestry de `origin/main@ed52e7e17f6378e62d14896a095f54abb7304f66` preservada. Artifact A4 no publicado.
+- `npm run test:retry` pasó en este ciclo. El `npm test` más reciente corrió sobre ese HEAD, pasó el bloque enfocado y fue interrumpido por solicitud explícita del usuario durante `tests/http.mjs`, antes de completar la suite. No se considera PASS. El proceso Wrangler fue detenido y no quedan procesos de esa suite activos.
+- La prueba HTTP fue ajustada para que el replay REORDER use la misma clave y el mismo imageId después de una reordenación efectiva; un crítico interno independiente confirmó que el escenario comprueba el resultado histórico y que el replay no modifica el orden D1 posterior. También quedaron corregidos el ACK del ledger ADD y la comprobación de identidad de fila durante recuperación.
+- Hallazgo automático GitHub pendiente de revisar en el SHA actual: solicitud `@codex review` `6182050239`. La observación anterior de cleanup del test harness se atendió usando Wrangler directamente y un cierre que comprueba `exitCode`/`signalCode`; revisar cualquier observación nueva sobre el HEAD actual.
+- Próxima acción exacta: al reanudar, obtener y procesar la revisión automática de `db8a1ab`; si no requiere cambio, correr `npm test` completo en ese candidato y continuar con validación, Integration Review, Pre-Critic y Controller GPT-6 Luna High/read-only en proceso separado sobre el SHA exacto. Publicar A4 solo después de PASS verificable de Controller y los demás controles.
+- Este checkpoint está guardado localmente; no se creó un commit adicional para no mover el HEAD sujeto a la revisión automática pendiente. Sin despliegue, servicios pagos, datos reales, cambios al repositorio fuente ni merge.
+
+### Reconciliación del checkpoint — retomada 2026-10-15
+
+- La afirmación anterior de suite interrumpida quedó supersedida: el registro de ejecución de la última sesión confirma `npm test` PASS, exit 0, 527.4s, sobre el contenido ejecutable que permanece sin cambios. En esta sesión pasaron typecheck, sintaxis de pruebas, `npm run test:retry` y `git diff --check`; ver huellas y procedencia en `evidence/CF-AU-I01-P2-VALIDATION.md`.
+- Cambios locales preservados: error de revalidación D1 se propaga como 500; limpieza R2 postcommit no bloquea mutaciones posteriores y su reaper no aplica orden D1 obsoleto. Revisiones independientes auth e integridad no hallaron defectos materiales.
+- Próxima acción: commit/push del candidato al PR #10; luego nueva revisión GitHub y `project_controller` separado GPT-6 Luna High/read-only sobre SHA exacto. A4 todavía no publicado.
+
+## CF-AU-I01-P2 — Artifact A4 publicado (2026-10-15)
+
+- PR #10 permanece OPEN y sin merge. `main@ed52e7e17f6378e62d14896a095f54abb7304f66` es ancestro y se conserva la historia A1–A3.
+- Artifact A4 inmutable: tag anotado `CF-AU-I01-P2-Artifact-A4` → SHA exacto `c9090202441ecd534f84c2dcc610dc5d86bab4e0`.
+- Validación: suite completa `npm test` PASS, exit 0, 527.4s en Worker local con datos sintéticos; no se repitió porque Controller verificó que los cuatro hashes de código/pruebas coinciden con el árbol ejecutado. En la reanudación: typecheck, sintaxis, retry focalizado y `git diff --check` también PASS.
+- Revisión GitHub automática del SHA exacto: completada; sin nuevos comentarios inline en ese SHA. El resumen de GitHub no expone un booleano explícito de findings, así que no se reporta un PASS independiente de GitHub. Los hallazgos históricos materiales están corregidos; la discrepancia menor de filename está registrada como seguimiento no bloqueante.
+- `project_controller` en proceso separado, invocado con `gpt-6-luna`, `high`, `read-only`, devolvió **PASS técnico acotado local/sintético** para ese SHA. CLI/session start y completion verificados, salida 0; identidad backend no verificada. Verbatim, invocación y límites en `.orchestration/evidence/critics/CF-AU-I01-P2-CONTROLLER-C909020.md`.
+- Pre-Critic PASS para publicar. Se mantiene explícita la limitación de parity de `living-room.png` y la falta de validación de comportamiento multi-instancia remoto/atomicidad D1/R2.
+- Estado: `PENDING_EXTERNAL_REVIEW`, sin nuevas correcciones de P2 autorizadas hasta ese dictamen. Próximo foco, después del cierre: integración de Vue y diseño mínimo de Preview Cloudflare protegido; recursos remotos, despliegue y gasto requieren autorización.
+
+## CF-AU-I01-P2 — External PASS and integration gate (2026-10-16)
+
+- External Independent Critic verdict: **PASS**, strictly bounded to local/synthetic P2, recorded in PR #10 comments `6205084750` and `6205102465`. Immutable tag `CF-AU-I01-P2-Artifact-A4` remains unchanged and dereferences to `c9090202441ecd534f84c2dcc610dc5d86bab4e0`.
+- PR #10 HEAD is `722f72ee7c52013413f055589c7bf7c926251ac0`, a direct child of A4. Its delta from A4 is orchestration/evidence only; no executable Worker or test changes follow the approved SHA. PR is OPEN and GitHub reports MERGEABLE/CLEAN. The false automatic ancestry finding on this boundary was answered and resolved; it does not alter the A4 verdict.
+- Integration controls were checked immediately before the Human's exception: `main` has no branch protection (`GET /branches/main/protection` returns 404 “Branch not protected”), no applicable enforceable ruleset was found, and the PR has no required-check rollup. PR #10 was OPEN and `MERGEABLE/CLEAN`; its head was `105a3c3bcb4a3b09c56a369dfed6fed6f4e39acf`. The annotated A4 tag resolves to `c9090202441ecd534f84c2dcc610dc5d86bab4e0`, and the entire post-A4 delta is orchestration/evidence/proposal only. No executable Worker or test changes are present after the approved SHA.
+- **Human exception, 2026-10-16:** the Human explicitly authorized the one-time merge of PR #10 to `main` without branch protection, solely to close CF-AU-I01-P2. This exception applies to PR #10 only; it does not waive future main protections or checks. Integrate using a GitHub merge commit, preserving all commits and Artifact A1–A4 ancestry. Do not squash or rebase.
+- P2 has External Independent Critic **PASS** and is authorized for this final integration. No A5 or P2 REWORK is opened. The integration commit SHA is the GitHub-created merge commit and is recorded by the resulting main history.
+- Minimal protected Preview proposal and first Vue/API journey are in `.orchestration/proposals/CF-AU-PREVIEW-AND-VUE-INTEGRATION.md`. No Cloudflare resources, billing, secrets, or deployment were created. Preview remains a separate authorization gate.
+- The autonomous delivery train permits P3/P4 local synthetic implementation after P2 integration. The next user journey is Vue catalog → public property detail/images; contact follows as a separate journey. The original `alquileres-uspa` checkout remains untouched and read-only. Main protection and quick CI checks are required before the next merge.
+- Exact next action: perform the already-authorized PR #10 merge commit, verify the merge SHA and A4 ancestry on `main`, close P2, then start the local synthetic catalog/property-detail implementation. Remote Preview creation/deployment still requires independent explicit authorization of its resources, costs and permissions.
