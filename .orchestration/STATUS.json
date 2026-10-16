@@ -4,21 +4,21 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02-P3 — catálogo público y fichas Vue/Worker locales con datos sintéticos",
+  "active_task": "CF-AU-I02-P3 — PR #11 catálogo público y ficha; código local aprobado por checks y Controller, sin integrar",
   "last_completed_task": "CF-AU-I01-P2",
   "last_completed_head": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
   "work_branch": "work/cf-au-p3-catalog",
-  "next_action": "Consolidar y publicar el PR del recorrido catálogo/ficha en esta rama; procesar CI y observaciones materiales; completar la protección de main antes de cualquier merge. Preview real sigue esperando autorización separada de recursos/costos/permisos.",
+  "next_action": "El siguiente recorrido funcional a implementar es acceso del propietario y gestión de sus publicaciones. Mantener PR #11 sin merge hasta autorización explícita; no crear Preview remoto ni desplegar sin autorización separada.",
   "stop_reason": null,
   "event": {
-    "seq": 51,
-    "id": "CF-AU-I02-P3-LOCAL-CATALOG-CHECKPOINT",
-    "type": "FUNCTIONAL_JOURNEY_IN_PROGRESS"
+    "seq": 52,
+    "id": "CF-AU-I02-P3-CATALOG-CONTROLLER-PASS",
+    "type": "LOCAL_SYNTHETIC_FUNCTIONAL_CANDIDATE_REVIEWED"
   },
   "external_review": {
     "required": false,
-    "last_audited_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
-    "last_verdict": "PASS",
+    "last_audited_head": "846f98d636061d6749842475b97ec2c47dcba9ea",
+    "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
     "pending_verdict": null,
@@ -29,7 +29,7 @@
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": null,
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
   "integration_commit": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
   "issue_4": "CLOSED",
   "review_authority": {
@@ -49,9 +49,25 @@
     "main_auto_merge": false
   },
   "candidate_review": {
-    "sha": null,
     "artifact_published": false,
-    "last_report": "LOCAL_CATALOG_IMPLEMENTATION_IN_PROGRESS",
-    "next_action": "Consolidar y publicar el PR del recorrido catálogo/ficha en esta rama; procesar CI y observaciones materiales; completar la protección de main antes de cualquier merge. Preview real sigue esperando autorización separada de recursos/costos/permisos."
+    "last_report": "CONTROLLER_PASS_QUICK_CHECKS_PASS_WITH_NONBLOCKING_P2",
+    "github_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
+    "quick_checks": {
+      "worker": "PASS",
+      "web": "PASS"
+    },
+    "controller": {
+      "verdict": "PASS",
+      "model_requested": "gpt-6-luna",
+      "reasoning_requested": "high",
+      "sandbox": "read-only",
+      "backend_model_identity": "UNVERIFIED"
+    },
+    "findings": [
+      "Nonblocking P2: future lastConfirmedAt is classified FRESH."
+    ],
+    "next_action": "El siguiente recorrido funcional a implementar es acceso del propietario y gestión de sus publicaciones. Mantener PR #11 sin merge hasta autorización explícita; no crear Preview remoto ni desplegar sin autorización separada.",
+    "code_sha": "846f98d636061d6749842475b97ec2c47dcba9ea",
+    "pr_head_at_review": "846f98d636061d6749842475b97ec2c47dcba9ea"
   }
 }
