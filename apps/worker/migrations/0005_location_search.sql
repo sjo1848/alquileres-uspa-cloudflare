@@ -1,3 +1,3 @@
--- Existing lab fixtures are ASCII. New application writes normalize NFC + Unicode lowercase.
+-- Unicode normalization is performed by the Worker, including pre-existing rows.
 ALTER TABLE listings ADD COLUMN location_search TEXT NOT NULL DEFAULT '';
-UPDATE listings SET location_search=LOWER(location);
+CREATE INDEX listings_location_search_idx ON listings(location_search);

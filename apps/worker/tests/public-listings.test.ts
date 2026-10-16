@@ -29,7 +29,6 @@ beforeAll(async () => {
     insertListing.bind('draft-hidden', 'synthetic-owner', 'DRAFT', 'Borrador privado', 'No debe aparecer.', 'Uspallata', 12000, 'WEEK', 'WEEKS', 1, 'ARS', 'PUBLISHED', 'AVAILABLE', created, '2026-10-11T12:00:00.000Z', created),
     insertListing.bind('unpublished-hidden', 'synthetic-owner', 'APPROVED', 'No publicada', 'No debe aparecer.', 'Uspallata', 12000, 'WEEK', 'WEEKS', 1, 'ARS', 'UNPUBLISHED', 'AVAILABLE', created, '2026-10-12T12:00:00.000Z', created),
   ]);
-  await db.prepare('UPDATE listings SET location_search=? WHERE id=?').bind('área %_ centro','public-old').run();
   await env.IMAGES.put('public/test.png', png, { httpMetadata: { contentType: 'image/png' } });
   await env.IMAGES.put('private/draft.png', png, { httpMetadata: { contentType: 'image/png' } });
   await db.batch([
@@ -77,11 +76,13 @@ describe('public catalog and property details', () => {
     expect(denied.headers.get('content-type')).toContain('application/json');
   });
 
-  it('uses literal Unicode-normalized location search', async () => {
+  it('backfills accented legacy values and uses literal Unicode-normalized search', async () => {
+    await env.DB.prepare("UPDATE listings SET location_search='' WHERE id='public-old'").run();
     for (const location of ['ÁREA', '%_', 'ÁREA %_']) {
       const page = await (await get('/public/listings?location=' + encodeURIComponent(location))).json() as any;
       expect(page.items.map((x:any)=>x.id)).toEqual(['public-old']);
     }
+    expect(await env.DB.prepare("SELECT location_search FROM listings WHERE id='public-old'").first('location_search')).toBe('área %_ centro');
     const page = await (await get('/public/listings?location=' + encodeURIComponent('_missing%'))).json() as any;
     expect(page.totalItems).toBe(0);
   });

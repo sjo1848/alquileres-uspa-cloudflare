@@ -163,6 +163,11 @@ function publicFreshness(lastConfirmedAt:string|null){if(!lastConfirmedAt)return
 function publicDomainStatus(row:any){return row.priceAmount!==null&&row.pricePeriod!==null&&row.rentalDuration!==null&&row.maxOccupants!==null&&row.currency!==null?'COMPLETE':'MISSING';}
 function publicListingDto(row:any,images:any[]){return {id:row.id,title:row.title,description:row.description,location:row.location,priceAmount:row.priceAmount,pricePeriod:row.pricePeriod,rentalDuration:row.rentalDuration,maxOccupants:row.maxOccupants,currency:row.currency,domainDataStatus:publicDomainStatus(row),availabilityStatus:row.availabilityStatus,lastConfirmedAt:row.lastConfirmedAt,freshnessStatus:publicFreshness(row.lastConfirmedAt),images};}
 async function publicImages(db:D1Database,listingIds:string[]){if(!listingIds.length)return [] as any[];const placeholders=listingIds.map(()=>'?').join(',');const rows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return rows;}
+async function initializeLocationSearch(db:D1Database){
+  const rows=(await db.prepare("SELECT id,location FROM listings WHERE location_search='' LIMIT 100").all<{id:string;location:string}>()).results;
+  if(rows.length)await db.batch(rows.map(row=>db.prepare("UPDATE listings SET location_search=? WHERE id=? AND location=? AND location_search=''").bind(row.location.normalize('NFC').toLowerCase(),row.id,row.location)));
+  return !await db.prepare("SELECT 1 FROM listings WHERE location_search='' LIMIT 1").first();
+}
 app.get('/public/listings',async c=>{
   const q=c.req.query(),location=q.location??'',pageRaw=q.page??'1',pageSizeRaw=q.pageSize??'20';
   if(location.length>240)return c.json({message:'location must not exceed 240 characters'},400);
@@ -172,6 +177,7 @@ app.get('/public/listings',async c=>{
   for(const key of ['currency','pricePeriod','rentalDuration'] as const){const value=q[key];if(value&&!(PUBLIC_ENUMS[key] as readonly string[]).includes(value))return c.json({message:`${key} is invalid`},400);}
   const availableOnly=q.availableOnly??'false';if(!['true','false'].includes(availableOnly))return c.json({message:'availableOnly must be true or false'},400);
   const clauses=["status='APPROVED'","publication_status='PUBLISHED'"],values:(string|number)[]=[];
+  if(location&&!await initializeLocationSearch(c.env.DB))return c.json({message:'Location index initialization in progress; retry shortly'},503);
   if(location){clauses.push("COALESCE(NULLIF(location_search,''),LOWER(location)) LIKE ? ESCAPE '\\'");values.push('%'+location.normalize('NFC').toLowerCase().replace(/[\\%_]/g,'\\$&')+'%');}
   if(minPrice!==undefined){clauses.push('price_amount>=?');values.push(minPrice);}
   if(maxPrice!==undefined){clauses.push('price_amount<=?');values.push(maxPrice);}
