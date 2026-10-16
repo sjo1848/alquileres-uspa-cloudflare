@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 private Preview published; OWNER PR #13 local complete, provider auth validation pending",
+  "active_task": "CF-AU-I02 OWNER PR #13 review corrections and Free auth CPU feasibility",
   "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
   "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Operator authenticate through Access at private-alquileres-uspa-lab.sjo1848.workers.dev and confirm catalog/detail/images. Preserve protected Preview main769080b. For OWNER PR #13 a36455f, resolve GitHub4294160247 by measuring inherited bcrypt cost12 on actual Free runtime through authorized Access session before merge/remote functionality claim. Do not lower password security, alter auth semantics, broaden Access policies or enable billing silently. Candidate CI/local tests and bounded Controller PASS remain reusable.",
+  "next_action": "Finish targeted OWNER validation and exact-SHA Controller review of NULL-submit/session corrections; publish them on PR #13. Preserve accepted catalog Preview. Resolve actual bcrypt cost12 Free CPU compatibility through authorized provider evidence before merge or OWNER deployment; if no parity-preserving solution exists, present precise auth architecture Human Gate.",
   "stop_reason": null,
   "event": {
-    "seq": 54,
-    "id": "STATIC_ASSETS_PREVIEW_PERMISSION_BLOCKER",
-    "type": "FUNCTIONAL_IMPLEMENTATION_AND_REAL_CREDENTIAL_BLOCKER"
+    "seq": 56,
+    "id": "PUBLIC_PREVIEW_HUMAN_ACCEPTED_OWNER_REVIEW",
+    "type": "HUMAN_ACCEPTANCE_AND_OWNER_CORRECTIONS"
   },
   "external_review": {
     "required": false,
@@ -29,9 +29,9 @@
   },
   "human_gate": null,
   "blocker": {
-    "kind": "AUTHORIZED_BROWSER_AND_FREE_AUTH_CPU_VALIDATION",
-    "observed": "Private Preview published, 12/12 anonymous/invalid-cookie requests redirect to Access; personal authorized browser session unavailable to executor. GitHub P1 flags existing bcrypt cost12 vs Free CPU; not resolved by local tests.",
-    "human_action": "Open private Preview and authenticate personally with permitted email, confirm catalog/detail/images; do not share password/OTP."
+    "kind": "WORKERS_FREE_AUTH_CPU",
+    "observed": "Human accepted catalog/detail Preview5/5. Current bcryptjs cost12 dedicated Node CPU proxy474\u2013534ms vs documented Workers Free10ms, not provider telemetry. No evidence permits closing GitHub P1. Access remains operator-only.",
+    "human_action": "No repeated catalog QA. Any auth semantics/security change or cost transition requires explicit decision; no weaker hash or paid fallback is authorized."
   },
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
   "integration_commit": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
@@ -63,5 +63,13 @@
       "4294160247: bcrypt cost12 Workers Free CPU unproven, unresolved"
     ],
     "scope": "LOCAL_SYNTHETIC_ONLY_OWNER_NOT_MERGED"
+  },
+  "human_acceptance": {
+    "scope": "Private Preview public catalog/detail/static images/filter journey only",
+    "verdict": "PASS",
+    "checks": "5/5",
+    "evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6214688997",
+    "source_sha": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
+    "owner_accepted": false
   }
 }

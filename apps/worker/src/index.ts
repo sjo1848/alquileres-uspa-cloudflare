@@ -94,6 +94,7 @@ app.post('/listings/:id/submit',async c=>{
     const current=await ownerListing(c.env.DB,lid,owner);if(!current)return c.json({error:'not found'},404);
     if(current.status==='SUBMITTED')return c.json(current);
     if(!['DRAFT','REJECTED'].includes(current.status))return c.json({error:'Listing cannot be submitted in its current status'},409);
+    if(!validListingInput(current))return c.json({error:'Complete all required listing fields before submission'},400);
     if(await hasPendingDeleteRecovery(c.env.DB,lid,owner)||await hasPendingReorder(c.env.DB,owner,lid)||await c.env.DB.prepare("SELECT 1 FROM image_operations WHERE listing_id=? AND kind='ADD' AND state IN ('PENDING','NEEDS_REPAIR') LIMIT 1").bind(lid).first())return c.json({error:'Image operation requires recovery before submission'},503);
     const result=await c.env.DB.prepare("UPDATE listings SET status='SUBMITTED',rejection_reason=NULL,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(now(),lid,owner,lid,lease).run();
     if(result.meta.changes!==1)return c.json({error:'Listing changed during submission'},409);

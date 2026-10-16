@@ -15,6 +15,7 @@ const dirty=computed(()=>selected.value&&Object.keys(blank()).some(key=>form[key
 let pendingCreate:{body:string;key:string}|undefined;
 const label=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function message(e:unknown){
+  if(e instanceof ApiError&&e.status===400)return 'Completá los campos obligatorios de la publicación y guardá los cambios antes de enviarla.';
   if(e instanceof ApiError&&e.status===409)return 'La publicación cambió. Recargá tus publicaciones antes de reintentar.';
   if(e instanceof ApiError&&e.status===404)return 'La publicación ya no está disponible para editar.';
   return 'No pudimos confirmar la operación. Reintentá con los mismos datos.';

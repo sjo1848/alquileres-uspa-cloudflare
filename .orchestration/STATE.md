@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `CF-AU-I02 — USD 0 static-media private Preview`
+Active task: `CF-AU-I02 — accepted public Preview; OWNER PR #13 corrections / Free auth CPU`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -438,3 +438,13 @@ Authority: Issue #7 comment 6206813347 and current Human instruction. MEDIA_STAT
 - Final OWNER code `a36455fa5aea462f5442032bbaefc9e74151c2a8`: Vue/Worker CI PASS; local OWNER3/catalog7/media3 PASS; typechecks/build PASS; browser create/edit/submit/reload/logout/unauthenticated denial and `/login` direct/reload PASS. Source remains clean. Independent exact-code reviews and operational provenance stored under evidence/critics.
 - GitHub P1 `4294160247` remains open: inherited bcrypt cost12 may exceed Workers Free CPU. Local Controller PASS is explicitly bounded and cannot close provider compatibility. No security weakening, auth redesign or silent paid fallback. PR #13 remains unmerged, OWNER not published remotely.
 - Authorized remote browser check needs operator's personal Access login. Human was asked to open the URL and verify catalog/ficha/images; no credentials or OTP requested. Exact next action: receive browser verification, then falsify provider auth CPU under an authorized session before claiming remote OWNER functionality or integrating PR #13. Preserve existing valid checks and published main catalog; no broad recovery/P2 rework.
+
+## Event 56 — Human Acceptance PASS public Preview; OWNER corrections
+
+Authority: Issue #7 comment6214688997. Human personal-browser Access login/catalog/ficha/images/filters **5/5 PASS**, no observations, on main769080b. This acceptance excludes OWNER/contact/availability/ADMIN/security/production. Do not request these five checks again without a material journey change. Existing12/12 anonymous denials remain executor evidence.
+
+OWNER PR #13: corrected required-field validation before DRAFT/REJECTED→SUBMITTED (including migrated NULL rental columns), public-page session restore without blocking public rendering, and event56 metadata reconciliation. Focused owner4/4, catalog7/7, both typechecks and build PASS; browser and final critic ongoing.
+
+Bounded CPU assessment: same bcryptjs3.0.3/cost12, dedicated Node async compare, synthetic correct/incorrect passwords: CPU534.124/525.011/474.181ms. This is local CPU proxy, NOT provider telemetry; it does not close GitHub P14294160247 or establish remote failure/success. Official Workers Free remains10ms, with documented occasional isolate tolerance that cannot establish reliable compatibility. No auth/security weakening, paid fallback, remote new resource or change to accepted Preview. Next: finish local review, preserve corrections in PR and stop at unresolved material auth compatibility if provider proof cannot be obtained under existing operator-only Access.
+
+- Browser session regression PASS via Playwright: authenticated session header restored on initial catalog/detail navigation; delayed auth does not block catalog render; login/protected navigation awaits same in-flight restore;503 auth response does not hide public listings. Auth responses stubbed, local catalog/backend real; code retained in evidence/CF-AU-OWNER-SESSION-BROWSER.js. OWNER tests exercise actual cookie auth/D1. No remote functionality inferred from these checks.

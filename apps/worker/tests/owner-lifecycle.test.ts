@@ -72,4 +72,17 @@ describe('OWNER cookie session and draft → review journey',()=>{
     await env.DB.prepare("DELETE FROM image_operations WHERE id='pending-media'").run();
     expect((await request(`/listings/${item.id}/submit`,'POST',undefined,cookie)).status).toBe(200);
   });
+  it('rejects migrated incomplete drafts without transitioning and allows submission after repair',async()=>{
+    const cookie=await login();
+    for(const column of ['price_amount','price_period','rental_duration','max_occupants','currency']){
+      const item=await (await request('/listings','POST',fields,cookie)).json() as any;
+      const status=column==='currency'?'REJECTED':'DRAFT';
+      await env.DB.prepare(`UPDATE listings SET ${column}=NULL,status=? WHERE id=?`).bind(status,item.id).run();
+      expect((await request(`/listings/${item.id}/submit`,'POST',undefined,cookie)).status).toBe(400);
+      expect(await env.DB.prepare('SELECT status FROM listings WHERE id=?').bind(item.id).first('status')).toBe(status);
+      expect(await env.DB.prepare('SELECT COUNT(*) FROM listing_locks WHERE listing_id=?').bind(item.id).first('COUNT(*)')).toBe(0);
+      expect((await request(`/listings/${item.id}`,'PATCH',fields,cookie)).status).toBe(200);
+      expect((await request(`/listings/${item.id}/submit`,'POST',undefined,cookie)).status).toBe(200);
+    }
+  });
 });
