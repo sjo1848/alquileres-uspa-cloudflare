@@ -1,0 +1,7 @@
+{
+  "type": "self_hosted",
+  "name": "Alquileres Uspallata private Preview",
+  "session_duration": "1h",
+  "destinations": [{"type": "preview_worker", "worker_id": "REPLACE_WITH_PREVIEW_WORKER_ID"}],
+  "policies": [{"name": "Operator only", "decision": "allow", "include": [{"email": {"email": "sjo1848@gmail.com"}}]}]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "alquileres-uspa-lab",
+  "main": "src/index.ts",
+  "account_id": "30e8fad45f7bc1cd5bddad87e18b1aec",
+  "compatibility_date": "2026-10-12",
+  "workers_dev": false,
+  "preview_urls": true,
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/public/*",
+      "/auth/*",
+      "/health",
+      "/listings",
+      "/listings/*/images",
+      "/listings/*/images/*"
+    ]
+  },
+  "previews": {
+    "vars": {
+      "MEDIA_STRATEGY": "STATIC_ASSETS",
+      "COOKIE_SECURE": "true",
+      "COOKIE_SAME_SITE": "lax",
+      "JWT_EXPIRES_IN": "15m"
+    },
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "alquileres-uspa-preview-synthetic",
+        "database_id": "00000000-0000-0000-0000-000000000000",
+        "migrations_dir": "migrations"
+      }
+    ]
+  }
+}

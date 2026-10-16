@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 — protected PR #11 integration and USD 0 static-media private Preview",
-  "last_completed_task": "CF-AU-I01-P2",
-  "last_completed_head": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
-  "work_branch": "work/cf-au-p3-catalog",
-  "next_action": "Finish PR #11 material GitHub findings and exact-SHA Controller/quick checks, protected merge, then Static Assets catalog media and Access-protected free Preview. No R2 or billing.",
+  "active_task": "CF-AU-I02 — Static Assets catalog ready locally; private Preview pending Cloudflare permissions",
+  "last_completed_task": "CF-AU-I02-P3 catalog/detail PR #11",
+  "last_completed_head": "32d15ef630636acdf69e69b8ecb783144852cf05",
+  "work_branch": "work/cf-au-static-preview",
+  "next_action": "When PR #12 is still open, complete its protected merge after mandatory checks and material GitHub findings. On integrated main, rerun scripts/cloudflare-preview-preflight.py with a local account-scoped credential granting Billing Read, Access Organizations Read and Access Apps/Policies Write. Verify Free plans, register only the dedicated Worker (no production version), protect all its Preview URLs with operator-only Access, create one isolated synthetic D1, migrate/seed/build and publish Preview private; verify anonymous denial before sharing. No R2, billing activation, subscription or production deployment.",
   "stop_reason": null,
   "event": {
-    "seq": 53,
-    "id": "MEDIA_STATIC_ASSETS_INITIAL",
-    "type": "HUMAN_AUTHORIZED_ZERO_COST_PREVIEW_AND_PROTECTED_MERGES"
+    "seq": 54,
+    "id": "STATIC_ASSETS_PREVIEW_PERMISSION_BLOCKER",
+    "type": "FUNCTIONAL_IMPLEMENTATION_AND_REAL_CREDENTIAL_BLOCKER"
   },
   "external_review": {
     "required": false,
@@ -28,9 +28,14 @@
     ]
   },
   "human_gate": null,
-  "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
-  "integration_commit": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
+  "blocker": {
+    "kind": "CLOUDFLARE_CREDENTIAL_PERMISSIONS",
+    "evidence": ".orchestration/evidence/CF-AU-PREVIEW-PREFLIGHT.json",
+    "observed": "HTTP 403 for account subscriptions and Zero Trust organization; available Wrangler OAuth scopes omit Access/Billing. No remote resources created.",
+    "human_action": "Configure a local account-scoped token with Billing Read, Access Organizations Read, Access Apps and Policies Write; never paste secrets in chat."
+  },
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/12",
+  "integration_commit": "32d15ef630636acdf69e69b8ecb783144852cf05",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -49,25 +54,15 @@
     "main_auto_merge": true
   },
   "candidate_review": {
+    "code_sha": "3d9d87807a0d5f12dd5c83d68a1585c91a818ee4",
+    "last_report": "CONTROLLER_PASS_LOCAL_STATIC_MEDIA_AND_QUICK_CI_PASS",
+    "controller": "gpt-6-luna/high/read-only separate process exit 0; backend identity UNVERIFIED",
     "artifact_published": false,
-    "last_report": "PR11_MATERIAL_FINDINGS_REPAIRED_PENDING_FRESH_REVIEW",
-    "github_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
-    "quick_checks": {
+    "checks": {
       "worker": "PASS",
       "web": "PASS"
     },
-    "controller": {
-      "verdict": "PASS",
-      "model_requested": "gpt-6-luna",
-      "reasoning_requested": "high",
-      "sandbox": "read-only",
-      "backend_model_identity": "UNVERIFIED"
-    },
-    "findings": [
-      "Nonblocking P2: future lastConfirmedAt is classified FRESH."
-    ],
-    "next_action": "El siguiente recorrido funcional a implementar es acceso del propietario y gestión de sus publicaciones. Mantener PR #11 sin merge hasta autorización explícita; no crear Preview remoto ni desplegar sin autorización separada.",
-    "code_sha": "846f98d636061d6749842475b97ec2c47dcba9ea",
-    "pr_head_at_review": "846f98d636061d6749842475b97ec2c47dcba9ea"
+    "scope": "LOCAL_SYNTHETIC_ONLY_REMOTE_BLOCKED_PERMISSIONS",
+    "deployment_template_followup": "GitHub host finding fixed: preview_urls=true, workers_dev=false; actual Preview still blocked on credentials/Access and remains undeployed. Final configuration review recorded in PR #12."
   }
 }

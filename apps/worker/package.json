@@ -9,7 +9,8 @@
     "test": "node tests/retry-idempotency.mjs && node tests/http.mjs",
     "test:retry": "node tests/retry-idempotency.mjs",
     "test:catalog": "vitest run --config vitest.config.ts tests/public-listings.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:media": "vitest run --config vitest.config.ts tests/media-blob-spike.test.ts"
   },
   "dependencies": {
     "bcryptjs": "3.0.3",

@@ -33,7 +33,7 @@ type Listing = {
   availabilityStatus: AvailabilityStatus;
   lastConfirmedAt: string | null;
   freshnessStatus: FreshnessStatus;
-  images: { id: string; contentType: string; position: number }[];
+  images: { id: string; contentType: string; position: number; url?: string }[];
 };
 const listing = ref<Listing>();
 const loading = ref(true);
@@ -97,7 +97,7 @@ watch(
         <template v-for="image in listing.images" :key="image.id">
           <img
             v-if="!failedImages.has(image.id)"
-            :src="apiUrl(`/public/listings/${listing.id}/images/${image.id}`)"
+            :src="image.url ?? apiUrl(`/public/listings/${listing.id}/images/${image.id}`)"
             :alt="`Imagen de ${listing.title}`"
             @error="imageFailed(image.id)"
           />

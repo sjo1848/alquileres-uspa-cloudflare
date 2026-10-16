@@ -17,7 +17,7 @@ export default defineConfig({
     })),
   ],
   test: {
-    include: ['tests/public-listings.test.ts'],
+    include: ['tests/public-listings.test.ts', 'tests/media-blob-spike.test.ts'],
     setupFiles: ['./tests/apply-migrations.ts'],
   },
 });
