@@ -7,6 +7,8 @@ const secret='synthetic-d1-blob-media-test-secret-at-least-32-bytes';
 const bindings={...env,DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'D1_BLOB'};
 const origin='http://localhost';
 const png=new Uint8Array(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9AAAAAElFTkSuQmCC','base64'));
+const jpeg=new Uint8Array(Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAACAAIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDmKKKK/QT8+P/Z','base64'));
+const webp=new Uint8Array(Buffer.from('UklGRjoAAABXRUJQVlA4IC4AAAAQAgCdASoCAAIAAUAmJaACdLoB+AH4AAPIAP7udn/+oLQ18vxov/U4MHPn4/wA','base64'));
 let ownerCookie='',otherCookie='';
 const ownerId='owner-d1-blob',otherOwnerId='other-d1-blob';
 
@@ -31,10 +33,33 @@ beforeAll(async()=>{
   ownerCookie=await login('d1-media-owner@example.test');otherCookie=await login('other-d1-media@example.test');
 });
 
-it('validates actual signatures instead of trusting the declared MIME',()=>{
-  expect(validateImageBytes(png,'image/png')).toBe(true);
-  expect(validateImageBytes(png,'image/jpeg')).toBe(false);
-  expect(validateImageBytes(png,'image/svg+xml')).toBe(false);
+it('decodes actual image data instead of trusting the declared MIME or header markers',async()=>{
+  expect(await validateImageBytes(png,'image/png')).toBe(true);
+  expect(await validateImageBytes(jpeg,'image/jpeg')).toBe(true);
+  expect(await validateImageBytes(webp,'image/webp')).toBe(true);
+  const overPixelLimit=png.slice();overPixelLimit.set([0,0,11,184],16);overPixelLimit.set([0,0,11,184],20);
+  expect(await validateImageBytes(overPixelLimit,'image/png')).toBe(false);
+  expect(await validateImageBytes(png,'image/jpeg')).toBe(false);
+  expect(await validateImageBytes(png,'image/svg+xml')).toBe(false);
+  const acceptedListing=await listing();
+  for(const [bytes,type,name,key] of [[jpeg,'image/jpeg','valid.jpg','valid-jpeg'],[webp,'image/webp','valid.webp','valid-webp']] as const){
+    const stored=await upload(acceptedListing,key,ownerCookie,bytes,type,name);expect(stored.status,await stored.clone().text()).toBe(201);
+    const item=await stored.json() as any,read=await request(`/listings/${acceptedListing}/images/${item.id}`,'GET',undefined,{cookie:ownerCookie});
+    expect(new Uint8Array(await read.arrayBuffer())).toEqual(bytes);
+  }
+  const malformed=new Uint8Array(45);
+  malformed.set([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,1,0,0,0,1,8,6,0,0,0]);
+  malformed.set([0,0,0,0,0,0,0,0,73,69,78,68,0,0,0,0],29);
+  expect(await validateImageBytes(malformed,'image/png')).toBe(false);
+  const lid=await listing(),usageBefore=await env.DB.prepare('SELECT used_bytes FROM media_storage_usage WHERE id=1').first('used_bytes');
+  expect((await upload(lid,'malformed-png',ownerCookie,malformed)).status).toBe(400);
+  expect(await env.DB.prepare('SELECT id FROM listing_images WHERE listing_id=?').bind(lid).first()).toBeNull();
+  expect(await env.DB.prepare('SELECT used_bytes FROM media_storage_usage WHERE id=1').first('used_bytes')).toBe(usageBefore);
+  const scan=jpeg.findIndex((value,index)=>value===0xff&&jpeg[index+1]===0xda),scanLength=(jpeg[scan+2]<<8)|jpeg[scan+3];
+  const truncatedJpeg=new Uint8Array([...jpeg.slice(0,scan+2+scanLength),0xff,0xd9]);
+  expect(await validateImageBytes(truncatedJpeg,'image/jpeg')).toBe(false);
+  const truncatedWebp=webp.slice(0,30);truncatedWebp[4]=22;truncatedWebp[5]=0;truncatedWebp[6]=0;truncatedWebp[7]=0;truncatedWebp[16]=10;truncatedWebp[17]=0;truncatedWebp[18]=0;truncatedWebp[19]=0;
+  expect(await validateImageBytes(truncatedWebp,'image/webp')).toBe(false);
 });
 
 it('atomically stores BLOB, metadata and idempotency result; replays after later deletion without recreating bytes',async()=>{
@@ -87,6 +112,16 @@ it('reorders densely and deletes with stable idempotent results while returning 
   const publicRead=await request(`/public/listings/${lid}/images/${a.id}`);expect(publicRead.status).toBe(200);expect(new Uint8Array(await publicRead.arrayBuffer())).toEqual(png);
 });
 
+it('continues to expose repository-managed Static Assets when D1 BLOB is the Preview strategy',async()=>{
+  const lid=await listing(ownerId,'APPROVED');
+  await env.DB.prepare("UPDATE listings SET publication_status='PUBLISHED' WHERE id=?").bind(lid).run();
+  await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind('static-kept-'+lid,lid,'/media/catalog/synthetic.svg','image/svg+xml',123,0).run();
+  const page=await request(`/public/listings/${lid}`),body=await page.json() as any;
+  expect(page.status).toBe(200);expect(body.images).toEqual([{id:'static-kept-'+lid,contentType:'image/svg+xml',sizeBytes:123,position:0,url:'/media/catalog/synthetic.svg'}]);
+  const image=await request(`/public/listings/${lid}/images/static-kept-${lid}`);
+  expect(image.status).toBe(302);expect(image.headers.get('location')).toBe('/media/catalog/synthetic.svg');
+});
+
 it('rolls back a failed reorder batch without leaving staged positions or a false committed result',async()=>{
   const lid=await listing(),one=await upload(lid,'rollback-order-a'),two=await upload(lid,'rollback-order-b'),a=await one.json() as any,b=await two.json() as any;
   await env.DB.exec(`CREATE TRIGGER fail_d1_reorder BEFORE UPDATE OF position ON listing_images WHEN NEW.listing_id='${lid}' AND NEW.position=0 BEGIN SELECT RAISE(ABORT,'injected reorder failure'); END;`);
@@ -106,6 +141,23 @@ it('enforces the aggregate D1 BLOB cap under concurrent uploads',async()=>{
   await env.DB.prepare('UPDATE media_storage_usage SET used_bytes=? WHERE id=1').bind(after).run();
   expect(responses.map(x=>x.status).sort()).toEqual([201,507]);
   expect(after).toBe(before+png.length);
+});
+
+it('serializes concurrent D1 BLOB add, reorder and delete on one listing without losing rows or density',async()=>{
+  const lid=await listing(),first=await upload(lid,'same-listing-a'),second=await upload(lid,'same-listing-b'),a=await first.json() as any,b=await second.json() as any;
+  const [added,reordered,deleted]=await Promise.all([
+    upload(lid,'same-listing-c'),
+    request(`/listings/${lid}/images/${b.id}`,'PATCH',JSON.stringify({position:0}),{cookie:ownerCookie,key:'same-listing-reorder',type:'application/json'}),
+    request(`/listings/${lid}/images/${a.id}`,'DELETE',undefined,{cookie:ownerCookie,key:'same-listing-delete'}),
+  ]);
+  expect([201,409]).toContain(added.status);expect([200,409]).toContain(reordered.status);expect([200,409]).toContain(deleted.status);
+  const rows=await env.DB.prepare('SELECT id,position,byte_size,length(blob_data) AS blob_length FROM listing_images WHERE listing_id=? AND blob_data IS NOT NULL ORDER BY position,id').bind(lid).all<any>();
+  const expected=new Set([b.id,...(added.status===201?[JSON.parse(await added.clone().text()).id]:[]),...(deleted.status===409?[a.id]:[])]);
+  expect(rows.results.map((row:any)=>row.id).sort()).toEqual([...expected].sort());
+  expect(rows.results.map((row:any)=>row.position)).toEqual(rows.results.map((_:any,index:number)=>index));
+  expect(rows.results.every((row:any)=>row.byte_size===row.blob_length)).toBe(true);
+  const usage=await env.DB.prepare('SELECT used_bytes FROM media_storage_usage WHERE id=1').first('used_bytes'),sum=await env.DB.prepare('SELECT COALESCE(SUM(byte_size),0) AS total FROM listing_images WHERE blob_data IS NOT NULL').first('total');
+  expect(usage).toBe(sum);
 });
 
 it('caps uploads at twenty photos per listing',async()=>{

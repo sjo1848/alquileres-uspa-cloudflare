@@ -6,9 +6,11 @@
 
 Cloudflare official D1 limits (docs last updated 2026-04-21): maximum BLOB/table row 2,000,000 bytes; Free DB 500MB and account 5GB; Free 5m rows read/day and 100k rows written/day. Daily overage fails queries until reset; D1 data egress has no charge. D1 is single-threaded per DB; `batch()` is atomic. Cloudflare also documents Free daily-limit enforcement from 2026-09-01.
 
-Design headroom: max image payload 1,800,000 bytes (metadata remains under row limit); max20 images/listing; D1 trigger-enforced aggregate media BLOB cap250,000,000 bytes in this Preview database, reserving at least250MB of its500MB cap for non-image relational data. These app caps do not police storage used by other D1 databases in the account.
+Cloudflare Workers Free currently documents 10ms CPU per HTTP request and128MB memory (limits docs last updated 2026-10-12). A local Node/WASM smoke benchmark on a synthetic 1920×1080 image measured 27–99ms by format; this is a Node wall-time proxy, not Cloudflare CPU telemetry. To keep the Free Preview request bounded, the Vue uploader normalizes to JPEG at640×480 and the Worker independently rejects decoded images above307,200 pixels before full decode. Remote CPU still requires measurement on the authorized Preview after protected integration.
 
-Sources: https://developers.cloudflare.com/d1/platform/limits/ ; https://developers.cloudflare.com/d1/platform/pricing/ ; https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/ .
+Design headroom: source upload max1,800,000 bytes; Vue normalizes the photo to JPEG at no more than640×480 pixels before sending; the Worker independently rejects decoded images above307,200 pixels. Max20 images/listing; D1 trigger-enforced aggregate media BLOB cap250,000,000 bytes in this Preview database, reserving at least250MB of its500MB cap for non-image relational data. WASM decoders reject malformed/truncated PNG, JPEG and WebP content. The browser normalization bounds Free Worker decode cost; the server-side pixel cap remains authoritative. These app caps do not police storage used by other D1 databases in the account.
+
+Sources: https://developers.cloudflare.com/d1/platform/limits/ ; https://developers.cloudflare.com/d1/platform/pricing/ ; https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/ ; https://developers.cloudflare.com/workers/platform/limits/ .
 
 ## Acceptance
 

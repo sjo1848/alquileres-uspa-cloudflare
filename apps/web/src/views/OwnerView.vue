@@ -7,6 +7,7 @@ type Fields = { title:string; description:string; location:string; priceAmount:n
 type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string };
 type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt:string };
 const MAX_IMAGE_BYTES=1_800_000, MAX_IMAGES=20;
+const MAX_IMAGE_WIDTH=640,MAX_IMAGE_HEIGHT=480;
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
 const images=ref<Image[]>([]),imagesLoading=ref(false),imageBusy=ref<'upload'|'delete'|'reorder'|null>(null);
@@ -40,6 +41,18 @@ function imageMessage(e:unknown){
   if(e instanceof ApiError&&e.status===413)return 'La imagen supera el límite de 1,8 MB.';
   if(e instanceof ApiError&&e.status===507)return 'Se alcanzó el espacio reservado para imágenes en este Preview.';
   return message(e);
+}
+async function normalizePhoto(file:File){
+  const bitmap=await createImageBitmap(file);
+  try{
+    const scale=Math.min(1,MAX_IMAGE_WIDTH/bitmap.width,MAX_IMAGE_HEIGHT/bitmap.height);
+    const width=Math.max(1,Math.round(bitmap.width*scale)),height=Math.max(1,Math.round(bitmap.height*scale));
+    const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+    const context=canvas.getContext('2d');if(!context)throw new Error('image canvas unavailable');
+    context.fillStyle='#fff';context.fillRect(0,0,width,height);context.drawImage(bitmap,0,0,width,height);
+    const image=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error('image conversion failed')),'image/jpeg',0.82));
+    return {image,name:`${file.name.replace(/\.[^.]+$/u,'')||'foto'}.jpg`};
+  }finally{bitmap.close();}
 }
 function choose(item?:Listing){
   if(busy.value)return;
@@ -117,11 +130,11 @@ async function upload(event:Event){
   if(images.value.length>=MAX_IMAGES){error.value='Esta publicación ya tiene 20 imágenes.';input.value='';return;}
   busy.value=true;imageBusy.value='upload';error.value='';notice.value='';
   try{
-    const bytes=await file.arrayBuffer(),digest=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
+    const {image,name}=await normalizePhoto(file),bytes=await image.arrayBuffer(),digest=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
     const signature=[...digest].map(value=>value.toString(16).padStart(2,'0')).join('');
-    const identity=`${item.id}|${file.name}|${file.size}|${file.lastModified}|${signature}`;
+    const identity=`${item.id}|${name}|${file.size}|${file.lastModified}|${signature}`;
     if(pendingUpload?.identity!==identity)pendingUpload={identity,key:crypto.randomUUID()};
-    await session.apiRequest<Image>(`/listings/${encodeURIComponent(item.id)}/images`,{method:'POST',body:file,headers:{'Content-Type':file.type,'X-Image-Name':encodeURIComponent(file.name),'Idempotency-Key':pendingUpload.key}});
+    await session.apiRequest<Image>(`/listings/${encodeURIComponent(item.id)}/images`,{method:'POST',body:image,headers:{'Content-Type':image.type,'X-Image-Name':encodeURIComponent(name),'Idempotency-Key':pendingUpload.key}});
     if(selectedId.value===item.id){await loadImages(item);notice.value='Imagen guardada en tu publicación.';}
     pendingUpload=undefined;
   }catch(e){error.value=imageMessage(e);}
@@ -193,7 +206,7 @@ onMounted(()=>load());
           <p>{{ formatRentalPrice(selected) }}</p>
           <section class="subsection" aria-labelledby="owner-images-title">
             <h3 id="owner-images-title">Imágenes</h3>
-            <p class="notice">JPEG, PNG o WebP; hasta 1,8 MB por imagen y 20 por publicación.</p>
+            <p class="notice">JPEG, PNG o WebP de hasta 1,8 MB; optimizamos cada foto a un máximo de 640 × 480 píxeles. Hasta 20 por publicación.</p>
             <label v-if="canEdit&&images.length<MAX_IMAGES">Agregar foto
               <input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" />
             </label>

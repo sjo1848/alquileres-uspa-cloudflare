@@ -1,8 +1,26 @@
 export const D1_IMAGE_MAX_BYTES = 1_800_000;
 export const D1_IMAGE_MAX_COUNT = 20;
 export const D1_MEDIA_QUOTA_BYTES = 250_000_000;
+export const D1_IMAGE_MAX_PIXELS = 640 * 480;
 
 export type SupportedImageType = 'image/jpeg' | 'image/png' | 'image/webp';
+
+import decodeJpeg, { init as initJpegDecoder } from '@jsquash/jpeg/decode';
+import JPEG_DECODER_WASM from '@jsquash/jpeg/codec/dec/mozjpeg_dec.wasm';
+import decodePng, { init as initPngDecoder } from '@jsquash/png/decode';
+import PNG_DECODER_WASM from '@jsquash/png/codec/pkg/squoosh_png_bg.wasm';
+import decodeWebp, { init as initWebpDecoder } from '@jsquash/webp/decode';
+import WEBP_DECODER_WASM from '@jsquash/webp/codec/dec/webp_dec.wasm';
+
+type DecodedImage = { width: number; height: number; data: ArrayBufferView };
+let jpegReady: Promise<unknown> | undefined;
+let pngReady: Promise<unknown> | undefined;
+let webpReady: Promise<unknown> | undefined;
+let jpegDecoderWarnings = 0;
+const initJpegWithDiagnostics = initJpegDecoder as unknown as (
+  module: WebAssembly.Module,
+  options: { printErr: (message: string) => void },
+) => Promise<unknown>;
 
 function imageDimensions(bytes:Uint8Array,type:SupportedImageType):[number,number]|null{
   if(type==='image/png'){
@@ -36,9 +54,9 @@ function imageDimensions(bytes:Uint8Array,type:SupportedImageType):[number,numbe
   }
   return null;
 }
-function dimensionsSafe(dimensions:[number,number]|null){return !!dimensions&&dimensions[0]>0&&dimensions[1]>0&&dimensions[0]<=12000&&dimensions[1]<=12000&&dimensions[0]*dimensions[1]<=24_000_000;}
+function dimensionsSafe(dimensions:[number,number]|null){return !!dimensions&&dimensions[0]>0&&dimensions[1]>0&&dimensions[0]<=12000&&dimensions[1]<=12000&&dimensions[0]*dimensions[1]<=D1_IMAGE_MAX_PIXELS;}
 
-export function validateImageBytes(bytes: Uint8Array, declaredType: string): declaredType is SupportedImageType {
+function imageEnvelopeIsValid(bytes: Uint8Array, declaredType: string): declaredType is SupportedImageType {
   if (bytes.length < 16 || bytes.length > D1_IMAGE_MAX_BYTES) return false;
   if (declaredType === 'image/jpeg') {
     return bytes[0] === 0xff && bytes[1] === 0xd8
@@ -61,6 +79,36 @@ export function validateImageBytes(bytes: Uint8Array, declaredType: string): dec
       && dimensionsSafe(imageDimensions(bytes,declaredType));
   }
   return false;
+}
+
+export async function validateImageBytes(bytes: Uint8Array, declaredType: string): Promise<boolean> {
+  if (!imageEnvelopeIsValid(bytes, declaredType)) return false;
+  const dimensions = imageDimensions(bytes, declaredType);
+  if (!dimensionsSafe(dimensions) || !dimensions) return false;
+  const input = bytes.slice().buffer as ArrayBuffer;
+  try {
+    let decoded: DecodedImage;
+    if (declaredType === 'image/jpeg') {
+      jpegReady ??= initJpegWithDiagnostics(JPEG_DECODER_WASM, { printErr: () => { jpegDecoderWarnings++; } });
+      await jpegReady;
+      const warningsBeforeDecode = jpegDecoderWarnings;
+      decoded = await decodeJpeg(input) as DecodedImage;
+      if (jpegDecoderWarnings !== warningsBeforeDecode) return false;
+    } else if (declaredType === 'image/png') {
+      pngReady ??= initPngDecoder(PNG_DECODER_WASM);
+      await pngReady;
+      decoded = await decodePng(input) as DecodedImage;
+    } else {
+      webpReady ??= initWebpDecoder(WEBP_DECODER_WASM);
+      await webpReady;
+      decoded = await decodeWebp(input) as DecodedImage;
+    }
+    return decoded.width === dimensions[0]
+      && decoded.height === dimensions[1]
+      && decoded.data.byteLength === decoded.width * decoded.height * 4;
+  } catch {
+    return false;
+  }
 }
 
 export function d1BlobBytes(value: unknown): Uint8Array | null {

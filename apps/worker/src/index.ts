@@ -152,7 +152,7 @@ async function uploadD1Image(c:any,lid:string){
   const bytes=await readBoundedBody(c.req.raw);
   if(!bytes)return c.json({error:'image exceeds the 1.8 MB limit or has no body'},413);
   if(rawLength!==undefined&&Number(rawLength)!==bytes.byteLength)return c.json({error:'content length does not match image bytes'},400);
-  if(!validateImageBytes(bytes,type))return c.json({error:'unsupported or invalid JPEG, PNG, or WebP image'},400);
+  if(!await validateImageBytes(bytes,type))return c.json({error:'unsupported or invalid JPEG, PNG, or WebP image'},400);
   const owner=ownerId(c),scope=`IMAGE_ADD:${lid}`,contentHash=b64(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes.slice().buffer as ArrayBuffer)));
   const requestFingerprint=await fingerprint({listingId:lid,name:originalName,type,size:bytes.byteLength,contentHash});
   const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
