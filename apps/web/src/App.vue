@@ -20,7 +20,7 @@ async function logout(){
       <RouterLink to="/">Catálogo</RouterLink>
       <RouterLink v-if="session.role.value==='OWNER'" to="/owner">Mis publicaciones</RouterLink>
       <button v-if="session.isAuthenticated.value" class="secondary" :disabled="loggingOut" @click="logout">{{ loggingOut?'Cerrando sesión…':'Cerrar sesión' }}</button>
-      <RouterLink v-else to="/auth/login">Ingresar como propietario</RouterLink>
+      <RouterLink v-else to="/login">Ingresar como propietario</RouterLink>
     </nav>
     <p v-if="logoutError" class="error" role="alert">{{ logoutError }}</p>
   </header>
