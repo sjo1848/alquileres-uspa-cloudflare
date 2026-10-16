@@ -66,3 +66,5 @@ The listing lock is a D1 lease with token-fenced image metadata writes; the per-
 Local Wrangler's D1 CLI result exposes `meta.duration` but omitted `rows_read` and `rows_written` in the observed run; those provider counters are therefore unavailable in this local runtime evidence, not reported as zero.
 
 Logs contain only a random correlation ID, never request bodies, credentials, email addresses, filenames or object keys. There is no `/__fixture/*` mutation/debug route.
+
+La plantilla `wrangler.preview-migrations.example.jsonc` declara la misma D1 aislada en nivel superior para los comandos D1, que no leen `previews.d1_databases`. Después del preflight/Access y de crear la D1 gratuita, sustituir el UUID de ejemplo en ambas plantillas por el mismo ID. Desde `apps/worker`, preparar esa base con `wrangler d1 migrations apply DB --remote --config wrangler.preview-migrations.example.jsonc` y `wrangler d1 execute DB --remote --config wrangler.preview-migrations.example.jsonc --file tests/seed-catalog.sql`. Nunca usar la config local como destino remoto.
