@@ -4,24 +4,24 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 OWNER D1 BLOB image lifecycle",
-  "last_completed_task": "CF-AU-I02 private Preview catalog and OWNER draft journey",
+  "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
+  "last_completed_task": "Local OWNER D1 BLOB upload/view/reorder/delete candidate; pending review and Preview integration",
   "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "work_branch": "work/cf-au-owner-d1-blob",
-  "next_action": "Implement OWNER D1 BLOB upload/list/view/reorder/delete with free-tier quotas and atomic D1 semantics; run focused Worker and web checks, adversarial review, Controller, CI/GitHub review, protected merge, update same private Preview, then provide new photo journey for human acceptance.",
+  "next_action": "Push candidate ece1850d8c291ba7d40bc5abce4c7504a9d4ce7f; process GitHub review; review exact final PR SHA with separate GPT-6 Luna High read-only Controller; protected-merge, apply migration 0007 to existing synthetic Preview D1, deploy Preview only, then request new Owner photo journey acceptance.",
   "stop_reason": null,
   "event": {
-    "seq": 62,
-    "id": "OWNER_PREVIEW_ACCEPTED_BEGIN_D1_BLOB_IMAGE_JOURNEY",
-    "type": "HUMAN_ACCEPTANCE_AND_NEXT_DELIVERY"
+    "seq": 63,
+    "id": "OWNER_D1_BLOB_PHOTO_LOCAL_CANDIDATE",
+    "type": "FUNCTIONAL_INCREMENT_LOCAL_VALIDATION"
   },
   "external_review": {
-    "required": false,
+    "required": true,
     "last_audited_head": "846f98d636061d6749842475b97ec2c47dcba9ea",
     "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
-    "pending_verdict": null,
+    "pending_verdict": "PENDING_CONTROLLER_AND_GITHUB_REVIEW",
     "verdict_comments": [
       6205084750,
       6205102465
@@ -49,21 +49,20 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "72ffac8e66bcdd27d3a8cdb3e50d5142d4239d39",
-    "local_controller": "PASS bounded consolidated local delivery; separate GPT-6 Luna/high/read-only CLI exit0; backend identity UNVERIFIED",
+    "code_sha": "ece1850d8c291ba7d40bc5abce4c7504a9d4ce7f",
+    "code_tree": "72ce6051e9377489dd2f5e0a0c17eddfffff0280",
+    "controller": "PENDING exact final PR SHA; requested GPT-6 Luna/high/read-only; no PASS asserted",
     "checks": {
-      "worker": "PASS",
-      "web": "PASS",
-      "focused_worker": "18/18 PASS",
-      "probe_unit": "8/8 PASS",
-      "ci_run": "https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/38923181510"
+      "worker_media": "11/11 PASS",
+      "owner": "4/4 PASS",
+      "catalog": "7/7 PASS",
+      "worker_typecheck": "PASS",
+      "web_typecheck_build": "PASS",
+      "preview_template_build": "PASS",
+      "local_browser": "PASS synthetic upload/view/reorder/delete"
     },
-    "github_material_findings": [],
-    "follow_up": "Source-parity last-write-wins; optimistic version checks deferred. Historical bcrypt Free CPU incompatibility retained; ACCESS_PREVIEW replaces password only on authorized synthetic Preview.",
-    "scope": "LOCAL_TECHNICAL_PASS_REMOTE_OWNER_UNVERIFIED",
-    "ancillary_sha": "032a990ff21b89a194d0af8275abee122f5d5c34",
-    "ancillary_controller": "PASS separate GPT-6 Luna/high/read-only, exit0, backend UNVERIFIED",
-    "github_review": "Application72ffac8 automated review completed; its two ancillary findings corrected032a990, independently reviewed and threads resolved."
+    "github_material_findings": "PENDING",
+    "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
