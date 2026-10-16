@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I01-P2 — one-time PR #10 integration explicitly authorized",
+  "active_task": "CF-AU-I02-P3 — catálogo público y fichas Vue/Worker locales con datos sintéticos",
   "last_completed_task": "CF-AU-I01-P2",
-  "last_completed_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
-  "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Merge PR #10 with a GitHub merge commit, verify the resulting main SHA and preserved A4 ancestry, close P2, then start local synthetic Vue catalog/property-detail implementation. Main protection and quick CI checks are required before the next merge. Preview resource creation/deployment separately requires explicit authorization.",
+  "last_completed_head": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
+  "work_branch": "work/cf-au-p3-catalog",
+  "next_action": "Consolidar y publicar el PR del recorrido catálogo/ficha en esta rama; procesar CI y observaciones materiales; completar la protección de main antes de cualquier merge. Preview real sigue esperando autorización separada de recursos/costos/permisos.",
   "stop_reason": null,
   "event": {
-    "seq": 50,
-    "id": "CF-AU-I01-P2@HUMAN-AUTHORIZED-UNPROTECTED-MERGE",
-    "type": "HUMAN_EXCEPTION_AND_INTEGRATION_AUTHORIZATION"
+    "seq": 51,
+    "id": "CF-AU-I02-P3-LOCAL-CATALOG-CHECKPOINT",
+    "type": "FUNCTIONAL_JOURNEY_IN_PROGRESS"
   },
   "external_review": {
     "required": false,
@@ -22,12 +22,15 @@
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
     "pending_verdict": null,
-    "verdict_comments": [6205084750, 6205102465]
+    "verdict_comments": [
+      6205084750,
+      6205102465
+    ]
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10",
-  "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
+  "pull_request": null,
+  "integration_commit": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -46,12 +49,9 @@
     "main_auto_merge": false
   },
   "candidate_review": {
-    "sha": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
-    "artifact_published": true,
-    "last_report": "CONTROLLER_PASS_GITHUB_REVIEW_COMPLETED_PRECRITIC_PASS",
-    "last_report_not_retroactively_passed": true,
-    "pr_head": "722f72ee7c52013413f055589c7bf7c926251ac0",
-    "github_review_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10#issuecomment-6204159194",
-    "next_action": "Merge PR #10 once with a GitHub merge commit, record its exact SHA, verify A4 ancestry, then start local synthetic Vue catalog/property-detail implementation."
+    "sha": null,
+    "artifact_published": false,
+    "last_report": "LOCAL_CATALOG_IMPLEMENTATION_IN_PROGRESS",
+    "next_action": "Consolidar y publicar el PR del recorrido catálogo/ficha en esta rama; procesar CI y observaciones materiales; completar la protección de main antes de cualquier merge. Preview real sigue esperando autorización separada de recursos/costos/permisos."
   }
 }
