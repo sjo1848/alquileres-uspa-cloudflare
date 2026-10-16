@@ -62,6 +62,7 @@
       "worker": "PASS",
       "web": "PASS"
     },
-    "scope": "LOCAL_SYNTHETIC_ONLY_REMOTE_BLOCKED_PERMISSIONS"
+    "scope": "LOCAL_SYNTHETIC_ONLY_REMOTE_BLOCKED_PERMISSIONS",
+    "deployment_template_followup": "GitHub host finding fixed: preview_urls=true, workers_dev=false; actual Preview still blocked on credentials/Access and remains undeployed. Final configuration review recorded in PR #12."
   }
 }
