@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02-P3 — PR #11 catálogo público y ficha; código local aprobado por checks y Controller, sin integrar",
+  "active_task": "CF-AU-I02 — protected PR #11 integration and USD 0 static-media private Preview",
   "last_completed_task": "CF-AU-I01-P2",
   "last_completed_head": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
   "work_branch": "work/cf-au-p3-catalog",
-  "next_action": "El siguiente recorrido funcional a implementar es acceso del propietario y gestión de sus publicaciones. Mantener PR #11 sin merge hasta autorización explícita; no crear Preview remoto ni desplegar sin autorización separada.",
+  "next_action": "Finish PR #11 material GitHub findings and exact-SHA Controller/quick checks, protected merge, then Static Assets catalog media and Access-protected free Preview. No R2 or billing.",
   "stop_reason": null,
   "event": {
-    "seq": 52,
-    "id": "CF-AU-I02-P3-CATALOG-CONTROLLER-PASS",
-    "type": "LOCAL_SYNTHETIC_FUNCTIONAL_CANDIDATE_REVIEWED"
+    "seq": 53,
+    "id": "MEDIA_STATIC_ASSETS_INITIAL",
+    "type": "HUMAN_AUTHORIZED_ZERO_COST_PREVIEW_AND_PROTECTED_MERGES"
   },
   "external_review": {
     "required": false,
@@ -40,17 +40,17 @@
     "sandbox": "read-only",
     "runtime_verified": true,
     "scope": "LOCAL_SYNTHETIC_TECHNICAL",
-    "may_auto_merge_main": false,
+    "may_auto_merge_main": true,
     "custom_agent_sandbox_enforced": false,
     "separate_cli_option_documented": true,
     "backend_model_attestation": "UNVERIFIED_NOT_BLOCKING_LOCAL",
     "operational_verification_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
     "provider_attestation_required_for_local": false,
-    "main_auto_merge": false
+    "main_auto_merge": true
   },
   "candidate_review": {
     "artifact_published": false,
-    "last_report": "CONTROLLER_PASS_QUICK_CHECKS_PASS_WITH_NONBLOCKING_P2",
+    "last_report": "PR11_MATERIAL_FINDINGS_REPAIRED_PENDING_FRESH_REVIEW",
     "github_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
     "quick_checks": {
       "worker": "PASS",

@@ -1,12 +1,12 @@
 import { env } from 'cloudflare:workers';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { app } from '../src/index';
+import worker, { app } from '../src/index';
 
 const png = Uint8Array.from(
   atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/a9sAAAAASUVORK5CYII='),
   (character) => character.charCodeAt(0),
 );
-const created = '2026-10-10T12:00:00.000Z';
+const created = new Date(Date.now() - 60_000).toISOString();
 
 async function get(path: string) {
   return app.request(`http://localhost${path}`, {}, env);
@@ -25,10 +25,11 @@ beforeAll(async () => {
   );
   await db.batch([
     insertListing.bind('public-new', 'synthetic-owner', 'APPROVED', 'Casa del arroyo', 'Casa luminosa cerca del arroyo.', 'Uspallata', 45000, 'WEEK', 'WEEKS', 4, 'ARS', 'PUBLISHED', 'AVAILABLE', created, created, created),
-    insertListing.bind('public-old', 'synthetic-owner', 'APPROVED', 'Cabaña del cerro', 'Cabaña para descansar.', 'Las Heras', 80000, 'MONTH', 'MONTHS', 2, 'ARS', 'PUBLISHED', 'UNAVAILABLE', '2026-08-01T12:00:00.000Z', '2026-10-09T12:00:00.000Z', created),
+    insertListing.bind('public-old', 'synthetic-owner', 'APPROVED', 'Cabaña del cerro', 'Cabaña para descansar.', 'Área %_ centro', 80000, 'MONTH', 'MONTHS', 2, 'ARS', 'PUBLISHED', 'UNAVAILABLE', new Date(Date.now() - 60 * 86400000).toISOString(), '2026-10-09T12:00:00.000Z', created),
     insertListing.bind('draft-hidden', 'synthetic-owner', 'DRAFT', 'Borrador privado', 'No debe aparecer.', 'Uspallata', 12000, 'WEEK', 'WEEKS', 1, 'ARS', 'PUBLISHED', 'AVAILABLE', created, '2026-10-11T12:00:00.000Z', created),
     insertListing.bind('unpublished-hidden', 'synthetic-owner', 'APPROVED', 'No publicada', 'No debe aparecer.', 'Uspallata', 12000, 'WEEK', 'WEEKS', 1, 'ARS', 'UNPUBLISHED', 'AVAILABLE', created, '2026-10-12T12:00:00.000Z', created),
   ]);
+  await db.prepare('UPDATE listings SET location_search=? WHERE id=?').bind('área %_ centro','public-old').run();
   await env.IMAGES.put('public/test.png', png, { httpMetadata: { contentType: 'image/png' } });
   await env.IMAGES.put('private/draft.png', png, { httpMetadata: { contentType: 'image/png' } });
   await db.batch([
@@ -66,6 +67,23 @@ describe('public catalog and property details', () => {
     expect(image.headers.get('content-type')).toBe('image/png');
     expect(image.headers.get('x-content-type-options')).toBe('nosniff');
     expect(new Uint8Array(await image.arrayBuffer())).toEqual(png);
+  });
+
+  it('routes the API prefix independently from the property SPA route', async () => {
+    const health = await worker.fetch(new Request('http://localhost/api/health'), env, {} as ExecutionContext);
+    expect(await health.json()).toEqual({ok:true});
+    const denied = await worker.fetch(new Request('http://localhost/api/listings'), env, {} as ExecutionContext);
+    expect(denied.status).toBe(503);
+    expect(denied.headers.get('content-type')).toContain('application/json');
+  });
+
+  it('uses literal Unicode-normalized location search', async () => {
+    for (const location of ['ÁREA', '%_', 'ÁREA %_']) {
+      const page = await (await get('/public/listings?location=' + encodeURIComponent(location))).json() as any;
+      expect(page.items.map((x:any)=>x.id)).toEqual(['public-old']);
+    }
+    const page = await (await get('/public/listings?location=' + encodeURIComponent('_missing%'))).json() as any;
+    expect(page.totalItems).toBe(0);
   });
 
   it('rejects invalid pagination, enum, availability and price-range queries', async () => {

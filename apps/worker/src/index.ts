@@ -48,7 +48,7 @@ app.post('/listings',async c=>{
     }
     try{const existing=await c.env.DB.prepare('SELECT id FROM listings WHERE id=? AND owner_id=?').bind(listingId,user.id).first();if(existing){if(!await confirmIdempotencyCommit(c.env.DB,user.id,'LISTING_CREATE',supplied,requestFingerprint,JSON.stringify(body)))return c.json({error:'listing acknowledgment requires recovery; retry with the same idempotency key'},503);return c.json(body,201);}}catch{return c.json({error:'listing outcome unavailable; retry with the same idempotency key'},503);}
   }
-  const insert=c.env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,price_amount,price_period,rental_duration,max_occupants,currency,created_at,updated_at) VALUES(?,?,'DRAFT',?,?,?,?,?,?,?,?,?,?)").bind(listingId,user.id,x.title,x.description,x.location,x.priceAmount,x.pricePeriod,x.rentalDuration,x.maxOccupants,x.currency,t,t);
+  const insert=c.env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,location_search,price_amount,price_period,rental_duration,max_occupants,currency,created_at,updated_at) VALUES(?,?,'DRAFT',?,?,?,?,?,?,?,?,?,?,?)").bind(listingId,user.id,x.title,x.description,x.location,x.location.normalize('NFC').toLowerCase(),x.priceAmount,x.pricePeriod,x.rentalDuration,x.maxOccupants,x.currency,t,t);
   try{
     if(supplied){const transition=c.env.DB.prepare("UPDATE idempotency_records SET state='COMMITTED',updated_at=? WHERE owner_id=? AND scope='LISTING_CREATE' AND request_key=? AND request_fingerprint=?").bind(now(),user.id,supplied,requestFingerprint);const result=await c.env.DB.batch([insert,transition]);if(result.some(x=>x.meta?.changes!==1)){const row=await c.env.DB.prepare('SELECT id FROM listings WHERE id=? AND owner_id=?').bind(listingId,user.id).first();if(!row||!await confirmIdempotencyCommit(c.env.DB,user.id,'LISTING_CREATE',supplied,requestFingerprint,JSON.stringify(body)))return c.json({error:'listing commit requires retry with the same idempotency key'},503);}}
     else await insert.run();
@@ -159,7 +159,7 @@ app.get('/listings/:id/images/:imageId',async c=>{const lid=c.req.param('id');if
 const PUBLIC_FRESHNESS_MS=30*24*60*60*1000;
 const PUBLIC_ENUMS={currency:['ARS','USD'],pricePeriod:['WEEK','MONTH'],rentalDuration:['WEEKS','MONTHS','PERMANENT','FLEXIBLE']} as const;
 function publicInteger(value:string|null,min:number,max:number,name:string,defaultValue?:number){if(value===null)return defaultValue; if(!/^(0|[1-9]\d*)$/.test(value))throw Error(`${name} must be an integer`);const parsed=Number(value);if(!Number.isSafeInteger(parsed)||parsed<min||parsed>max)throw Error(`${name} is outside the allowed range`);return parsed;}
-function publicFreshness(lastConfirmedAt:string|null){if(!lastConfirmedAt)return 'UNCONFIRMED';const time=Date.parse(lastConfirmedAt);if(!Number.isFinite(time))return 'UNCONFIRMED';return Date.now()-time<=PUBLIC_FRESHNESS_MS?'FRESH':'STALE';}
+function publicFreshness(lastConfirmedAt:string|null){if(!lastConfirmedAt)return 'UNCONFIRMED';const time=Date.parse(lastConfirmedAt);if(!Number.isFinite(time))return 'UNCONFIRMED';return time>Date.now()?'UNCONFIRMED':Date.now()-time<=PUBLIC_FRESHNESS_MS?'FRESH':'STALE';}
 function publicDomainStatus(row:any){return row.priceAmount!==null&&row.pricePeriod!==null&&row.rentalDuration!==null&&row.maxOccupants!==null&&row.currency!==null?'COMPLETE':'MISSING';}
 function publicListingDto(row:any,images:any[]){return {id:row.id,title:row.title,description:row.description,location:row.location,priceAmount:row.priceAmount,pricePeriod:row.pricePeriod,rentalDuration:row.rentalDuration,maxOccupants:row.maxOccupants,currency:row.currency,domainDataStatus:publicDomainStatus(row),availabilityStatus:row.availabilityStatus,lastConfirmedAt:row.lastConfirmedAt,freshnessStatus:publicFreshness(row.lastConfirmedAt),images};}
 async function publicImages(db:D1Database,listingIds:string[]){if(!listingIds.length)return [] as any[];const placeholders=listingIds.map(()=>'?').join(',');const rows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return rows;}
@@ -172,7 +172,7 @@ app.get('/public/listings',async c=>{
   for(const key of ['currency','pricePeriod','rentalDuration'] as const){const value=q[key];if(value&&!(PUBLIC_ENUMS[key] as readonly string[]).includes(value))return c.json({message:`${key} is invalid`},400);}
   const availableOnly=q.availableOnly??'false';if(!['true','false'].includes(availableOnly))return c.json({message:'availableOnly must be true or false'},400);
   const clauses=["status='APPROVED'","publication_status='PUBLISHED'"],values:(string|number)[]=[];
-  if(location){clauses.push('LOWER(location) LIKE LOWER(?)');values.push(`%${location}%`);}
+  if(location){clauses.push("COALESCE(NULLIF(location_search,''),LOWER(location)) LIKE ? ESCAPE '\\'");values.push('%'+location.normalize('NFC').toLowerCase().replace(/[\\%_]/g,'\\$&')+'%');}
   if(minPrice!==undefined){clauses.push('price_amount>=?');values.push(minPrice);}
   if(maxPrice!==undefined){clauses.push('price_amount<=?');values.push(maxPrice);}
   if(maxOccupants!==undefined){clauses.push('max_occupants>=?');values.push(maxOccupants);}
@@ -405,6 +405,6 @@ async function reconcilePendingReorders(env:Env) {
     finally{await unlock(env.DB,lid,lease);}
   }
 }
-const worker = { fetch: app.fetch, scheduled: async (_controller: ScheduledController, env: Env) => { await reconcile(env);await reconcilePendingReorders(env); } };
+const worker = { fetch: (request:Request,env:Env,ctx:ExecutionContext) => { const url=new URL(request.url);if(url.pathname.startsWith('/api/')){url.pathname=url.pathname.slice(4);request=new Request(url,request);}return app.fetch(request,env,ctx); }, scheduled: async (_controller: ScheduledController, env: Env) => { await reconcile(env);await reconcilePendingReorders(env); } };
 export { app };
 export default worker;

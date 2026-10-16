@@ -1,7 +1,7 @@
 export type Role = 'OWNER' | 'ADMIN';
 export type User = { id: string; email: string; role: Role };
 
-const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') ?? '';
+const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') ?? '/api';
 export const apiUrl = (path: string) => `${API_URL}${path}`;
 export const publicListingPath = (id: string) =>
   `/public/listings/${encodeURIComponent(id)}`;

@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `CF-AU-I01-P2 — External PASS recorded; main integration awaits enforceable protection`
+Active task: `CF-AU-I02 — USD 0 static-media private Preview`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -394,3 +394,7 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Controller separado `project_controller` con GPT-6 Luna, High, solo lectura devolvió PASS técnico acotado al código del SHA `846f98d636061d6749842475b97ec2c47dcba9ea`; identidad backend no verificada. Límite no bloqueante reportado: `lastConfirmedAt` futuro se clasifica FRESH. Evidencia: `.orchestration/evidence/critics/CF-AU-I02-P3-CONTROLLER-846F98D.md`.
 - Próxima acción exacta: iniciar en una rama de trabajo el recorrido Vue de autenticación del propietario y sus operaciones de publicaciones, reutilizando la API existente. No fusionar PR #11 sin autorización de integración; no crear Preview remoto hasta aprobar por separado recursos, costos y permisos.
 - No se crearon recursos Cloudflare, se habilitó billing, se desplegó ni se usaron datos reales. El checkout fuente permanece limpio.
+
+## Event 53 — strict USD 0 / no R2 / protected merges and one private Preview authorized
+
+Authority: Issue #7 comment 6206813347 and current Human instruction. MEDIA_STATIC_ASSETS_INITIAL supersedes earlier R2/paid planning and remote prohibition for one isolated synthetic Free Preview, protected by Access before sharing. Protected merges are authorized; source and production remain untouched. PR #11 fresh GitHub findings (clock-dependent fixture, API/SPA paths, literal/Unicode location search, overlapping search responses) are repaired; targeted tests 5/5, both typechecks and integrated build pass. Exact-SHA review and CI precede protected integration. Next: static catalog media and free private Preview; dynamic OWNER upload remains separate validated D1 BLOB work.

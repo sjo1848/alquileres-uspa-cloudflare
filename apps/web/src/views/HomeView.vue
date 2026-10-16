@@ -74,18 +74,23 @@ const query = (pageNumber: number) =>
       pageSize,
     }).filter(([, value]) => value !== '') as string[][],
   ).toString();
+let searchSequence = 0;
 async function search(pageNumber = 1) {
+  const sequence = ++searchSequence;
   failedPage.value = pageNumber;
   loading.value = true;
   error.value = '';
   try {
-    page.value = await request<Page>(`/public/listings?${query(pageNumber)}`);
+    const result = await request<Page>(`/public/listings?${query(pageNumber)}`);
+    if (sequence !== searchSequence) return;
+    page.value = result;
     failedImages.value = new Set();
   } catch (e) {
+    if (sequence !== searchSequence) return;
     error.value =
       e instanceof ApiError ? e.message : 'No pudimos cargar el catálogo.';
   } finally {
-    loading.value = false;
+    if (sequence === searchSequence) loading.value = false;
   }
 }
 function imageUrl(listing: Listing) {
