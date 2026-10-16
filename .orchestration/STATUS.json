@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
   "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Finish targeted OWNER validation and exact-SHA Controller review of NULL-submit/session corrections; publish them on PR #13. Preserve accepted catalog Preview. Resolve actual bcrypt cost12 Free CPU compatibility through authorized provider evidence before merge or OWNER deployment; if no parity-preserving solution exists, present precise auth architecture Human Gate.",
+  "next_action": "Human adds only Access: Service Tokens Write/Edit to existing temporary token scoped to account30e8fad45f7bc1cd5bddad87e18b1aec (do not paste token). Then execute authorized temporary service identity probe: python3 scripts/preview-login-probe-runner.py, using scripts/preview-login-probe.py; preserve operator policy, maximum15min token, synthetic existing owner hash restored, finally revoke token/delete temporary policy and verify original policies. Existing main Preview login suffices; no OWNER deploy/merge before P1 closure. Process GitHub review of68d25f2 without repeating valid tests.",
   "stop_reason": null,
   "event": {
-    "seq": 56,
-    "id": "PUBLIC_PREVIEW_HUMAN_ACCEPTED_OWNER_REVIEW",
-    "type": "HUMAN_ACCEPTANCE_AND_OWNER_CORRECTIONS"
+    "seq": 57,
+    "id": "OWNER_CORRECTIONS_PASS_ACCESS_SERVICE_TOKEN_PERMISSION_BLOCKER",
+    "type": "LOCAL_PASS_AND_REMOTE_PERMISSION_BLOCKER"
   },
   "external_review": {
     "required": false,
@@ -29,9 +29,10 @@
   },
   "human_gate": null,
   "blocker": {
-    "kind": "WORKERS_FREE_AUTH_CPU",
-    "observed": "Human accepted catalog/detail Preview5/5. Current bcryptjs cost12 dedicated Node CPU proxy474\u2013534ms vs documented Workers Free10ms, not provider telemetry. No evidence permits closing GitHub P1. Access remains operator-only.",
-    "human_action": "No repeated catalog QA. Any auth semantics/security change or cost transition requires explicit decision; no weaker hash or paid fallback is authorized."
+    "kind": "CLOUDFLARE_ACCESS_SERVICE_TOKEN_PERMISSION",
+    "observed": "POST /accounts/30e8fad45f7bc1cd5bddad87e18b1aec/access/service_tokens returned403/auth.forbidden. Probe not run; no token/policy/D1 mutation; original operator-only policies verified unchanged.",
+    "evidence": ".orchestration/evidence/CF-AU-OWNER-TEMPORARY-ACCESS.json",
+    "human_action": "Add Access: Service Tokens Write/Edit permission only on the existing account-scoped token, retaining scope/expiration and all USD0 limits. Token remains local protected file."
   },
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
   "integration_commit": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
@@ -53,16 +54,16 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "a36455fa5aea462f5442032bbaefc9e74151c2a8",
-    "local_controller": "PASS base OWNER code f3d76c1 plus bounded final login route a36455f; backend UNVERIFIED",
+    "code_sha": "68d25f2fe0d9f7e803228147f8d61d8eaa33aa72",
+    "local_controller": "PASS exact68d25f2 corrections; GPT6Luna/high/read-only separate CLI exit0; backend UNVERIFIED",
     "checks": {
       "worker": "PASS",
       "web": "PASS"
     },
     "github_material_findings": [
-      "4294160247: bcrypt cost12 Workers Free CPU unproven, unresolved"
+      "4294160247 bcrypt cost12 Free CPU remains open; remote experiment denied specified service-token endpoint403"
     ],
-    "scope": "LOCAL_SYNTHETIC_ONLY_OWNER_NOT_MERGED"
+    "scope": "LOCAL_CORRECTIONS_PASS_REMOTE_OWNER_UNPROVEN"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -71,5 +72,12 @@
     "evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6214688997",
     "source_sha": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
     "owner_accepted": false
+  },
+  "temporary_access_probe_authority": {
+    "human_authorized": true,
+    "purpose": "Synthetic login CPU/provider compatibility only",
+    "scope": "Dedicated Preview Access app only",
+    "revoke_after_test": true,
+    "resource_created": false
   }
 }

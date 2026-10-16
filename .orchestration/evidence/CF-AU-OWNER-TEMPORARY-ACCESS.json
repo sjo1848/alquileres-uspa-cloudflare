@@ -1,0 +1,22 @@
+{
+  "authorized_by": "Human explicit temporary test identity and revocation approval,2026-10-16",
+  "target_app_id": "4c3bd3c6-35ea-4e5e-9257-2435c634cec3",
+  "observed_at": "2026-10-16T11:55:50.679276+00:00",
+  "mutations": [],
+  "cleanup": {
+    "original_policies_unchanged": true
+  },
+  "probe_ran": false,
+  "failed_endpoint": {
+    "method": "POST",
+    "path": "access/service_tokens",
+    "status": 403,
+    "errors": [
+      {
+        "code": 1010,
+        "error": "auth.forbidden"
+      }
+    ]
+  },
+  "failure": "Specified API endpoint denied or failed"
+}

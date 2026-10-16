@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Bounded synthetic login probe. Requires separately authorized temporary Access identity."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import stat
+import time
+import urllib.error
+import urllib.request
+
+PREVIEW = 'https://private-alquileres-uspa-lab.sjo1848.workers.dev'
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *_args):
+        return None
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--access-credential-file', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    credential = args.access_credential_file
+    metadata = credential.lstat()
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.getuid() or metadata.st_mode & 0o077:
+        raise SystemExit('Access credential must be an owned regular private file (600).')
+    access = json.loads(credential.read_text())
+    opener = urllib.request.build_opener(NoRedirect())
+    checks = []
+    for password, expected in [('synthetic-owner-password-1', 200), ('incorrect-password', 401), ('synthetic-owner-password-1', 200)]:
+        request = urllib.request.Request(PREVIEW + '/api/auth/login', method='POST',
+            headers={'Origin': PREVIEW, 'Content-Type': 'application/json',
+                'CF-Access-Client-Id': access['client_id'], 'CF-Access-Client-Secret': access['client_secret']},
+            data=json.dumps({'email': 'preview.owner@example.test', 'password': password}).encode())
+        started = time.monotonic()
+        try:
+            response = opener.open(request, timeout=25)
+        except urllib.error.HTTPError as error:
+            response = error
+        except urllib.error.URLError as error:
+            checks.append({'network_error': type(error.reason).__name__})
+            break
+        with response:
+            body = response.read(65536).decode(errors='replace')
+            cpu_failure = bool(re.search(r'(?:error\s*(?:code\s*)?1102|exceeded (?:CPU time|resource) limits)', body, re.I))
+            checks.append({'status': response.status, 'expected_status': expected,
+                'elapsed_wall_ms': round((time.monotonic() - started) * 1000, 2),
+                'provider_resource_limit_error': cpu_failure,
+                'session_cookie_present': bool(response.headers.get('Set-Cookie'))})
+        # No response body, password, session cookie or Access credential is written to evidence.
+        if cpu_failure or response.status not in (200, 401):
+            break
+    report = {'url': PREVIEW, 'synthetic_only': True, 'checks': checks,
+        'cpu_telemetry_measured': False,
+        'limitation': 'Elapsed time is wall time. Successful responses alone do not establish CPU <=10ms or reliable Free compatibility.'}
+    args.output.write_text(json.dumps(report, indent=2) + '\n')
+    print(json.dumps(report, indent=2))
+
+if __name__ == '__main__':
+    main()
