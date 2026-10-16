@@ -37,6 +37,7 @@ function message(e:unknown){
 }
 function imageMessage(e:unknown){
   if(e instanceof ApiError&&e.status===400)return 'El archivo debe ser una imagen JPEG, PNG o WebP válida.';
+  if(e instanceof ApiError&&e.code==='LEGACY_MEDIA_MIGRATION_REQUIRED')return 'Esta publicación conserva fotos de una carga anterior y necesita migración antes de editar o mostrar sus imágenes.';
   if(e instanceof ApiError&&e.status===409)return 'La publicación está ocupada o alcanzó el máximo de 20 imágenes.';
   if(e instanceof ApiError&&e.status===413)return 'La imagen supera el límite de 1,8 MB.';
   if(e instanceof ApiError&&e.status===507)return 'Se alcanzó el espacio reservado para imágenes en este Preview.';

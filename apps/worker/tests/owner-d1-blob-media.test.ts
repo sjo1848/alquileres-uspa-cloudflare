@@ -122,6 +122,24 @@ it('continues to expose repository-managed Static Assets when D1 BLOB is the Pre
   expect(image.status).toBe(302);expect(image.headers.get('location')).toBe('/media/catalog/synthetic.svg');
 });
 
+it('fails closed with a migration conflict for legacy R2 rows in D1 BLOB mode',async()=>{
+  const lid=await listing(),legacyId='legacy-r2-'+lid,created=new Date().toISOString();
+  await env.DB.prepare("UPDATE listings SET location='Legacy Probe',location_search='legacy probe' WHERE id=?").bind(lid).run();
+  await env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').bind(legacyId,lid,'legacy-r2-object-'+lid,'old.jpg','image/jpeg',64,0,created,created).run();
+  const assertConflict=async(response:Response)=>{expect(response.status).toBe(409);expect(await response.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});};
+  await assertConflict(await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie}));
+  await assertConflict(await upload(lid,'legacy-conflict-upload'));
+  await assertConflict(await request(`/listings/${lid}/images/${legacyId}`,'PATCH',JSON.stringify({position:0}),{cookie:ownerCookie,key:'legacy-conflict-reorder',type:'application/json'}));
+  await assertConflict(await request(`/listings/${lid}/images/${legacyId}`,'DELETE',undefined,{cookie:ownerCookie,key:'legacy-conflict-delete'}));
+  await assertConflict(await request(`/listings/${lid}/images/${legacyId}`,'GET',undefined,{cookie:ownerCookie}));
+  expect(await env.DB.prepare('SELECT id,position,blob_data FROM listing_images WHERE listing_id=?').bind(lid).all()).toMatchObject({results:[{id:legacyId,position:0,blob_data:null}]});
+  expect(await env.DB.prepare('SELECT request_key FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(ownerId,`IMAGE_ADD:${lid}`,'legacy-conflict-upload').first()).toBeNull();
+  await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(lid).run();
+  await assertConflict(await request(`/public/listings/${lid}`));
+  await assertConflict(await request(`/public/listings?location=Legacy`));
+  await assertConflict(await request(`/public/listings/${lid}/images/${legacyId}`));
+});
+
 it('rolls back a failed reorder batch without leaving staged positions or a false committed result',async()=>{
   const lid=await listing(),one=await upload(lid,'rollback-order-a'),two=await upload(lid,'rollback-order-b'),a=await one.json() as any,b=await two.json() as any;
   await env.DB.exec(`CREATE TRIGGER fail_d1_reorder BEFORE UPDATE OF position ON listing_images WHEN NEW.listing_id='${lid}' AND NEW.position=0 BEGIN SELECT RAISE(ABORT,'injected reorder failure'); END;`);
