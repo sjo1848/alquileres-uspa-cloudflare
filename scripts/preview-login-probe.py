@@ -12,6 +12,17 @@ import urllib.request
 
 PREVIEW = 'https://private-alquileres-uspa-lab.sjo1848.workers.dev'
 
+def finish(output, checks, health_ready=True):
+    passed = health_ready and len(checks) == 3 and all(
+        x.get('status') in (200, 401) and x.get('status') == x.get('expected_status') and not x.get('provider_resource_limit_error')
+        for x in checks)
+    report = {'url': PREVIEW, 'synthetic_only': True, 'checks': checks,
+        'health_ready': health_ready, 'http_expectations_passed': passed, 'cpu_telemetry_measured': False,
+        'limitation': 'Elapsed time is wall time. Successful responses alone do not establish CPU <=10ms or reliable Free compatibility.'}
+    output.write_text(json.dumps(report, indent=2) + '\n')
+    print(json.dumps(report, indent=2))
+    return passed
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *_args):
         return None
@@ -38,7 +49,8 @@ def main():
         except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
             pass
         if attempt == 2:
-            raise SystemExit('Temporary Access identity did not reach application health; no login attempted.')
+            finish(args.output, [], health_ready=False)
+            raise SystemExit(1)
         time.sleep(2)
     checks = []
     for password, expected in [('synthetic-owner-password-1', 200), ('incorrect-password', 401), ('synthetic-owner-password-1', 200)]:
@@ -63,13 +75,10 @@ def main():
                 'same_origin_rejected': 'same-origin request required' in body,
                 'cf_ray': response.headers.get('CF-Ray')})
         # No response body, password, session cookie or Access credential is written to evidence.
-        if cpu_failure or response.status not in (200, 401):
+        if cpu_failure or response.status != expected:
             break
-    report = {'url': PREVIEW, 'synthetic_only': True, 'checks': checks,
-        'cpu_telemetry_measured': False,
-        'limitation': 'Elapsed time is wall time. Successful responses alone do not establish CPU <=10ms or reliable Free compatibility.'}
-    args.output.write_text(json.dumps(report, indent=2) + '\n')
-    print(json.dumps(report, indent=2))
+    if not finish(args.output, checks):
+        raise SystemExit(1)
 
 if __name__ == '__main__':
     main()

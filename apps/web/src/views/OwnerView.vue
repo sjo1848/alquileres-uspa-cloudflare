@@ -7,6 +7,7 @@ type Fields = { title:string; description:string; location:string; priceAmount:n
 type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string };
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
+const confirmReload=ref(false);
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive<Fields>(blank());
 const selected=computed(()=>listings.value.find(x=>x.id===selectedId.value));
@@ -25,11 +26,22 @@ function choose(item?:Listing){
   selectedId.value=item?.id??null;
   Object.assign(form,item?Object.fromEntries(Object.keys(blank()).map(key=>[key,item[key as keyof Fields]])):blank());
   error.value='';notice.value='';pendingCreate=undefined;
+  confirmReload.value=false;
 }
-async function load(){
+async function load(discardChanges=false){
   if(busy.value)return;
+  if(dirty.value&&discardChanges!==true){confirmReload.value=true;return;}
+  confirmReload.value=false;
   loading.value=true;error.value='';
-  try{listings.value=await session.apiRequest<Listing[]>('/listings');}
+  try{
+    const selected=selectedId.value;
+    listings.value=await session.apiRequest<Listing[]>('/listings');
+    if(selected){
+      const refreshed=listings.value.find(item=>item.id===selected);
+      choose(refreshed);
+      if(!refreshed)notice.value='La publicación seleccionada ya no está disponible.';
+    }
+  }
   catch(e){error.value=message(e);}
   finally{loading.value=false;}
 }
@@ -61,13 +73,18 @@ async function submit(){
   }catch(e){error.value=message(e);}
   finally{busy.value=false;}
 }
-onMounted(load);
+onMounted(()=>load());
 </script>
 <template>
   <section>
     <p class="eyebrow">Área de propietarios</p><h2>Mis publicaciones</h2>
     <p v-if="error" class="error" role="alert">{{ error }}</p><p v-if="notice" class="success" role="status">{{ notice }}</p>
-    <button class="secondary" :disabled="busy||loading" @click="load">Recargar publicaciones</button>
+    <button class="secondary" :disabled="busy||loading" @click="load()">Recargar publicaciones</button>
+    <div v-if="confirmReload" class="notice" role="status">
+      <p>Tenés cambios sin guardar. ¿Querés descartarlos y cargar la versión guardada?</p>
+      <button :disabled="busy||loading" @click="load(true)">Descartar cambios y recargar</button>
+      <button class="secondary" @click="confirmReload=false">Seguir editando</button>
+    </div>
     <p v-if="loading" role="status">Cargando tus publicaciones…</p>
     <div v-else class="owner-layout">
       <aside class="card">
