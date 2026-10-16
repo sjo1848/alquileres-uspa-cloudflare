@@ -144,18 +144,23 @@ it('enforces the aggregate D1 BLOB cap under concurrent uploads',async()=>{
 });
 
 it('serializes concurrent D1 BLOB add, reorder and delete on one listing without losing rows or density',async()=>{
-  const lid=await listing(),first=await upload(lid,'same-listing-a'),second=await upload(lid,'same-listing-b'),a=await first.json() as any,b=await second.json() as any;
+  const lid=await listing(),first=await upload(lid,'same-listing-a',ownerCookie,png,'image/png','first.png'),second=await upload(lid,'same-listing-b',ownerCookie,jpeg,'image/jpeg','second.jpg'),a=await first.json() as any,b=await second.json() as any;
   const [added,reordered,deleted]=await Promise.all([
-    upload(lid,'same-listing-c'),
+    upload(lid,'same-listing-c',ownerCookie,webp,'image/webp','third.webp'),
     request(`/listings/${lid}/images/${b.id}`,'PATCH',JSON.stringify({position:0}),{cookie:ownerCookie,key:'same-listing-reorder',type:'application/json'}),
     request(`/listings/${lid}/images/${a.id}`,'DELETE',undefined,{cookie:ownerCookie,key:'same-listing-delete'}),
   ]);
   expect([201,409]).toContain(added.status);expect([200,409]).toContain(reordered.status);expect([200,409]).toContain(deleted.status);
-  const rows=await env.DB.prepare('SELECT id,position,byte_size,length(blob_data) AS blob_length FROM listing_images WHERE listing_id=? AND blob_data IS NOT NULL ORDER BY position,id').bind(lid).all<any>();
-  const expected=new Set([b.id,...(added.status===201?[JSON.parse(await added.clone().text()).id]:[]),...(deleted.status===409?[a.id]:[])]);
+  expect(Number(added.status===201)+Number(reordered.status===200)+Number(deleted.status===200)).toBeGreaterThan(0);
+  const addedImage=added.status===201?await added.clone().json() as any:null;
+  const rows=await env.DB.prepare('SELECT id,position,byte_size,length(blob_data) AS blob_length,blob_data FROM listing_images WHERE listing_id=? AND blob_data IS NOT NULL ORDER BY position,id').bind(lid).all<any>();
+  const expected=new Set([b.id,...(addedImage?[addedImage.id]:[]),...(deleted.status===409?[a.id]:[])]);
   expect(rows.results.map((row:any)=>row.id).sort()).toEqual([...expected].sort());
   expect(rows.results.map((row:any)=>row.position)).toEqual(rows.results.map((_:any,index:number)=>index));
   expect(rows.results.every((row:any)=>row.byte_size===row.blob_length)).toBe(true);
+  const expectedBytes=new Map([[a.id,png],[b.id,jpeg],...(addedImage?[[addedImage.id,webp] as const]:[])]);
+  for(const row of rows.results)expect(new Uint8Array(row.blob_data)).toEqual(expectedBytes.get(row.id));
+  if(reordered.status===200)expect(rows.results[0].id).toBe(b.id);
   const usage=await env.DB.prepare('SELECT used_bytes FROM media_storage_usage WHERE id=1').first('used_bytes'),sum=await env.DB.prepare('SELECT COALESCE(SUM(byte_size),0) AS total FROM listing_images WHERE blob_data IS NOT NULL').first('total');
   expect(usage).toBe(sum);
 });
