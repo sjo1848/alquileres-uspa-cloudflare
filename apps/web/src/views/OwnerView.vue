@@ -68,7 +68,7 @@ function choose(item?:Listing){
 async function loadImages(item:Listing){
   const version=++imageLoadVersion;imagesLoading.value=true;
   try{const result=await session.apiRequest<Image[]>(`/listings/${encodeURIComponent(item.id)}/images`);if(version===imageLoadVersion&&selectedId.value===item.id)images.value=result;}
-  catch(e){if(version===imageLoadVersion&&selectedId.value===item.id)error.value=message(e);}
+  catch(e){if(version===imageLoadVersion&&selectedId.value===item.id)error.value=imageMessage(e);}
   finally{if(version===imageLoadVersion)imagesLoading.value=false;}
 }
 function requestChoose(item?:Listing){
