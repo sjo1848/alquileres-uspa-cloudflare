@@ -1,8 +1,8 @@
 # CF-AU-I02 OWNER D1 BLOB — corrected local candidate
 
 Date: 2026-10-16
-Executable commit: `3b012442bf9304743df4aa9c6e3b9f861ac825c7`
-Executable tree: `50b84899ebd9dc40203ea33a5ffb97ed2f75b168`
+Executable commit: `964da27fe57bbfb961618abd9b6be4fafc82b112`
+Executable tree: `04951f0af13335598a1dceb6fc08ac989f251a57`
 PR #14: <https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14>
 
 ## Defects corrected
@@ -11,20 +11,21 @@ PR #14: <https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14>
 - GitHub P1 `4296816344` and Controller P1 on `b0f0bf6` required meaningful same-listing add/reorder/delete concurrency evidence. `b6d1bc5` requires at least one successful mutation, derives exact survivor membership, verifies successful reorder effect, byte-for-byte distinct PNG/JPEG/WebP content, dense order, row lengths and quota.
 - Controller P1 on `b6d1bc5`: legacy R2 rows (`blob_data IS NULL`) could be hidden from D1 ordering and collide with the unique position constraint. `3b01244` now returns an explicit `409 LEGACY_MEDIA_MIGRATION_REQUIRED` on owner listing/read/mutations and public listing/image routes until the legacy image set is migrated. It does not read R2 or mutate those rows. Mixed-row tests verify rows and idempotency state remain unchanged.
 - Controller report and exact prompt: `evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-B6D1BC5-REWORK.md`.
+- Controller P1 on `757a495`: committed upload/reorder/delete replays bypassed the legacy-row conflict. `964da27` checks for legacy rows before replay and tests committed add/reorder/delete followed by insertion of a legacy row and retry. Report and exact prompt: `evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-757A495-REWORK.md`.
 
-## Checks on executable tree `50b8489`
+## Checks on executable tree `04951f0`
 
 | Check | Result |
 |---|---:|
-| Worker `npm run test:media -- --reporter=dot` | 14/14 PASS |
+| Worker `npm run test:media -- --reporter=dot` | 15/15 PASS |
 | Worker `npm run test:owner -- --reporter=dot` | 4/4 PASS |
 | Worker `npm run test:catalog -- --reporter=dot` | 7/7 PASS |
 | Worker `npm run typecheck` | PASS |
 | Web `npm run typecheck && npm run build:preview` | PASS |
 | `npm audit --audit-level=high` in `apps/worker` | 0 vulnerabilities |
 | Wrangler deployment dry-run from generated Preview bundle | PASS; 3 WASM decoders included, 822.49 KiB total upload; no remote operation |
-| GitHub required checks on `3b01244` | PENDING |
-| GitHub automatic review on current candidate | PENDING |
+| GitHub required checks on current PR head | PENDING |
+| GitHub automatic review on current PR head | PENDING |
 | Fresh GPT-6 Luna High read-only Controller on current corrected tree | PENDING; prior exact-candidate REWORKs are preserved and are not PASS |
 
 The browser upload/read check used a local synthetic OWNER and a 1920×1080 JPEG; it passed on the earlier decoder/normalization candidate. The current legacy-row correction is exercised through the Worker HTTP route tests. No remote or human photo acceptance is asserted.

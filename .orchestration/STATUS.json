@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
-  "last_completed_task": "Local D1 BLOB image validation, same-listing concurrency and legacy-row conflict repairs; current candidate awaits exact-SHA reviews",
+  "last_completed_task": "D1 BLOB legacy-row replay repair implemented and focused checks passed; exact final review pending",
   "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "work_branch": "work/cf-au-owner-d1-blob",
-  "next_action": "On the current PR #14 branch head, complete GitHub automatic review and required worker/web checks, resolve the stale-state and race threads with the updated evidence; run separate GPT-6 Luna High read-only Controller on the corrected exact candidate tree, then complete Pre-Critic. Only after all pass, protected-merge PR #14 and update the already-authorized private synthetic Preview.",
+  "next_action": "Run GitHub automatic review and required worker/web checks for the current PR #14 head. Run fresh separate GPT-6 Luna High read-only Controller on the exact corrected code/test SHA 964da27/tree 04951f0; if clean, complete Pre-Critic, then protected-merge and update the existing private synthetic Preview.",
   "stop_reason": null,
   "event": {
-    "seq": 65,
-    "id": "OWNER_D1_BLOB_LEGACY_ROW_REWORK",
+    "seq": 66,
+    "id": "OWNER_D1_BLOB_LEGACY_REPLAY_REWORK",
     "type": "FUNCTIONAL_INCREMENT_REVIEW_PENDING"
   },
   "external_review": {
@@ -21,7 +21,7 @@
     "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
-    "pending_verdict": "PENDING_GITHUB_AND_CONTROLLER_REVIEW",
+    "pending_verdict": "PENDING_CURRENT_GITHUB_AND_CONTROLLER",
     "verdict_comments": [
       6205084750,
       6205102465
@@ -49,11 +49,11 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "3b012442bf9304743df4aa9c6e3b9f861ac825c7",
-    "code_tree": "50b84899ebd9dc40203ea33a5ffb97ed2f75b168",
-    "controller": "PENDING exact corrected tree; requested GPT-6 Luna/high/read-only. Prior REWORKs on b0f0bf6 and b6d1bc5 are preserved and corrected; neither is a PASS.",
+    "code_sha": "964da27fe57bbfb961618abd9b6be4fafc82b112",
+    "code_tree": "04951f0af13335598a1dceb6fc08ac989f251a57",
+    "controller": "PENDING exact corrected tree; requested gpt-6-luna/high/read-only; prior REWORKs preserved at b0f0bf6, b6d1bc5 and 757a495, all repaired in later commits",
     "checks": {
-      "worker_media": "14/14 PASS",
+      "worker_media": "15/15 PASS",
       "owner": "4/4 PASS",
       "catalog": "7/7 PASS",
       "worker_typecheck": "PASS",
@@ -61,10 +61,10 @@
       "preview_template_build": "PASS",
       "worker_audit": "0 vulnerabilities",
       "wrangler_dry_run": "PASS; 3 WASM assets included; no remote operation",
-      "local_browser_upload": "Earlier candidate PASS; current legacy-row corrections covered by HTTP tests",
-      "github_worker_web": "PENDING on current head"
+      "local_browser_upload": "Earlier decoder/normalization candidate PASS; current changes covered by HTTP tests",
+      "github_worker_web": "PENDING on current PR head"
     },
-    "github_material_findings": "Same-listing concurrency test strengthened in b6d1bc5; stale candidate/evidence metadata updated to code SHA 3b01244. GitHub replies/resolution and automatic review on latest head pending.",
+    "github_material_findings": "Earlier same-listing test and stale-state findings resolved. Current latest candidate includes legacy-row fail-closed checks before committed replays. Request latest automatic review and confirm threads.",
     "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data"
   },
   "human_acceptance": {
