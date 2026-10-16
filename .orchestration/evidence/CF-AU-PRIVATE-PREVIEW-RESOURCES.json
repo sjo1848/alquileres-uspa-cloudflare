@@ -1,0 +1,49 @@
+{
+  "worker_id": "c71023df4bfa4518baeb12dfa3c67826",
+  "access_app_id": "4c3bd3c6-35ea-4e5e-9257-2435c634cec3",
+  "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
+  "plan_verification": "Human explicitly confirmed existing Workers and Access Free in dashboard (2026-10-16); API subscriptions/entitlements empty, not independent certification",
+  "production_deployed": false,
+  "access_policy": [
+    {
+      "created_at": "2026-10-16T11:23:47Z",
+      "decision": "allow",
+      "exclude": [],
+      "id": "863e782e-1904-489b-b6e1-63cca877c570",
+      "include": [
+        {
+          "email": {
+            "email": "sjo1848@gmail.com"
+          }
+        }
+      ],
+      "name": "Operator only",
+      "require": [],
+      "uid": "863e782e-1904-489b-b6e1-63cca877c570",
+      "updated_at": "2026-10-16T11:23:47Z",
+      "reusable": false,
+      "precedence": 1
+    }
+  ],
+  "destinations": [
+    {
+      "type": "preview_worker",
+      "worker_id": "c71023df4bfa4518baeb12dfa3c67826"
+    }
+  ],
+  "preview_id": "145981a4991240d2a803281eb78d03b9",
+  "deployment_id": "ab7e444a-1431-4eaf-ac24-b4527a7e7da2",
+  "source_sha": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
+  "preview_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
+  "deployment_url": "https://ab7e444a-alquileres-uspa-lab.sjo1848.workers.dev",
+  "production_hostname_status": 404,
+  "synthetic_db_bytes": 131072,
+  "migrations_applied": 6,
+  "authorized_browser_validation": "PENDING_OPERATOR_LOGIN",
+  "anonymous_checks": "12/12 redirects to Access, including invalid Access cookies",
+  "worker_subdomain": {
+    "enabled": false,
+    "previews_enabled": true
+  },
+  "worker_production_deployed_on": null
+}

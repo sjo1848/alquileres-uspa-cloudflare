@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/",
+    "invalid_access_cookie": false,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/",
+    "invalid_access_cookie": true,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/api/public/listings",
+    "invalid_access_cookie": false,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/api/public/listings",
+    "invalid_access_cookie": true,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/media/catalog/casa-rio.svg",
+    "invalid_access_cookie": false,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/media/catalog/casa-rio.svg",
+    "invalid_access_cookie": true,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://ab7e444a-alquileres-uspa-lab.sjo1848.workers.dev/",
+    "invalid_access_cookie": false,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://ab7e444a-alquileres-uspa-lab.sjo1848.workers.dev/",
+    "invalid_access_cookie": true,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://ab7e444a-alquileres-uspa-lab.sjo1848.workers.dev/api/public/listings",
+    "invalid_access_cookie": false,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://ab7e444a-alquileres-uspa-lab.sjo1848.workers.dev/api/public/listings",
+    "invalid_access_cookie": true,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://ab7e444a-alquileres-uspa-lab.sjo1848.workers.dev/media/catalog/casa-rio.svg",
+    "invalid_access_cookie": false,
+    "status": 302,
+    "access_login_redirect": true
+  },
+  {
+    "url": "https://ab7e444a-alquileres-uspa-lab.sjo1848.workers.dev/media/catalog/casa-rio.svg",
+    "invalid_access_cookie": true,
+    "status": 302,
+    "access_login_redirect": true
+  }
+]

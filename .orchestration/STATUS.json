@@ -4,11 +4,11 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 private Free Preview and OWNER draft lifecycle",
+  "active_task": "CF-AU-I02 private Preview published; OWNER PR #13 local complete, provider auth validation pending",
   "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
   "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Complete OWNER focused verification/browser checks and technical review. Custom credential is now available outside repository and all three preflight checks pass. Confirm actual Workers/Access Free plan (API subscriptions and entitlements are empty and do not identify plan), then register isolated Worker, protect only its Preview URLs, create synthetic D1 and deploy private Preview. No paid, production or R2 resources.",
+  "next_action": "Operator authenticate through Access at private-alquileres-uspa-lab.sjo1848.workers.dev and confirm catalog/detail/images. Preserve protected Preview main769080b. For OWNER PR #13 a36455f, resolve GitHub4294160247 by measuring inherited bcrypt cost12 on actual Free runtime through authorized Access session before merge/remote functionality claim. Do not lower password security, alter auth semantics, broaden Access policies or enable billing silently. Candidate CI/local tests and bounded Controller PASS remain reusable.",
   "stop_reason": null,
   "event": {
     "seq": 54,
@@ -29,11 +29,11 @@
   },
   "human_gate": null,
   "blocker": {
-    "kind": "FREE_PLAN_CONFIRMATION",
-    "observed": "Custom credential read preflight PASS; account subscriptions=[] and entitlements=[]; workers standard usage returns standard=true, not sufficient proof of Free. No remote mutations.",
-    "human_action": "Confirm existing Workers and Access Free plans from dashboard; do not change plans or supply payment details."
+    "kind": "AUTHORIZED_BROWSER_AND_FREE_AUTH_CPU_VALIDATION",
+    "observed": "Private Preview published, 12/12 anonymous/invalid-cookie requests redirect to Access; personal authorized browser session unavailable to executor. GitHub P1 flags existing bcrypt cost12 vs Free CPU; not resolved by local tests.",
+    "human_action": "Open private Preview and authenticate personally with permitted email, confirm catalog/detail/images; do not share password/OTP."
   },
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/12",
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
   "integration_commit": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "issue_4": "CLOSED",
   "review_authority": {
@@ -53,15 +53,15 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "3d9d87807a0d5f12dd5c83d68a1585c91a818ee4",
-    "last_report": "CONTROLLER_PASS_LOCAL_STATIC_MEDIA_AND_QUICK_CI_PASS",
-    "controller": "gpt-6-luna/high/read-only separate process exit 0; backend identity UNVERIFIED",
-    "artifact_published": false,
+    "code_sha": "a36455fa5aea462f5442032bbaefc9e74151c2a8",
+    "local_controller": "PASS base OWNER code f3d76c1 plus bounded final login route a36455f; backend UNVERIFIED",
     "checks": {
       "worker": "PASS",
       "web": "PASS"
     },
-    "scope": "LOCAL_SYNTHETIC_ONLY_REMOTE_BLOCKED_PERMISSIONS",
-    "deployment_template_followup": "GitHub host finding fixed: preview_urls=true, workers_dev=false; actual Preview still blocked on credentials/Access and remains undeployed. Final configuration review recorded in PR #12."
+    "github_material_findings": [
+      "4294160247: bcrypt cost12 Workers Free CPU unproven, unresolved"
+    ],
+    "scope": "LOCAL_SYNTHETIC_ONLY_OWNER_NOT_MERGED"
   }
 }
