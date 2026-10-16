@@ -4,24 +4,24 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 OWNER private Preview operator validation",
-  "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
-  "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
-  "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Resolve protected PR13 integration from GitHub mergeCommit (if still open, merge only with required checks green and conversations resolved). Then directed personal operator trial: /login Access entry -> /owner -> create/edit/submit synthetic draft. Executor cannot impersonate operator; remote OWNER acceptance remains unverified. Do not repeat accepted public catalog QA.",
+  "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
+  "last_completed_task": "CF-AU-I02 OWNER D1 BLOB functional candidate has Controller bounded PASS, GitHub exact-head no-findings review and Pre-Critic PASS; final docs-only head checks/review pending",
+  "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
+  "work_branch": "work/cf-au-owner-d1-blob",
+  "next_action": "Run required worker/web checks and GitHub automatic review on the new docs-only PR #14 head. If both checks pass, review reports no findings, and conversations remain resolved, protected-merge PR #14 and update only the existing private synthetic Preview; measure actual Free CPU before requesting photo acceptance.",
   "stop_reason": null,
   "event": {
-    "seq": 61,
-    "id": "OWNER_PRIVATE_PREVIEW_PUBLISHED",
-    "type": "PREVIEW_DELIVERY"
+    "seq": 69,
+    "id": "OWNER_D1_BLOB_PRECRITIC_PASS",
+    "type": "PRECRITIC_GATE"
   },
   "external_review": {
-    "required": false,
+    "required": true,
     "last_audited_head": "846f98d636061d6749842475b97ec2c47dcba9ea",
     "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
-    "pending_verdict": null,
+    "pending_verdict": "FINAL_DOCS_HEAD_GITHUB_REVIEW_AND_CHECKS",
     "verdict_comments": [
       6205084750,
       6205102465
@@ -29,8 +29,8 @@
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
-  "integration_commit": null,
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
+  "integration_commit": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -49,29 +49,49 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "72ffac8e66bcdd27d3a8cdb3e50d5142d4239d39",
-    "local_controller": "PASS bounded consolidated local delivery; separate GPT-6 Luna/high/read-only CLI exit0; backend identity UNVERIFIED",
-    "checks": {
-      "worker": "PASS",
-      "web": "PASS",
-      "focused_worker": "18/18 PASS",
-      "probe_unit": "8/8 PASS",
-      "ci_run": "https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/38923181510"
+    "code_sha": "2a65ad370fef062c217332c22492a4a5cb93ad4b",
+    "code_tree": "55decd177d05f677a0f286d00fc39f397679a75d",
+    "controller": {
+      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC_FOR_D1_BLOB_LIFECYCLE",
+      "reviewed_pr_head": "d340e74445d07bdb799dec5022084867fc75189a",
+      "reviewed_executable_sha": "964da27fe57bbfb961618abd9b6be4fafc82b112",
+      "reviewed_code_tree": "04951f0af13335598a1dceb6fc08ac989f251a57",
+      "model_requested": "gpt-6-luna",
+      "reasoning_requested": "high",
+      "sandbox": "read-only",
+      "cli_configuration_accepted": true,
+      "process_exit": 0,
+      "actual_backend_model_identity": "UNVERIFIED",
+      "post_review_delta": "One Vue image-list error-mapper selection only; Web typecheck/build pass. No Worker/D1/test logic changed after Controller PASS.",
+      "evidence": ".orchestration/evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-D340E74-PASS.md"
     },
-    "github_material_findings": [],
-    "follow_up": "Source-parity last-write-wins; optimistic version checks deferred. Historical bcrypt Free CPU incompatibility retained; ACCESS_PREVIEW replaces password only on authorized synthetic Preview.",
-    "scope": "LOCAL_TECHNICAL_PASS_REMOTE_OWNER_UNVERIFIED",
-    "ancillary_sha": "032a990ff21b89a194d0af8275abee122f5d5c34",
-    "ancillary_controller": "PASS separate GPT-6 Luna/high/read-only, exit0, backend UNVERIFIED",
-    "github_review": "Application72ffac8 automated review completed; its two ancillary findings corrected032a990, independently reviewed and threads resolved."
+    "checks": {
+      "worker_media": "15/15 PASS on executable Worker/test tree 04951f0",
+      "owner": "4/4 PASS on executable Worker/test tree 04951f0",
+      "catalog": "7/7 PASS on executable Worker/test tree 04951f0",
+      "worker_typecheck": "PASS on executable Worker/test tree 04951f0",
+      "web_typecheck_build": "PASS after Vue P2 correction on 2a65ad3",
+      "preview_template_build": "PASS after Vue P2 correction on 2a65ad3",
+      "worker_audit": "0 vulnerabilities; dependencies unchanged since audit",
+      "wrangler_dry_run": "PASS; 3 WASM assets included; no remote operation",
+      "github_worker_web": "PENDING on latest head",
+      "github_automatic_review": "PENDING on latest head; ee1bcaa findings addressed in 2a65ad3/state checkpoint"
+    },
+    "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data",
+    "precritic": "PASS for functional code/test tree 04951f0 and UI message correction 2a65ad3; conditional final docs-only PR head retains green checks, completed no-findings review and zero unresolved conversations.",
+    "github_worker_web": "PASS on exact reviewed functional boundary 12cf3cf; new Pre-Critic documentation commit checks pending.",
+    "github_automatic_review": "PASS/no findings on exact functional boundary 12cf3cf; request current exact docs-only head review."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
     "verdict": "PASS",
     "checks": "5/5",
     "evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6214688997",
-    "source_sha": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
-    "owner_accepted": false
+    "source_sha": "f17adae431b92a4f66aecda066947b24164eb0e2",
+    "owner_accepted": true,
+    "owner_scope": "Private Preview OWNER journey PASS 6/6; create, reload, edit persistence, submit, non-approved exclusion",
+    "owner_verdict": "PASS",
+    "owner_evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6219058078"
   },
   "temporary_access_probe_authority": {
     "human_authorized": true,

@@ -19,7 +19,7 @@
   },
   "previews": {
     "vars": {
-      "MEDIA_STRATEGY": "STATIC_ASSETS",
+      "MEDIA_STRATEGY": "D1_BLOB",
       "COOKIE_SECURE": "true",
       "COOKIE_SAME_SITE": "lax",
       "JWT_EXPIRES_IN": "15m",

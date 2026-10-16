@@ -10,6 +10,7 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    public readonly code?: string,
   ) {
     super(message);
   }
@@ -30,6 +31,7 @@ export async function request<T>(
   const body = (await response.json().catch(() => ({}))) as {
     message?: string | string[];
     error?: string;
+    code?: string;
   };
   if (!response.ok) {
     const message = Array.isArray(body.message)
@@ -38,6 +40,7 @@ export async function request<T>(
     throw new ApiError(
       response.status,
       message ?? body.error ?? 'Ocurrió un error',
+      body.code,
     );
   }
   return body as T;

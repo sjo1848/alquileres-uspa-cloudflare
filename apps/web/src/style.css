@@ -437,6 +437,12 @@ footer {
   background: #f4f7fa;
   border-radius: 0.4rem;
 }
+.image-list img {
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  background: #e5ebf0;
+}
 .image-list button {
   padding: 0.35rem 0.55rem;
 }

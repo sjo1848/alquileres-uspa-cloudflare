@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { previewAuthConfigured, requiresPreviewAuth, verifyPreviewOperator, PREVIEW_OWNER_ID, PREVIEW_OWNER_EMAIL, type PreviewAuthEnv } from './preview-auth';
+import { cleanImageName, d1BlobBytes, D1_IMAGE_MAX_BYTES, D1_IMAGE_MAX_COUNT, D1_MEDIA_QUOTA_BYTES, readBoundedBody, validateImageBytes } from './d1-blob-media';
 
 type Env = PreviewAuthEnv & { MEDIA_STRATEGY?:string; DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
 type User = { id: string; email: string; role: 'OWNER'|'ADMIN' };
-type ImageRow = { id:string; listing_id:string; object_key:string; original_name:string; mime_type:string; byte_size:number; position:number; created_at:string };
+type ImageRow = { id:string; listing_id:string; object_key:string; original_name:string; mime_type:string; byte_size:number; position:number; created_at:string; blob_data?:unknown };
 const app = new Hono<{ Bindings: Env; Variables: { user: User } }>();
 const te = new TextEncoder();
 const json = (body: unknown, status=200, headers?: HeadersInit) => Response.json(body,{status,headers});
@@ -137,6 +138,125 @@ async function unlock(db:D1Database,lid:string,t:string) {
 async function ownsLock(db:D1Database,lid:string,t:string) { return !!await db.prepare('SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>?').bind(lid,t,Math.floor(Date.now()/1000)).first(); }
 function imageDto(x:ImageRow){return {id:x.id,originalName:x.original_name,contentType:x.mime_type,sizeBytes:x.byte_size,position:x.position,createdAt:x.created_at};}
 async function ordered(db:D1Database,lid:string){return (await db.prepare('SELECT * FROM listing_images WHERE listing_id=? ORDER BY position').bind(lid).all<ImageRow>()).results;}
+async function orderedD1Images(db:D1Database,lid:string){return (await db.prepare('SELECT id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at FROM listing_images WHERE listing_id=? AND blob_data IS NOT NULL ORDER BY position,id').bind(lid).all<ImageRow>()).results;}
+async function hasLegacyD1Images(db:D1Database,lid:string){return !!await db.prepare('SELECT 1 FROM listing_images WHERE listing_id=? AND blob_data IS NULL LIMIT 1').bind(lid).first();}
+async function hasPublicLegacyD1Images(db:D1Database,lids:string[]){if(!lids.length)return false;const slots=lids.map(()=>'?').join(',');return !!await db.prepare(`SELECT 1 FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id IN (${slots}) AND i.blob_data IS NULL AND l.status='APPROVED' AND l.publication_status='PUBLISHED' LIMIT 1`).bind(...lids).first();}
+function legacyD1Conflict(c:any){return c.json({code:'LEGACY_MEDIA_MIGRATION_REQUIRED',message:'La publicación conserva imágenes de un almacenamiento anterior; necesita migración antes de usar D1 BLOB.'},409);}
+function imageResponse(bytes:Uint8Array,type:string,privateImage=true){return new Response(bytes.slice().buffer as ArrayBuffer,{headers:{'Content-Type':type,'Content-Length':String(bytes.byteLength),'Cache-Control':privateImage?'private, no-store':'no-store','X-Content-Type-Options':'nosniff'}});}
+function d1ImageStatus(c:any){return c.env.MEDIA_STRATEGY==='D1_BLOB';}
+async function uploadD1Image(c:any,lid:string){
+  if(!await owned(c,lid))return c.json({error:'not found'},404);
+  const key=requestKey(c);if(!key)return c.json({error:'Idempotency-Key required for image upload'},400);
+  const rawLength=c.req.header('content-length');
+  if(rawLength!==undefined&&(!/^\d+$/.test(rawLength)||Number(rawLength)>D1_IMAGE_MAX_BYTES))return c.json({error:'image exceeds the 1.8 MB limit'},413);
+  const originalName=cleanImageName(c.req.header('x-image-name'));
+  const type=c.req.header('content-type')??'';
+  if(!originalName)return c.json({error:'invalid image name'},400);
+  const bytes=await readBoundedBody(c.req.raw);
+  if(!bytes)return c.json({error:'image exceeds the 1.8 MB limit or has no body'},413);
+  if(rawLength!==undefined&&Number(rawLength)!==bytes.byteLength)return c.json({error:'content length does not match image bytes'},400);
+  if(!await validateImageBytes(bytes,type))return c.json({error:'unsupported or invalid JPEG, PNG, or WebP image'},400);
+  const owner=ownerId(c),scope=`IMAGE_ADD:${lid}`,contentHash=b64(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes.slice().buffer as ArrayBuffer)));
+  const requestFingerprint=await fingerprint({listingId:lid,name:originalName,type,size:bytes.byteLength,contentHash});
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
+  try{
+    if(!await owned(c,lid))return c.json({error:'not found'},404);
+    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
+    let record:any;
+    try{record=await c.env.DB.prepare('SELECT request_fingerprint,state,result_json FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(owner,scope,key).first();}catch{return c.json({error:'image request outcome unavailable; retry with the same idempotency key'},503);}
+    if(record){
+      if(record.request_fingerprint!==requestFingerprint)return c.json({error:'idempotency key reused with different image'},409);
+      if(record.state!=='COMMITTED'||typeof record.result_json!=='string')return c.json({error:'image reservation requires recovery; retry with the same idempotency key'},503);
+      try{return c.json(JSON.parse(record.result_json),201);}catch{return c.json({error:'image replay result is invalid'},503);}
+    }
+    const staticImage=await c.env.DB.prepare('SELECT 1 FROM static_listing_images WHERE listing_id=? LIMIT 1').bind(lid).first();
+    if(staticImage)return c.json({error:'listing uses repository-managed images'},409);
+    const images=await orderedD1Images(c.env.DB,lid);
+    if(!images.every((row,index)=>row.position===index))return c.json({error:'image order requires recovery'},503);
+    if(images.length>=D1_IMAGE_MAX_COUNT)return c.json({error:'listing image limit reached'},409);
+    const usage=await c.env.DB.prepare('SELECT used_bytes FROM media_storage_usage WHERE id=1').first() as {used_bytes:number}|null;
+    if(!usage)return c.json({error:'image storage unavailable'},503);
+    if(usage.used_bytes+bytes.byteLength>D1_MEDIA_QUOTA_BYTES)return c.json({error:'Preview image storage quota reached'},507);
+    const imageId=id(),created=now(),objectKey=`d1blob:${imageId}`;
+    const body={id:imageId,originalName,contentType:type,sizeBytes:bytes.byteLength,position:images.length,createdAt:created};
+    const binary=bytes.slice().buffer as ArrayBuffer;
+    try{
+      const results=await c.env.DB.batch([
+        c.env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at,blob_data) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(imageId,lid,objectKey,originalName,type,bytes.byteLength,images.length,created,created,binary),
+        c.env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) VALUES(?,?,?,?,?,'COMMITTED',?,?,?)").bind(owner,scope,key,requestFingerprint,imageId,JSON.stringify(body),created,created),
+      ]);
+      const batchResults=results as D1Result[];if(batchResults.length!==2||batchResults.some(result=>result.meta?.changes!==1))throw new Error('image batch not confirmed');
+    }catch{
+      try{record=await c.env.DB.prepare('SELECT request_fingerprint,state,result_json FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(owner,scope,key).first();}catch{return c.json({error:'image commit outcome unknown; retry with the same idempotency key'},503);}
+      if(record?.request_fingerprint===requestFingerprint&&record.state==='COMMITTED'&&typeof record.result_json==='string')return c.json(JSON.parse(record.result_json),201);
+      const after=await c.env.DB.prepare('SELECT used_bytes FROM media_storage_usage WHERE id=1').first().catch(()=>null) as {used_bytes:number}|null;
+      if(after&&after.used_bytes+bytes.byteLength>D1_MEDIA_QUOTA_BYTES)return c.json({error:'Preview image storage quota reached'},507);
+      return c.json({error:'image was not committed; retry with the same idempotency key'},503);
+    }
+    return c.json(body,201);
+  }finally{await unlock(c.env.DB,lid,lease);}
+}
+function stagedD1Order(db:D1Database,lid:string,current:ImageRow[],ids:string[]){
+  const base=Math.max(1000000,...current.map(row=>row.position))+current.length+1,statements:D1PreparedStatement[]=[];
+  current.forEach((row,index)=>statements.push(db.prepare('UPDATE listing_images SET position=?,updated_at=? WHERE id=? AND listing_id=? AND blob_data IS NOT NULL').bind(base+index,now(),row.id,lid)));
+  ids.forEach((imageId,index)=>statements.push(db.prepare('UPDATE listing_images SET position=?,updated_at=? WHERE id=? AND listing_id=? AND blob_data IS NOT NULL').bind(index,now(),imageId,lid)));
+  return statements;
+}
+async function mutationReplay(db:D1Database,owner:string,scope:string,key:string,fingerprintValue:string){
+  const row=await db.prepare('SELECT request_fingerprint,state,result_json FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(owner,scope,key).first<any>();
+  if(!row)return null;
+  if(row.request_fingerprint!==fingerprintValue)return {conflict:true as const};
+  if(row.state!=='COMMITTED'||typeof row.result_json!=='string')return {pending:true as const};
+  try{return {result:JSON.parse(row.result_json)};}catch{return {pending:true as const};}
+}
+async function reorderD1Image(c:any,lid:string,imageId:string){
+  const owner=ownerId(c);if(!await owned(c,lid))return c.json({error:'not found'},404);
+  const input=await c.req.json().catch(()=>null) as any,position=input?.position;if(!Number.isInteger(position)||position<0)return c.json({error:'invalid position'},400);
+  const key=requestKey(c);if(!key)return c.json({error:'Idempotency-Key required for image reorder'},400);
+  const scope=`IMAGE_D1_REORDER:${lid}:${imageId}`,requestFingerprint=await fingerprint({method:'PATCH',lid,imageId,position});
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'retryable conflict'},409);
+  try{
+    if(!await owned(c,lid))return c.json({error:'not found'},404);
+    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
+    let replay;try{replay=await mutationReplay(c.env.DB,owner,scope,key,requestFingerprint);}catch{return c.json({error:'image reorder outcome unavailable; retry with the same idempotency key'},503);}
+    if(replay?.conflict)return c.json({error:'idempotency key reused with a different reorder'},409);
+    if(replay?.pending)return c.json({error:'image reorder requires recovery; retry with the same idempotency key'},503);
+    if(replay)return c.json(replay.result,200);
+    const current=await orderedD1Images(c.env.DB,lid);if(!current.every((row,index)=>row.position===index))return c.json({error:'image order requires recovery'},503);
+    const index=current.findIndex(row=>row.id===imageId);if(index<0)return c.json({error:'not found'},404);if(position>=current.length)return c.json({error:'invalid position'},400);
+    const [moved]=current.splice(index,1);current.splice(position,0,moved);
+    const result=current.map((row,index)=>imageDto({...row,position:index})),resultJson=JSON.stringify(result),created=now();
+    const statements=stagedD1Order(c.env.DB,lid,await orderedD1Images(c.env.DB,lid),current.map(row=>row.id));
+    statements.push(c.env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) VALUES(?,?,?,?,?,'COMMITTED',?,?,?)").bind(owner,scope,key,requestFingerprint,imageId,resultJson,created,created));
+    try{await c.env.DB.batch(statements);}catch{}
+    const after=await orderedD1Images(c.env.DB,lid),record=await mutationReplay(c.env.DB,owner,scope,key,requestFingerprint).catch(()=>null);
+    if(after.length===result.length&&after.every((row,i)=>row.id===result[i].id&&row.position===i)&&record&&!('pending'in record)&&!('conflict'in record))return c.json(record.result,200);
+    return c.json({error:'image reorder was not confirmed; retry with the same idempotency key'},503);
+  }finally{await unlock(c.env.DB,lid,lease);}
+}
+async function deleteD1Image(c:any,lid:string,imageId:string){
+  const owner=ownerId(c);if(!await owned(c,lid))return c.json({error:'not found'},404);
+  const key=requestKey(c);if(!key)return c.json({error:'Idempotency-Key required for image deletion'},400);
+  const scope=`IMAGE_D1_DELETE:${lid}:${imageId}`,requestFingerprint=await fingerprint({method:'DELETE',lid,imageId});
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'retryable conflict'},409);
+  try{
+    if(!await owned(c,lid))return c.json({error:'not found'},404);
+    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
+    let replay;try{replay=await mutationReplay(c.env.DB,owner,scope,key,requestFingerprint);}catch{return c.json({error:'image delete outcome unavailable; retry with the same idempotency key'},503);}
+    if(replay?.conflict)return c.json({error:'idempotency key reused with a different delete'},409);
+    if(replay?.pending)return c.json({error:'image delete requires recovery; retry with the same idempotency key'},503);
+    if(replay)return c.body(null,200);
+    const current=await orderedD1Images(c.env.DB,lid);if(!current.every((row,index)=>row.position===index))return c.json({error:'image order requires recovery'},503);
+    const target=current.find(row=>row.id===imageId);if(!target)return c.json({error:'not found'},404);
+    const remaining=current.filter(row=>row.id!==imageId),statements:D1PreparedStatement[]=[c.env.DB.prepare('DELETE FROM listing_images WHERE id=? AND listing_id=? AND blob_data IS NOT NULL').bind(imageId,lid)];
+    statements.push(...stagedD1Order(c.env.DB,lid,remaining,remaining.map(row=>row.id)));
+    const created=now();statements.push(c.env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) VALUES(?,?,?,?,?,'COMMITTED','null',?,?)").bind(owner,scope,key,requestFingerprint,imageId,created,created));
+    try{await c.env.DB.batch(statements);}catch{}
+    const after=await orderedD1Images(c.env.DB,lid),record=await mutationReplay(c.env.DB,owner,scope,key,requestFingerprint).catch(()=>null);
+    if(!after.some(row=>row.id===imageId)&&after.every((row,index)=>row.position===index)&&record&&!('pending'in record)&&!('conflict'in record))return c.body(null,200);
+    return c.json({error:'image deletion was not confirmed; retry with the same idempotency key'},503);
+  }finally{await unlock(c.env.DB,lid,lease);}
+}
 async function bestEffortOperationState(db:D1Database,op:string,state:'COMMITTED'|'CLEANED'|'COMPENSATED'|'CLEANUP_PENDING'|'NEEDS_REPAIR') { try{const cleanupComplete=state==='CLEANED'||state==='COMPENSATED';await db.prepare('UPDATE image_operations SET state=?,cleanup_complete=?,updated_at=? WHERE id=?').bind(state,cleanupComplete?1:0,now(),op).run();return true;}catch{return false;} }
 async function compensateAdd(db:D1Database,bucket:R2Bucket,op:string,key:string) { try{await bucket.delete(key);if(await bucket.head(key)){await bestEffortOperationState(db,op,'NEEDS_REPAIR');return false;}await bestEffortOperationState(db,op,'COMPENSATED');return true;}catch{await bestEffortOperationState(db,op,'NEEDS_REPAIR');return false;} }
 async function cleanupDeleteBackup(db:D1Database,bucket:R2Bucket,op:string,backup:string,state:'CLEANED'|'COMPENSATED') { try{await bucket.delete(backup);const remaining=await bucket.head(backup);await bestEffortOperationState(db,op,remaining?'CLEANUP_PENDING':state);return !remaining;}catch{await bestEffortOperationState(db,op,'CLEANUP_PENDING');return false;} }
@@ -157,9 +277,10 @@ async function hasPendingReorder(db:D1Database,owner:string,lid:string,exceptSco
 async function hasPendingDeleteRecovery(db:D1Database,lid:string,owner:string,exceptScope?:string,exceptKey?:string,exceptFingerprint?:string) { try{const row=exceptScope&&exceptKey&&exceptFingerprint?await db.prepare("SELECT 1 FROM image_operations o WHERE o.listing_id=? AND o.kind='DELETE' AND (o.state IN ('PENDING','NEEDS_REPAIR') OR (o.state='COMPENSATED' AND o.cleanup_complete=0)) AND NOT (EXISTS (SELECT 1 FROM idempotency_records r WHERE r.owner_id=? AND r.scope=? AND r.request_key=? AND r.request_fingerprint=? AND r.resource_id=o.image_id AND r.state IN ('PENDING','NEEDS_REPAIR','COMMITTED'))) LIMIT 1").bind(lid,owner,exceptScope,exceptKey,exceptFingerprint).first():await db.prepare("SELECT 1 FROM image_operations WHERE listing_id=? AND kind='DELETE' AND (state IN ('PENDING','NEEDS_REPAIR') OR (state='COMPENSATED' AND cleanup_complete=0)) LIMIT 1").bind(lid).first();return !!row;}catch{return true;} }
 async function confirmIdempotencyCommit(db:D1Database,owner:string,scope:string,key:string,requestFingerprint:string,resultJson?:string) { try{const result=await db.prepare("UPDATE idempotency_records SET state='COMMITTED',result_json=COALESCE(?,result_json),updated_at=? WHERE owner_id=? AND scope=? AND request_key=? AND request_fingerprint=? AND state IN ('PENDING','NEEDS_REPAIR')").bind(resultJson??null,now(),owner,scope,key,requestFingerprint).run();if(result?.meta?.changes===1)return true;}catch{}try{const row=await db.prepare('SELECT request_fingerprint,state,result_json FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(owner,scope,key).first<any>();return row?.request_fingerprint===requestFingerprint&&row.state==='COMMITTED'&&(resultJson===undefined||row.result_json===resultJson);}catch{return false;} }
 async function resetCompensatedIdempotency(db:D1Database,owner:string,scope:string,key:string,requestFingerprint:string,lid:string,imageId:string,lease:string,targetPresent:boolean) { try{const target=await db.prepare('SELECT id FROM listing_images WHERE id=? AND listing_id=?').bind(imageId,lid).first();if(!!target!==targetPresent)return false;const targetGuard=targetPresent?'EXISTS':'NOT EXISTS';await db.prepare(`UPDATE idempotency_records SET state='PENDING',result_json=NULL,updated_at=? WHERE owner_id=? AND scope=? AND request_key=? AND request_fingerprint=? AND state IN ('COMMITTED','NEEDS_REPAIR') AND ${targetGuard} (SELECT 1 FROM listing_images WHERE id=? AND listing_id=?) AND EXISTS (SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())`).bind(now(),owner,scope,key,requestFingerprint,imageId,lid,lid,lease).run();const row=await db.prepare('SELECT request_fingerprint,state,result_json FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(owner,scope,key).first<any>();return row?.request_fingerprint===requestFingerprint&&row.state==='PENDING'&&row.result_json===null;}catch{return false;} }
-app.get('/listings/:id/images',async c=>{if(!await owned(c,c.req.param('id')))return c.json({error:'not found'},404);const rows=await ordered(c.env.DB,c.req.param('id'));if(!rows.every((row,index)=>row.position===index))return c.json({error:'image ordering requires recovery; retry after recovery'},503);return c.json(rows.map(imageDto));});
+app.get('/listings/:id/images',async c=>{const lid=c.req.param('id');if(!await owned(c,lid))return c.json({error:'not found'},404);if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);const rows=d1ImageStatus(c)?await orderedD1Images(c.env.DB,lid):await ordered(c.env.DB,lid);if(!rows.every((row,index)=>row.position===index))return c.json({error:'image ordering requires recovery; retry after recovery'},503);return c.json(rows.map(imageDto));});
 app.post('/listings/:id/images', async c => {
   const lid=c.req.param('id');
+  if(d1ImageStatus(c))return uploadD1Image(c,lid);
   if(!await owned(c,lid)) return c.json({error:'not found'},404);
   const maxImageBytes=Number(c.env.MAX_IMAGE_BYTES??5242880);if(!Number.isSafeInteger(maxImageBytes)||maxImageBytes<1)return c.json({error:'image upload configuration invalid'},503);
   const limit=maxImageBytes+128*1024;
@@ -215,14 +336,14 @@ app.post('/listings/:id/images', async c => {
     return c.json(responseBody,201);
   }finally{await unlock(c.env.DB,lid,lease);}
 });
-app.get('/listings/:id/images/:imageId',async c=>{const lid=c.req.param('id');if(!await owned(c,lid))return c.json({error:'not found'},404);const row=await c.env.DB.prepare('SELECT * FROM listing_images WHERE listing_id=? AND id=?').bind(lid,c.req.param('imageId')).first<ImageRow>();if(!row)return c.json({error:'not found'},404);const obj=await c.env.IMAGES.get(row.object_key);if(!obj)return c.json({error:'not found'},404);return new Response(obj.body,{headers:{'Content-Type':row.mime_type,'Content-Length':String(row.byte_size),'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});});
+app.get('/listings/:id/images/:imageId',async c=>{const lid=c.req.param('id'),imageId=c.req.param('imageId');if(!await owned(c,lid))return c.json({error:'not found'},404);if(d1ImageStatus(c)){if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);const row=await c.env.DB.prepare('SELECT blob_data,mime_type,byte_size FROM listing_images WHERE listing_id=? AND id=? AND blob_data IS NOT NULL').bind(lid,imageId).first<any>();if(!row)return c.json({error:'not found'},404);const bytes=d1BlobBytes(row.blob_data);if(!bytes||bytes.byteLength!==row.byte_size)return c.json({error:'image data unavailable'},503);return imageResponse(bytes,row.mime_type,true);}const row=await c.env.DB.prepare('SELECT * FROM listing_images WHERE listing_id=? AND id=?').bind(lid,imageId).first<ImageRow>();if(!row)return c.json({error:'not found'},404);const obj=await c.env.IMAGES.get(row.object_key);if(!obj)return c.json({error:'not found'},404);return new Response(obj.body,{headers:{'Content-Type':row.mime_type,'Content-Length':String(row.byte_size),'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});});
 const PUBLIC_FRESHNESS_MS=30*24*60*60*1000;
 const PUBLIC_ENUMS={currency:['ARS','USD'],pricePeriod:['WEEK','MONTH'],rentalDuration:['WEEKS','MONTHS','PERMANENT','FLEXIBLE']} as const;
 function publicInteger(value:string|null,min:number,max:number,name:string,defaultValue?:number){if(value===null)return defaultValue; if(!/^(0|[1-9]\d*)$/.test(value))throw Error(`${name} must be an integer`);const parsed=Number(value);if(!Number.isSafeInteger(parsed)||parsed<min||parsed>max)throw Error(`${name} is outside the allowed range`);return parsed;}
 function publicFreshness(lastConfirmedAt:string|null){if(!lastConfirmedAt)return 'UNCONFIRMED';const time=Date.parse(lastConfirmedAt);if(!Number.isFinite(time))return 'UNCONFIRMED';return time>Date.now()?'UNCONFIRMED':Date.now()-time<=PUBLIC_FRESHNESS_MS?'FRESH':'STALE';}
 function publicDomainStatus(row:any){return row.priceAmount!==null&&row.pricePeriod!==null&&row.rentalDuration!==null&&row.maxOccupants!==null&&row.currency!==null?'COMPLETE':'MISSING';}
 function publicListingDto(row:any,images:any[]){return {id:row.id,title:row.title,description:row.description,location:row.location,priceAmount:row.priceAmount,pricePeriod:row.pricePeriod,rentalDuration:row.rentalDuration,maxOccupants:row.maxOccupants,currency:row.currency,domainDataStatus:publicDomainStatus(row),availabilityStatus:row.availabilityStatus,lastConfirmedAt:row.lastConfirmedAt,freshnessStatus:publicFreshness(row.lastConfirmedAt),images:images.map(image=>({id:image.id,contentType:image.contentType,sizeBytes:image.sizeBytes,position:image.position,...(image.url?{url:image.url}:{})}))};}
-async function publicImages(db:D1Database,listingIds:string[],staticMedia=false){if(staticMedia){if(!listingIds.length)return [];const rows=await db.prepare(`SELECT id,listing_id AS listingId,asset_path AS url,mime_type AS contentType,byte_size AS sizeBytes,position FROM static_listing_images WHERE listing_id IN (${listingIds.map(()=>'?').join(',')}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>();return rows.results;}if(!listingIds.length)return [] as any[];const placeholders=listingIds.map(()=>'?').join(',');const rows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return rows;}
+async function publicImages(db:D1Database,listingIds:string[],staticMedia=false,d1Blob=false){if(!listingIds.length)return [];const placeholders=listingIds.map(()=>'?').join(',');if(staticMedia||d1Blob){const staticRows=(await db.prepare(`SELECT id,listing_id AS listingId,asset_path AS url,mime_type AS contentType,byte_size AS sizeBytes,position FROM static_listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;if(staticMedia)return staticRows;const blobRows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) AND blob_data IS NOT NULL ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return [...staticRows,...blobRows].sort((a,b)=>a.position-b.position||a.id.localeCompare(b.id));}const rows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return rows;}
 async function initializeLocationSearch(db:D1Database){
   const rows=(await db.prepare("SELECT id,location FROM listings WHERE location_search='' LIMIT 100").all<{id:string;location:string}>()).results;
   if(rows.length)await db.batch(rows.map(row=>db.prepare("UPDATE listings SET location_search=? WHERE id=? AND location=? AND location_search=''").bind(row.location.normalize('NFC').toLowerCase(),row.id,row.location)));
@@ -252,22 +373,30 @@ app.get('/public/listings',async c=>{
     c.env.DB.prepare(`SELECT COUNT(*) AS totalItems FROM listings WHERE ${where}`).bind(...values).first<any>(),
     c.env.DB.prepare(`SELECT id,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`).bind(...values,pageSize,offset).all<any>(),
   ]);
-  const rows=listed.results,totalItems=Number(count?.totalItems??0),imageRows=await publicImages(c.env.DB,rows.map((row:any)=>row.id),c.env.MEDIA_STRATEGY==='STATIC_ASSETS');
+  const rows=listed.results,totalItems=Number(count?.totalItems??0);if(d1ImageStatus(c)&&await hasPublicLegacyD1Images(c.env.DB,rows.map((row:any)=>row.id)))return legacyD1Conflict(c);const imageRows=await publicImages(c.env.DB,rows.map((row:any)=>row.id),c.env.MEDIA_STRATEGY==='STATIC_ASSETS',d1ImageStatus(c));
   const byListing=new Map<string,any[]>();for(const image of imageRows){const images=byListing.get(image.listingId)??[];images.push({id:image.id,contentType:image.contentType,sizeBytes:image.sizeBytes,position:image.position,...(image.url?{url:image.url}:{})});byListing.set(image.listingId,images);}
   return c.json({items:rows.map((row:any)=>publicListingDto(row,byListing.get(row.id)??[])),page,pageSize,totalItems,totalPages:Math.ceil(totalItems/pageSize)});
 });
 app.get('/public/listings/:id/images/:imageId',async c=>{
   if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'){const row=await c.env.DB.prepare("SELECT i.asset_path AS url FROM static_listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(c.req.param('id'),c.req.param('imageId')).first<{url:string}>();return row?c.redirect(row.url,302):c.json({message:'Image not found'},404);}
+  if(d1ImageStatus(c)){
+    const lid=c.req.param('id'),imageId=c.req.param('imageId');
+    if(await hasPublicLegacyD1Images(c.env.DB,[lid]))return legacyD1Conflict(c);
+    const staticRow=await c.env.DB.prepare("SELECT i.asset_path AS url FROM static_listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(lid,imageId).first<{url:string}>();
+    if(staticRow)return c.redirect(staticRow.url,302);
+    const row=await c.env.DB.prepare("SELECT i.blob_data AS blobData,i.mime_type AS contentType,i.byte_size AS sizeBytes FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND i.blob_data IS NOT NULL AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(lid,imageId).first<any>();
+    if(!row){const legacy=await c.env.DB.prepare("SELECT 1 FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND i.blob_data IS NULL AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(lid,imageId).first();return legacy?legacyD1Conflict(c):c.json({message:'Image not found'},404);}const bytes=d1BlobBytes(row.blobData);if(!bytes||bytes.byteLength!==row.sizeBytes)return c.json({message:'Image data unavailable'},503);return imageResponse(bytes,row.contentType,false);
+  }
   const row=await c.env.DB.prepare("SELECT i.object_key AS objectKey,i.mime_type AS contentType,i.byte_size AS sizeBytes FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(c.req.param('id'),c.req.param('imageId')).first<any>();
   if(!row)return c.json({message:'Image not found'},404);const object=await c.env.IMAGES.get(row.objectKey);if(!object)return c.json({message:'Image not found'},404);
   return new Response(object.body,{headers:{'Content-Type':row.contentType,'Content-Length':String(row.sizeBytes),'Cache-Control':'no-store, no-cache','X-Content-Type-Options':'nosniff'}});
 });
 app.get('/public/listings/:id',async c=>{
   const row=await c.env.DB.prepare("SELECT id,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE id=? AND status='APPROVED' AND publication_status='PUBLISHED'").bind(c.req.param('id')).first<any>();
-  if(!row)return c.json({message:'Listing not found'},404);const images=await publicImages(c.env.DB,[row.id],c.env.MEDIA_STRATEGY==='STATIC_ASSETS');return c.json(publicListingDto(row,images));
+  if(!row)return c.json({message:'Listing not found'},404);if(d1ImageStatus(c)&&await hasPublicLegacyD1Images(c.env.DB,[row.id]))return legacyD1Conflict(c);const images=await publicImages(c.env.DB,[row.id],c.env.MEDIA_STRATEGY==='STATIC_ASSETS',d1ImageStatus(c));return c.json(publicListingDto(row,images));
 });
 app.patch('/listings/:id/images/:imageId',async c=>{
-  const lid=c.req.param('id'),imageId=c.req.param('imageId'),owner=ownerId(c),supplied=requestKey(c);
+  const lid=c.req.param('id'),imageId=c.req.param('imageId');if(d1ImageStatus(c))return reorderD1Image(c,lid,imageId);const owner=ownerId(c),supplied=requestKey(c);
   if(supplied===false)return c.json({error:'invalid idempotency key'},400);
   if(!await owned(c,lid))return c.json({error:'not found'},404);
   const x=await c.req.json().catch(()=>null) as any,position=x?.position;
@@ -331,7 +460,7 @@ app.patch('/listings/:id/images/:imageId',async c=>{
   }finally{await unlock(c.env.DB,lid,lk);}
 });
 app.delete('/listings/:id/images/:imageId', async c => {
-  const lid=c.req.param('id'),imageId=c.req.param('imageId'),owner=ownerId(c),supplied=requestKey(c);
+  const lid=c.req.param('id'),imageId=c.req.param('imageId');if(d1ImageStatus(c))return deleteD1Image(c,lid,imageId);const owner=ownerId(c),supplied=requestKey(c);
   if(supplied===false)return c.json({error:'invalid idempotency key'},400);
   const scope=`IMAGE_DELETE:${lid}:${imageId}`,requestFingerprint=await fingerprint({method:'DELETE',lid,imageId});
   if(!await owned(c,lid))return c.json({error:'not found'},404);
@@ -473,6 +602,6 @@ async function reconcilePendingReorders(env:Env) {
     finally{await unlock(env.DB,lid,lease);}
   }
 }
-const worker = { fetch: (request:Request,env:Env,ctx:ExecutionContext) => { const url=new URL(request.url);if(url.pathname.startsWith('/api/')){url.pathname=url.pathname.slice(4);request=new Request(url,request);}return app.fetch(request,env,ctx); }, scheduled: async (_controller: ScheduledController, env: Env) => { if(env.MEDIA_STRATEGY==='STATIC_ASSETS')return;await reconcile(env);await reconcilePendingReorders(env); } };
+const worker = { fetch: (request:Request,env:Env,ctx:ExecutionContext) => { const url=new URL(request.url);if(url.pathname.startsWith('/api/')){url.pathname=url.pathname.slice(4);request=new Request(url,request);}return app.fetch(request,env,ctx); }, scheduled: async (_controller: ScheduledController, env: Env) => { if(env.MEDIA_STRATEGY==='STATIC_ASSETS'||env.MEDIA_STRATEGY==='D1_BLOB')return;await reconcile(env);await reconcilePendingReorders(env); } };
 export { app };
 export default worker;
