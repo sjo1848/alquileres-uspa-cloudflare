@@ -15,6 +15,7 @@ PREVIEW = 'https://private-alquileres-uspa-lab.sjo1848.workers.dev'
 def finish(output, checks, health_ready=True):
     passed = health_ready and len(checks) == 3 and all(
         x.get('status') in (200, 401) and x.get('status') == x.get('expected_status') and not x.get('provider_resource_limit_error')
+        and (x.get('expected_status') != 200 or x.get('session_cookie_present') is True)
         for x in checks)
     report = {'url': PREVIEW, 'synthetic_only': True, 'checks': checks,
         'health_ready': health_ready, 'http_expectations_passed': passed, 'cpu_telemetry_measured': False,

@@ -17,10 +17,12 @@ spec = importlib.util.spec_from_file_location('probe', ROOT / 'scripts/preview-l
 probe = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(probe)
 
-def response(status=200, body=b'{}'):
+def response(status=200, body=b'{}', cookie=True):
     result = io.BytesIO(body)
     result.status = status
     result.headers = Message()
+    if cookie and status == 200:
+        result.headers['Set-Cookie'] = 'alquileres_session=synthetic; HttpOnly'
     return result
 
 class ProbeTests(unittest.TestCase):
@@ -47,6 +49,11 @@ class ProbeTests(unittest.TestCase):
 
     def test_valid_password_rejection_fails(self):
         status, report = self.execute([response(body=b'{"ok":true}'), response(401)])
+        self.assertEqual(status, 1)
+        self.assertFalse(report['http_expectations_passed'])
+
+    def test_valid_login_without_session_cookie_fails(self):
+        status, report = self.execute([response(body=b'{"ok":true}'), response(cookie=False), response(401), response()])
         self.assertEqual(status, 1)
         self.assertFalse(report['http_expectations_passed'])
 

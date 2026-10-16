@@ -19,5 +19,23 @@ async (page) => {
  await page.getByRole('button',{name:'Descartar cambios y recargar',exact:true}).click();
  await page.getByRole('button',{name:'Nueva versión guardada Borrador',exact:true}).waitFor();
  if(await page.getByLabel('Título',{exact:true}).inputValue()!==saved.title)throw Error('Explicit reload did not reconcile form');
+ await page.getByRole('button',{name:'+ Nuevo borrador',exact:true}).click();
+ await page.getByLabel('Título',{exact:true}).fill('Nuevo sin guardar');
+ await page.getByRole('button',{name:'Recargar publicaciones',exact:true}).click();
+ await page.getByRole('button',{name:'Crear borrador',exact:true}).waitFor();
+ if(await page.getByLabel('Título',{exact:true}).inputValue()!=='Nuevo sin guardar')throw Error('New draft lost on list reload');
+ await page.getByRole('button',{name:'Nueva versión guardada Borrador',exact:true}).click();
+ await page.getByRole('button',{name:'Seguir editando',exact:true}).click();
+ if(await page.getByLabel('Título',{exact:true}).inputValue()!=='Nuevo sin guardar')throw Error('Selection lost new draft edits');
+ await page.getByRole('button',{name:'Nueva versión guardada Borrador',exact:true}).click();
+ await page.getByRole('button',{name:'Descartar cambios y cambiar',exact:true}).click();
+ if(await page.getByLabel('Título',{exact:true}).inputValue()!==saved.title)throw Error('Selection discard did not switch');
+ await page.getByLabel('Título',{exact:true}).fill('Cambios existentes');
+ await page.getByRole('button',{name:'+ Nuevo borrador',exact:true}).click();
+ await page.getByRole('button',{name:'Seguir editando',exact:true}).click();
+ if(await page.getByLabel('Título',{exact:true}).inputValue()!=='Cambios existentes')throw Error('New button lost selected draft edits');
+ await page.getByRole('button',{name:'+ Nuevo borrador',exact:true}).click();
+ await page.getByRole('button',{name:'Descartar cambios y cambiar',exact:true}).click();
+ if(await page.getByLabel('Título',{exact:true}).inputValue()!=='')throw Error('New confirmed draft not blank');
  await page.unroute('**/api/auth/me');await page.unroute('**/api/listings');
 }

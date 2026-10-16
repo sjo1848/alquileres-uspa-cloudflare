@@ -8,11 +8,16 @@ type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPR
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
 const confirmReload=ref(false);
+const pendingSelection=ref<{item?:Listing}|null>(null);
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive<Fields>(blank());
 const selected=computed(()=>listings.value.find(x=>x.id===selectedId.value));
 const canEdit=computed(()=>!selected.value||['DRAFT','REJECTED'].includes(selected.value.status));
 const dirty=computed(()=>selected.value&&Object.keys(blank()).some(key=>form[key as keyof Fields]!==selected.value![key as keyof Fields]));
+const unsaved=computed(()=>{
+  const baseline=selected.value??blank();
+  return Object.keys(blank()).some(key=>form[key as keyof Fields]!==baseline[key as keyof Fields]);
+});
 let pendingCreate:{body:string;key:string}|undefined;
 const label=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function message(e:unknown){
@@ -27,9 +32,17 @@ function choose(item?:Listing){
   Object.assign(form,item?Object.fromEntries(Object.keys(blank()).map(key=>[key,item[key as keyof Fields]])):blank());
   error.value='';notice.value='';pendingCreate=undefined;
   confirmReload.value=false;
+  pendingSelection.value=null;
 }
+function requestChoose(item?:Listing){
+  if(busy.value)return;
+  if(unsaved.value){pendingSelection.value={item};confirmReload.value=false;return;}
+  choose(item);
+}
+function confirmChoose(){if(pendingSelection.value)choose(pendingSelection.value.item);}
 async function load(discardChanges=false){
   if(busy.value)return;
+  pendingSelection.value=null;
   if(dirty.value&&discardChanges!==true){confirmReload.value=true;return;}
   confirmReload.value=false;
   loading.value=true;error.value='';
@@ -85,12 +98,17 @@ onMounted(()=>load());
       <button :disabled="busy||loading" @click="load(true)">Descartar cambios y recargar</button>
       <button class="secondary" @click="confirmReload=false">Seguir editando</button>
     </div>
+    <div v-if="pendingSelection" class="notice" role="status">
+      <p>Tenés cambios sin guardar. ¿Querés descartarlos y cambiar de publicación?</p>
+      <button :disabled="busy||loading" @click="confirmChoose">Descartar cambios y cambiar</button>
+      <button class="secondary" @click="pendingSelection=null">Seguir editando</button>
+    </div>
     <p v-if="loading" role="status">Cargando tus publicaciones…</p>
     <div v-else class="owner-layout">
       <aside class="card">
-        <button :disabled="busy" @click="choose()">+ Nuevo borrador</button>
+        <button :disabled="busy" @click="requestChoose()">+ Nuevo borrador</button>
         <p v-if="!listings.length">Todavía no tenés publicaciones.</p>
-        <button v-for="item in listings" :key="item.id" type="button" class="listing-choice" :class="{selected:selectedId===item.id}" :disabled="busy" @click="choose(item)">
+        <button v-for="item in listings" :key="item.id" type="button" class="listing-choice" :class="{selected:selectedId===item.id}" :disabled="busy" @click="requestChoose(item)">
           <strong>{{ item.title }}</strong><span>{{ label(item.status) }}</span>
         </button>
       </aside>
