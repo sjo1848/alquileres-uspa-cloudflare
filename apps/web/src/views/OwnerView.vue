@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { ApiError } from '../api';
+import { ApiError, apiUrl } from '../api';
 import { useSession } from '../session';
 import { currencyOptions, pricePeriodOptions, rentalDurationOptions, formatRentalPrice, type Currency, type PricePeriod, type RentalDuration } from './rental-domain';
 type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number };
 type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string };
+type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt:string };
+const MAX_IMAGE_BYTES=1_800_000, MAX_IMAGES=20;
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
+const images=ref<Image[]>([]),imagesLoading=ref(false),imageBusy=ref<'upload'|'delete'|'reorder'|null>(null);
 const confirmReload=ref(false);
 const pendingSelection=ref<{item?:Listing}|null>(null);
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
@@ -19,12 +22,24 @@ const unsaved=computed(()=>{
   return Object.keys(blank()).some(key=>form[key as keyof Fields]!==baseline[key as keyof Fields]);
 });
 let pendingCreate:{body:string;key:string}|undefined;
+let pendingUpload:{identity:string;key:string}|undefined;
+const imageKeys=new Map<string,string>();let imageLoadVersion=0;
+function imageMutationKey(operation:string){let key=imageKeys.get(operation);if(!key){key=crypto.randomUUID();imageKeys.set(operation,key);}return key;}
 const label=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function message(e:unknown){
   if(e instanceof ApiError&&e.status===400)return 'Completá los campos obligatorios de la publicación y guardá los cambios antes de enviarla.';
+  if(e instanceof ApiError&&e.status===413)return 'La imagen supera el límite de 1,8 MB.';
+  if(e instanceof ApiError&&e.status===507)return 'Se alcanzó el espacio reservado para imágenes en este Preview.';
   if(e instanceof ApiError&&e.status===409)return 'La publicación cambió. Recargá tus publicaciones antes de reintentar.';
   if(e instanceof ApiError&&e.status===404)return 'La publicación ya no está disponible para editar.';
   return 'No pudimos confirmar la operación. Reintentá con los mismos datos.';
+}
+function imageMessage(e:unknown){
+  if(e instanceof ApiError&&e.status===400)return 'El archivo debe ser una imagen JPEG, PNG o WebP válida.';
+  if(e instanceof ApiError&&e.status===409)return 'La publicación está ocupada o alcanzó el máximo de 20 imágenes.';
+  if(e instanceof ApiError&&e.status===413)return 'La imagen supera el límite de 1,8 MB.';
+  if(e instanceof ApiError&&e.status===507)return 'Se alcanzó el espacio reservado para imágenes en este Preview.';
+  return message(e);
 }
 function choose(item?:Listing){
   if(busy.value)return;
@@ -33,6 +48,14 @@ function choose(item?:Listing){
   error.value='';notice.value='';pendingCreate=undefined;
   confirmReload.value=false;
   pendingSelection.value=null;
+  images.value=[];imageLoadVersion++;
+  if(item&&['DRAFT','REJECTED'].includes(item.status))void loadImages(item);
+}
+async function loadImages(item:Listing){
+  const version=++imageLoadVersion;imagesLoading.value=true;
+  try{const result=await session.apiRequest<Image[]>(`/listings/${encodeURIComponent(item.id)}/images`);if(version===imageLoadVersion&&selectedId.value===item.id)images.value=result;}
+  catch(e){if(version===imageLoadVersion&&selectedId.value===item.id)error.value=message(e);}
+  finally{if(version===imageLoadVersion)imagesLoading.value=false;}
 }
 function requestChoose(item?:Listing){
   if(busy.value)return;
@@ -86,6 +109,41 @@ async function submit(){
   }catch(e){error.value=message(e);}
   finally{busy.value=false;}
 }
+async function upload(event:Event){
+  const input=event.target as HTMLInputElement,file=input.files?.[0],item=selected.value;
+  if(!file||!item||!canEdit.value||busy.value)return;
+  if(file.size<16||file.size>MAX_IMAGE_BYTES){error.value='La imagen debe pesar entre 16 bytes y 1,8 MB.';input.value='';return;}
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){error.value='Usá una imagen JPEG, PNG o WebP.';input.value='';return;}
+  if(images.value.length>=MAX_IMAGES){error.value='Esta publicación ya tiene 20 imágenes.';input.value='';return;}
+  busy.value=true;imageBusy.value='upload';error.value='';notice.value='';
+  try{
+    const bytes=await file.arrayBuffer(),digest=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
+    const signature=[...digest].map(value=>value.toString(16).padStart(2,'0')).join('');
+    const identity=`${item.id}|${file.name}|${file.size}|${file.lastModified}|${signature}`;
+    if(pendingUpload?.identity!==identity)pendingUpload={identity,key:crypto.randomUUID()};
+    await session.apiRequest<Image>(`/listings/${encodeURIComponent(item.id)}/images`,{method:'POST',body:file,headers:{'Content-Type':file.type,'X-Image-Name':encodeURIComponent(file.name),'Idempotency-Key':pendingUpload.key}});
+    if(selectedId.value===item.id){await loadImages(item);notice.value='Imagen guardada en tu publicación.';}
+    pendingUpload=undefined;
+  }catch(e){error.value=imageMessage(e);}
+  finally{busy.value=false;imageBusy.value=null;input.value='';}
+}
+async function removeImage(image:Image){
+  const item=selected.value;if(!item||busy.value||!canEdit.value)return;
+  busy.value=true;imageBusy.value='delete';error.value='';notice.value='';
+  const keyScope=`delete:${item.id}:${image.id}`,key=imageMutationKey(keyScope);
+  try{await session.apiRequest(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'DELETE',headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);await loadImages(item);notice.value='Imagen eliminada.';}
+  catch(e){error.value=imageMessage(e);}
+  finally{busy.value=false;imageBusy.value=null;}
+}
+async function moveImage(image:Image,delta:number){
+  const item=selected.value;if(!item||busy.value||!canEdit.value)return;
+  const position=image.position+delta;if(position<0||position>=images.value.length)return;
+  const keyScope=`reorder:${item.id}:${image.id}:${position}`,key=imageMutationKey(keyScope);
+  busy.value=true;imageBusy.value='reorder';error.value='';notice.value='';
+  try{images.value=await session.apiRequest<Image[]>(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'PATCH',body:JSON.stringify({position}),headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);notice.value='Orden de imágenes actualizado.';}
+  catch(e){error.value=imageMessage(e);}
+  finally{busy.value=false;imageBusy.value=null;}
+}
 onMounted(()=>load());
 </script>
 <template>
@@ -133,12 +191,29 @@ onMounted(()=>load());
         </form>
         <div v-if="selected" class="subsection">
           <p>{{ formatRentalPrice(selected) }}</p>
+          <section class="subsection" aria-labelledby="owner-images-title">
+            <h3 id="owner-images-title">Imágenes</h3>
+            <p class="notice">JPEG, PNG o WebP; hasta 1,8 MB por imagen y 20 por publicación.</p>
+            <label v-if="canEdit&&images.length<MAX_IMAGES">Agregar foto
+              <input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" />
+            </label>
+            <p v-if="imagesLoading" role="status">Cargando imágenes…</p>
+            <p v-else-if="!images.length">Todavía no hay imágenes.</p>
+            <ul v-else class="image-list" :aria-busy="imageBusy!==null">
+              <li v-for="image in images" :key="image.id">
+                <img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Imagen ${image.position+1} de ${selected.title}`" width="96" height="72" loading="lazy" />
+                <span>{{ image.position+1 }}. {{ image.originalName }}</span>
+                <button type="button" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">↑</button>
+                <button type="button" :disabled="busy||image.position===images.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">↓</button>
+                <button type="button" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="removeImage(image)">Eliminar</button>
+              </li>
+            </ul>
+          </section>
           <p v-if="canEdit&&dirty" class="notice">Guardá los cambios antes de enviar a revisión.</p>
-          <button v-if="canEdit" :disabled="busy||dirty" @click="submit">Enviar a revisión</button>
+          <button v-if="canEdit" :disabled="busy||dirty||imagesLoading" @click="submit">Enviar a revisión</button>
           <p v-else-if="selected.status==='SUBMITTED'">Tu publicación está en revisión.</p>
           <RouterLink v-if="selected.status==='APPROVED'&&selected.publicationStatus==='PUBLISHED'" :to="`/listings/${selected.id}`">Ver ficha publicada</RouterLink>
         </div>
-        <p class="notice">Por ahora, el equipo gestiona las imágenes de las publicaciones.</p>
       </article>
     </div>
   </section>
