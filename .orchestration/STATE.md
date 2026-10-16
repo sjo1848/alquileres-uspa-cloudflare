@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
+State: `HUMAN_GATE`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
 Active task: `CF-AU-I02 — accepted public Preview; OWNER PR #13 corrections / Free auth CPU`
 
@@ -465,3 +465,5 @@ Bounded CPU assessment: same bcryptjs3.0.3/cost12, dedicated Node async compare,
 - HTTP success does NOT establish stable Free compatibility. Official Free10ms and documented rollover/tolerance explain why over-budget observations need not immediately throw1102; no reliance on unguaranteed tolerance. P1 remains open. Evidence: remote-login, provider-cpu-query/units and probe-cleanup-verified JSON files.
 - **Human Gate: Preview authentication architecture.** Concrete proposed decision: use existing Access verified identity only for this isolated Preview's synthetic OWNER, cryptographically verifying signature/issuer/audience and operator email, mapping solely to fixed synthetic OWNER inD1, retaining application cookie/Origin/role/ownership enforcement. No production authorization, no paid service, no password/security weakening or broadening Access; source/historic bcrypt preserved. Do not implement until explicitly authorized.
 - READY_TO_RESUME: receive this bounded auth decision, implement/test/review the authorized session entry, then continue OWNER in same Preview. Existing public Human Acceptance5/5 remains valid; no repeated catalog QA, no P2 rework.
+
+- Independent exact-SHA provider-evidence review943a4f8: **bounded PASS** of experiment interpretation/cleanup; confirms genuine Preview auth Human Gate, not implementation authorization. Separate Luna/high/read-only completed exit0, backendUNVERIFIED. Required CI worker/web on943a4f8 PASS; application code unchanged from68d25f2 and existing functional tests remain valid. Current canonical runtime **HUMAN_GATE**, resume_authorized=false until explicit auth decision; the READY_TO_RESUME wording above describes the exact future action, not permission to bypass the gate.
