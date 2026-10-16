@@ -37,6 +37,15 @@ try:
 except Exception as e:
  report['failure']=str(e) if isinstance(e,APIFailure) else type(e).__name__
 finally:
+ if service and not policy:
+  # A create response can be lost after Cloudflare confirms the policy.
+  # Only remove policies that reference this invocation's unique token ID.
+  try:
+   for candidate in policies():
+    if candidate.get('decision')=='non_identity' and any(rule.get('service_token',{}).get('token_id')==service['id'] for rule in candidate.get('include',[])):
+     api('access/apps/'+app_id+'/policies/'+candidate['id'],method='DELETE')
+   report['cleanup']['unknown_policy_reconciled']=True
+  except Exception:report['cleanup']['unknown_policy_reconciled']=False
  if policy:
   try:api('access/apps/'+app_id+'/policies/'+policy['id'],method='DELETE');report['cleanup']['temporary_policy_deleted']=True
   except Exception:report['cleanup']['temporary_policy_deleted']=False

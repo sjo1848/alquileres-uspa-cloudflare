@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
   "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Complete focused Access JWT security and OWNER checks, browser login UI and exact-SHA Controller/GitHub review; resolve material findings. Then protected integrate PR13 and publish same private Preview with ACCESS_PREVIEW only; validate authorized OWNER session via operator browser when necessary. No paid, production, R2 or source writes.",
+  "next_action": "Finish narrow cleanup-helper review and required CI; protected integrate PR13 and update the same operator-only private Preview with reviewed ACCESS_PREVIEW build. Verify anonymous denials and production disabled. Personal operator OWNER trial remains unverified.",
   "stop_reason": null,
   "event": {
-    "seq": 59,
-    "id": "ACCESS_PREVIEW_AUTH_HUMAN_AUTHORIZED_IMPLEMENTATION",
-    "type": "HUMAN_AUTHORIZATION_AND_IMPLEMENTATION"
+    "seq": 60,
+    "id": "OWNER_CONSOLIDATED_LOCAL_PASS_DELIVERY",
+    "type": "TECHNICAL_CHECKPOINT"
   },
   "external_review": {
     "required": false,
@@ -49,16 +49,17 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "68d25f2fe0d9f7e803228147f8d61d8eaa33aa72",
-    "local_controller": "PASS exact68d25f2 corrections; GPT6Luna/high/read-only separate CLI exit0; backend UNVERIFIED",
+    "code_sha": "72ffac8e66bcdd27d3a8cdb3e50d5142d4239d39",
+    "local_controller": "PASS bounded consolidated local delivery; separate GPT-6 Luna/high/read-only CLI exit0; backend identity UNVERIFIED",
     "checks": {
       "worker": "PASS",
-      "web": "PASS"
+      "web": "PASS",
+      "focused_worker": "18/18 PASS",
+      "probe_unit": "8/8 PASS"
     },
-    "github_material_findings": [
-      "4294160247: provider CPU evidence exceeds Free budget; HTTP login succeeded but compatibility not PASS; auth architecture Human Gate"
-    ],
-    "scope": "LOCAL_CORRECTIONS_PASS_REMOTE_LOGIN_HTTP_PASS_FREE_COMPATIBILITY_NOT_PASS"
+    "github_material_findings": [],
+    "follow_up": "Source-parity last-write-wins; optimistic version checks deferred. Historical bcrypt Free CPU incompatibility retained; ACCESS_PREVIEW replaces password only on authorized synthetic Preview.",
+    "scope": "LOCAL_TECHNICAL_PASS_REMOTE_OWNER_UNVERIFIED"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
