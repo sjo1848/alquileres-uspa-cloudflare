@@ -4,30 +4,33 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I01-P2 — one-time PR #10 integration explicitly authorized",
+  "active_task": "CF-AU-I02 — protected PR #11 integration and USD 0 static-media private Preview",
   "last_completed_task": "CF-AU-I01-P2",
-  "last_completed_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
-  "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Merge PR #10 with a GitHub merge commit, verify the resulting main SHA and preserved A4 ancestry, close P2, then start local synthetic Vue catalog/property-detail implementation. Main protection and quick CI checks are required before the next merge. Preview resource creation/deployment separately requires explicit authorization.",
+  "last_completed_head": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
+  "work_branch": "work/cf-au-p3-catalog",
+  "next_action": "Finish PR #11 material GitHub findings and exact-SHA Controller/quick checks, protected merge, then Static Assets catalog media and Access-protected free Preview. No R2 or billing.",
   "stop_reason": null,
   "event": {
-    "seq": 50,
-    "id": "CF-AU-I01-P2@HUMAN-AUTHORIZED-UNPROTECTED-MERGE",
-    "type": "HUMAN_EXCEPTION_AND_INTEGRATION_AUTHORIZATION"
+    "seq": 53,
+    "id": "MEDIA_STATIC_ASSETS_INITIAL",
+    "type": "HUMAN_AUTHORIZED_ZERO_COST_PREVIEW_AND_PROTECTED_MERGES"
   },
   "external_review": {
     "required": false,
-    "last_audited_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
-    "last_verdict": "PASS",
+    "last_audited_head": "846f98d636061d6749842475b97ec2c47dcba9ea",
+    "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
     "pending_verdict": null,
-    "verdict_comments": [6205084750, 6205102465]
+    "verdict_comments": [
+      6205084750,
+      6205102465
+    ]
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10",
-  "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
+  "integration_commit": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -37,21 +40,34 @@
     "sandbox": "read-only",
     "runtime_verified": true,
     "scope": "LOCAL_SYNTHETIC_TECHNICAL",
-    "may_auto_merge_main": false,
+    "may_auto_merge_main": true,
     "custom_agent_sandbox_enforced": false,
     "separate_cli_option_documented": true,
     "backend_model_attestation": "UNVERIFIED_NOT_BLOCKING_LOCAL",
     "operational_verification_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
     "provider_attestation_required_for_local": false,
-    "main_auto_merge": false
+    "main_auto_merge": true
   },
   "candidate_review": {
-    "sha": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
-    "artifact_published": true,
-    "last_report": "CONTROLLER_PASS_GITHUB_REVIEW_COMPLETED_PRECRITIC_PASS",
-    "last_report_not_retroactively_passed": true,
-    "pr_head": "722f72ee7c52013413f055589c7bf7c926251ac0",
-    "github_review_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10#issuecomment-6204159194",
-    "next_action": "Merge PR #10 once with a GitHub merge commit, record its exact SHA, verify A4 ancestry, then start local synthetic Vue catalog/property-detail implementation."
+    "artifact_published": false,
+    "last_report": "PR11_MATERIAL_FINDINGS_REPAIRED_PENDING_FRESH_REVIEW",
+    "github_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
+    "quick_checks": {
+      "worker": "PASS",
+      "web": "PASS"
+    },
+    "controller": {
+      "verdict": "PASS",
+      "model_requested": "gpt-6-luna",
+      "reasoning_requested": "high",
+      "sandbox": "read-only",
+      "backend_model_identity": "UNVERIFIED"
+    },
+    "findings": [
+      "Nonblocking P2: future lastConfirmedAt is classified FRESH."
+    ],
+    "next_action": "El siguiente recorrido funcional a implementar es acceso del propietario y gestión de sus publicaciones. Mantener PR #11 sin merge hasta autorización explícita; no crear Preview remoto ni desplegar sin autorización separada.",
+    "code_sha": "846f98d636061d6749842475b97ec2c47dcba9ea",
+    "pr_head_at_review": "846f98d636061d6749842475b97ec2c47dcba9ea"
   }
 }

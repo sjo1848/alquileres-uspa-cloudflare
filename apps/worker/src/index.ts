@@ -48,7 +48,7 @@ app.post('/listings',async c=>{
     }
     try{const existing=await c.env.DB.prepare('SELECT id FROM listings WHERE id=? AND owner_id=?').bind(listingId,user.id).first();if(existing){if(!await confirmIdempotencyCommit(c.env.DB,user.id,'LISTING_CREATE',supplied,requestFingerprint,JSON.stringify(body)))return c.json({error:'listing acknowledgment requires recovery; retry with the same idempotency key'},503);return c.json(body,201);}}catch{return c.json({error:'listing outcome unavailable; retry with the same idempotency key'},503);}
   }
-  const insert=c.env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,price_amount,price_period,rental_duration,max_occupants,currency,created_at,updated_at) VALUES(?,?,'DRAFT',?,?,?,?,?,?,?,?,?,?)").bind(listingId,user.id,x.title,x.description,x.location,x.priceAmount,x.pricePeriod,x.rentalDuration,x.maxOccupants,x.currency,t,t);
+  const insert=c.env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,location_search,price_amount,price_period,rental_duration,max_occupants,currency,created_at,updated_at) VALUES(?,?,'DRAFT',?,?,?,?,?,?,?,?,?,?,?)").bind(listingId,user.id,x.title,x.description,x.location,x.location.normalize('NFC').toLowerCase(),x.priceAmount,x.pricePeriod,x.rentalDuration,x.maxOccupants,x.currency,t,t);
   try{
     if(supplied){const transition=c.env.DB.prepare("UPDATE idempotency_records SET state='COMMITTED',updated_at=? WHERE owner_id=? AND scope='LISTING_CREATE' AND request_key=? AND request_fingerprint=?").bind(now(),user.id,supplied,requestFingerprint);const result=await c.env.DB.batch([insert,transition]);if(result.some(x=>x.meta?.changes!==1)){const row=await c.env.DB.prepare('SELECT id FROM listings WHERE id=? AND owner_id=?').bind(listingId,user.id).first();if(!row||!await confirmIdempotencyCommit(c.env.DB,user.id,'LISTING_CREATE',supplied,requestFingerprint,JSON.stringify(body)))return c.json({error:'listing commit requires retry with the same idempotency key'},503);}}
     else await insert.run();
@@ -156,7 +156,54 @@ app.post('/listings/:id/images', async c => {
   }finally{await unlock(c.env.DB,lid,lease);}
 });
 app.get('/listings/:id/images/:imageId',async c=>{const lid=c.req.param('id');if(!await owned(c,lid))return c.json({error:'not found'},404);const row=await c.env.DB.prepare('SELECT * FROM listing_images WHERE listing_id=? AND id=?').bind(lid,c.req.param('imageId')).first<ImageRow>();if(!row)return c.json({error:'not found'},404);const obj=await c.env.IMAGES.get(row.object_key);if(!obj)return c.json({error:'not found'},404);return new Response(obj.body,{headers:{'Content-Type':row.mime_type,'Content-Length':String(row.byte_size),'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});});
-app.get('/public/listings/:id/images/:imageId',async c=>c.json({error:'not found'},404));
+const PUBLIC_FRESHNESS_MS=30*24*60*60*1000;
+const PUBLIC_ENUMS={currency:['ARS','USD'],pricePeriod:['WEEK','MONTH'],rentalDuration:['WEEKS','MONTHS','PERMANENT','FLEXIBLE']} as const;
+function publicInteger(value:string|null,min:number,max:number,name:string,defaultValue?:number){if(value===null)return defaultValue; if(!/^(0|[1-9]\d*)$/.test(value))throw Error(`${name} must be an integer`);const parsed=Number(value);if(!Number.isSafeInteger(parsed)||parsed<min||parsed>max)throw Error(`${name} is outside the allowed range`);return parsed;}
+function publicFreshness(lastConfirmedAt:string|null){if(!lastConfirmedAt)return 'UNCONFIRMED';const time=Date.parse(lastConfirmedAt);if(!Number.isFinite(time))return 'UNCONFIRMED';return time>Date.now()?'UNCONFIRMED':Date.now()-time<=PUBLIC_FRESHNESS_MS?'FRESH':'STALE';}
+function publicDomainStatus(row:any){return row.priceAmount!==null&&row.pricePeriod!==null&&row.rentalDuration!==null&&row.maxOccupants!==null&&row.currency!==null?'COMPLETE':'MISSING';}
+function publicListingDto(row:any,images:any[]){return {id:row.id,title:row.title,description:row.description,location:row.location,priceAmount:row.priceAmount,pricePeriod:row.pricePeriod,rentalDuration:row.rentalDuration,maxOccupants:row.maxOccupants,currency:row.currency,domainDataStatus:publicDomainStatus(row),availabilityStatus:row.availabilityStatus,lastConfirmedAt:row.lastConfirmedAt,freshnessStatus:publicFreshness(row.lastConfirmedAt),images};}
+async function publicImages(db:D1Database,listingIds:string[]){if(!listingIds.length)return [] as any[];const placeholders=listingIds.map(()=>'?').join(',');const rows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return rows;}
+async function initializeLocationSearch(db:D1Database){
+  const rows=(await db.prepare("SELECT id,location FROM listings WHERE location_search='' LIMIT 100").all<{id:string;location:string}>()).results;
+  if(rows.length)await db.batch(rows.map(row=>db.prepare("UPDATE listings SET location_search=? WHERE id=? AND location=? AND location_search=''").bind(row.location.normalize('NFC').toLowerCase(),row.id,row.location)));
+  return !await db.prepare("SELECT 1 FROM listings WHERE location_search='' LIMIT 1").first();
+}
+app.get('/public/listings',async c=>{
+  const q=c.req.query(),location=q.location??'',pageRaw=q.page??'1',pageSizeRaw=q.pageSize??'20';
+  if(location.length>240)return c.json({message:'location must not exceed 240 characters'},400);
+  let page:number,pageSize:number,minPrice:number|undefined,maxPrice:number|undefined,maxOccupants:number|undefined;
+  try{page=publicInteger(pageRaw,1,10_000,'page')!;pageSize=publicInteger(pageSizeRaw,1,50,'pageSize')!;minPrice=publicInteger(q.minPriceAmount??null,0,2_147_483_647,'minPriceAmount');maxPrice=publicInteger(q.maxPriceAmount??null,0,2_147_483_647,'maxPriceAmount');maxOccupants=publicInteger(q.maxOccupants??null,1,2_147_483_647,'maxOccupants');}catch(error){return c.json({message:error instanceof Error?error.message:'invalid query'},400);}
+  if(minPrice!==undefined&&maxPrice!==undefined&&minPrice>maxPrice)return c.json({message:'minPriceAmount cannot exceed maxPriceAmount'},400);
+  for(const key of ['currency','pricePeriod','rentalDuration'] as const){const value=q[key];if(value&&!(PUBLIC_ENUMS[key] as readonly string[]).includes(value))return c.json({message:`${key} is invalid`},400);}
+  const availableOnly=q.availableOnly??'false';if(!['true','false'].includes(availableOnly))return c.json({message:'availableOnly must be true or false'},400);
+  const clauses=["status='APPROVED'","publication_status='PUBLISHED'"],values:(string|number)[]=[];
+  if(location&&!await initializeLocationSearch(c.env.DB))return c.json({message:'Location index initialization in progress; retry shortly'},503);
+  if(location){clauses.push("COALESCE(NULLIF(location_search,''),LOWER(location)) LIKE ? ESCAPE '\\'");values.push('%'+location.normalize('NFC').toLowerCase().replace(/[\\%_]/g,'\\$&')+'%');}
+  if(minPrice!==undefined){clauses.push('price_amount>=?');values.push(minPrice);}
+  if(maxPrice!==undefined){clauses.push('price_amount<=?');values.push(maxPrice);}
+  if(maxOccupants!==undefined){clauses.push('max_occupants>=?');values.push(maxOccupants);}
+  if(q.currency){clauses.push('currency=?');values.push(q.currency);}
+  if(q.pricePeriod){clauses.push('price_period=?');values.push(q.pricePeriod);}
+  if(q.rentalDuration){clauses.push('rental_duration=?');values.push(q.rentalDuration);}
+  if(availableOnly==='true')clauses.push("availability_status='AVAILABLE'");
+  const where=clauses.join(' AND '),offset=(page-1)*pageSize;
+  const [count,listed]=await Promise.all([
+    c.env.DB.prepare(`SELECT COUNT(*) AS totalItems FROM listings WHERE ${where}`).bind(...values).first<any>(),
+    c.env.DB.prepare(`SELECT id,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`).bind(...values,pageSize,offset).all<any>(),
+  ]);
+  const rows=listed.results,totalItems=Number(count?.totalItems??0),imageRows=await publicImages(c.env.DB,rows.map((row:any)=>row.id));
+  const byListing=new Map<string,any[]>();for(const image of imageRows){const images=byListing.get(image.listingId)??[];images.push({id:image.id,contentType:image.contentType,sizeBytes:image.sizeBytes,position:image.position});byListing.set(image.listingId,images);}
+  return c.json({items:rows.map((row:any)=>publicListingDto(row,byListing.get(row.id)??[])),page,pageSize,totalItems,totalPages:Math.ceil(totalItems/pageSize)});
+});
+app.get('/public/listings/:id/images/:imageId',async c=>{
+  const row=await c.env.DB.prepare("SELECT i.object_key AS objectKey,i.mime_type AS contentType,i.byte_size AS sizeBytes FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(c.req.param('id'),c.req.param('imageId')).first<any>();
+  if(!row)return c.json({message:'Image not found'},404);const object=await c.env.IMAGES.get(row.objectKey);if(!object)return c.json({message:'Image not found'},404);
+  return new Response(object.body,{headers:{'Content-Type':row.contentType,'Content-Length':String(row.sizeBytes),'Cache-Control':'no-store, no-cache','X-Content-Type-Options':'nosniff'}});
+});
+app.get('/public/listings/:id',async c=>{
+  const row=await c.env.DB.prepare("SELECT id,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE id=? AND status='APPROVED' AND publication_status='PUBLISHED'").bind(c.req.param('id')).first<any>();
+  if(!row)return c.json({message:'Listing not found'},404);const images=await publicImages(c.env.DB,[row.id]);return c.json(publicListingDto(row,images));
+});
 app.patch('/listings/:id/images/:imageId',async c=>{
   const lid=c.req.param('id'),imageId=c.req.param('imageId'),owner=ownerId(c),supplied=requestKey(c);
   if(supplied===false)return c.json({error:'invalid idempotency key'},400);
@@ -364,6 +411,6 @@ async function reconcilePendingReorders(env:Env) {
     finally{await unlock(env.DB,lid,lease);}
   }
 }
-const worker = { fetch: app.fetch, scheduled: async (_controller: ScheduledController, env: Env) => { await reconcile(env);await reconcilePendingReorders(env); } };
+const worker = { fetch: (request:Request,env:Env,ctx:ExecutionContext) => { const url=new URL(request.url);if(url.pathname.startsWith('/api/')){url.pathname=url.pathname.slice(4);request=new Request(url,request);}return app.fetch(request,env,ctx); }, scheduled: async (_controller: ScheduledController, env: Env) => { await reconcile(env);await reconcilePendingReorders(env); } };
 export { app };
 export default worker;

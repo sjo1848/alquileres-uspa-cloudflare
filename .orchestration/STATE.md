@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `CF-AU-I01-P2 — External PASS recorded; main integration awaits enforceable protection`
+Active task: `CF-AU-I02 — USD 0 static-media private Preview`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -383,3 +383,18 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - Minimal protected Preview proposal and first Vue/API journey are in `.orchestration/proposals/CF-AU-PREVIEW-AND-VUE-INTEGRATION.md`. No Cloudflare resources, billing, secrets, or deployment were created. Preview remains a separate authorization gate.
 - The autonomous delivery train permits P3/P4 local synthetic implementation after P2 integration. The next user journey is Vue catalog → public property detail/images; contact follows as a separate journey. The original `alquileres-uspa` checkout remains untouched and read-only. Main protection and quick CI checks are required before the next merge.
 - Exact next action: perform the already-authorized PR #10 merge commit, verify the merge SHA and A4 ancestry on `main`, close P2, then start the local synthetic catalog/property-detail implementation. Remote Preview creation/deployment still requires independent explicit authorization of its resources, costs and permissions.
+
+## CF-AU-I01-P2 — integración cerrada / CF-AU-I02-P3 en curso (2026-10-16)
+
+- PR #10 fue integrado a `main` con merge commit `cbeaaf7b57de0cb786a1800e38ca18e28a089a6a`; se preservó la historia completa y `CF-AU-I01-P2-Artifact-A4` (`c9090202441ecd534f84c2dcc610dc5d86bab4e`) es ancestro del merge. La excepción humana de merge sin protección se limita a PR #10. P2 queda cerrado, sin A5 ni repetición de pruebas aprobadas.
+- Rama de trabajo `work/cf-au-p3-catalog`, basada en ese `main`. Se reutilizaron las vistas Vue públicas existentes y se conectaron a GET `/public/listings`, detalle público e imágenes R2. Solo se exponen propiedades APPROVED/PUBLISHED. Los datos locales son sintéticos; D1 y R2 tienen nombres locales aislados.
+- Validación de este recorrido: Worker `test:catalog` 3/3 PASS; Worker typecheck PASS; Vue typecheck y build PASS. Smoke HTTP local devuelve 200 para catálogo/ficha; Playwright muestra dos propiedades sintéticas y navega a la ficha Casa junto al arroyo. No se repitió la suite exhaustiva P2.
+- Se agregó workflow `Quick checks` con jobs Worker y Web. La protección de `main` quedó activa y verificada: PR obligatorio, checks estrictos `worker` y `web`, administradores sujetos a reglas, conversaciones resueltas, sin force-push ni borrado.
+- PR #11 quedó OPEN/MERGEABLE en el SHA `846f98d636061d6749842475b97ec2c47dcba9ea`; ambos checks pasaron sobre ese SHA. No había comentarios inline ni reviews presentadas al consultar GitHub. No se integró PR #11.
+- Controller separado `project_controller` con GPT-6 Luna, High, solo lectura devolvió PASS técnico acotado al código del SHA `846f98d636061d6749842475b97ec2c47dcba9ea`; identidad backend no verificada. Límite no bloqueante reportado: `lastConfirmedAt` futuro se clasifica FRESH. Evidencia: `.orchestration/evidence/critics/CF-AU-I02-P3-CONTROLLER-846F98D.md`.
+- Próxima acción exacta: iniciar en una rama de trabajo el recorrido Vue de autenticación del propietario y sus operaciones de publicaciones, reutilizando la API existente. No fusionar PR #11 sin autorización de integración; no crear Preview remoto hasta aprobar por separado recursos, costos y permisos.
+- No se crearon recursos Cloudflare, se habilitó billing, se desplegó ni se usaron datos reales. El checkout fuente permanece limpio.
+
+## Event 53 — strict USD 0 / no R2 / protected merges and one private Preview authorized
+
+Authority: Issue #7 comment 6206813347 and current Human instruction. MEDIA_STATIC_ASSETS_INITIAL supersedes earlier R2/paid planning and remote prohibition for one isolated synthetic Free Preview, protected by Access before sharing. Protected merges are authorized; source and production remain untouched. PR #11 fresh GitHub findings (clock-dependent fixture, API/SPA paths, literal/Unicode location search, overlapping search responses) are repaired; targeted tests 5/5, both typechecks and integrated build pass. Exact-SHA review and CI precede protected integration. Next: static catalog media and free private Preview; dynamic OWNER upload remains separate validated D1 BLOB work.

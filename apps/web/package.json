@@ -1,0 +1,28 @@
+{
+  "name": "@alquileres-uspa/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "seed:local": "wrangler d1 migrations apply DB --local --config ../worker/wrangler.jsonc --persist-to .wrangler/state && wrangler d1 execute DB --local --config ../worker/wrangler.jsonc --persist-to .wrangler/state --file ../worker/tests/seed-catalog.sql",
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "vue": "^3.5.18",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.64.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.7.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "vue-tsc": "^3.0.6",
+    "wrangler": "^4.151.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261012.1": true
+  }
+}

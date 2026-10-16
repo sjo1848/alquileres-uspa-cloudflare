@@ -1,3 +1,7 @@
+# Current Human override — 2026-10-16
+
+Issue #7 comment 6206813347 and the latest Human instruction supersede older cost/media/deploy/merge restrictions below: strict USD 0, no R2/billing/card/subscription/paid providers; MEDIA_STATIC_ASSETS_INITIAL for repository-managed synthetic images. Protected merges are authorized after mandatory checks/review. One isolated free Preview with synthetic D1 and Cloudflare Access is authorized; unauthorized access must be denied before sharing its URL. No production deployment or source-repository writes. OWNER uploads are a later bounded D1 BLOB/KV evaluation and must not be presented as static asset uploads. Preserve all P2 evidence.
+
 # Human override — delegated Luna 6 High Controller (2026-10-13)
 
 ## Runtime correction (2026-10-13; event seq 34)
