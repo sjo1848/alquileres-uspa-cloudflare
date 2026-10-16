@@ -556,3 +556,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - `2a65ad370fef062c217332c22492a4a5cb93ad4b` fixes the mapper selection; Vue typecheck and Preview build pass. This is a one-line display-path correction; Worker/D1 code and tests remain identical to the executable tree already reviewed by the bounded Controller at `d340e74`.
 - Persisted next action now advances directly to current exact-head GitHub checks/review and final Pre-Critic; it no longer repeats the Controller run.
 - **READY_TO_RESUME:** push this state/evidence checkpoint, request GitHub automatic review and confirm required checks on the resulting PR #14 head. Resolve any new material finding; if clean, complete Pre-Critic, protected-merge and update only the existing private synthetic Preview. No Preview mutation, merge, R2, billing, new resource, production, real data or source write occurred.
+
+## Event 69 — Pre-Critic PASS; final docs-only boundary pending
+
+- Exact functional candidate `2a65ad370fef062c217332c22492a4a5cb93ad4b` (code tree `55decd177d05f677a0f286d00fc39f397679a75d`) inherits D1 BLOB implementation/tests reviewed by the Controller; only the one-line OWNER image error mapping followed, with Web typecheck and Preview build PASS.
+- GitHub automatic review of exact PR head `12cf3cf9dfcb95bd498a7557953f2fe7a625baa0`: completed; `has_any_findings=false`, `has_unresolved_findings=false`. Required `worker` and `web` checks PASS. All material historical review threads are resolved.
+- Pre-Critic **PASS for protected integration and the already-authorized same private Preview update**, with evidence in `evidence/CF-AU-I02-OWNER-D1-BLOB-PRECRITIC.md`. It does not assert actual Cloudflare CPU or Human photo acceptance. Strict USD0/no-R2/no-new-resource boundaries remain.
+- This checkpoint adds only the Pre-Critic/state evidence. Its resulting docs-only PR head must itself retain green `worker`/`web`, completed no-findings automatic review and zero unresolved threads before merge.
+- **READY_TO_RESUME:** run final checks/review on the docs-only head; if clean, protected-merge PR #14 preserving history, verify merge SHA/A4 ancestry/protection, then update only the existing Access-protected synthetic Preview. Measure Cloudflare Free CPU. Ask for the new 3–6-step OWNER photo journey only after the Preview works.
