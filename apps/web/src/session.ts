@@ -41,6 +41,12 @@ export function useSession() {
     user.value = result.user;
   }
 
+  async function authenticatePreview() {
+    const result = await request<{ user: User }>('/auth/preview-session', { method: 'POST' });
+    status.value = 'authenticated';
+    user.value = result.user;
+  }
+
   async function restore() {
     if (restorePromise) return restorePromise;
     status.value = 'loading';
@@ -83,6 +89,7 @@ export function useSession() {
     role,
     isAuthenticated,
     authenticate,
+    authenticatePreview,
     restore,
     clear,
     anonymous,

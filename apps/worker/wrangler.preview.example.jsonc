@@ -22,7 +22,9 @@
       "MEDIA_STRATEGY": "STATIC_ASSETS",
       "COOKIE_SECURE": "true",
       "COOKIE_SAME_SITE": "lax",
-      "JWT_EXPIRES_IN": "15m"
+      "JWT_EXPIRES_IN": "15m",
+      "AUTH_STRATEGY": "ACCESS_PREVIEW",
+      "ACCESS_AUD": "adb89dd0162a19eedfefebbe4af68f741a15c68f91427dcf2b524d27c66c03cd"
     },
     "d1_databases": [
       {

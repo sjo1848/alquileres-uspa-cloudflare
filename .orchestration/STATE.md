@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `HUMAN_GATE`
+State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
 Active task: `CF-AU-I02 — accepted public Preview; OWNER PR #13 corrections / Free auth CPU`
 
@@ -467,3 +467,16 @@ Bounded CPU assessment: same bcryptjs3.0.3/cost12, dedicated Node async compare,
 - READY_TO_RESUME: receive this bounded auth decision, implement/test/review the authorized session entry, then continue OWNER in same Preview. Existing public Human Acceptance5/5 remains valid; no repeated catalog QA, no P2 rework.
 
 - Independent exact-SHA provider-evidence review943a4f8: **bounded PASS** of experiment interpretation/cleanup; confirms genuine Preview auth Human Gate, not implementation authorization. Separate Luna/high/read-only completed exit0, backendUNVERIFIED. Required CI worker/web on943a4f8 PASS; application code unchanged from68d25f2 and existing functional tests remain valid. Current canonical runtime **HUMAN_GATE**, resume_authorized=false until explicit auth decision; the READY_TO_RESUME wording above describes the exact future action, not permission to bypass the gate.
+
+## Event 59 — ACCESS_PREVIEW human authorization and implementation
+
+Human explicitly approved the proposed Preview-only Access identity→synthetic OWNER entry. Decision: decisions/ACCESS_PREVIEW_OWNER_AUTH.md. Architecture gate closed; no production/paid/hash-weakening/source changes authorized. PR13 retains all history.
+
+Implemented fixed Preview host, RS256 JWT signature/time/issuer/app-audience verification with jose6.2.12/WebCrypto and bounded remote JWKS cache; only operator human identity maps to fixed current-D1 syntheticOWNER. Service/forged/rawemail headers rejected. App session expiry capped by Access expiry; cookie/Origin/role/owner guards retained. Preview password endpoint refuses before bcrypt; historical/local password path preserved. Vue offers Access entry only when server config selects it, without entering another password.
+
+Initial focused security4/4 and inherited OWNER4/4 PASS, Worker/Vue typechecks and Preview build PASS. Need consolidated focused regressions, browser UI and exact-SHA Controller/GitHub before protected integration and same-Preview update. No remote change yet this increment; no catalog Human QA repetition.
+
+### ACCESS_PREVIEW local integration / Pre-Critic
+
+- Access JWT security4/4, OWNER4/4, catalog7/7, D1 capability3/3 PASS; Worker/Vue typechecks, integrated default/Preview-template builds PASS. Dependency audit(prod)0vulnerabilities. Local browser Access UI: no password prompt,401 denial message, successful session→OWNER navigation,503 config fails closed/retry. Browser auth/owner list mocked; actual WebCrypto signature/D1/cookie/owner-create/origin controls tested by HTTP4/4. This is not remote human session proof.
+- Integration aligns server auth-config→Vue button→same-origin POST session→appcookie→existing owner CRUD/submit; RS256/aud/issuer/identity/time invalids and raw-email/service claims rejected, D1 fixedOWNER role/email authoritative, expiry capped, no bcrypt call/fallback. Source read-only and no R2/paid/prod/publication scope expansion. Applicable invariants pass within local evidence; real operator session/provider CPU remains explicitly unverified pending directed Preview trial. Pre-Critic PASS for bounded code review; no product/remote PASS asserted.

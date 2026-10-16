@@ -2,18 +2,18 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
-  "runtime_status": "HUMAN_GATE",
-  "resume_authorized": false,
-  "active_task": "CF-AU-I02 OWNER PR #13 review corrections and Free auth CPU feasibility",
+  "runtime_status": "READY_TO_RESUME",
+  "resume_authorized": true,
+  "active_task": "CF-AU-I02 ACCESS_PREVIEW synthetic OWNER session implementation",
   "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
   "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Await explicit Human authorization for bounded ACCESS_PREVIEW authentication or another zero-cost/security decision. On approval implement verified Access JWT\u2192synthetic OWNER session in same private Preview with existing authorization/CSRF checks, quick tests and exact-SHA Controller; no repeated catalog QA or P2 suite. Keep PR #13 unmerged/OWNER undeployed until material auth issue resolved.",
-  "stop_reason": "Explicit Preview authentication architecture decision required; existing password path measured over documented Free CPU budget.",
+  "next_action": "Complete focused Access JWT security and OWNER checks, browser login UI and exact-SHA Controller/GitHub review; resolve material findings. Then protected integrate PR13 and publish same private Preview with ACCESS_PREVIEW only; validate authorized OWNER session via operator browser when necessary. No paid, production, R2 or source writes.",
+  "stop_reason": null,
   "event": {
-    "seq": 58,
-    "id": "REMOTE_BCRYPT_MEASURED_FREE_AUTH_ARCHITECTURE_GATE",
-    "type": "PROVIDER_EVIDENCE_AND_HUMAN_SECURITY_DECISION"
+    "seq": 59,
+    "id": "ACCESS_PREVIEW_AUTH_HUMAN_AUTHORIZED_IMPLEMENTATION",
+    "type": "HUMAN_AUTHORIZATION_AND_IMPLEMENTATION"
   },
   "external_review": {
     "required": false,
@@ -27,12 +27,7 @@
       6205102465
     ]
   },
-  "human_gate": {
-    "kind": "PREVIEW_AUTHENTICATION_ARCHITECTURE",
-    "reason": "Provider GraphQL CPU quantiles in synthetic login interval348.640\u2013446.872ms exceed documented Workers Free10ms despite observed HTTP200/401/200. Reliable Free compatibility cannot be asserted; no hash weakening, paid fallback or auth semantic change authorized.",
-    "proposed_decision": "Authorize ACCESS_PREVIEW auth only for this isolated private synthetic Preview: verify Access JWT signature/issuer/audience and authorized operator identity, map solely to existing synthetic OWNER via D1, retain current cookie/Origin/role/ownership guards. Preserve source/historical bcrypt; no production auth approval, paid services or widened Access policy.",
-    "evidence": ".orchestration/evidence/CF-AU-OWNER-PROVIDER-CPU-QUERY.json"
-  },
+  "human_gate": null,
   "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
   "integration_commit": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
@@ -82,5 +77,6 @@
     "completed": true,
     "revoked": true,
     "original_policy_restored": true
-  }
+  },
+  "auth_decision": ".orchestration/decisions/ACCESS_PREVIEW_OWNER_AUTH.md"
 }
