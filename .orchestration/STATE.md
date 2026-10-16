@@ -549,3 +549,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Required `worker` and `web` checks passed on `d340e74`. Focused local evidence on executable tree `04951f0`: media15/15, OWNER4/4, catalog7/7, Worker/Web typechecks, Preview template build, audit0, dry-run PASS. No remote deployment/runtime check is claimed.
 - Remaining gate: GitHub automatic review of the final PR head is running/pending; a documentation-only evidence commit may move the head and require checks/review again. Pre-Critic is not yet PASS. No merge or Preview update has occurred.
 - **READY_TO_RESUME:** commit/push this bounded Controller evidence, request/poll GitHub review and required checks on the exact resulting head, process material findings, then complete Pre-Critic. If all pass, protected-merge PR #14 and update the already-authorized private synthetic Preview; measure Worker Free CPU there before the owner photo acceptance. No R2, billing, new resources, production, real data or source changes.
+
+## Event 68 — GitHub P2 usability/state findings corrected
+
+- GitHub review on `ee1bcaab46694b4087f4492c99e7365d3299b157` found two P2s: `loadImages` used the generic editor mapper instead of the image-specific migration message, and `next_action` repeated an already-recorded Controller step.
+- `2a65ad370fef062c217332c22492a4a5cb93ad4b` fixes the mapper selection; Vue typecheck and Preview build pass. This is a one-line display-path correction; Worker/D1 code and tests remain identical to the executable tree already reviewed by the bounded Controller at `d340e74`.
+- Persisted next action now advances directly to current exact-head GitHub checks/review and final Pre-Critic; it no longer repeats the Controller run.
+- **READY_TO_RESUME:** push this state/evidence checkpoint, request GitHub automatic review and confirm required checks on the resulting PR #14 head. Resolve any new material finding; if clean, complete Pre-Critic, protected-merge and update only the existing private synthetic Preview. No Preview mutation, merge, R2, billing, new resource, production, real data or source write occurred.

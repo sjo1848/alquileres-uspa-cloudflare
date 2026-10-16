@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
-  "last_completed_task": "Local OWNER D1 BLOB photo lifecycle candidate passes focused technical Controller; automatic GitHub review/Pre-Critic remain before protected merge",
+  "last_completed_task": "D1 BLOB photo lifecycle candidate passes focused Controller; two GitHub P2 observations have been corrected; final exact-head review pending",
   "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "work_branch": "work/cf-au-owner-d1-blob",
-  "next_action": "Record the exact d340e74 Controller PASS, then rerun required CI and GitHub automatic review on the resulting docs-only PR head; if no material comments and checks stay green, complete Pre-Critic and proceed with protected merge and update only the existing private synthetic Preview.",
+  "next_action": "After pushing this state/evidence checkpoint, run required worker/web checks and GitHub automatic review on the resulting PR #14 head. Process material findings (fix nonmaterial UI/state nits autonomously), then complete Pre-Critic and protected-merge; update only the existing private synthetic Preview.",
   "stop_reason": null,
   "event": {
-    "seq": 67,
-    "id": "OWNER_D1_BLOB_CONTROLLER_PASS",
-    "type": "LOCAL_SYNTHETIC_TECHNICAL_REVIEW"
+    "seq": 68,
+    "id": "OWNER_D1_BLOB_GITHUB_P2_REPAIRS",
+    "type": "LOCAL_REVIEW_FINDINGS_RESOLVED_PENDING_RECHECK"
   },
   "external_review": {
     "required": true,
@@ -21,7 +21,7 @@
     "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
-    "pending_verdict": "PENDING_GITHUB_REVIEW_AND_PRECRITIC",
+    "pending_verdict": "PENDING_FINAL_GITHUB_REVIEW_AND_PRECRITIC",
     "verdict_comments": [
       6205084750,
       6205102465
@@ -49,34 +49,36 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "964da27fe57bbfb961618abd9b6be4fafc82b112",
-    "code_tree": "04951f0af13335598a1dceb6fc08ac989f251a57",
-    "reviewed_pr_head": "d340e74445d07bdb799dec5022084867fc75189a",
+    "code_sha": "2a65ad370fef062c217332c22492a4a5cb93ad4b",
+    "code_tree": "55decd177d05f677a0f286d00fc39f397679a75d",
     "controller": {
-      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
+      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC_FOR_D1_BLOB_LIFECYCLE",
+      "reviewed_pr_head": "d340e74445d07bdb799dec5022084867fc75189a",
+      "reviewed_executable_sha": "964da27fe57bbfb961618abd9b6be4fafc82b112",
+      "reviewed_code_tree": "04951f0af13335598a1dceb6fc08ac989f251a57",
       "model_requested": "gpt-6-luna",
       "reasoning_requested": "high",
       "sandbox": "read-only",
       "cli_configuration_accepted": true,
       "process_exit": 0,
       "actual_backend_model_identity": "UNVERIFIED",
+      "post_review_delta": "One Vue image-list error-mapper selection only; Web typecheck/build pass. No Worker/D1/test logic changed after Controller PASS.",
       "evidence": ".orchestration/evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-D340E74-PASS.md"
     },
     "checks": {
-      "worker_media": "15/15 PASS",
-      "owner": "4/4 PASS",
-      "catalog": "7/7 PASS",
-      "worker_typecheck": "PASS",
-      "web_typecheck_build": "PASS",
-      "preview_template_build": "PASS",
-      "worker_audit": "0 vulnerabilities",
+      "worker_media": "15/15 PASS on executable Worker/test tree 04951f0",
+      "owner": "4/4 PASS on executable Worker/test tree 04951f0",
+      "catalog": "7/7 PASS on executable Worker/test tree 04951f0",
+      "worker_typecheck": "PASS on executable Worker/test tree 04951f0",
+      "web_typecheck_build": "PASS after Vue P2 correction on 2a65ad3",
+      "preview_template_build": "PASS after Vue P2 correction on 2a65ad3",
+      "worker_audit": "0 vulnerabilities; dependencies unchanged since audit",
       "wrangler_dry_run": "PASS; 3 WASM assets included; no remote operation",
-      "github_worker_web_on_d340e74": "PASS",
-      "github_automatic_review": "PENDING on current PR head"
+      "github_worker_web": "PENDING on latest head",
+      "github_automatic_review": "PENDING on latest head; ee1bcaa findings addressed in 2a65ad3/state checkpoint"
     },
-    "github_material_findings": "Prior findings on image decoding, same-listing race, canonical candidate metadata, mixed legacy rows, and legacy-row retries are corrected in the cited code sequence. Current automated review on latest head remains pending.",
     "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data",
-    "precritic": "PENDING final GitHub review/checks and final boundary verification"
+    "precritic": "PENDING final exact-head GitHub review/checks"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",

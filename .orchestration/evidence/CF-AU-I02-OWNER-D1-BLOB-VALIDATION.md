@@ -1,8 +1,8 @@
 # CF-AU-I02 OWNER D1 BLOB — corrected local candidate
 
 Date: 2026-10-16
-Executable commit: `964da27fe57bbfb961618abd9b6be4fafc82b112`
-Executable tree: `04951f0af13335598a1dceb6fc08ac989f251a57`
+Current code commit: `2a65ad370fef062c217332c22492a4a5cb93ad4b`
+Current code tree: `55decd177d05f677a0f286d00fc39f397679a75d`
 PR #14: <https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14>
 
 ## Defects corrected
@@ -25,8 +25,10 @@ PR #14: <https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14>
 | `npm audit --audit-level=high` in `apps/worker` | 0 vulnerabilities |
 | Wrangler deployment dry-run from generated Preview bundle | PASS; 3 WASM decoders included, 822.49 KiB total upload; no remote operation |
 | GitHub required checks on reviewed head `d340e74` | worker PASS, web PASS |
-| GitHub automatic review on current PR head | PENDING |
+| GitHub automatic review on `ee1bcaab` | Completed; two P2 findings corrected in `2a65ad3`; latest exact-head review pending |
 | GPT-6 Luna High read-only Controller on exact PR head `d340e74` | Bounded PASS; exact report and prompt in `evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-D340E74-PASS.md` |
+
+After the Controller review, GitHub P2 requested that the OWNER image-list error use the image-specific mapper and that the persisted next action stop repeating the already-recorded Controller step. The first is fixed in `2a65ad3` and its Web typecheck/Preview build pass; the second is fixed in the current state checkpoint. Controller reviewed the D1/Worker and image lifecycle; the later one-line Vue error-routing correction does not alter those invariants.
 
 The browser upload/read check used a local synthetic OWNER and a 1920×1080 JPEG; it passed on the earlier decoder/normalization candidate. The current legacy-row correction is exercised through the Worker HTTP route tests. No remote or human photo acceptance is asserted.
 
