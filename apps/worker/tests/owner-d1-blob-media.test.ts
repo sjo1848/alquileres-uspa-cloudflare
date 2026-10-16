@@ -140,6 +140,27 @@ it('fails closed with a migration conflict for legacy R2 rows in D1 BLOB mode',a
   await assertConflict(await request(`/public/listings/${lid}/images/${legacyId}`));
 });
 
+it('checks for legacy rows before replaying committed D1 BLOB mutations',async()=>{
+  const addListing=await listing(),added=await upload(addListing,'legacy-replay-add'),addedBody=await added.json() as any;
+  expect(added.status).toBe(201);
+  const addLegacyId='legacy-after-add-'+addListing,created=new Date().toISOString();
+  const insertLegacy=async(lid:string,id:string,position:number)=>env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,lid,`legacy-object-${id}`,'legacy.jpg','image/jpeg',64,position,created,created).run();
+  await insertLegacy(addListing,addLegacyId,1);
+  const assertConflict=async(response:Response)=>{expect(response.status).toBe(409);expect(await response.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});};
+  await assertConflict(await upload(addListing,'legacy-replay-add'));
+  expect(await env.DB.prepare('SELECT id,position FROM listing_images WHERE listing_id=? ORDER BY position').bind(addListing).all()).toMatchObject({results:[{id:addedBody.id,position:0},{id:addLegacyId,position:1}]});
+
+  const reorderListing=await listing(),first=await upload(reorderListing,'legacy-replay-reorder-a'),second=await upload(reorderListing,'legacy-replay-reorder-b'),firstBody=await first.json() as any,secondBody=await second.json() as any;
+  const reorderPath=`/listings/${reorderListing}/images/${secondBody.id}`,reorder=()=>request(reorderPath,'PATCH',JSON.stringify({position:0}),{cookie:ownerCookie,key:'legacy-replay-reorder-key',type:'application/json'});
+  expect((await reorder()).status).toBe(200);await insertLegacy(reorderListing,'legacy-after-reorder-'+reorderListing,2);await assertConflict(await reorder());
+  expect(await env.DB.prepare('SELECT id,position FROM listing_images WHERE listing_id=? ORDER BY position').bind(reorderListing).all()).toMatchObject({results:[{id:secondBody.id,position:0},{id:firstBody.id,position:1},{id:'legacy-after-reorder-'+reorderListing,position:2}]});
+
+  const deleteListing=await listing(),deleteFirst=await upload(deleteListing,'legacy-replay-delete-a'),deleteSecond=await upload(deleteListing,'legacy-replay-delete-b'),deleteFirstBody=await deleteFirst.json() as any,deleteSecondBody=await deleteSecond.json() as any;
+  const deletePath=`/listings/${deleteListing}/images/${deleteFirstBody.id}`,remove=()=>request(deletePath,'DELETE',undefined,{cookie:ownerCookie,key:'legacy-replay-delete-key'});
+  expect((await remove()).status).toBe(200);await insertLegacy(deleteListing,'legacy-after-delete-'+deleteListing,1);await assertConflict(await remove());
+  expect(await env.DB.prepare('SELECT id,position FROM listing_images WHERE listing_id=? ORDER BY position').bind(deleteListing).all()).toMatchObject({results:[{id:deleteSecondBody.id,position:0},{id:'legacy-after-delete-'+deleteListing,position:1}]});
+});
+
 it('rolls back a failed reorder batch without leaving staged positions or a false committed result',async()=>{
   const lid=await listing(),one=await upload(lid,'rollback-order-a'),two=await upload(lid,'rollback-order-b'),a=await one.json() as any,b=await two.json() as any;
   await env.DB.exec(`CREATE TRIGGER fail_d1_reorder BEFORE UPDATE OF position ON listing_images WHEN NEW.listing_id='${lid}' AND NEW.position=0 BEGIN SELECT RAISE(ABORT,'injected reorder failure'); END;`);

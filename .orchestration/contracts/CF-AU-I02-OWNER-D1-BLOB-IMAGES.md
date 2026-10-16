@@ -23,7 +23,7 @@ Sources: https://developers.cloudflare.com/d1/platform/limits/ ; https://develop
 7. Focused tests prove valid and spoofed MIME/signatures, oversize/stream limit, empty/unsupported input, unauthorized/cross-owner/status denials, quota, 20-photo cap, byte integrity/public visibility, idempotency after delete, delete/order races/rollback, and merged image ordering. Typechecks/build/required CI pass.
 8. Read-only GPT-6 Luna/high Controller reviews the exact candidate; GitHub findings material to safety/functionality resolved; protected merge preserves history. Same authorized private Preview is updated only after these checks. Do not infer human acceptance from local tests; request new short owner photo journey only after publication.
 
-Existing R2-backed `listing_images` rows have `blob_data IS NULL` after the D1 BLOB migration. The D1 BLOB path does not access R2 or silently hide/mutate these rows: owner and public image endpoints return HTTP 409 with `LEGACY_MEDIA_MIGRATION_REQUIRED` until an operator migrates that listing's images. Repository-managed `static_listing_images` remain supported.
+Existing R2-backed `listing_images` rows have `blob_data IS NULL` after the D1 BLOB migration. The D1 BLOB path does not access R2 or silently hide/mutate these rows: owner and public image endpoints return HTTP 409 with `LEGACY_MEDIA_MIGRATION_REQUIRED` until an operator migrates that listing's images. The conflict is checked before a committed upload/reorder/delete replay so it cannot be bypassed after a legacy row appears. Repository-managed `static_listing_images` remain supported.
 
 ## Implementation bounds
 

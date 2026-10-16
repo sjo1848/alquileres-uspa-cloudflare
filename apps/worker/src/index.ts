@@ -161,6 +161,7 @@ async function uploadD1Image(c:any,lid:string){
   const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
   try{
     if(!await owned(c,lid))return c.json({error:'not found'},404);
+    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
     let record:any;
     try{record=await c.env.DB.prepare('SELECT request_fingerprint,state,result_json FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(owner,scope,key).first();}catch{return c.json({error:'image request outcome unavailable; retry with the same idempotency key'},503);}
     if(record){
@@ -168,7 +169,6 @@ async function uploadD1Image(c:any,lid:string){
       if(record.state!=='COMMITTED'||typeof record.result_json!=='string')return c.json({error:'image reservation requires recovery; retry with the same idempotency key'},503);
       try{return c.json(JSON.parse(record.result_json),201);}catch{return c.json({error:'image replay result is invalid'},503);}
     }
-    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
     const staticImage=await c.env.DB.prepare('SELECT 1 FROM static_listing_images WHERE listing_id=? LIMIT 1').bind(lid).first();
     if(staticImage)return c.json({error:'listing uses repository-managed images'},409);
     const images=await orderedD1Images(c.env.DB,lid);
@@ -217,11 +217,11 @@ async function reorderD1Image(c:any,lid:string,imageId:string){
   const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'retryable conflict'},409);
   try{
     if(!await owned(c,lid))return c.json({error:'not found'},404);
+    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
     let replay;try{replay=await mutationReplay(c.env.DB,owner,scope,key,requestFingerprint);}catch{return c.json({error:'image reorder outcome unavailable; retry with the same idempotency key'},503);}
     if(replay?.conflict)return c.json({error:'idempotency key reused with a different reorder'},409);
     if(replay?.pending)return c.json({error:'image reorder requires recovery; retry with the same idempotency key'},503);
     if(replay)return c.json(replay.result,200);
-    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
     const current=await orderedD1Images(c.env.DB,lid);if(!current.every((row,index)=>row.position===index))return c.json({error:'image order requires recovery'},503);
     const index=current.findIndex(row=>row.id===imageId);if(index<0)return c.json({error:'not found'},404);if(position>=current.length)return c.json({error:'invalid position'},400);
     const [moved]=current.splice(index,1);current.splice(position,0,moved);
@@ -241,11 +241,11 @@ async function deleteD1Image(c:any,lid:string,imageId:string){
   const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'retryable conflict'},409);
   try{
     if(!await owned(c,lid))return c.json({error:'not found'},404);
+    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
     let replay;try{replay=await mutationReplay(c.env.DB,owner,scope,key,requestFingerprint);}catch{return c.json({error:'image delete outcome unavailable; retry with the same idempotency key'},503);}
     if(replay?.conflict)return c.json({error:'idempotency key reused with a different delete'},409);
     if(replay?.pending)return c.json({error:'image delete requires recovery; retry with the same idempotency key'},503);
     if(replay)return c.body(null,200);
-    if(await hasLegacyD1Images(c.env.DB,lid))return legacyD1Conflict(c);
     const current=await orderedD1Images(c.env.DB,lid);if(!current.every((row,index)=>row.position===index))return c.json({error:'image order requires recovery'},503);
     const target=current.find(row=>row.id===imageId);if(!target)return c.json({error:'not found'},404);
     const remaining=current.filter(row=>row.id!==imageId),statements:D1PreparedStatement[]=[c.env.DB.prepare('DELETE FROM listing_images WHERE id=? AND listing_id=? AND blob_data IS NOT NULL').bind(imageId,lid)];
