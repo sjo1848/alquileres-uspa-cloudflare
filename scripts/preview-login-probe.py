@@ -27,11 +27,23 @@ def main():
         raise SystemExit('Access credential must be an owned regular private file (600).')
     access = json.loads(credential.read_text())
     opener = urllib.request.build_opener(NoRedirect())
+    access_headers = {'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json',
+        'CF-Access-Client-Id': access['client_id'], 'CF-Access-Client-Secret': access['client_secret']}
+    # Wait briefly for the new policy to propagate before spending CPU on login.
+    for attempt in range(3):
+        try:
+            with opener.open(urllib.request.Request(PREVIEW + '/api/health', headers=access_headers), timeout=25) as health:
+                if health.status == 200 and json.load(health) == {'ok': True}:
+                    break
+        except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
+            pass
+        if attempt == 2:
+            raise SystemExit('Temporary Access identity did not reach application health; no login attempted.')
+        time.sleep(2)
     checks = []
     for password, expected in [('synthetic-owner-password-1', 200), ('incorrect-password', 401), ('synthetic-owner-password-1', 200)]:
         request = urllib.request.Request(PREVIEW + '/api/auth/login', method='POST',
-            headers={'Origin': PREVIEW, 'Content-Type': 'application/json',
-                'CF-Access-Client-Id': access['client_id'], 'CF-Access-Client-Secret': access['client_secret']},
+            headers={**access_headers, 'Origin': PREVIEW, 'Content-Type': 'application/json'},
             data=json.dumps({'email': 'preview.owner@example.test', 'password': password}).encode())
         started = time.monotonic()
         try:
@@ -47,7 +59,9 @@ def main():
             checks.append({'status': response.status, 'expected_status': expected,
                 'elapsed_wall_ms': round((time.monotonic() - started) * 1000, 2),
                 'provider_resource_limit_error': cpu_failure,
-                'session_cookie_present': bool(response.headers.get('Set-Cookie'))})
+                'session_cookie_present': any(value.startswith('alquileres_session=') for value in response.headers.get_all('Set-Cookie', [])),
+                'same_origin_rejected': 'same-origin request required' in body,
+                'cf_ray': response.headers.get('CF-Ray')})
         # No response body, password, session cookie or Access credential is written to evidence.
         if cpu_failure or response.status not in (200, 401):
             break

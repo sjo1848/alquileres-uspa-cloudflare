@@ -1,0 +1,73 @@
+{
+  "query": "query($account:String!){viewer{accounts(filter:{accountTag:$account}){workersInvocationsAdaptive(limit:20,filter:{datetime_geq:\"2026-10-16T12:13:30Z\",datetime_leq:\"2026-10-16T12:13:40Z\",scriptName:\"alquileres-uspa-lab\",isPreview:1}){dimensions{datetime scriptName previewSlug isPreview status}sum{requests errors}quantiles{cpuTimeP50 cpuTimeP99}}}}}",
+  "variables": {
+    "account": "30e8fad45f7bc1cd5bddad87e18b1aec"
+  },
+  "response": {
+    "data": {
+      "viewer": {
+        "accounts": [
+          {
+            "workersInvocationsAdaptive": [
+              {
+                "dimensions": {
+                  "datetime": "2026-10-16T12:13:34Z",
+                  "isPreview": 1,
+                  "previewSlug": "__unknown__",
+                  "scriptName": "alquileres-uspa-lab",
+                  "status": "success"
+                },
+                "quantiles": {
+                  "cpuTimeP50": 440961,
+                  "cpuTimeP99": 440961
+                },
+                "sum": {
+                  "errors": 0,
+                  "requests": 1
+                }
+              },
+              {
+                "dimensions": {
+                  "datetime": "2026-10-16T12:13:35Z",
+                  "isPreview": 1,
+                  "previewSlug": "__unknown__",
+                  "scriptName": "alquileres-uspa-lab",
+                  "status": "success"
+                },
+                "quantiles": {
+                  "cpuTimeP50": 348640,
+                  "cpuTimeP99": 348640
+                },
+                "sum": {
+                  "errors": 0,
+                  "requests": 1
+                }
+              },
+              {
+                "dimensions": {
+                  "datetime": "2026-10-16T12:13:33Z",
+                  "isPreview": 1,
+                  "previewSlug": "__unknown__",
+                  "scriptName": "alquileres-uspa-lab",
+                  "status": "success"
+                },
+                "quantiles": {
+                  "cpuTimeP50": 1109,
+                  "cpuTimeP99": 446872
+                },
+                "sum": {
+                  "errors": 0,
+                  "requests": 2
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "errors": null
+  },
+  "unit": "microseconds (verified by provider GraphQL introspection)",
+  "scope": "Dedicated Worker only; one health request and three login requests in this synthetic probe interval; no per-path/request-ID dimension, previewSlug is __unknown__",
+  "conclusion": "HTTP login success observed, but provider CPU quantiles348640\u2013446872us (348.640\u2013446.872ms) exceed documented10ms Free budget. Do not infer reliable Free compatibility from successful invocations."
+}

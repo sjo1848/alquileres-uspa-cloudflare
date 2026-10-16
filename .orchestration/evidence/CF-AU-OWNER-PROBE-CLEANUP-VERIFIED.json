@@ -1,0 +1,28 @@
+{
+  "0f4330ec-6c8a-4e2a-94fd-f1eacb1576a4": {
+    "status": 404,
+    "absent": true
+  },
+  "369cf077-cfcd-43ab-a747-1006f272b068": {
+    "status": 404,
+    "absent": true
+  },
+  "anonymous_after_cleanup": [
+    {
+      "path": "/",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "path": "/api/auth/login",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "path": "/media/catalog/casa-rio.svg",
+      "status": 302,
+      "access_redirect": true
+    }
+  ],
+  "credential_file_absent": true
+}

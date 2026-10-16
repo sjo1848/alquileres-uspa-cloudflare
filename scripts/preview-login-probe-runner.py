@@ -36,12 +36,13 @@ try:
 except Exception as e:
  report['failure']=str(e) if isinstance(e,APIFailure) else type(e).__name__
 finally:
- if service:
-  try:api('access/service_tokens/'+service['id'],method='DELETE');report['cleanup']['service_token_revoked']=True
-  except Exception:report['cleanup']['service_token_revoked']=False
  if policy:
   try:api('access/apps/'+app_id+'/policies/'+policy['id'],method='DELETE');report['cleanup']['temporary_policy_deleted']=True
   except Exception:report['cleanup']['temporary_policy_deleted']=False
+ if service:
+  # Cloudflare refuses token deletion while any policy still references it.
+  try:api('access/service_tokens/'+service['id'],method='DELETE');report['cleanup']['service_token_revoked']=True
+  except Exception:report['cleanup']['service_token_revoked']=False
  if old_hash is not None:
   try:api('d1/database/'+db_id+'/query',{'sql':"UPDATE users SET password_hash=? WHERE id='synthetic-catalog-owner' AND email='preview.owner@example.test'",'params':[old_hash]});report['cleanup']['synthetic_hash_restored']=True
   except Exception:report['cleanup']['synthetic_hash_restored']=False

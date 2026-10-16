@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
   "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Human adds only Access: Service Tokens Write/Edit to existing temporary token scoped to account30e8fad45f7bc1cd5bddad87e18b1aec (do not paste token). Then execute authorized temporary service identity probe: python3 scripts/preview-login-probe-runner.py, using scripts/preview-login-probe.py; preserve operator policy, maximum15min token, synthetic existing owner hash restored, finally revoke token/delete temporary policy and verify original policies. Existing main Preview login suffices; no OWNER deploy/merge before P1 closure. Process GitHub review of68d25f2 without repeating valid tests.",
+  "next_action": "Await explicit Human authorization for bounded ACCESS_PREVIEW authentication or another zero-cost/security decision. On approval implement verified Access JWT\u2192synthetic OWNER session in same private Preview with existing authorization/CSRF checks, quick tests and exact-SHA Controller; no repeated catalog QA or P2 suite. Keep PR #13 unmerged/OWNER undeployed until material auth issue resolved.",
   "stop_reason": null,
   "event": {
-    "seq": 57,
-    "id": "OWNER_CORRECTIONS_PASS_ACCESS_SERVICE_TOKEN_PERMISSION_BLOCKER",
-    "type": "LOCAL_PASS_AND_REMOTE_PERMISSION_BLOCKER"
+    "seq": 58,
+    "id": "REMOTE_BCRYPT_MEASURED_FREE_AUTH_ARCHITECTURE_GATE",
+    "type": "PROVIDER_EVIDENCE_AND_HUMAN_SECURITY_DECISION"
   },
   "external_review": {
     "required": false,
@@ -27,13 +27,13 @@
       6205102465
     ]
   },
-  "human_gate": null,
-  "blocker": {
-    "kind": "CLOUDFLARE_ACCESS_SERVICE_TOKEN_PERMISSION",
-    "observed": "POST /accounts/30e8fad45f7bc1cd5bddad87e18b1aec/access/service_tokens returned403/auth.forbidden. Probe not run; no token/policy/D1 mutation; original operator-only policies verified unchanged.",
-    "evidence": ".orchestration/evidence/CF-AU-OWNER-TEMPORARY-ACCESS.json",
-    "human_action": "Add Access: Service Tokens Write/Edit permission only on the existing account-scoped token, retaining scope/expiration and all USD0 limits. Token remains local protected file."
+  "human_gate": {
+    "kind": "PREVIEW_AUTHENTICATION_ARCHITECTURE",
+    "reason": "Provider GraphQL CPU quantiles in synthetic login interval348.640\u2013446.872ms exceed documented Workers Free10ms despite observed HTTP200/401/200. Reliable Free compatibility cannot be asserted; no hash weakening, paid fallback or auth semantic change authorized.",
+    "proposed_decision": "Authorize ACCESS_PREVIEW auth only for this isolated private synthetic Preview: verify Access JWT signature/issuer/audience and authorized operator identity, map solely to existing synthetic OWNER via D1, retain current cookie/Origin/role/ownership guards. Preserve source/historical bcrypt; no production auth approval, paid services or widened Access policy.",
+    "evidence": ".orchestration/evidence/CF-AU-OWNER-PROVIDER-CPU-QUERY.json"
   },
+  "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
   "integration_commit": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "issue_4": "CLOSED",
@@ -61,9 +61,9 @@
       "web": "PASS"
     },
     "github_material_findings": [
-      "4294160247 bcrypt cost12 Free CPU remains open; remote experiment denied specified service-token endpoint403"
+      "4294160247: provider CPU evidence exceeds Free budget; HTTP login succeeded but compatibility not PASS; auth architecture Human Gate"
     ],
-    "scope": "LOCAL_CORRECTIONS_PASS_REMOTE_OWNER_UNPROVEN"
+    "scope": "LOCAL_CORRECTIONS_PASS_REMOTE_LOGIN_HTTP_PASS_FREE_COMPATIBILITY_NOT_PASS"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -78,6 +78,9 @@
     "purpose": "Synthetic login CPU/provider compatibility only",
     "scope": "Dedicated Preview Access app only",
     "revoke_after_test": true,
-    "resource_created": false
+    "resource_created": true,
+    "completed": true,
+    "revoked": true,
+    "original_policy_restored": true
   }
 }
