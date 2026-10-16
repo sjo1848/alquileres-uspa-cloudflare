@@ -8,7 +8,7 @@
   "last_completed_task": "CF-AU-I02-P3 catalog/detail PR #11",
   "last_completed_head": "32d15ef630636acdf69e69b8ecb783144852cf05",
   "work_branch": "work/cf-au-static-preview",
-  "next_action": "Finalize the Static Assets PR under required CI/Controller/protected merge. With a local account-scoped credential granting Billing Read, Access Organizations Read and Access Apps/Policies Write, rerun scripts/cloudflare-preview-preflight.py; verify Free plans, register only one isolated synthetic D1/Preview, apply operator-only Access to every Preview URL, seed/build/publish and verify denied anonymous access before sharing. No R2/billing activation/production.",
+  "next_action": "When PR #12 is still open, complete its protected merge after mandatory checks and material GitHub findings. On integrated main, rerun scripts/cloudflare-preview-preflight.py with a local account-scoped credential granting Billing Read, Access Organizations Read and Access Apps/Policies Write. Verify Free plans, register only the dedicated Worker (no production version), protect all its Preview URLs with operator-only Access, create one isolated synthetic D1, migrate/seed/build and publish Preview private; verify anonymous denial before sharing. No R2, billing activation, subscription or production deployment.",
   "stop_reason": null,
   "event": {
     "seq": 54,
@@ -34,7 +34,7 @@
     "observed": "HTTP 403 for account subscriptions and Zero Trust organization; available Wrangler OAuth scopes omit Access/Billing. No remote resources created.",
     "human_action": "Configure a local account-scoped token with Billing Read, Access Organizations Read, Access Apps and Policies Write; never paste secrets in chat."
   },
-  "pull_request": null,
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/12",
   "integration_commit": "32d15ef630636acdf69e69b8ecb783144852cf05",
   "issue_4": "CLOSED",
   "review_authority": {
@@ -54,7 +54,14 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "last_report": "STATIC_MEDIA_LOCAL_CHECKS_PASS_PENDING_CONTROLLER",
-    "artifact_published": false
+    "code_sha": "3d9d87807a0d5f12dd5c83d68a1585c91a818ee4",
+    "last_report": "CONTROLLER_PASS_LOCAL_STATIC_MEDIA_AND_QUICK_CI_PASS",
+    "controller": "gpt-6-luna/high/read-only separate process exit 0; backend identity UNVERIFIED",
+    "artifact_published": false,
+    "checks": {
+      "worker": "PASS",
+      "web": "PASS"
+    },
+    "scope": "LOCAL_SYNTHETIC_ONLY_REMOTE_BLOCKED_PERMISSIONS"
   }
 }
