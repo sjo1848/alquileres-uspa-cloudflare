@@ -1,10 +1,10 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `PENDING_EXTERNAL_REVIEW`
-Phase: `FULL_CLOUDFLARE_ARCHITECTURE`
-Active task: `CF-AU-I01-P2 — Artifact A4 awaiting external review`
+State: `HUMAN_GATE`
+Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
+Active task: `CF-AU-I01-P2 — External PASS recorded; main integration awaits enforceable protection`
 
-> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded in the most recent CF-AU-I01-P0P1 section at the end of this file and mirrored in `.orchestration/STATUS.json`.
+> Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
 ## Source baseline
 
@@ -372,3 +372,13 @@ Integration evidence: `.orchestration/evidence/CF-AU-I00-INTEGRATION-CLOSEOUT.md
 - `project_controller` en proceso separado, invocado con `gpt-6-luna`, `high`, `read-only`, devolvió **PASS técnico acotado local/sintético** para ese SHA. CLI/session start y completion verificados, salida 0; identidad backend no verificada. Verbatim, invocación y límites en `.orchestration/evidence/critics/CF-AU-I01-P2-CONTROLLER-C909020.md`.
 - Pre-Critic PASS para publicar. Se mantiene explícita la limitación de parity de `living-room.png` y la falta de validación de comportamiento multi-instancia remoto/atomicidad D1/R2.
 - Estado: `PENDING_EXTERNAL_REVIEW`, sin nuevas correcciones de P2 autorizadas hasta ese dictamen. Próximo foco, después del cierre: integración de Vue y diseño mínimo de Preview Cloudflare protegido; recursos remotos, despliegue y gasto requieren autorización.
+
+## CF-AU-I01-P2 — External PASS and integration gate (2026-10-16)
+
+- External Independent Critic verdict: **PASS**, strictly bounded to local/synthetic P2, recorded in PR #10 comments `6205084750` and `6205102465`. Immutable tag `CF-AU-I01-P2-Artifact-A4` remains unchanged and dereferences to `c9090202441ecd534f84c2dcc610dc5d86bab4e0`.
+- PR #10 HEAD is `722f72ee7c52013413f055589c7bf7c926251ac0`, a direct child of A4. Its delta from A4 is orchestration/evidence only; no executable Worker or test changes follow the approved SHA. PR is OPEN and GitHub reports MERGEABLE/CLEAN. The false automatic ancestry finding on this boundary was answered and resolved; it does not alter the A4 verdict.
+- Integration controls were checked on GitHub: `main` has no branch protection (`GET /branches/main/protection` returns 404 “Branch not protected”), no applicable enforceable ruleset was found, and the PR has no required-check rollup. **No merge was performed.** Exact next action: a repository administrator must configure and verify enforceable `main` protection (PR-only, required checks/review, bypass disabled), then Codex can recheck and merge PR #10 preserving history. Alternatively, the Human must explicitly authorize a one-time merge with that control absent; absent such authorization, do not merge.
+- P2 is externally complete but not integrated into canonical `main`. This state is persisted on PR #10's branch because `main` cannot be updated before the required integration gate. No A5 or P2 REWORK was opened.
+- Minimal protected Preview proposal and first Vue/API journey are in `.orchestration/proposals/CF-AU-PREVIEW-AND-VUE-INTEGRATION.md`. No Cloudflare resources, billing, secrets, or deployment were created. Preview remains a separate authorization gate.
+- The autonomous delivery train requires P2 integration into `main` before P3/P4 implementation. Until that condition is met, no functional migration branch is started. Once integrated, the next local synthetic journey is Vue catalog → public property detail/images; contact follows as its own completed journey. The original `alquileres-uspa` checkout remains untouched and read-only.
+- Exact next action: have a repository administrator enable enforceable `main` protection as above (or explicitly authorize a one-time merge without it); then reverify rules, exact PR head, A4 ancestry and mergeability before integrating. After integration, start the already delegated local synthetic catalog/detail journey. Remote Preview creation/deployment still requires explicit authorization of its resource, cost and permission proposal.

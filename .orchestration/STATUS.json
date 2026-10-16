@@ -2,28 +2,34 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
-  "runtime_status": "PENDING_EXTERNAL_REVIEW",
+  "runtime_status": "HUMAN_GATE",
   "resume_authorized": false,
-  "active_task": "CF-AU-I01-P2 — Artifact A4 awaiting external review",
+  "active_task": "CF-AU-I01-P2 — External PASS recorded; main integration awaits enforceable protection",
   "last_completed_task": "CF-AU-I01-P2",
   "last_completed_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
   "work_branch": "work/cf-au-i01-p2",
-  "next_action": "Await External Independent Critic verdict on immutable Artifact A4 tag CF-AU-I01-P2-Artifact-A4 at exact SHA c9090202441ecd534f84c2dcc610dc5d86bab4e0. Do not continue P2 or begin Vue/Preview until that boundary closes; next functional priority is Vue connection and protected Cloudflare Preview design, with no remote resource/deployment/payment without Human authorization.",
-  "stop_reason": "EXTERNAL_REVIEW",
+  "next_action": "Repository administrator: enable enforceable main protection (PR-only, required checks/review, bypass disabled), then Codex rechecks and merges PR #10 preserving history. Alternatively, Human must explicitly authorize a one-time merge without that control. After integration, start the local synthetic Vue catalog/property-detail journey. Preview resource creation/deployment separately requires explicit authorization.",
+  "stop_reason": "MAIN_PROTECTION_HUMAN_GATE",
   "event": {
-    "seq": 48,
-    "id": "CF-AU-I01-P2@ARTIFACT-A4-PENDING-EXTERNAL-REVIEW",
-    "type": "IMMUTABLE_ARTIFACT_PUBLICATION"
+    "seq": 49,
+    "id": "CF-AU-I01-P2@EXTERNAL-PASS-MAIN-INTEGRATION-GATE",
+    "type": "EXTERNAL_PASS_AND_INTEGRATION_GATE"
   },
   "external_review": {
-    "required": true,
-    "last_audited_head": "8e5b67668686f8543a8facc632d53f4535837c3c",
-    "last_verdict": "REWORK-3",
+    "required": false,
+    "last_audited_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
+    "last_verdict": "PASS",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
-    "pending_verdict": "PENDING"
+    "pending_verdict": null,
+    "verdict_comments": [6205084750, 6205102465]
   },
-  "human_gate": null,
+  "human_gate": {
+    "type": "MAIN_BRANCH_PROTECTION",
+    "evidence": "GitHub GET /repos/sjo1848/alquileres-uspa-cloudflare/branches/main/protection returned 404 Branch not protected; PR #10 has no required-check rollup.",
+    "required_action": "Repository administrator enables enforceable PR-only main rules with required review/checks and bypass disabled, or Human explicitly authorizes this one-time merge without the missing control.",
+    "preview_authorization": "Separate decision required before creating Cloudflare resources, enabling billing, configuring Access, or deploying Preview."
+  },
   "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10",
   "integration_commit": "c57ebfab5b97606c91a746a7e02a9528a2018205",
@@ -49,8 +55,8 @@
     "artifact_published": true,
     "last_report": "CONTROLLER_PASS_GITHUB_REVIEW_COMPLETED_PRECRITIC_PASS",
     "last_report_not_retroactively_passed": true,
-    "pr_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
+    "pr_head": "722f72ee7c52013413f055589c7bf7c926251ac0",
     "github_review_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/10#issuecomment-6204159194",
-    "next_action": "Await External Independent Critic verdict for Artifact A4; no more P2 changes unless requested."
+    "next_action": "Verify enforceable main protection, preserve the A4 history and merge PR #10; then start the authorized local synthetic catalog/property-detail journey."
   }
 }
