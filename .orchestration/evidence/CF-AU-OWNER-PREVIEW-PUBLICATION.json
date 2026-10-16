@@ -1,0 +1,92 @@
+{
+  "observed_at": "2026-10-16T15:23:13.175489+00:00",
+  "application_sha": "72ffac8e66bcdd27d3a8cdb3e50d5142d4239d39",
+  "reviewed_checkpoint": "032a990ff21b89a194d0af8275abee122f5d5c34",
+  "deployment_id": "6c368527-60e1-4fa8-9232-b8d354301bb2",
+  "preview_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
+  "checks": [
+    {
+      "host": "private-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "private-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/login",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "private-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/owner",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "private-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/auth/config",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "private-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/public/listings",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "private-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/media/synthetic/cabin.svg",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "6c368527-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "6c368527-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/login",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "6c368527-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/owner",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "6c368527-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/auth/config",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "6c368527-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/public/listings",
+      "status": 302,
+      "access_redirect": true
+    },
+    {
+      "host": "6c368527-alquileres-uspa-lab.sjo1848.workers.dev",
+      "path": "/media/synthetic/cabin.svg",
+      "status": 302,
+      "access_redirect": true
+    }
+  ],
+  "anonymous_denials": "12/12 Access redirects",
+  "operator_only_policy_unchanged": true,
+  "production_deployed_on": null,
+  "production_hostname_status": 404,
+  "strategy": "ACCESS_PREVIEW",
+  "media": "STATIC_ASSETS",
+  "d1": "74a00c52-a63b-45a3-8213-6648378ed5b1",
+  "r2": false,
+  "remote_owner_journey": "UNVERIFIED_REQUIRES_PERSONAL_OPERATOR_SESSION",
+  "cost": "No plan/billing/resource creation; existing free Preview update only. Human-confirmed Free plans; usage remains subject to free limits.",
+  "negative_observation": "First production URL check with urllib default User-Agent returned403; explicit validation User-Agent retries returned404/1042. Production absence independently verified by provider API."
+}

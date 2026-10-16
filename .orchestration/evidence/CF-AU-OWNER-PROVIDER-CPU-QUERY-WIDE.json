@@ -1,0 +1,166 @@
+{
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "workersInvocationsAdaptive": [
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T11:35:16Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 2590,
+                "cpuTimeP99": 2590
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T11:34:25Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 6533,
+                "cpuTimeP99": 6533
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T11:35:12Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 1819,
+                "cpuTimeP99": 1819
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T12:13:34Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 440961,
+                "cpuTimeP99": 440961
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T12:13:35Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 348640,
+                "cpuTimeP99": 348640
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T12:13:33Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 1109,
+                "cpuTimeP99": 446872
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 2
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T11:34:54Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 1836,
+                "cpuTimeP99": 1836
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T11:35:04Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 2127,
+                "cpuTimeP99": 2127
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            },
+            {
+              "dimensions": {
+                "datetime": "2026-10-16T11:41:38Z",
+                "isPreview": 1,
+                "previewSlug": "__unknown__",
+                "scriptName": "alquileres-uspa-lab",
+                "status": "success"
+              },
+              "quantiles": {
+                "cpuTimeP50": 2448,
+                "cpuTimeP99": 2448
+              },
+              "sum": {
+                "errors": 0,
+                "requests": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}

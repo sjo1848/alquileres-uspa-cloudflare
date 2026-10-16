@@ -1,0 +1,18 @@
+{
+  "data": {
+    "__type": {
+      "fields": [
+        {
+          "description": "CPU time 50th percentile - microseconds",
+          "name": "cpuTimeP50"
+        },
+        {
+          "description": "CPU time 99th percentile - microseconds",
+          "name": "cpuTimeP99"
+        }
+      ],
+      "name": "AccountWorkersInvocationsAdaptiveQuantiles"
+    }
+  },
+  "errors": null
+}

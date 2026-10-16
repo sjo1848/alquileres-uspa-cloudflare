@@ -33,6 +33,11 @@ jobs:
         working-directory: apps/worker
       - run: npm run test:media
         working-directory: apps/worker
+      - run: npm run test:owner
+        working-directory: apps/worker
+      - run: npm run test:preview-auth
+        working-directory: apps/worker
+      - run: python3 -B -m unittest discover -s scripts/tests
 
   web:
     name: web

@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
+import { previewAuthConfigured, requiresPreviewAuth, verifyPreviewOperator, PREVIEW_OWNER_ID, PREVIEW_OWNER_EMAIL, type PreviewAuthEnv } from './preview-auth';
 
-type Env = { MEDIA_STRATEGY?:string; DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
+type Env = PreviewAuthEnv & { MEDIA_STRATEGY?:string; DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
 type User = { id: string; email: string; role: 'OWNER'|'ADMIN' };
 type ImageRow = { id:string; listing_id:string; object_key:string; original_name:string; mime_type:string; byte_size:number; position:number; created_at:string };
 const app = new Hono<{ Bindings: Env; Variables: { user: User } }>();
@@ -21,21 +22,48 @@ function unb64(s:string) { if(!/^[A-Za-z0-9_-]+$/.test(s)) throw Error('bad toke
 function lifetime(env:Env) { const m=/^(\d+)(s|m|h|d)$/.exec(env.JWT_EXPIRES_IN??'15m'); if(!m) throw Error('bad jwt expiry'); return Number(m[1])*({s:1,m:60,h:3600,d:86400}[m[2]]!); }
 function jwtSecretBytes(env:Env) { if(typeof env.JWT_SECRET!=='string')throw Error('jwt secret unavailable');const secret=te.encode(env.JWT_SECRET);if(secret.length<32)throw Error('jwt secret too short');return secret; }
 function jwtSecretConfigured(env:Env) { try{jwtSecretBytes(env);return true;}catch{return false;} }
-async function sign(u:User,env:Env) { const n=Math.floor(Date.now()/1000), a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify({id:u.id,email:u.email,role:u.role,iat:n,exp:n+lifetime(env)}))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return `${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`; }
+async function sign(u:User,env:Env,expiresAt=Infinity) { const n=Math.floor(Date.now()/1000), a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify({id:u.id,email:u.email,role:u.role,iat:n,exp:Math.min(n+lifetime(env),expiresAt)}))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return `${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`; }
 async function verify(token:string,env:Env) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||c.exp<=Date.now()/1000) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return c as {id:string;email:string}; }
 function cookie(raw:string|null) { return raw?.split(';').map(x=>x.trim()).find(x=>x.startsWith('alquileres_session='))?.slice('alquileres_session='.length); }
 function setCookie(token:string,env:Env,clear=false) { const same=['strict','none'].includes(env.COOKIE_SAME_SITE??'')?env.COOKIE_SAME_SITE:'lax'; const secure=env.COOKIE_SECURE==='true'||env.NODE_ENV==='production'||same==='none'; return `alquileres_session=${clear?'':encodeURIComponent(token)}; Path=/; ${clear?'Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT':'Max-Age=900'}; HttpOnly; SameSite=${same![0].toUpperCase()+same!.slice(1)}${secure?'; Secure':''}`; }
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
+app.use('*',async(c,next)=>{
+  const strategy=c.env.AUTH_STRATEGY;
+  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path))
+    && !previewAuthConfigured(c.env,new URL(c.req.url).origin))return c.json({error:'Preview authentication unavailable'},503);
+  await next();
+});
+app.get('/auth/config',c=>c.json({strategy:c.env.AUTH_STRATEGY??'PASSWORD'}));
+app.post('/auth/preview-session',async c=>{
+  if(!previewAuthConfigured(c.env,new URL(c.req.url).origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview authentication unavailable'},503);
+  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  let identity:{expiresAt:number};
+  try{identity=await verifyPreviewOperator(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,new URL(c.req.url).origin);}
+  catch{return c.json({error:'Authorized Access identity required'},401);}
+  const user=await c.env.DB.prepare("SELECT id,email,role FROM users WHERE id=? AND email=? AND role='OWNER'").bind(PREVIEW_OWNER_ID,PREVIEW_OWNER_EMAIL).first<User>();
+  if(!user)return c.json({error:'Synthetic owner unavailable'},503);
+  return c.json({user},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt),c.env)});
+});
 app.get('/health',c=>c.json({ok:true}));
 app.all('/__fixture/*',c=>c.json({error:'not found'},404));
-app.post('/auth/login',async c=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);const x=await c.req.json().catch(()=>null) as any; if(!x||typeof x.email!=='string'||x.email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.email.trim())||typeof x.password!=='string'||x.password.length<8)return c.json({error:'validation failed'},400); const u=await c.env.DB.prepare('SELECT id,email,password_hash,role FROM users WHERE email=?').bind(x.email.trim().toLowerCase()).first<any>(); if(!u||!await bcrypt.compare(x.password,u.password_hash))return c.json({error:'Invalid credentials'},401); const user:User={id:u.id,email:u.email,role:u.role}; return c.json({user},200,{'Set-Cookie':setCookie(await sign(user,c.env),c.env)}); });
+app.post('/auth/login',async c=>{if(c.env.AUTH_STRATEGY&&c.env.AUTH_STRATEGY!=='PASSWORD')return c.json({error:'Password login is unavailable in this Preview'},403);if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);const x=await c.req.json().catch(()=>null) as any; if(!x||typeof x.email!=='string'||x.email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.email.trim())||typeof x.password!=='string'||x.password.length<8)return c.json({error:'validation failed'},400); const u=await c.env.DB.prepare('SELECT id,email,password_hash,role FROM users WHERE email=?').bind(x.email.trim().toLowerCase()).first<any>(); if(!u||!await bcrypt.compare(x.password,u.password_hash))return c.json({error:'Invalid credentials'},401); const user:User={id:u.id,email:u.email,role:u.role}; return c.json({user},200,{'Set-Cookie':setCookie(await sign(user,c.env),c.env)}); });
+app.get('/auth/me',async c=>{
+  if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
+  const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
+  if(!raw)return c.json({error:'Invalid or expired token'},401);
+  let claims:{id:string;email:string};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();
+  if(!user||user.email!==claims.email)return c.json({error:'Invalid or expired token'},401);
+  return c.json(user);
+});
 app.post('/auth/logout',c=>{if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});});
 app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
 app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image upload is not available with repository-managed media'},503);await next();});
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
+function validListingInput(x:any){return !(!x||typeof x.title!=='string'||x.title.length<1||x.title.length>120||typeof x.description!=='string'||x.description.length>5000||typeof x.location!=='string'||x.location.length<1||x.location.length>240||!Number.isInteger(x.priceAmount)||x.priceAmount<0||x.priceAmount>2147483647||!['WEEK','MONTH'].includes(x.pricePeriod)||!['WEEKS','MONTHS','PERMANENT','FLEXIBLE'].includes(x.rentalDuration)||!Number.isInteger(x.maxOccupants)||x.maxOccupants<1||x.maxOccupants>2147483647||!['ARS','USD'].includes(x.currency));}
 app.post('/listings',async c=>{
   const x=await c.req.json().catch(()=>null) as any;
-  if(!x||typeof x.title!=='string'||x.title.length<1||x.title.length>120||typeof x.description!=='string'||x.description.length>5000||typeof x.location!=='string'||x.location.length<1||x.location.length>240||!Number.isInteger(x.priceAmount)||x.priceAmount<0||x.priceAmount>2147483647||!['WEEK','MONTH'].includes(x.pricePeriod)||!['WEEKS','MONTHS','PERMANENT','FLEXIBLE'].includes(x.rentalDuration)||!Number.isInteger(x.maxOccupants)||x.maxOccupants<1||x.maxOccupants>2147483647||!['ARS','USD'].includes(x.currency))return c.json({error:'validation failed'},400);
+  if(!validListingInput(x))return c.json({error:'validation failed'},400);
   const user=c.get('user'), supplied=requestKey(c);if(supplied===false)return c.json({error:'invalid idempotency key'},400);
   const requestFingerprint=await fingerprint({title:x.title,description:x.description,location:x.location,priceAmount:x.priceAmount,pricePeriod:x.pricePeriod,rentalDuration:x.rentalDuration,maxOccupants:x.maxOccupants,currency:x.currency});
   let listingId=id(),t=now(),body=listingDto(listingId,user.id,x,t);
@@ -60,6 +88,37 @@ app.post('/listings',async c=>{
   return c.json(body,201);
 });
 async function owned(c:any,listingId:string) {return c.env.DB.prepare("SELECT id FROM listings WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED')").bind(listingId,c.get('user').id).first();}
+async function ownerListing(db:D1Database,listingId:string,owner:string){return db.prepare("SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();}
+app.patch('/listings/:id',async c=>{
+  const lid=c.req.param('id'),owner=ownerId(c),input=await c.req.json().catch(()=>null) as any;
+  if(!input||['priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'].some(key=>input[key]===undefined))return c.json({error:'Rental fields are required'},400);
+  if(!await ownerListing(c.env.DB,lid,owner))return c.json({error:'not found'},404);
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'Listing is busy; retry shortly'},503);
+  try{
+    const current=await ownerListing(c.env.DB,lid,owner);if(!current||!['DRAFT','REJECTED'].includes(current.status))return c.json({error:'not found'},404);
+    const x={...current,...Object.fromEntries(['title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'].filter(key=>input[key]!==undefined).map(key=>[key,input[key]]))};
+    if(!validListingInput(x))return c.json({error:'validation failed'},400);
+    const result=await c.env.DB.prepare("UPDATE listings SET title=?,description=?,location=?,location_search=?,price_amount=?,price_period=?,rental_duration=?,max_occupants=?,currency=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(x.title,x.description,x.location,x.location.normalize('NFC').toLowerCase(),x.priceAmount,x.pricePeriod,x.rentalDuration,x.maxOccupants,x.currency,now(),lid,owner,lid,lease).run();
+    if(result.meta.changes!==1)return c.json({error:'Listing changed; reload and retry'},409);
+    return c.json(await ownerListing(c.env.DB,lid,owner));
+  }finally{await unlock(c.env.DB,lid,lease);}
+});
+app.post('/listings/:id/submit',async c=>{
+  const lid=c.req.param('id'),owner=ownerId(c);
+  // Ownership is checked before reserving a lock, so unknown IDs do not create FK errors.
+  const existing=await ownerListing(c.env.DB,lid,owner);if(!existing)return c.json({error:'not found'},404);
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'Listing is busy; retry shortly'},503);
+  try{
+    const current=await ownerListing(c.env.DB,lid,owner);if(!current)return c.json({error:'not found'},404);
+    if(current.status==='SUBMITTED')return c.json(current);
+    if(!['DRAFT','REJECTED'].includes(current.status))return c.json({error:'Listing cannot be submitted in its current status'},409);
+    if(!validListingInput(current))return c.json({error:'Complete all required listing fields before submission'},400);
+    if(await hasPendingDeleteRecovery(c.env.DB,lid,owner)||await hasPendingReorder(c.env.DB,owner,lid)||await c.env.DB.prepare("SELECT 1 FROM image_operations WHERE listing_id=? AND kind='ADD' AND state IN ('PENDING','NEEDS_REPAIR') LIMIT 1").bind(lid).first())return c.json({error:'Image operation requires recovery before submission'},503);
+    const result=await c.env.DB.prepare("UPDATE listings SET status='SUBMITTED',rejection_reason=NULL,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(now(),lid,owner,lid,lease).run();
+    if(result.meta.changes!==1)return c.json({error:'Listing changed during submission'},409);
+    return c.json(await ownerListing(c.env.DB,lid,owner));
+  }finally{await unlock(c.env.DB,lid,lease);}
+});
 async function lock(db:D1Database,lid:string) { const token=id(),n=Math.floor(Date.now()/1000);const r=await db.prepare('INSERT INTO listing_locks(listing_id,token,expires_at) VALUES(?,?,?) ON CONFLICT(listing_id) DO UPDATE SET token=excluded.token,expires_at=excluded.expires_at WHERE listing_locks.expires_at < ? RETURNING token').bind(lid,token,n+3600,n).first();return r?token:null; }
 async function unlock(db:D1Database,lid:string,t:string) {
   const correlationId=crypto.randomUUID(),attempts=3;

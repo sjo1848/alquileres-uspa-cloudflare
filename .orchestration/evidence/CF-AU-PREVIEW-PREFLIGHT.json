@@ -1,19 +1,38 @@
 {
+  "credential_source": "local_protected_file",
   "account_id": "30e8fad45f7bc1cd5bddad87e18b1aec",
   "mutations": false,
   "checks": {
     "subscriptions": {
-      "status": "DENIED",
-      "http_status": 403
+      "status": "READ",
+      "result": []
     },
     "access/organizations": {
-      "status": "DENIED",
-      "http_status": 403
+      "status": "READ",
+      "result": {
+        "auth_domain": "sebastian-ojeda-pages.cloudflareaccess.com"
+      }
     },
     "access/apps": {
       "status": "READ",
-      "result": []
+      "result": [
+        {
+          "name": "HMS staging acceptance",
+          "domain": "hms-cloudflare-web-staging.sjo1848.workers.dev",
+          "type": "self_hosted"
+        },
+        {
+          "name": "hms-cloudflare-web-staging - Cloudflare Workers",
+          "domain": null,
+          "type": "self_hosted"
+        },
+        {
+          "name": "sebastian-ojeda - Cloudflare Pages",
+          "domain": "*.sebastian-ojeda.pages.dev",
+          "type": "self_hosted"
+        }
+      ]
     }
   },
-  "status": "BLOCKED_PERMISSIONS_OR_CONNECTIVITY"
+  "status": "INSPECT_FREE_PLAN_AND_TARGET_ACCESS_POLICY_BEFORE_PROVISIONING"
 }

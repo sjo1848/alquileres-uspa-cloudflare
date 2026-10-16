@@ -1,0 +1,35 @@
+{
+  "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
+  "synthetic_only": true,
+  "checks": [
+    {
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_wall_ms": 942.87,
+      "provider_resource_limit_error": false,
+      "session_cookie_present": true,
+      "same_origin_rejected": false,
+      "cf_ray": "a4b6fa6d0e83c706-EZE"
+    },
+    {
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_wall_ms": 1027.31,
+      "provider_resource_limit_error": false,
+      "session_cookie_present": false,
+      "same_origin_rejected": false,
+      "cf_ray": "a4b6fa73d9634e64-EZE"
+    },
+    {
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_wall_ms": 2453.87,
+      "provider_resource_limit_error": false,
+      "session_cookie_present": true,
+      "same_origin_rejected": false,
+      "cf_ray": "a4b6fa7a4c5f8e5b-EZE"
+    }
+  ],
+  "cpu_telemetry_measured": false,
+  "limitation": "Elapsed time is wall time. Successful responses alone do not establish CPU <=10ms or reliable Free compatibility."
+}

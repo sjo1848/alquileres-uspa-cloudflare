@@ -1,0 +1,7 @@
+# ACCESS_PREVIEW — synthetic OWNER only
+
+Human explicitly approved on 2026-10-16 after Issue #7 comment6215344731: use the verified Cloudflare Access operator identity to enter OWNER only in the existing private synthetic Preview, retaining roles and security controls, with USD0. This closes the architecture Human Gate; it does not authorize production auth, paid capacity, weaker hashes, a new operator audience or source-repository changes.
+
+Implementation boundary: only `private-alquileres-uspa-lab.sjo1848.workers.dev`, pinned Access issuer, configured dedicated-app audience, RS256 signature/time/identity verification. A human app token for the authorized operator maps only to existing `synthetic-catalog-owner`/`preview.owner@example.test` with current D1 role OWNER. Caller-provided identity/role/mapping is ignored. Service tokens do not grant OWNER. Session expiry is capped by both Access expiry and app lifetime; cookie/Origin/current-D1-role/ownership checks remain. Password endpoint is disabled in ACCESS_PREVIEW; original bcrypt code and its negative CPU evidence remain preserved for local/historical reference.
+
+No change to the original operator-only Access policy is needed. Preview auth is configured only in `previews.vars`; the local/default password flow remains testable. The production hostname stays disabled. Existing free-tier account limits still apply; successful local tests do not claim real Access/browser or provider CPU proof. Directed OWNER validation follows publication; accepted catalog QA is not reopened.

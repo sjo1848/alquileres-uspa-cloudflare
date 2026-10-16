@@ -1,0 +1,32 @@
+{
+  "authorized_by": "Human explicit temporary test identity and revocation approval,2026-10-16",
+  "target_app_id": "4c3bd3c6-35ea-4e5e-9257-2435c634cec3",
+  "observed_at": "2026-10-16T12:12:37.644501+00:00",
+  "mutations": [
+    "Created15m temporary service token",
+    "Added Service Auth policy only to dedicated Preview",
+    "Temporarily seeded existing synthetic owner cost12 hash"
+  ],
+  "cleanup": {
+    "service_token_revoked": true,
+    "temporary_policy_deleted": true,
+    "synthetic_hash_restored": true,
+    "original_policies_unchanged": true,
+    "delete_retried_after_policy_removal": true
+  },
+  "probe_ran": true,
+  "temporary_service_token_id": "0f4330ec-6c8a-4e2a-94fd-f1eacb1576a4",
+  "temporary_policy_id": "d48d43da-d8f3-4f96-a993-7e9eec3b73f8",
+  "probe_exit": 0,
+  "failed_endpoint": {
+    "method": "DELETE",
+    "path": "access/service_tokens/0f4330ec-6c8a-4e2a-94fd-f1eacb1576a4",
+    "status": 400,
+    "errors": [
+      {
+        "code": 12139,
+        "message": "access.api.error.service_token_in_use: cannot delete service token because it is used by a policy, group, or app SCIM configuration. remove all references to it and try again, or rotate the service token to invalidate existing clients"
+      }
+    ]
+  }
+}

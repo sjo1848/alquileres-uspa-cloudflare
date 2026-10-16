@@ -85,7 +85,7 @@ describe('public catalog and property details', () => {
   it('routes the API prefix independently from the property SPA route', async () => {
     const health = await worker.fetch(new Request('http://localhost/api/health'), env, {} as ExecutionContext);
     expect(await health.json()).toEqual({ok:true});
-    const denied = await worker.fetch(new Request('http://localhost/api/listings'), env, {} as ExecutionContext);
+    const denied = await worker.fetch(new Request('http://localhost/api/listings'), {...env, JWT_SECRET:''}, {} as ExecutionContext);
     expect(denied.status).toBe(503);
     expect(denied.headers.get('content-type')).toContain('application/json');
   });

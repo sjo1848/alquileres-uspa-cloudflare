@@ -1,0 +1,28 @@
+{
+  "hypothesis": "Current bcryptjs cost12 password verification fits Workers Free 10ms CPU",
+  "falsification": "Measured compute exceeds10ms; local proxy cannot prove provider outcome",
+  "setup": "Dedicated Node process, bcryptjs3.0.3 async compare, synthetic cost12 hash, no IO during measurement",
+  "samples": [
+    {
+      "matched": true,
+      "cpu_ms": 534.124,
+      "wall_ms": 515.85
+    },
+    {
+      "matched": false,
+      "cpu_ms": 525.011,
+      "wall_ms": 524.86
+    },
+    {
+      "matched": true,
+      "cpu_ms": 474.181,
+      "wall_ms": 472.56
+    }
+  ],
+  "official_free_cpu_ms": 10,
+  "provider_cpu_measurement": false,
+  "result": "LOCAL_CPU_PROXY_EXCEEDS_FREE_BUDGET",
+  "conclusion": "No evidence closes GitHub4294160247. Do not claim Free-compatible login or weaken hashing; provider confirmation/auth architecture decision remains required.",
+  "source": "https://developers.cloudflare.com/workers/platform/limits/",
+  "observed_at": "2026-10-16T11:50:09.895Z"
+}

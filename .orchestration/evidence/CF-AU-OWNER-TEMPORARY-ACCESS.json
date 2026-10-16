@@ -1,0 +1,20 @@
+{
+  "authorized_by": "Human explicit temporary test identity and revocation approval,2026-10-16",
+  "target_app_id": "4c3bd3c6-35ea-4e5e-9257-2435c634cec3",
+  "observed_at": "2026-10-16T12:13:25.513799+00:00",
+  "mutations": [
+    "Created15m temporary service token",
+    "Added Service Auth policy only to dedicated Preview",
+    "Temporarily seeded existing synthetic owner cost12 hash"
+  ],
+  "cleanup": {
+    "temporary_policy_deleted": true,
+    "service_token_revoked": true,
+    "synthetic_hash_restored": true,
+    "original_policies_unchanged": true
+  },
+  "probe_ran": true,
+  "temporary_service_token_id": "369cf077-cfcd-43ab-a747-1006f272b068",
+  "temporary_policy_id": "dc9f526c-75a1-4e2e-a07d-e6549fe997d5",
+  "probe_exit": 0
+}
