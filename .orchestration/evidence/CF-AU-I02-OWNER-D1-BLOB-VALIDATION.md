@@ -24,9 +24,9 @@ PR #14: <https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14>
 | Web `npm run typecheck && npm run build:preview` | PASS |
 | `npm audit --audit-level=high` in `apps/worker` | 0 vulnerabilities |
 | Wrangler deployment dry-run from generated Preview bundle | PASS; 3 WASM decoders included, 822.49 KiB total upload; no remote operation |
-| GitHub required checks on current PR head | PENDING |
+| GitHub required checks on reviewed head `d340e74` | worker PASS, web PASS |
 | GitHub automatic review on current PR head | PENDING |
-| Fresh GPT-6 Luna High read-only Controller on current corrected tree | PENDING; prior exact-candidate REWORKs are preserved and are not PASS |
+| GPT-6 Luna High read-only Controller on exact PR head `d340e74` | Bounded PASS; exact report and prompt in `evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-D340E74-PASS.md` |
 
 The browser upload/read check used a local synthetic OWNER and a 1920×1080 JPEG; it passed on the earlier decoder/normalization candidate. The current legacy-row correction is exercised through the Worker HTTP route tests. No remote or human photo acceptance is asserted.
 

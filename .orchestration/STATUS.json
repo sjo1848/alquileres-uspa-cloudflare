@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
-  "last_completed_task": "D1 BLOB legacy-row replay repair implemented and focused checks passed; exact final review pending",
+  "last_completed_task": "Local OWNER D1 BLOB photo lifecycle candidate passes focused technical Controller; automatic GitHub review/Pre-Critic remain before protected merge",
   "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "work_branch": "work/cf-au-owner-d1-blob",
-  "next_action": "Run GitHub automatic review and required worker/web checks for the current PR #14 head. Run fresh separate GPT-6 Luna High read-only Controller on the exact corrected code/test SHA 964da27/tree 04951f0; if clean, complete Pre-Critic, then protected-merge and update the existing private synthetic Preview.",
+  "next_action": "Record the exact d340e74 Controller PASS, then rerun required CI and GitHub automatic review on the resulting docs-only PR head; if no material comments and checks stay green, complete Pre-Critic and proceed with protected merge and update only the existing private synthetic Preview.",
   "stop_reason": null,
   "event": {
-    "seq": 66,
-    "id": "OWNER_D1_BLOB_LEGACY_REPLAY_REWORK",
-    "type": "FUNCTIONAL_INCREMENT_REVIEW_PENDING"
+    "seq": 67,
+    "id": "OWNER_D1_BLOB_CONTROLLER_PASS",
+    "type": "LOCAL_SYNTHETIC_TECHNICAL_REVIEW"
   },
   "external_review": {
     "required": true,
@@ -21,7 +21,7 @@
     "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
-    "pending_verdict": "PENDING_CURRENT_GITHUB_AND_CONTROLLER",
+    "pending_verdict": "PENDING_GITHUB_REVIEW_AND_PRECRITIC",
     "verdict_comments": [
       6205084750,
       6205102465
@@ -51,7 +51,17 @@
   "candidate_review": {
     "code_sha": "964da27fe57bbfb961618abd9b6be4fafc82b112",
     "code_tree": "04951f0af13335598a1dceb6fc08ac989f251a57",
-    "controller": "PENDING exact corrected tree; requested gpt-6-luna/high/read-only; prior REWORKs preserved at b0f0bf6, b6d1bc5 and 757a495, all repaired in later commits",
+    "reviewed_pr_head": "d340e74445d07bdb799dec5022084867fc75189a",
+    "controller": {
+      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
+      "model_requested": "gpt-6-luna",
+      "reasoning_requested": "high",
+      "sandbox": "read-only",
+      "cli_configuration_accepted": true,
+      "process_exit": 0,
+      "actual_backend_model_identity": "UNVERIFIED",
+      "evidence": ".orchestration/evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-D340E74-PASS.md"
+    },
     "checks": {
       "worker_media": "15/15 PASS",
       "owner": "4/4 PASS",
@@ -61,11 +71,12 @@
       "preview_template_build": "PASS",
       "worker_audit": "0 vulnerabilities",
       "wrangler_dry_run": "PASS; 3 WASM assets included; no remote operation",
-      "local_browser_upload": "Earlier decoder/normalization candidate PASS; current changes covered by HTTP tests",
-      "github_worker_web": "PENDING on current PR head"
+      "github_worker_web_on_d340e74": "PASS",
+      "github_automatic_review": "PENDING on current PR head"
     },
-    "github_material_findings": "Earlier same-listing test and stale-state findings resolved. Current latest candidate includes legacy-row fail-closed checks before committed replays. Request latest automatic review and confirm threads.",
-    "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data"
+    "github_material_findings": "Prior findings on image decoding, same-listing race, canonical candidate metadata, mixed legacy rows, and legacy-row retries are corrected in the cited code sequence. Current automated review on latest head remains pending.",
+    "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data",
+    "precritic": "PENDING final GitHub review/checks and final boundary verification"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
