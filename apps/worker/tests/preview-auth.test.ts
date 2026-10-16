@@ -72,6 +72,13 @@ describe('Access identity → synthetic OWNER session, Preview only',()=>{
     expect((await exchange(assertion,{env:{AUTH_STRATEGY:undefined}})).status).toBe(503);
     expect((await exchange(assertion,{env:{AUTH_STRATEGY:'TYPO'}})).status).toBe(503);
     expect((await app.request(PREVIEW_ORIGIN+'/auth/login',{method:'POST',headers:{Origin:PREVIEW_ORIGIN},body:'{}'},bindings)).status).toBe(403);
+    for(const url of [PREVIEW_ORIGIN,'https://abcd1234-alquileres-uspa-lab.sjo1848.workers.dev','https://alquileres-uspa-lab.sjo1848.workers.dev']){
+      for(const strategy of [undefined,'PASSWORD']){
+        const broken={...bindings,AUTH_STRATEGY:strategy};
+        expect((await app.request(url+'/auth/login',{method:'POST',headers:{Origin:url},body:'{}'},broken)).status).toBe(503);
+        expect((await app.request(url+'/auth/config',{},broken)).status).toBe(503);
+      }
+    }
     expect(passwordCompare).not.toHaveBeenCalled();
     expect(await (await app.request(PREVIEW_ORIGIN+'/auth/config',{},bindings)).json()).toEqual({strategy:'ACCESS_PREVIEW'});
     expect(await (await app.request('http://localhost/auth/config',{}, {...bindings,AUTH_STRATEGY:undefined})).json()).toEqual({strategy:'PASSWORD'});

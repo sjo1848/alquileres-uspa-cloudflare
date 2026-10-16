@@ -8,6 +8,11 @@ export const PREVIEW_OWNER_ID = 'synthetic-catalog-owner';
 export const PREVIEW_OWNER_EMAIL = 'preview.owner@example.test';
 export type PreviewAuthEnv = { AUTH_STRATEGY?: string; ACCESS_AUD?: string };
 
+export function requiresPreviewAuth(origin: string) {
+  // Include immutable Preview aliases and the disabled production hostname.
+  return /^(?:[a-z0-9-]+-)?alquileres-uspa-lab\.sjo1848\.workers\.dev$/.test(new URL(origin).hostname);
+}
+
 const keys = createRemoteJWKSet(new URL(`${PREVIEW_ISSUER}/cdn-cgi/access/certs`), {
   timeoutDuration: 5000, cooldownDuration: 30000, cacheMaxAge: 300000,
 });

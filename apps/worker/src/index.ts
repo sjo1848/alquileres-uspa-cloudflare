@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
-import { previewAuthConfigured, verifyPreviewOperator, PREVIEW_OWNER_ID, PREVIEW_OWNER_EMAIL, type PreviewAuthEnv } from './preview-auth';
+import { previewAuthConfigured, requiresPreviewAuth, verifyPreviewOperator, PREVIEW_OWNER_ID, PREVIEW_OWNER_EMAIL, type PreviewAuthEnv } from './preview-auth';
 
 type Env = PreviewAuthEnv & { MEDIA_STRATEGY?:string; DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
 type User = { id: string; email: string; role: 'OWNER'|'ADMIN' };
@@ -29,7 +29,7 @@ function setCookie(token:string,env:Env,clear=false) { const same=['strict','non
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
 app.use('*',async(c,next)=>{
   const strategy=c.env.AUTH_STRATEGY;
-  if(strategy && strategy!=='PASSWORD' && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path))
+  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path))
     && !previewAuthConfigured(c.env,new URL(c.req.url).origin))return c.json({error:'Preview authentication unavailable'},503);
   await next();
 });
