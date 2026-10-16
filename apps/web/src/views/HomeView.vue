@@ -19,7 +19,7 @@ import {
   type RentalDuration,
 } from './rental-domain';
 
-type Image = { id: string; contentType: string };
+type Image = { id: string; contentType: string; url?: string };
 type Listing = {
   id: string;
   title: string;
@@ -96,7 +96,7 @@ async function search(pageNumber = 1) {
 function imageUrl(listing: Listing) {
   const image = listing.images[0];
   return image
-    ? apiUrl(`/public/listings/${listing.id}/images/${image.id}`)
+    ? image.url ?? apiUrl(`/public/listings/${listing.id}/images/${image.id}`)
     : '';
 }
 function imageFailed(listingId: string) {

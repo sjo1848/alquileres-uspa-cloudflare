@@ -14,3 +14,7 @@ INSERT OR IGNORE INTO listings(
  'Cabaña de muestra para probar la ficha de propiedad y los filtros.',
  'Uspallata, Mendoza',98000,'MONTH','MONTHS',3,'ARS','PUBLISHED','UNAVAILABLE',
  '2026-08-01T12:00:00.000Z','2026-10-14T12:00:00.000Z','2026-10-14T12:00:00.000Z');
+
+UPDATE listings SET location_search=LOWER(location) WHERE id LIKE 'synthetic-%';
+INSERT OR REPLACE INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES('synthetic-image-0','synthetic-casa-rio','/media/catalog/casa-rio.svg','image/svg+xml',1236,0);
+INSERT OR REPLACE INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES('synthetic-image-1','synthetic-cabana-cerro','/media/catalog/cabana-cerro.svg','image/svg+xml',1233,0);

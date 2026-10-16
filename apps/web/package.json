@@ -6,7 +6,8 @@
     "dev": "vite --host 127.0.0.1",
     "seed:local": "wrangler d1 migrations apply DB --local --config ../worker/wrangler.jsonc --persist-to .wrangler/state && wrangler d1 execute DB --local --config ../worker/wrangler.jsonc --persist-to .wrangler/state --file ../worker/tests/seed-catalog.sql",
     "build": "vite build",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "build:preview": "CF_PREVIEW_CONFIG=../worker/wrangler.preview.example.jsonc vite build"
   },
   "dependencies": {
     "vue": "^3.5.18",

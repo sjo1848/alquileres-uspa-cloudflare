@@ -31,6 +31,8 @@ jobs:
         working-directory: apps/worker
       - run: npm run test:catalog
         working-directory: apps/worker
+      - run: npm run test:media
+        working-directory: apps/worker
 
   web:
     name: web
@@ -50,4 +52,6 @@ jobs:
       - run: npm run typecheck
         working-directory: apps/web
       - run: npm run build
+        working-directory: apps/web
+      - run: npm run build:preview
         working-directory: apps/web

@@ -9,13 +9,17 @@ npm run seed:local
 npm run dev
 ```
 
-Abrí `http://127.0.0.1:5173`. Vite sirve el frontend y conecta el Worker, D1 y R2 locales en un solo proceso de desarrollo. `npm run build` valida el bundle integrado. No se requiere `wrangler dev` como servidor separado.
+Abrí `http://127.0.0.1:5173`. Vite sirve el frontend y conecta el Worker y D1 locales en un solo proceso de desarrollo. `npm run build` valida el bundle integrado. No se requiere `wrangler dev` como servidor separado.
 
 Las credenciales y propiedades son sintéticas. `npm run seed:local` solo inicializa almacenamiento local; no usa `--remote`.
 
-## Worker y operaciones OWNER
+Las imágenes de esta versión son ilustraciones sintéticas bajo `apps/web/public/media/catalog`, gestionadas por repositorio y Static Assets. No hay R2 en la configuración activa ni subida OWNER habilitada. `npm run test:catalog` y `npm run test:media` desde `apps/worker` son verificaciones rápidas.
 
-The Hono Worker requires Node 24+, npm, and Wrangler. It uses synthetic accounts and local D1/R2 stores; configuration has no remote binding or production secret. Authentication fails closed unless `JWT_SECRET` is provided with at least 32 UTF-8 bytes. The legacy OWNER HTTP test harness uses `wrangler dev --local` and never calls `--remote`.
+Preview: `npm run build:preview` compila la plantilla sin desplegar. La D1 de la plantilla es un UUID inválido de ejemplo; sustituirla por la D1 sintética aislada solo después de verificar Workers/Access Free. `python3 scripts/cloudflare-preview-preflight.py` desde la raíz consulta permisos/planes sin mutaciones; requiere Billing Read, Access Organizations Read y Access Apps/Policies Write en un token local. Mantener un único Preview `private` y proteger todas sus URLs con Access antes de publicarlo.
+
+## Laboratorio histórico OWNER de P2
+
+The preserved P2 test harness (`wrangler.test.jsonc`) requires Node 24+, npm, and Wrangler. It uses synthetic accounts and local D1/R2 stores; configuration has no remote binding or production secret. Authentication fails closed unless `JWT_SECRET` is provided with at least 32 UTF-8 bytes. The legacy OWNER HTTP test harness uses `wrangler dev --local` and never calls `--remote`.
 
 ```sh
 npm ci && npm run local:up -- --var JWT_SECRET:replace-with-a-local-only-secret

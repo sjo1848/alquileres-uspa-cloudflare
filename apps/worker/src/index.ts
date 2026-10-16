@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 
-type Env = { DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
+type Env = { MEDIA_STRATEGY?:string; DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
 type User = { id: string; email: string; role: 'OWNER'|'ADMIN' };
 type ImageRow = { id:string; listing_id:string; object_key:string; original_name:string; mime_type:string; byte_size:number; position:number; created_at:string };
 const app = new Hono<{ Bindings: Env; Variables: { user: User } }>();
@@ -31,6 +31,7 @@ app.all('/__fixture/*',c=>c.json({error:'not found'},404));
 app.post('/auth/login',async c=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);const x=await c.req.json().catch(()=>null) as any; if(!x||typeof x.email!=='string'||x.email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.email.trim())||typeof x.password!=='string'||x.password.length<8)return c.json({error:'validation failed'},400); const u=await c.env.DB.prepare('SELECT id,email,password_hash,role FROM users WHERE email=?').bind(x.email.trim().toLowerCase()).first<any>(); if(!u||!await bcrypt.compare(x.password,u.password_hash))return c.json({error:'Invalid credentials'},401); const user:User={id:u.id,email:u.email,role:u.role}; return c.json({user},200,{'Set-Cookie':setCookie(await sign(user,c.env),c.env)}); });
 app.post('/auth/logout',c=>{if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});});
 app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
+app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image upload is not available with repository-managed media'},503);await next();});
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
 app.post('/listings',async c=>{
   const x=await c.req.json().catch(()=>null) as any;
@@ -161,13 +162,14 @@ const PUBLIC_ENUMS={currency:['ARS','USD'],pricePeriod:['WEEK','MONTH'],rentalDu
 function publicInteger(value:string|null,min:number,max:number,name:string,defaultValue?:number){if(value===null)return defaultValue; if(!/^(0|[1-9]\d*)$/.test(value))throw Error(`${name} must be an integer`);const parsed=Number(value);if(!Number.isSafeInteger(parsed)||parsed<min||parsed>max)throw Error(`${name} is outside the allowed range`);return parsed;}
 function publicFreshness(lastConfirmedAt:string|null){if(!lastConfirmedAt)return 'UNCONFIRMED';const time=Date.parse(lastConfirmedAt);if(!Number.isFinite(time))return 'UNCONFIRMED';return time>Date.now()?'UNCONFIRMED':Date.now()-time<=PUBLIC_FRESHNESS_MS?'FRESH':'STALE';}
 function publicDomainStatus(row:any){return row.priceAmount!==null&&row.pricePeriod!==null&&row.rentalDuration!==null&&row.maxOccupants!==null&&row.currency!==null?'COMPLETE':'MISSING';}
-function publicListingDto(row:any,images:any[]){return {id:row.id,title:row.title,description:row.description,location:row.location,priceAmount:row.priceAmount,pricePeriod:row.pricePeriod,rentalDuration:row.rentalDuration,maxOccupants:row.maxOccupants,currency:row.currency,domainDataStatus:publicDomainStatus(row),availabilityStatus:row.availabilityStatus,lastConfirmedAt:row.lastConfirmedAt,freshnessStatus:publicFreshness(row.lastConfirmedAt),images};}
-async function publicImages(db:D1Database,listingIds:string[]){if(!listingIds.length)return [] as any[];const placeholders=listingIds.map(()=>'?').join(',');const rows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return rows;}
+function publicListingDto(row:any,images:any[]){return {id:row.id,title:row.title,description:row.description,location:row.location,priceAmount:row.priceAmount,pricePeriod:row.pricePeriod,rentalDuration:row.rentalDuration,maxOccupants:row.maxOccupants,currency:row.currency,domainDataStatus:publicDomainStatus(row),availabilityStatus:row.availabilityStatus,lastConfirmedAt:row.lastConfirmedAt,freshnessStatus:publicFreshness(row.lastConfirmedAt),images:images.map(image=>({id:image.id,contentType:image.contentType,sizeBytes:image.sizeBytes,position:image.position,...(image.url?{url:image.url}:{})}))};}
+async function publicImages(db:D1Database,listingIds:string[],staticMedia=false){if(staticMedia){if(!listingIds.length)return [];const rows=await db.prepare(`SELECT id,listing_id AS listingId,asset_path AS url,mime_type AS contentType,byte_size AS sizeBytes,position FROM static_listing_images WHERE listing_id IN (${listingIds.map(()=>'?').join(',')}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>();return rows.results;}if(!listingIds.length)return [] as any[];const placeholders=listingIds.map(()=>'?').join(',');const rows=(await db.prepare(`SELECT id,listing_id AS listingId,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id IN (${placeholders}) ORDER BY position ASC,id ASC`).bind(...listingIds).all<any>()).results;return rows;}
 async function initializeLocationSearch(db:D1Database){
   const rows=(await db.prepare("SELECT id,location FROM listings WHERE location_search='' LIMIT 100").all<{id:string;location:string}>()).results;
   if(rows.length)await db.batch(rows.map(row=>db.prepare("UPDATE listings SET location_search=? WHERE id=? AND location=? AND location_search=''").bind(row.location.normalize('NFC').toLowerCase(),row.id,row.location)));
   return !await db.prepare("SELECT 1 FROM listings WHERE location_search='' LIMIT 1").first();
 }
+
 app.get('/public/listings',async c=>{
   const q=c.req.query(),location=q.location??'',pageRaw=q.page??'1',pageSizeRaw=q.pageSize??'20';
   if(location.length>240)return c.json({message:'location must not exceed 240 characters'},400);
@@ -191,18 +193,19 @@ app.get('/public/listings',async c=>{
     c.env.DB.prepare(`SELECT COUNT(*) AS totalItems FROM listings WHERE ${where}`).bind(...values).first<any>(),
     c.env.DB.prepare(`SELECT id,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`).bind(...values,pageSize,offset).all<any>(),
   ]);
-  const rows=listed.results,totalItems=Number(count?.totalItems??0),imageRows=await publicImages(c.env.DB,rows.map((row:any)=>row.id));
-  const byListing=new Map<string,any[]>();for(const image of imageRows){const images=byListing.get(image.listingId)??[];images.push({id:image.id,contentType:image.contentType,sizeBytes:image.sizeBytes,position:image.position});byListing.set(image.listingId,images);}
+  const rows=listed.results,totalItems=Number(count?.totalItems??0),imageRows=await publicImages(c.env.DB,rows.map((row:any)=>row.id),c.env.MEDIA_STRATEGY==='STATIC_ASSETS');
+  const byListing=new Map<string,any[]>();for(const image of imageRows){const images=byListing.get(image.listingId)??[];images.push({id:image.id,contentType:image.contentType,sizeBytes:image.sizeBytes,position:image.position,...(image.url?{url:image.url}:{})});byListing.set(image.listingId,images);}
   return c.json({items:rows.map((row:any)=>publicListingDto(row,byListing.get(row.id)??[])),page,pageSize,totalItems,totalPages:Math.ceil(totalItems/pageSize)});
 });
 app.get('/public/listings/:id/images/:imageId',async c=>{
+  if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'){const row=await c.env.DB.prepare("SELECT i.asset_path AS url FROM static_listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(c.req.param('id'),c.req.param('imageId')).first<{url:string}>();return row?c.redirect(row.url,302):c.json({message:'Image not found'},404);}
   const row=await c.env.DB.prepare("SELECT i.object_key AS objectKey,i.mime_type AS contentType,i.byte_size AS sizeBytes FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND l.status='APPROVED' AND l.publication_status='PUBLISHED'").bind(c.req.param('id'),c.req.param('imageId')).first<any>();
   if(!row)return c.json({message:'Image not found'},404);const object=await c.env.IMAGES.get(row.objectKey);if(!object)return c.json({message:'Image not found'},404);
   return new Response(object.body,{headers:{'Content-Type':row.contentType,'Content-Length':String(row.sizeBytes),'Cache-Control':'no-store, no-cache','X-Content-Type-Options':'nosniff'}});
 });
 app.get('/public/listings/:id',async c=>{
   const row=await c.env.DB.prepare("SELECT id,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE id=? AND status='APPROVED' AND publication_status='PUBLISHED'").bind(c.req.param('id')).first<any>();
-  if(!row)return c.json({message:'Listing not found'},404);const images=await publicImages(c.env.DB,[row.id]);return c.json(publicListingDto(row,images));
+  if(!row)return c.json({message:'Listing not found'},404);const images=await publicImages(c.env.DB,[row.id],c.env.MEDIA_STRATEGY==='STATIC_ASSETS');return c.json(publicListingDto(row,images));
 });
 app.patch('/listings/:id/images/:imageId',async c=>{
   const lid=c.req.param('id'),imageId=c.req.param('imageId'),owner=ownerId(c),supplied=requestKey(c);
@@ -411,6 +414,6 @@ async function reconcilePendingReorders(env:Env) {
     finally{await unlock(env.DB,lid,lease);}
   }
 }
-const worker = { fetch: (request:Request,env:Env,ctx:ExecutionContext) => { const url=new URL(request.url);if(url.pathname.startsWith('/api/')){url.pathname=url.pathname.slice(4);request=new Request(url,request);}return app.fetch(request,env,ctx); }, scheduled: async (_controller: ScheduledController, env: Env) => { await reconcile(env);await reconcilePendingReorders(env); } };
+const worker = { fetch: (request:Request,env:Env,ctx:ExecutionContext) => { const url=new URL(request.url);if(url.pathname.startsWith('/api/')){url.pathname=url.pathname.slice(4);request=new Request(url,request);}return app.fetch(request,env,ctx); }, scheduled: async (_controller: ScheduledController, env: Env) => { if(env.MEDIA_STRATEGY==='STATIC_ASSETS')return;await reconcile(env);await reconcilePendingReorders(env); } };
 export { app };
 export default worker;

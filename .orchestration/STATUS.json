@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 — protected PR #11 integration and USD 0 static-media private Preview",
-  "last_completed_task": "CF-AU-I01-P2",
-  "last_completed_head": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
-  "work_branch": "work/cf-au-p3-catalog",
-  "next_action": "Finish PR #11 material GitHub findings and exact-SHA Controller/quick checks, protected merge, then Static Assets catalog media and Access-protected free Preview. No R2 or billing.",
+  "active_task": "CF-AU-I02 — Static Assets catalog ready locally; private Preview pending Cloudflare permissions",
+  "last_completed_task": "CF-AU-I02-P3 catalog/detail PR #11",
+  "last_completed_head": "32d15ef630636acdf69e69b8ecb783144852cf05",
+  "work_branch": "work/cf-au-static-preview",
+  "next_action": "Finalize the Static Assets PR under required CI/Controller/protected merge. With a local account-scoped credential granting Billing Read, Access Organizations Read and Access Apps/Policies Write, rerun scripts/cloudflare-preview-preflight.py; verify Free plans, register only one isolated synthetic D1/Preview, apply operator-only Access to every Preview URL, seed/build/publish and verify denied anonymous access before sharing. No R2/billing activation/production.",
   "stop_reason": null,
   "event": {
-    "seq": 53,
-    "id": "MEDIA_STATIC_ASSETS_INITIAL",
-    "type": "HUMAN_AUTHORIZED_ZERO_COST_PREVIEW_AND_PROTECTED_MERGES"
+    "seq": 54,
+    "id": "STATIC_ASSETS_PREVIEW_PERMISSION_BLOCKER",
+    "type": "FUNCTIONAL_IMPLEMENTATION_AND_REAL_CREDENTIAL_BLOCKER"
   },
   "external_review": {
     "required": false,
@@ -28,9 +28,14 @@
     ]
   },
   "human_gate": null,
-  "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
-  "integration_commit": "cbeaaf7b57de0cb786a1800e38ca18e28a089a6a",
+  "blocker": {
+    "kind": "CLOUDFLARE_CREDENTIAL_PERMISSIONS",
+    "evidence": ".orchestration/evidence/CF-AU-PREVIEW-PREFLIGHT.json",
+    "observed": "HTTP 403 for account subscriptions and Zero Trust organization; available Wrangler OAuth scopes omit Access/Billing. No remote resources created.",
+    "human_action": "Configure a local account-scoped token with Billing Read, Access Organizations Read, Access Apps and Policies Write; never paste secrets in chat."
+  },
+  "pull_request": null,
+  "integration_commit": "32d15ef630636acdf69e69b8ecb783144852cf05",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -49,25 +54,7 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "artifact_published": false,
-    "last_report": "PR11_MATERIAL_FINDINGS_REPAIRED_PENDING_FRESH_REVIEW",
-    "github_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/11",
-    "quick_checks": {
-      "worker": "PASS",
-      "web": "PASS"
-    },
-    "controller": {
-      "verdict": "PASS",
-      "model_requested": "gpt-6-luna",
-      "reasoning_requested": "high",
-      "sandbox": "read-only",
-      "backend_model_identity": "UNVERIFIED"
-    },
-    "findings": [
-      "Nonblocking P2: future lastConfirmedAt is classified FRESH."
-    ],
-    "next_action": "El siguiente recorrido funcional a implementar es acceso del propietario y gestión de sus publicaciones. Mantener PR #11 sin merge hasta autorización explícita; no crear Preview remoto ni desplegar sin autorización separada.",
-    "code_sha": "846f98d636061d6749842475b97ec2c47dcba9ea",
-    "pr_head_at_review": "846f98d636061d6749842475b97ec2c47dcba9ea"
+    "last_report": "STATIC_MEDIA_LOCAL_CHECKS_PASS_PENDING_CONTROLLER",
+    "artifact_published": false
   }
 }
