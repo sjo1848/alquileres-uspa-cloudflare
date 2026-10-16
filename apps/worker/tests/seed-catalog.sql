@@ -18,3 +18,6 @@ INSERT OR IGNORE INTO listings(
 UPDATE listings SET location_search=LOWER(location) WHERE id LIKE 'synthetic-%';
 INSERT OR REPLACE INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES('synthetic-image-0','synthetic-casa-rio','/media/catalog/casa-rio.svg','image/svg+xml',1236,0);
 INSERT OR REPLACE INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES('synthetic-image-1','synthetic-cabana-cerro','/media/catalog/cabana-cerro.svg','image/svg+xml',1233,0);
+
+-- Synthetic OWNER login; password: synthetic-owner-password-1 (bcrypt cost 12).
+UPDATE users SET password_hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS' WHERE id='synthetic-catalog-owner';

@@ -4,11 +4,11 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 — Static Assets catalog ready locally; private Preview pending Cloudflare permissions",
-  "last_completed_task": "CF-AU-I02-P3 catalog/detail PR #11",
-  "last_completed_head": "32d15ef630636acdf69e69b8ecb783144852cf05",
-  "work_branch": "work/cf-au-static-preview",
-  "next_action": "When PR #12 is still open, complete its protected merge after mandatory checks and material GitHub findings. On integrated main, rerun scripts/cloudflare-preview-preflight.py with a local account-scoped credential granting Billing Read, Access Organizations Read and Access Apps/Policies Write. Verify Free plans, register only the dedicated Worker (no production version), protect all its Preview URLs with operator-only Access, create one isolated synthetic D1, migrate/seed/build and publish Preview private; verify anonymous denial before sharing. No R2, billing activation, subscription or production deployment.",
+  "active_task": "CF-AU-I02 private Free Preview and OWNER draft lifecycle",
+  "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
+  "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
+  "work_branch": "work/cf-au-owner-drafts",
+  "next_action": "Complete OWNER focused verification/browser checks and technical review. Custom credential is now available outside repository and all three preflight checks pass. Confirm actual Workers/Access Free plan (API subscriptions and entitlements are empty and do not identify plan), then register isolated Worker, protect only its Preview URLs, create synthetic D1 and deploy private Preview. No paid, production or R2 resources.",
   "stop_reason": null,
   "event": {
     "seq": 54,
@@ -29,13 +29,12 @@
   },
   "human_gate": null,
   "blocker": {
-    "kind": "CLOUDFLARE_CREDENTIAL_PERMISSIONS",
-    "evidence": ".orchestration/evidence/CF-AU-PREVIEW-PREFLIGHT.json",
-    "observed": "HTTP 403 for account subscriptions and Zero Trust organization; available Wrangler OAuth scopes omit Access/Billing. No remote resources created.",
-    "human_action": "Configure a local account-scoped token with Billing Read, Access Organizations Read, Access Apps and Policies Write; never paste secrets in chat."
+    "kind": "FREE_PLAN_CONFIRMATION",
+    "observed": "Custom credential read preflight PASS; account subscriptions=[] and entitlements=[]; workers standard usage returns standard=true, not sufficient proof of Free. No remote mutations.",
+    "human_action": "Confirm existing Workers and Access Free plans from dashboard; do not change plans or supply payment details."
   },
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/12",
-  "integration_commit": "32d15ef630636acdf69e69b8ecb783144852cf05",
+  "integration_commit": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",

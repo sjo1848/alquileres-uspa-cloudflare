@@ -33,6 +33,8 @@ jobs:
         working-directory: apps/worker
       - run: npm run test:media
         working-directory: apps/worker
+      - run: npm run test:owner
+        working-directory: apps/worker
 
   web:
     name: web

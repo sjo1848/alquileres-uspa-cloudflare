@@ -416,3 +416,11 @@ Authority: Issue #7 comment 6206813347 and current Human instruction. MEDIA_STAT
 - GitHub final review found the Preview hostname disabled in the template. `preview_urls` is now enabled for the Preview; `workers_dev:false` retains no production workers.dev route. This template is not published: Access must be configured before the first Preview publication. Offline Preview build and final configuration review precede protected merge.
 
 - GitHub final review completed at `d342fdb`, with only a nonblocking P2 requesting the separate D1 migration target. Added `wrangler.preview-migrations.example.jsonc` with the same isolated placeholder binding as `previews.d1_databases`; checked their equality. This is operator preparation only; no application/runtime change or remote command was performed. Remaining Review/CI/Controller results are in PR #12; after protected integration, resume at the credential preflight blocker.
+
+## Event 55 — credential available; OWNER draft lifecycle in progress
+
+- PR #12 integrated with protected merge `769080beda284a5ece9c9f28b3a3ed4b7babbbc6`; historical P2 A4 preserved.
+- Human-provided `api_token` was moved outside the repository into the explicitly authorized protected credential file (600). Never committed or printed. Preflight using `local_protected_file` passes subscriptions, existing Access organization and app list. Existing HMS/portfolio resources remain unchanged.
+- Plan verification is not yet conclusive: subscriptions/entitlements empty; standard usage setting does not establish Workers Free. Requested dashboard confirmation, with no plan changes or billing activation. No remote mutation/deployment performed.
+- Local OWNER increment adds cookie session restore/login/logout, own draft list/create/edit/submit UI/API and same-origin/role/isolation checks. Focused OWNER tests 3/3 PASS (19.44s); remaining typechecks, catalog/media regression, browser and independent review in progress. No dynamic media upload or P2 rework.
+- READY_TO_RESUME: complete OWNER checks and exact-SHA technical review; upon verified Free plans configure dedicated Preview Access before first deployment, isolated synthetic D1 and private Preview, then verify unauthorized denial and browser catalog/detail.
