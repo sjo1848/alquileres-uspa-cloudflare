@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
-  "last_completed_task": "Local OWNER D1 BLOB upload/view/reorder/delete candidate; pending review and Preview integration",
+  "last_completed_task": "Local D1 BLOB image validation, same-listing concurrency and legacy-row conflict repairs; current candidate awaits exact-SHA reviews",
   "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "work_branch": "work/cf-au-owner-d1-blob",
-  "next_action": "Push candidate ece1850d8c291ba7d40bc5abce4c7504a9d4ce7f; process GitHub review; review exact final PR SHA with separate GPT-6 Luna High read-only Controller; protected-merge, apply migration 0007 to existing synthetic Preview D1, deploy Preview only, then request new Owner photo journey acceptance.",
+  "next_action": "On the current PR #14 branch head, complete GitHub automatic review and required worker/web checks, resolve the stale-state and race threads with the updated evidence; run separate GPT-6 Luna High read-only Controller on the corrected exact candidate tree, then complete Pre-Critic. Only after all pass, protected-merge PR #14 and update the already-authorized private synthetic Preview.",
   "stop_reason": null,
   "event": {
-    "seq": 63,
-    "id": "OWNER_D1_BLOB_PHOTO_LOCAL_CANDIDATE",
-    "type": "FUNCTIONAL_INCREMENT_LOCAL_VALIDATION"
+    "seq": 65,
+    "id": "OWNER_D1_BLOB_LEGACY_ROW_REWORK",
+    "type": "FUNCTIONAL_INCREMENT_REVIEW_PENDING"
   },
   "external_review": {
     "required": true,
@@ -21,7 +21,7 @@
     "last_verdict": "PASS_LOCAL_SYNTHETIC",
     "artifact_head": "c9090202441ecd534f84c2dcc610dc5d86bab4e0",
     "artifact_tag": "CF-AU-I01-P2-Artifact-A4",
-    "pending_verdict": "PENDING_CONTROLLER_AND_GITHUB_REVIEW",
+    "pending_verdict": "PENDING_GITHUB_AND_CONTROLLER_REVIEW",
     "verdict_comments": [
       6205084750,
       6205102465
@@ -29,7 +29,7 @@
   },
   "human_gate": null,
   "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "integration_commit": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "issue_4": "CLOSED",
   "review_authority": {
@@ -49,19 +49,22 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "ece1850d8c291ba7d40bc5abce4c7504a9d4ce7f",
-    "code_tree": "72ce6051e9377489dd2f5e0a0c17eddfffff0280",
-    "controller": "PENDING exact final PR SHA; requested GPT-6 Luna/high/read-only; no PASS asserted",
+    "code_sha": "3b012442bf9304743df4aa9c6e3b9f861ac825c7",
+    "code_tree": "50b84899ebd9dc40203ea33a5ffb97ed2f75b168",
+    "controller": "PENDING exact corrected tree; requested GPT-6 Luna/high/read-only. Prior REWORKs on b0f0bf6 and b6d1bc5 are preserved and corrected; neither is a PASS.",
     "checks": {
-      "worker_media": "11/11 PASS",
+      "worker_media": "14/14 PASS",
       "owner": "4/4 PASS",
       "catalog": "7/7 PASS",
       "worker_typecheck": "PASS",
       "web_typecheck_build": "PASS",
       "preview_template_build": "PASS",
-      "local_browser": "PASS synthetic upload/view/reorder/delete"
+      "worker_audit": "0 vulnerabilities",
+      "wrangler_dry_run": "PASS; 3 WASM assets included; no remote operation",
+      "local_browser_upload": "Earlier candidate PASS; current legacy-row corrections covered by HTTP tests",
+      "github_worker_web": "PENDING on current head"
     },
-    "github_material_findings": "PENDING",
+    "github_material_findings": "Same-listing concurrency test strengthened in b6d1bc5; stale candidate/evidence metadata updated to code SHA 3b01244. GitHub replies/resolution and automatic review on latest head pending.",
     "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data"
   },
   "human_acceptance": {
