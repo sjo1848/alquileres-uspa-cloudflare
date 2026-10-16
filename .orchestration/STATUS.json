@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 OWNER private Preview operator validation",
-  "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
-  "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
-  "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Resolve protected PR13 integration from GitHub mergeCommit (if still open, merge only with required checks green and conversations resolved). Then directed personal operator trial: /login Access entry -> /owner -> create/edit/submit synthetic draft. Executor cannot impersonate operator; remote OWNER acceptance remains unverified. Do not repeat accepted public catalog QA.",
+  "active_task": "CF-AU-I02 OWNER D1 BLOB image lifecycle",
+  "last_completed_task": "CF-AU-I02 private Preview catalog and OWNER draft journey",
+  "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
+  "work_branch": "work/cf-au-owner-d1-blob",
+  "next_action": "Implement OWNER D1 BLOB upload/list/view/reorder/delete with free-tier quotas and atomic D1 semantics; run focused Worker and web checks, adversarial review, Controller, CI/GitHub review, protected merge, update same private Preview, then provide new photo journey for human acceptance.",
   "stop_reason": null,
   "event": {
-    "seq": 61,
-    "id": "OWNER_PRIVATE_PREVIEW_PUBLISHED",
-    "type": "PREVIEW_DELIVERY"
+    "seq": 62,
+    "id": "OWNER_PREVIEW_ACCEPTED_BEGIN_D1_BLOB_IMAGE_JOURNEY",
+    "type": "HUMAN_ACCEPTANCE_AND_NEXT_DELIVERY"
   },
   "external_review": {
     "required": false,
@@ -30,7 +30,7 @@
   "human_gate": null,
   "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
-  "integration_commit": null,
+  "integration_commit": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -70,8 +70,11 @@
     "verdict": "PASS",
     "checks": "5/5",
     "evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6214688997",
-    "source_sha": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
-    "owner_accepted": false
+    "source_sha": "f17adae431b92a4f66aecda066947b24164eb0e2",
+    "owner_accepted": true,
+    "owner_scope": "Private Preview OWNER journey PASS 6/6; create, reload, edit persistence, submit, non-approved exclusion",
+    "owner_verdict": "PASS",
+    "owner_evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6219058078"
   },
   "temporary_access_probe_authority": {
     "human_authorized": true,
