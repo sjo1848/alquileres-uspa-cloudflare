@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 ACCESS_PREVIEW synthetic OWNER session implementation",
+  "active_task": "CF-AU-I02 OWNER private Preview operator validation",
   "last_completed_task": "CF-AU-I02 Static Assets catalog PR #12",
   "last_completed_head": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
   "work_branch": "work/cf-au-owner-drafts",
-  "next_action": "Finish narrow cleanup-helper review and required CI; protected integrate PR13 and update the same operator-only private Preview with reviewed ACCESS_PREVIEW build. Verify anonymous denials and production disabled. Personal operator OWNER trial remains unverified.",
+  "next_action": "Resolve protected PR13 integration from GitHub mergeCommit (if still open, merge only with required checks green and conversations resolved). Then directed personal operator trial: /login Access entry -> /owner -> create/edit/submit synthetic draft. Executor cannot impersonate operator; remote OWNER acceptance remains unverified. Do not repeat accepted public catalog QA.",
   "stop_reason": null,
   "event": {
-    "seq": 60,
-    "id": "OWNER_CONSOLIDATED_LOCAL_PASS_DELIVERY",
-    "type": "TECHNICAL_CHECKPOINT"
+    "seq": 61,
+    "id": "OWNER_PRIVATE_PREVIEW_PUBLISHED",
+    "type": "PREVIEW_DELIVERY"
   },
   "external_review": {
     "required": false,
@@ -30,7 +30,7 @@
   "human_gate": null,
   "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/13",
-  "integration_commit": "769080beda284a5ece9c9f28b3a3ed4b7babbbc6",
+  "integration_commit": null,
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -55,11 +55,15 @@
       "worker": "PASS",
       "web": "PASS",
       "focused_worker": "18/18 PASS",
-      "probe_unit": "8/8 PASS"
+      "probe_unit": "8/8 PASS",
+      "ci_run": "https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/38923181510"
     },
     "github_material_findings": [],
     "follow_up": "Source-parity last-write-wins; optimistic version checks deferred. Historical bcrypt Free CPU incompatibility retained; ACCESS_PREVIEW replaces password only on authorized synthetic Preview.",
-    "scope": "LOCAL_TECHNICAL_PASS_REMOTE_OWNER_UNVERIFIED"
+    "scope": "LOCAL_TECHNICAL_PASS_REMOTE_OWNER_UNVERIFIED",
+    "ancillary_sha": "032a990ff21b89a194d0af8275abee122f5d5c34",
+    "ancillary_controller": "PASS separate GPT-6 Luna/high/read-only, exit0, backend UNVERIFIED",
+    "github_review": "Application72ffac8 automated review completed; its two ancillary findings corrected032a990, independently reviewed and threads resolved."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -79,5 +83,17 @@
     "revoked": true,
     "original_policy_restored": true
   },
-  "auth_decision": ".orchestration/decisions/ACCESS_PREVIEW_OWNER_AUTH.md"
+  "auth_decision": ".orchestration/decisions/ACCESS_PREVIEW_OWNER_AUTH.md",
+  "preview_delivery": {
+    "application_sha": "72ffac8e66bcdd27d3a8cdb3e50d5142d4239d39",
+    "deployment_id": "6c368527-60e1-4fa8-9232-b8d354301bb2",
+    "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
+    "strategy": "ACCESS_PREVIEW",
+    "anonymous_denials": "12/12 PASS",
+    "production": "disabled; provider deployed_on null; hostname404",
+    "operator_policy": "unchanged, operator-only",
+    "owner_journey": "UNVERIFIED_PERSONAL_ACCESS_SESSION_REQUIRED",
+    "evidence": ".orchestration/evidence/CF-AU-OWNER-PREVIEW-PUBLICATION.json"
+  },
+  "integration_reference": "Resolve exact merge SHA from GitHub PR13 mergeCommit; no self-referential predicted SHA."
 }
