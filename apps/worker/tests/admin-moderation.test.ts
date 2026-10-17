@@ -18,12 +18,12 @@ describe('ADMIN moderation and publication',()=>{
   it('protects the queue and audit, approves submitted listings atomically, and publishes them',async()=>{
     const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
     expect((await request('/admin/listings/review')).status).toBe(401);
-    expect((await request('/admin/listings/review','GET',undefined,owner)).status).toBe(403);
+    expect((await request('/admin/listings/review','GET',undefined,owner)).status).toBe(401);
     const created=await request('/listings','POST',fields,owner),listing=await created.json() as {id:string};
     expect(created.status).toBe(201);
     expect((await request(`/listings/${listing.id}/submit`,'POST',undefined,owner)).status).toBe(200);
-    const queue=await request('/admin/listings/review','GET',undefined,admin),items=await queue.json() as any[];
-    expect(items.some(item=>item.id===listing.id&&item.owner.email==='moderation.owner@example.test')).toBe(true);
+    const queue=await request('/admin/listings/review','GET',undefined,admin),page=await queue.json() as {items:any[];nextCursor:{createdAt:string;id:string}|null};
+    expect(page.items.some(item=>item.id===listing.id&&item.owner.email==='moderation.owner@example.test')).toBe(true);
     expect((await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin,false)).status).toBe(403);
     const approved=await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin);
     expect(approved.status).toBe(200);
@@ -37,10 +37,13 @@ describe('ADMIN moderation and publication',()=>{
       expect.objectContaining({listingId:listing.id,targetOwner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},action:'LISTING_APPROVED',actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
       expect.objectContaining({listingId:listing.id,action:'LISTING_PUBLISHED',actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
     ]));
-    expect((await request('/admin/listings/audit','GET',undefined,owner)).status).toBe(403);
+    expect((await request('/admin/listings/audit','GET',undefined,owner)).status).toBe(401);
     expect((await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin)).status).toBe(409);
     expect(await env.DB.prepare('SELECT COUNT(*) FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first('COUNT(*)')).toBe(2);
-  });
+    await env.DB.prepare("UPDATE users SET role='OWNER' WHERE id='moderation-admin'").run();
+    try { expect((await request('/admin/listings/review','GET',undefined,admin)).status).toBe(401); }
+    finally { await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id='moderation-admin'").run(); }
+  }, 15_000);
 
   it('requires a meaningful rejection reason and keeps rejected listing unpublished',async()=>{
     const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
@@ -51,7 +54,7 @@ describe('ADMIN moderation and publication',()=>{
     expect(await response.json()).toMatchObject({status:'REJECTED',publicationStatus:'UNPUBLISHED',rejectionReason:'Falta confirmar servicios.'});
     expect((await request(`/public/listings/${listing.id}`)).status).toBe(404);
     expect(await env.DB.prepare('SELECT action,reason FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first()).toMatchObject({action:'LISTING_REJECTED',reason:'Falta confirmar servicios.'});
-  });
+  }, 15_000);
 
   it('rolls back approval if the audit record cannot be written',async()=>{
     const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
@@ -63,7 +66,7 @@ describe('ADMIN moderation and publication',()=>{
       expect(await env.DB.prepare('SELECT status,publication_status FROM listings WHERE id=?').bind(listing.id).first()).toMatchObject({status:'SUBMITTED',publication_status:'UNPUBLISHED'});
       expect(await env.DB.prepare('SELECT COUNT(*) FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first('COUNT(*)')).toBe(0);
     } finally { await env.DB.prepare('DROP TRIGGER fail_admin_audit').run(); }
-  });
+  }, 15_000);
 
   it('uses the recent-audit index for global activity ordering',async()=>{
     const plan=await env.DB.prepare('EXPLAIN QUERY PLAN SELECT a.id,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id JOIN users o ON o.id=a.target_owner_id ORDER BY a.created_at DESC,a.id DESC LIMIT 30').all<any>();
@@ -72,14 +75,33 @@ describe('ADMIN moderation and publication',()=>{
     expect(details).not.toContain('USE TEMP B-TREE FOR ORDER BY');
   });
 
+  it('paginates the moderation queue so listings after the first 100 remain reachable',async()=>{
+    const admin=await login('moderation.admin@example.test'),base=Date.UTC(2099,0,1);
+    await env.DB.batch(Array.from({length:101},(_,i)=>{
+      const createdAt=new Date(base+i*1000).toISOString(),id=`review-page-${String(i).padStart(3,'0')}`;
+      return env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,location,created_at,updated_at) VALUES(?,?,'SUBMITTED',?,?,?,?)").bind(id,'moderation-owner',`Synthetic review ${i}`,'Uspallata',createdAt,createdAt);
+    }));
+    try {
+      const first=await (await request('/admin/listings/review','GET',undefined,admin)).json() as {items:any[];nextCursor:{createdAt:string;id:string}|null};
+      expect(first.items).toHaveLength(100);
+      expect(first.items[0].id).toBe('review-page-100');
+      expect(first.nextCursor).toMatchObject({id:'review-page-001'});
+      const cursor=first.nextCursor!;
+      const second=await (await request(`/admin/listings/review?afterCreatedAt=${encodeURIComponent(cursor.createdAt)}&afterId=${encodeURIComponent(cursor.id)}`,'GET',undefined,admin)).json() as {items:any[];nextCursor:{createdAt:string;id:string}|null};
+      expect(second.items.map(item=>item.id)).toContain('review-page-000');
+      expect(second.nextCursor).toBeNull();
+      expect((await request('/admin/listings/review?afterId=review-page-099','GET',undefined,admin)).status).toBe(400);
+    } finally { await env.DB.prepare("DELETE FROM listings WHERE id LIKE 'review-page-%'").run(); }
+  });
+
   it('flags legacy D1 rows and blocks approval and publication until media is migrated',async()=>{
     const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
     const listing=await (await request('/listings','POST',{...fields,title:'Publicación sintética con foto heredada'},owner)).json() as {id:string};
     await request(`/listings/${listing.id}/submit`,'POST',undefined,owner);
     const at=new Date().toISOString();
     await env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at,blob_data) VALUES(?,?,?,?,?,?,?,?,?,NULL)').bind('legacy-'+listing.id,listing.id,'legacy:'+listing.id,'legacy.jpg','image/jpeg',12,0,at,at).run();
-    const queue=await (await request('/admin/listings/review','GET',undefined,admin,true,'D1_BLOB')).json() as any[];
-    expect(queue.find(item=>item.id===listing.id)).toMatchObject({requiresMediaRecovery:true,images:[]});
+    const queue=await (await request('/admin/listings/review','GET',undefined,admin,true,'D1_BLOB')).json() as {items:any[]};
+    expect(queue.items.find(item=>item.id===listing.id)).toMatchObject({requiresMediaRecovery:true,images:[]});
     const approval=await request(`/admin/listings/${listing.id}/review`,'POST',{action:'approve'},admin,true,'D1_BLOB');
     expect(approval.status).toBe(409);
     expect(await approval.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});
@@ -89,5 +111,5 @@ describe('ADMIN moderation and publication',()=>{
     expect(publication.status).toBe(409);
     expect(await publication.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});
     expect(await env.DB.prepare('SELECT publication_status FROM listings WHERE id=?').bind(listing.id).first('publication_status')).toBe('UNPUBLISHED');
-  });
+  }, 15_000);
 });

@@ -76,5 +76,40 @@ async (page) => {
   await page.waitForURL(url => url.pathname === '/login' && url.searchParams.get('redirect') === '/admin');
   await login('e2e-admin@example.test');
   await page.getByRole('heading', { name: 'Revisión de publicaciones' }).waitFor();
-  return { result: 'PASS', checks: ['OWNER submit', 'ADMIN role login', 'submitted D1 image review', 'approval stays unpublished', 'separate publish reaches catalog', 'rejection reason', 'admin audit', 'rejected listing stays private', 'ADMIN session expiry restores /admin destination'] };
+  await login('preview.owner@example.test');
+  const paginatedPrefix = `Codex QA ADMIN página ${Date.now()}`;
+  for (let index = 0; index < 101; index += 1) {
+    const title = `${paginatedPrefix} ${String(index).padStart(3, '0')}`;
+    const created = await page.request.post(`${baseUrl}/api/listings`, {
+      headers: { Origin: baseUrl },
+      data: { title, description: 'Publicación sintética para E2E de paginación ADMIN.', location: 'Uspallata, Mendoza', priceAmount: 25000, pricePeriod: 'MONTH', rentalDuration: 'FLEXIBLE', maxOccupants: 2, currency: 'ARS' },
+    });
+    assert(created.status() === 201, 'synthetic pagination listing must be created');
+    const listing = await created.json();
+    const submitted = await page.request.post(`${baseUrl}/api/listings/${encodeURIComponent(listing.id)}/submit`, { headers: { Origin: baseUrl } });
+    assert(submitted.status() === 200, `synthetic pagination listing submit returned ${submitted.status()}: ${await submitted.text()}`);
+    await page.waitForTimeout(5);
+  }
+  await login('e2e-admin@example.test');
+  await page.goto(`${baseUrl}/admin`);
+  await page.getByRole('heading', { name: 'Revisión de publicaciones' }).waitFor();
+  const lastPageListing = page.getByRole('button', { name: new RegExp(`${paginatedPrefix} 000`) });
+  let pagesLoaded = 0;
+  while (!(await lastPageListing.count()) && pagesLoaded < 5) {
+    const loadMore = page.getByRole('button', { name: 'Cargar más publicaciones' });
+    if (!(await loadMore.count())) break;
+    const previousCount = await page.locator('.admin-review-layout nav button').count();
+    await loadMore.click();
+    await page.waitForFunction(count => document.querySelectorAll('.admin-review-layout nav button').length > count, previousCount);
+    pagesLoaded += 1;
+  }
+  assert(await lastPageListing.count() === 1 && pagesLoaded > 0, 'ADMIN load-more must make the 101st submitted listing reachable');
+  const queueItems = page.locator('.admin-review-layout nav button');
+  assert(await queueItems.count() >= 2, 'ADMIN queue must expose multiple synthetic listings for selection');
+  await queueItems.nth(0).click();
+  await page.getByLabel('Motivo si rechazás').fill('Motivo sintético de la primera publicación.');
+  await queueItems.nth(1).click();
+  assert(await page.getByLabel('Motivo si rechazás').inputValue() === '', 'switching listings must clear a rejection reason from the prior listing');
+  assert(await page.getByRole('button', { name: 'Rechazar', exact: true }).isDisabled(), 'a new listing must not inherit another listing rejection reason');
+  return { result: 'PASS', checks: ['OWNER submit', 'ADMIN role login', 'submitted D1 image review', 'approval stays unpublished', 'separate publish reaches catalog', 'rejection reason', 'admin audit', 'rejected listing stays private', 'ADMIN session expiry restores /admin destination', 'ADMIN queue reaches the 101st submitted listing through load-more', 'changing selected listing clears rejection reason'] };
 }

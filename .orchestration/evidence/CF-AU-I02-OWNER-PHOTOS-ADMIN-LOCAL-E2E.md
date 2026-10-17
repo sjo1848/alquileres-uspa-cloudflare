@@ -55,3 +55,19 @@ The current PR #15 candidate was rerun with Playwright CLI against a newly migra
 - The fresh Controller review on `bb5d7df` returned REWORK for two evidence-quality items: trailing spaces in the just-added prior Controller report, and an EXPLAIN assertion using a simplified query rather than the route's joined global audit query. Both are corrected in the current local candidate: report whitespace removed, and the plan regression now checks the exact joined route query for the index and absence of a temporary sort. The updated ADMIN suite passes **5/5** locally; exact-head CI, GitHub review and Controller rerun are pending.
 
 These results are local synthetic evidence only. The existing private Preview remains Access-protected and unchanged; no authorized Access session is present in this executor, so remote photo E2E remains **BLOCKED_AUTH**. ADMIN has no remote identity mapping. No R2, billing, paid resources, production, real data, or source repository changes were used.
+
+## 2026-10-17 resumed local verification
+
+The PR review on `54d6a42` identified four ADMIN defects. The candidate now returns 401 when an ADMIN session loses its role; applies the Preview-auth configuration fail-closed guard to `/admin`; clears a rejection draft when switching listings; and uses stable keyset pagination with newest submissions first, so new work remains immediately reachable while older rows remain pageable. API and Vue pagination contracts use `{items,nextCursor}`.
+
+- Worker `test:admin`: **6/6 PASS**, covering cursor boundaries, invalid cursor, newest-first order, ADMIN demotion, audit index use, legacy-media guard and audit-failure rollback.
+- Worker `test:preview-auth`: **4/4 PASS**, including ADMIN's fail-closed 503 with invalid Preview-auth configuration.
+- Worker TypeScript typecheck: **PASS**.
+- Vue typecheck and integrated Worker/client production build: **PASS**.
+- Playwright ADMIN flow: **PASS, 11 checks**, including reaching the oldest of 101 queued submissions via Load More and clearing the prior listing's rejection reason on selection change.
+- Playwright OWNER D1 BLOB flow: **PASS, 9 checks**, verifying two uploads, browser decode, reorder and reload persistence, byte GET, delete and dense compaction.
+- `git diff --check`: **PASS** before publication.
+
+Local Workerd and D1 are isolated under `/tmp/cf-au-admin-resume/state`, migrated through `0008`, and use synthetic identities/records only. Browser runs reuse this synthetic state. The ADMIN UI E2E creates 101 synthetic submissions to test pagination; screenshots were refreshed under `output/playwright/`.
+
+These fixes still require review on the new exact PR head. This executor has no authorized Cloudflare Access session, so remote photos remain **BLOCKED_AUTH** and remote ADMIN has no role mapping. The existing protected Preview was not accessed or modified. No Access policy, credential, remote data, billing, R2, production or source repository was used.

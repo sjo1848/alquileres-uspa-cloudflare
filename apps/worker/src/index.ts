@@ -30,7 +30,7 @@ function setCookie(token:string,env:Env,clear=false) { const same=['strict','non
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
 app.use('*',async(c,next)=>{
   const strategy=c.env.AUTH_STRATEGY;
-  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path))
+  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path)||/^\/admin(?:\/|$)/.test(c.req.path))
     && !previewAuthConfigured(c.env,new URL(c.req.url).origin))return c.json({error:'Preview authentication unavailable'},503);
   await next();
 });
@@ -68,12 +68,21 @@ app.use('/admin/*',async(c,next)=>{
   let claims:{id:string;email:string};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
   const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();
   if(!user||user.email!==claims.email)return c.json({error:'Invalid or expired token'},401);
-  if(user.role!=='ADMIN')return c.json({error:'Insufficient role'},403);
+  if(user.role!=='ADMIN')return c.json({error:'Invalid or expired token'},401);
   c.set('user',user);await next();
 });
 app.get('/admin/listings/review',async c=>{
-  const rows=(await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED') ORDER BY l.updated_at,l.id LIMIT 100").all<any>()).results;
-  if(!rows.length)return c.json([]);
+  const afterCreatedAt=c.req.query('afterCreatedAt'),afterId=c.req.query('afterId');
+  const hasCursor=afterCreatedAt!==undefined||afterId!==undefined;
+  if(hasCursor&&(!afterCreatedAt||!afterId||afterCreatedAt.length>40||afterId.length>64||!Number.isFinite(Date.parse(afterCreatedAt))))return c.json({error:'invalid review cursor'},400);
+  const cursorClause=hasCursor?' AND (l.created_at<? OR (l.created_at=? AND l.id<?))':'';
+  const query=`SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))${cursorClause} ORDER BY l.created_at DESC,l.id DESC LIMIT 101`;
+  const statement=c.env.DB.prepare(query);
+  const fetched=hasCursor
+    ? (await statement.bind(afterCreatedAt,afterCreatedAt,afterId).all<any>()).results
+    : (await statement.all<any>()).results;
+  const hasMore=fetched.length>100,rows=fetched.slice(0,100);
+  if(!rows.length)return c.json({items:[],nextCursor:null});
   const images=await publicImages(c.env.DB,rows.map(row=>row.id),c.env.MEDIA_STRATEGY==='STATIC_ASSETS',d1ImageStatus(c));
   const legacyIds=new Set<string>();
   if(d1ImageStatus(c)){
@@ -82,7 +91,7 @@ app.get('/admin/listings/review',async c=>{
     for(const row of legacy)legacyIds.add(row.listingId);
   }
   const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
-  return c.json(rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})));
+  return c.json({items:rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
 });
 app.post('/admin/listings/:id/review',async c=>{
   const listingId=c.req.param('id'),input=await c.req.json().catch(()=>null) as any;

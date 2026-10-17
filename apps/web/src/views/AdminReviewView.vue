@@ -11,20 +11,41 @@ type ReviewItem = {
   owner: { id: string; email: string; role: 'OWNER' };
   images: { id: string; contentType: string; sizeBytes: number; position: number; url: string }[];
 };
+type ReviewCursor = { createdAt: string; id: string };
+type ReviewPage = { items: ReviewItem[]; nextCursor: ReviewCursor | null };
 type Audit = { id: string; listingId: string; action: string; reason: string | null; createdAt: string; actor: { email: string }; targetOwner: { email: string } };
 const session = useSession();
 const queue = ref<ReviewItem[]>([]), audit = ref<Audit[]>([]);
+const nextCursor = ref<ReviewCursor | null>(null);
 const selectedId = ref(''), reason = ref(''), busy = ref(false), loading = ref(true);
 const error = ref(''), notice = ref('');
 const selected = () => queue.value.find(item => item.id === selectedId.value);
-async function load() {
+async function load(append = false) {
   loading.value = true; error.value = '';
   try {
-    queue.value = await session.apiRequest<ReviewItem[]>('/admin/listings/review');
-    if (!queue.value.some(item => item.id === selectedId.value)) selectedId.value = queue.value[0]?.id ?? '';
+    let path = '/admin/listings/review';
+    if (append && nextCursor.value) {
+      const params = new URLSearchParams({ afterCreatedAt: nextCursor.value.createdAt, afterId: nextCursor.value.id });
+      path += `?${params}`;
+    }
+    const page = await session.apiRequest<ReviewPage>(path);
+    queue.value = append ? [...queue.value, ...page.items] : page.items;
+    nextCursor.value = page.nextCursor;
+    if (!queue.value.some(item => item.id === selectedId.value)) {
+      const nextId = queue.value[0]?.id ?? '';
+      if (selectedId.value !== nextId) reason.value = '';
+      selectedId.value = nextId;
+    }
     audit.value = await session.apiRequest<Audit[]>('/admin/listings/audit?limit=30');
   } catch (e) { error.value = e instanceof Error ? e.message : 'No se pudo cargar la revisión.'; }
   finally { loading.value = false; }
+}
+async function loadMore() { if (!loading.value && nextCursor.value) await load(true); }
+function selectListing(id: string) {
+  if (selectedId.value === id) return;
+  selectedId.value = id;
+  reason.value = '';
+  error.value = '';
 }
 async function review(action: 'approve' | 'reject') {
   const item = selected(); if (!item || busy.value) return;
@@ -57,12 +78,12 @@ onMounted(load);
     <p class="eyebrow">Administración</p><h2>Revisión de publicaciones</h2>
     <p>Revisá el contenido enviado por propietarios. Solo las publicaciones aprobadas aparecen en el catálogo.</p>
     <p v-if="error" role="alert" class="error">{{ error }}</p><p v-if="notice" role="status">{{ notice }}</p>
-    <button class="secondary" :disabled="loading" @click="load">Actualizar cola</button>
+    <button class="secondary" :disabled="loading" @click="() => load(false)">Actualizar cola</button>
     <p v-if="loading" role="status">Cargando publicaciones…</p>
     <p v-else-if="!queue.length" role="status">No hay publicaciones pendientes de revisión.</p>
     <div v-else class="admin-review-layout">
       <nav aria-label="Publicaciones pendientes">
-        <button v-for="item in queue" :key="item.id" class="secondary" :aria-pressed="selectedId === item.id" @click="selectedId = item.id">
+        <button v-for="item in queue" :key="item.id" class="secondary" :aria-pressed="selectedId === item.id" @click="selectListing(item.id)">
           {{ item.title }}<small>{{ item.owner.email }}</small>
         </button>
       </nav>
@@ -85,6 +106,7 @@ onMounted(load);
         </div>
       </article>
     </div>
+    <button v-if="!loading && nextCursor" class="secondary" @click="loadMore">Cargar más publicaciones</button>
     <section class="card admin-audit"><h3>Actividad reciente</h3><ul><li v-for="entry in audit" :key="entry.id">
       {{ entry.action === 'LISTING_APPROVED' ? 'Aprobó' : entry.action === 'LISTING_PUBLISHED' ? 'Publicó' : 'Rechazó' }} — {{ entry.actor.email }} — {{ entry.targetOwner.email }} — {{ entry.reason ?? (entry.action === 'LISTING_PUBLISHED' ? 'Publicación visible en el catálogo' : 'Publicación aprobada') }}
     </li></ul><p v-if="!audit.length">Todavía no hay decisiones registradas.</p></section>
