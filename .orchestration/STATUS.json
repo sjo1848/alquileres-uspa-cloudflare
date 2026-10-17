@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "ADMIN legacy D1 image DTO issue fixed and reviewed; exact worker/web checks and GitHub automatic review pass on a9f2b9c. Controller REWORK is checkpoint-only and is being resolved by this evidence/state commit.",
+  "last_completed_task": "ADMIN legacy D1 image DTO issue fixed in a9f2b9c; required checks and automatic review pass on code SHA a9f2b9c. Checkpoint 840219b includes the prior Controller REWORK evidence; current state synchronization REWORK is being resolved.",
   "last_completed_head": "a9f2b9cab4df4865d7b9ee796cf7ec690adf9036",
   "work_branch": "work/admin-moderation",
-  "next_action": "Publish the synchronized checkpoint/evidence commit; verify exact live PR #15 HEAD, worker/web checks and automatic review; run a fresh separate read-only GPT-6 Luna High Controller on that exact candidate; complete Pre-Critic and protected integration only if every gate passes.",
+  "next_action": "Synchronize current PR-head metadata, exact run 39070244354, pending automatic-review status, and current-only check fields; publish the evidence checkpoint, verify the live PR #15 head/checks/review, then rerun the separate read-only GPT-6 Luna High Controller and complete Pre-Critic before protected integration.",
   "stop_reason": null,
   "event": {
-    "seq": 94,
-    "id": "ADMIN_D1_LEGACY_DTO_CHECKPOINT",
+    "seq": 95,
+    "id": "ADMIN_CHECKPOINT_HEAD_SYNC_REWORK",
     "type": "REWORK_CHECKPOINT"
   },
   "external_review": {
@@ -63,28 +63,34 @@
       "note": "Predates Worker route/limit changes; not approval of b9a3d50."
     },
     "checks": {
-      "worker_admin": "10/10 PASS on code/test commit b9a3d50",
-      "worker_typecheck": "PASS on b9a3d50",
-      "web_typecheck_build": "PASS; Vue implementation unchanged after f336630",
-      "owner_playwright": "9/9 PASS local synthetic; OWNER implementation unchanged",
-      "admin_playwright": "12/12 PASS local synthetic deterministic request gate; test commit da1855d",
-      "python_scripts": "9/9 PASS; migration/parity code unchanged",
-      "node_check": "PASS for ADMIN Playwright JS",
-      "git_diff_check": "PASS",
-      "github_worker_web": "PASS exact state-only head 9a98405, run 39050084358; rerun after this correction is pushed",
-      "github_automatic_review": "COMPLETED on 9a98405 with two P2 findings: source approve/reject aliases; fractional audit limit 500. Both fixed/tested locally; new exact-head review pending",
-      "controller": "Prior PASS on f21dea8 does not cover Worker changes; fresh exact-candidate review pending",
-      "remote_playwright": "BLOCKED_AUTH"
+      "local_worker_admin": "12/12 PASS on a9f2b9c (recorded local run); Worker typecheck PASS",
+      "local_owner_playwright": "9/9 PASS prior local synthetic; OWNER implementation unchanged",
+      "local_admin_playwright": "12/12 PASS on prior UI candidate; subsequent Worker behavior has direct Worker regressions",
+      "local_web": "typecheck/build PASS after route configuration changes; no subsequent web code changes",
+      "local_python": "10/10 PASS on route configuration candidate; no subsequent config changes",
+      "github_worker": "PASS exact PR checkpoint 840219b; Actions run 39070244354",
+      "github_web": "PASS exact PR checkpoint 840219b; Actions run 39070244354",
+      "github_automatic_review": "PASS exact executable code SHA a9f2b9c: no major issues; checkpoint-head review requested and pending at 840219b",
+      "controller": "REWORK on exact checkpoint 840219b, status evidence synchronization only; no material code defect",
+      "remote_admin_e2e": "BLOCKED_AUTH; Preview unchanged"
     },
     "scope": "LOCAL_SYNTHETIC_ONLY; strict USD 0; no R2/billing/remote mutation/production/real data/source writes",
-    "precritic": "PENDING exact live checkpoint head checks/review and Controller PASS",
+    "precritic": "PENDING canonical current-head/checkpoint evidence synchronization, exact-head automatic review receipt, fresh Controller PASS",
     "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A23517-LEGACY-DTO-FINDING.json",
-    "next_action": "Publish the synchronized checkpoint/evidence commit; verify exact live PR #15 HEAD, worker/web checks and automatic review; run a fresh separate read-only GPT-6 Luna High Controller on that exact candidate; complete Pre-Critic and protected integration only if every gate passes.",
+    "next_action": "Synchronize current PR-head metadata, exact run 39070244354, pending automatic-review status, and current-only check fields; publish the evidence checkpoint, verify the live PR #15 head/checks/review, then rerun the separate read-only GPT-6 Luna High Controller and complete Pre-Critic before protected integration.",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "github_worker_web": "PASS on exact code/test SHA a9f2b9c; run 39069959770",
-    "github_automatic_review": "PASS on exact code/test SHA a9f2b9c (2026-10-17 21:16Z); no major issues; legacy DTO P2 fix verified",
-    "controller": "REWORK on a9f2b9c solely for uncommitted checkpoint pointer; synchronized in current docs/evidence-only commit; exact-head re-review pending",
-    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-A9F2B9C-REWORK.md"
+    "github_worker_web": "PASS exact checkpoint 840219b, run 39070244354",
+    "github_automatic_review": "Code review PASS on exact executable SHA a9f2b9c; review requested for checkpoint 840219b, receipt not present at Controller review",
+    "controller": "REWORK on 840219b solely because current PR head/run/pending review and prior nested candidate check fields were not synchronized; code review found no material defect",
+    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-840219B-REWORK.md",
+    "pr_head_resolution": {
+      "source": "live GitHub PR #15 headRefOid",
+      "last_verified_head": "840219b3a1e45a3ff18f0ebddff5d8c2d1528779",
+      "last_verified_at_utc": "2026-10-17T21:17:29Z",
+      "note": "Exact self-commit SHA is resolved from the live PR ref at review time; embedding a commit\u2019s own SHA in its tree would be self-referential."
+    },
+    "checkpoint_head": "840219b3a1e45a3ff18f0ebddff5d8c2d1528779 (state/evidence-only checkpoint; superseded by the commit containing this synchronization)",
+    "checkpoint_tree": "ae8a928 (840219b tree; full tree resolvable via Git)"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
