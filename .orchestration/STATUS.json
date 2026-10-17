@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "ADMIN audit source-shape and indexed-queue fixes pushed on PR #15; local OWNER/ADMIN functional and focused evidence passes; exact-head GitHub review and Controller pending",
-  "last_completed_head": "da15d772e3d376a7164687fbedd8648826137c03",
+  "last_completed_task": "ADMIN audit D1/source schema, both query indexes, and machine-readable parity ledger fixed; exact-head GitHub worker/web and automatic review pass; fresh Controller is required because prior process could not verify live GitHub status",
+  "last_completed_head": "3e84975c6021c199c094560ea3f3473d283f1b66",
   "work_branch": "work/admin-moderation",
-  "next_action": "Read the actual PR #15 HEAD from GitHub; verify required worker/web checks and automatic review for that exact SHA, process material findings, then run project_controller on the exact final PR SHA. Do not change Access configuration/identity mapping; remote photo and ADMIN browser flows remain BLOCKED_AUTH without legitimate session/role authorization.",
+  "next_action": "Publish this canonical checkpoint. Then query the actual PR #15 HEAD and verify exact-head worker/web checks and automatic review; run a fresh project_controller on that exact SHA using the persisted GitHub evidence. Previous Controller result was BLOCKED (not PASS) solely because its GitHub fetch failed; do not merge/deploy until a fresh bounded PASS and Pre-Critic.",
   "stop_reason": null,
   "event": {
-    "seq": 78,
-    "id": "ADMIN_REWORK_CANDIDATE_PUBLISHED",
-    "type": "CANDIDATE_PUBLISHED"
+    "seq": 79,
+    "id": "ADMIN_GITHUB_REVIEW_PASS_CONTROLLER_RETRY_REQUIRED",
+    "type": "GITHUB_REVIEW_COMPLETED"
   },
   "external_review": {
     "required": true,
@@ -136,17 +136,17 @@
       "owner_playwright": "PASS 9/9 local synthetic",
       "admin_playwright": "PASS 11/11 local synthetic",
       "git_diff_check": "PASS",
-      "github_worker_web": "PENDING new exact candidate",
-      "github_automatic_review": "PENDING new exact candidate",
-      "controller": "REWORK on cbe1066: P1 audit schema parity and P2 queue index fixed locally; fresh exact-head review pending",
+      "github_worker_web": "PASS exact 3e84975, run 39047395792",
+      "github_automatic_review": "PASS/no findings exact 3e84975; 0 unresolved threads",
+      "controller": "BLOCKED exact 3e84975 because separate process could not fetch GitHub; no P0/P1/P2 found; fresh retry required with committed GH evidence",
       "remote_playwright": "BLOCKED_AUTH"
     },
-    "controller": "REWORK on cbe1066; full report/provenance at .orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-CBE1066-REWORK.md. Findings fixed in da15d77; rerun on exact final SHA after GitHub review.",
-    "github_quick_checks": "PASS on checkpoint 1abd9d9; rerun/verify on exact current PR head after state sync.",
-    "github_automatic_review": "REWORK on cbe1066 P1/P2 repaired in da15d77; new exact-head review requested for current PR checkpoint.",
+    "controller": "BLOCKED on 3e84975, not PASS; report .orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-3E84975-BLOCKED.md. Parent verified exact-head GitHub pass, snapshot .orchestration/evidence/CF-AU-I02-GITHUB-3E84975-REVIEW.json; fresh exact-head Controller review required.",
+    "github_quick_checks": "PASS on exact PR head 3e84975 (run 39047395792).",
+    "github_automatic_review": "PASS/no findings and zero unresolved review threads on exact PR head 3e84975; snapshot .orchestration/evidence/CF-AU-I02-GITHUB-3E84975-REVIEW.json.",
     "preview_deployment": "UNCHANGED",
     "admin_remote_identity": "NOT_CREATED; explicit authorized role mapping required",
-    "candidate_pr_head": "PR #15 current pushed checkpoint (read exact SHA from GitHub; code/evidence commit da15d772e3d376a7164687fbedd8648826137c03)",
+    "candidate_pr_head": "3e84975c6021c199c094560ea3f3473d283f1b66 (map/evidence-only commit atop executable da15d77)",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
