@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "ADMIN D1 legacy image DTO correction is reviewed and locally/GitHub verified; code/test SHA a9f2b9c is unchanged by subsequent state/evidence commits.",
-  "last_completed_head": "a9f2b9cab4df4865d7b9ee796cf7ec690adf9036",
+  "last_completed_task": "GitHub P2 fixed: ADMIN approval/publication now authorize current OWNER and inspect legacy media in one D1 query; OWNER\u2192ADMIN regression passes. Focused ADMIN tests 12/12 and Worker typecheck pass on e9e9e0b.",
+  "last_completed_head": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
   "work_branch": "work/admin-moderation",
-  "next_action": "Verify current live PR #15 HEAD and required checks; Controller must bind the exact reviewed commit from its read-only checkout/live ref to this status snapshot. If code tree remains a9f2b9c and all gates pass, complete Pre-Critic and protected integration; otherwise repair only material findings.",
+  "next_action": "Wait for/inspect GitHub automatic review on executable SHA e9e9e0b; process any material finding and resolve the role/legacy-media review thread; then publish synchronized state/evidence, run exact-current-head read-only GPT-6 Luna High Controller, complete Pre-Critic, and integrate only if protected gates pass.",
   "stop_reason": null,
   "event": {
-    "seq": 96,
-    "id": "ADMIN_CHECKPOINT_EVIDENCE_SYNC",
-    "type": "REWORK_CHECKPOINT"
+    "seq": 97,
+    "id": "ADMIN_LEGACY_MEDIA_ROLE_ORDERING_FIXED",
+    "type": "GITHUB_REWORK"
   },
   "external_review": {
     "required": true,
@@ -54,8 +54,8 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "a9f2b9cab4df4865d7b9ee796cf7ec690adf9036",
-    "code_tree": "ccef2fc55804a811a322e41d01d3e3a37978b269",
+    "code_sha": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
+    "code_tree": "0775136cc16240b4e2ace2a2972b6834500722dc",
     "previous_controller": {
       "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
       "reviewed_pr_head": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
@@ -63,35 +63,35 @@
       "note": "Predates Worker route/limit changes; not approval of b9a3d50."
     },
     "checks": {
-      "local_worker_admin": "12/12 PASS on executable/test SHA a9f2b9c; Worker typecheck PASS",
-      "local_owner_playwright": "9/9 PASS prior local synthetic; OWNER code unchanged",
-      "local_admin_playwright": "12/12 PASS prior local synthetic; subsequent behavior changes directly covered by Worker tests",
-      "local_web": "typecheck/build PASS; no web code changed after the recorded candidate",
-      "local_python": "10/10 PASS; no dispatch config changed after 42ecbeb",
-      "github_worker": "PASS on checkpoint 8232718, Actions run 39070477294",
-      "github_web": "PASS on checkpoint 8232718, Actions run 39070477294",
-      "github_automatic_review": "PASS/no major issues on executable SHA a9f2b9c; no executable changes since. Review attempt on docs-only checkpoint returned Unknown error; no new bot receipt/findings.",
-      "controller": "REWORK on checkpoint 8232718 for stale prior-checkpoint pointer only; code PASS; no material code defect",
+      "worker_admin_local": "12/12 PASS on e9e9e0b",
+      "worker_typecheck_local": "PASS on e9e9e0b",
+      "web_build_local": "PASS on prior candidate; no web executable changes",
+      "owner_playwright_local": "9/9 PASS prior local synthetic; OWNER implementation unchanged",
+      "admin_playwright_local": "12/12 PASS prior local synthetic; current changes are Worker route authorization and directly covered by the Worker suite",
+      "github_worker": "PASS exact executable SHA e9e9e0b; Actions run 39070877526",
+      "github_web": "PASS exact executable SHA e9e9e0b; Actions run 39070877526",
+      "github_automatic_review": "P2 on prior exact head 8232718 fixed in e9e9e0b; automatic review of e9 requested via @codex and /codex, no receipt yet; earlier docs-only request error is recorded separately",
+      "controller": "Earlier attempt on 4d4162f canceled after new P2 arrived; no verdict on e9e9e0b; fresh exact candidate review pending",
       "remote_admin_e2e": "BLOCKED_AUTH; Preview unchanged"
     },
     "scope": "LOCAL_SYNTHETIC_ONLY; strict USD 0; no R2/billing/remote mutation/production/real data/source writes",
-    "precritic": "PENDING fresh exact-head Controller PASS and final Pre-Critic; code review/checks apply to unchanged code tree",
+    "precritic": "PENDING exact executable-SHA automatic review, fresh Controller PASS, final Integration Review",
     "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A23517-LEGACY-DTO-FINDING.json",
-    "next_action": "Verify current live PR #15 HEAD and required checks; Controller must bind the exact reviewed commit from its read-only checkout/live ref to this status snapshot. If code tree remains a9f2b9c and all gates pass, complete Pre-Critic and protected integration; otherwise repair only material findings.",
+    "next_action": "Wait for/inspect GitHub automatic review on executable SHA e9e9e0b; process any material finding and resolve the role/legacy-media review thread; then publish synchronized state/evidence, run exact-current-head read-only GPT-6 Luna High Controller, complete Pre-Critic, and integrate only if protected gates pass.",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "github_worker_web": "PASS exact checkpoint 8232718, run 39070477294",
-    "github_automatic_review": "No-major-issues receipt on exact executable SHA a9f2b9c. Docs-only checkpoint review attempt returned GitHub Unknown error; no executable changes since.",
-    "controller": "Code PASS on a9f2b9c; overall REWORK on 8232718 because checkpoint/status cited 840219b and earlier run. Current evidence now records 8232718 and run 39070477294.",
-    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-8232718-REWORK.md",
+    "github_worker_web": "PASS exact executable SHA e9e9e0b, run 39070877526",
+    "github_automatic_review": "P2 on 8232718 fixed on e9e9e0b; new exact code review requested twice, pending as of 2026-10-17 21:28 UTC. Prior bot Unknown error occurred on docs-only checkpoint.",
+    "controller": "No verdict on e9e9e0b; earlier read-only process was stopped after material GitHub finding; fresh exact candidate review pending",
+    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-8232718-REWORK.md (prior code candidate only; not approval of e9e9e0b)",
     "pr_head_resolution": {
       "source": "live GitHub PR #15 headRefOid / exact checked-out commit under review",
-      "last_checkpoint_with_required_checks": "8232718efbb199fa71bc730e06750d193ce2d1da",
-      "last_checkpoint_tree": "d56a5b1e1a32d7d0a67752e6883f35d2a1426f60",
-      "last_verified_at_utc": "2026-10-17T21:20:38Z",
-      "note": "The exact current HEAD is resolved from the live PR ref or the Controller checkout at review time. The recorded checkpoint identifies the latest SHA whose required checks are evidenced; later evidence-only commits do not change executable files."
+      "last_checkpoint_with_required_checks": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
+      "last_checkpoint_tree": "0775136cc16240b4e2ace2a2972b6834500722dc",
+      "last_verified_at_utc": "2026-10-17T21:26:00Z",
+      "note": "The exact current HEAD is resolved from the live PR ref or the checked-out commit. Code SHA and its test evidence are stored separately from docs-only checkpoint commits."
     },
-    "checkpoint_head": "8232718efbb199fa71bc730e06750d193ce2d1da (latest checkpoint with exact worker/web run 39070477294; subsequent evidence-only checkpoint commit may advance PR HEAD)",
-    "checkpoint_tree": "d56a5b1e1a32d7d0a67752e6883f35d2a1426f60"
+    "checkpoint_head": "e9e9e0b4808e26980087c5b87f133974477c2e9c (executable fix; subsequent status/evidence checkpoint may advance PR HEAD)",
+    "checkpoint_tree": "0775136cc16240b4e2ace2a2972b6834500722dc"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
