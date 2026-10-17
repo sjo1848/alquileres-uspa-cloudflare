@@ -6,7 +6,7 @@ const origin='http://localhost', secret='synthetic-admin-moderation-secret-at-le
 const bindings={...env,DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'STATIC_ASSETS'};
 const fields={title:'Cabaña sintética para moderación',description:'Datos ficticios de revisión',location:'Uspallata',priceAmount:25000,pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:2,currency:'ARS'};
 const testPng=new Uint8Array(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9AAAAAElFTkSuQmCC','base64'));
-function request(path:string,method='GET',body?:unknown,cookie?:string,withOrigin=true,mediaStrategy=bindings.MEDIA_STRATEGY){return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined},{...bindings,MEDIA_STRATEGY:mediaStrategy});}
+function request(path:string,method='GET',body?:unknown,cookie?:string,withOrigin=true,mediaStrategy=bindings.MEDIA_STRATEGY,overrides:Record<string,unknown>={}){return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined},{...bindings,MEDIA_STRATEGY:mediaStrategy,...overrides});}
 async function login(email:string){const response=await request('/auth/login','POST',{email,password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
 
 beforeAll(async()=>{
@@ -175,6 +175,28 @@ describe('ADMIN moderation and publication',()=>{
       expect(page.items.some(item=>item.id==='role-demoted-pending')).toBe(false);
     } finally {
       await env.DB.prepare("DELETE FROM listings WHERE id='role-demoted-pending'").run();
+    }
+  });
+
+  it('denies stale ADMIN image links after the listing owner role changes',async()=>{
+    const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
+    const listing=await (await request('/listings','POST',fields,owner)).json() as {id:string};
+    const at=new Date().toISOString(),imageId='role-change-image-'+listing.id;
+    await env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at,blob_data) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(imageId,listing.id,'role-change-object-'+listing.id,'synthetic.png','image/png',testPng.length,0,at,at,testPng).run();
+    await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind('static-'+imageId,listing.id,'/media/catalog/synthetic.png','image/png',testPng.length,0).run();
+    let bucketReads=0;
+    const images={get:async()=>{bucketReads++;return new Response(testPng,{headers:{'Content-Type':'image/png'}});}};
+    await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id='moderation-owner'").run();
+    try {
+      for(const strategy of ['STATIC_ASSETS','D1_BLOB','R2']) {
+        const currentImageId=strategy==='STATIC_ASSETS'?'static-'+imageId:imageId;
+        const response=await request(`/admin/listings/${listing.id}/images/${currentImageId}`,'GET',undefined,admin,true,strategy,{IMAGES:images});
+        expect(response.status,`strategy ${strategy}`).toBe(404);
+      }
+      expect(bucketReads).toBe(0);
+    } finally {
+      await env.DB.prepare("UPDATE users SET role='OWNER' WHERE id='moderation-owner'").run();
+      await env.DB.prepare('DELETE FROM listings WHERE id=?').bind(listing.id).run();
     }
   });
 
