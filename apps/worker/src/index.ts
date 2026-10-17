@@ -167,14 +167,14 @@ app.get('/admin/listings/:id',async c=>{const result=await sourceAdminListing(c.
 app.get('/admin/listings/:listingId/images/:imageId',async c=>{
   const listingId=c.req.param('listingId'),imageId=c.req.param('imageId');
   if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'){
-    const row=await c.env.DB.prepare("SELECT i.asset_path AS url FROM static_listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))").bind(listingId,imageId).first<{url:string}>();
+    const row=await c.env.DB.prepare('SELECT i.asset_path AS url FROM static_listing_images i WHERE i.listing_id=? AND i.id=?').bind(listingId,imageId).first<{url:string}>();
     return row?c.redirect(row.url,302):c.json({error:'image not found'},404);
   }
   if(d1ImageStatus(c)){
-    const row=await c.env.DB.prepare("SELECT i.blob_data,i.mime_type,i.byte_size FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))").bind(listingId,imageId).first<any>();
+    const row=await c.env.DB.prepare('SELECT i.blob_data,i.mime_type,i.byte_size FROM listing_images i WHERE i.listing_id=? AND i.id=?').bind(listingId,imageId).first<any>();
     if(!row)return c.json({error:'image not found'},404);const bytes=d1BlobBytes(row.blob_data);if(!bytes||bytes.byteLength!==row.byte_size)return c.json({error:'image data unavailable'},503);return imageResponse(bytes,row.mime_type,true);
   }
-  const row=await c.env.DB.prepare("SELECT i.object_key AS objectKey,i.mime_type AS mimeType,i.byte_size AS byteSize FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))").bind(listingId,imageId).first<any>();
+  const row=await c.env.DB.prepare('SELECT i.object_key AS objectKey,i.mime_type AS mimeType,i.byte_size AS byteSize FROM listing_images i WHERE i.listing_id=? AND i.id=?').bind(listingId,imageId).first<any>();
   if(!row)return c.json({error:'image not found'},404);const object=await c.env.IMAGES.get(row.objectKey);return object?new Response(object.body,{headers:{'Content-Type':row.mimeType,'Content-Length':String(row.byteSize),'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}}):c.json({error:'image not found'},404);
 });
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
