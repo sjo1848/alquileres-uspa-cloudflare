@@ -122,7 +122,7 @@ describe('ADMIN moderation and publication',()=>{
   });
 
   it('uses a partial index for the moderation cursor order',async()=>{
-    const plan=await env.DB.prepare("EXPLAIN QUERY PLAN SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED')) ORDER BY l.created_at DESC,l.id DESC LIMIT 101").all<any>();
+    const plan=await env.DB.prepare("EXPLAIN QUERY PLAN SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE u.role='OWNER' AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED')) ORDER BY l.created_at DESC,l.id DESC LIMIT 101").all<any>();
     const details=plan.results.map(row=>row.detail).join('\n');
     expect(details).toContain('listings_admin_review_queue_created_idx');
     expect(details).not.toContain('USE TEMP B-TREE FOR ORDER BY');
@@ -162,6 +162,20 @@ describe('ADMIN moderation and publication',()=>{
       expect(second.nextCursor).toBeNull();
       expect((await request('/admin/listings/review?afterId=review-page-099','GET',undefined,admin)).status).toBe(400);
     } finally { await env.DB.prepare("DELETE FROM listings WHERE id LIKE 'review-page-%'").run(); }
+  });
+
+  it('omits pending listings whose owner no longer has the OWNER role',async()=>{
+    const admin=await login('moderation.admin@example.test');
+    const at=new Date().toISOString();
+    await env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,location,created_at,updated_at) VALUES('role-demoted-pending','moderation-admin','SUBMITTED','Synthetic role transition','Uspallata',?,?)").bind(at,at).run();
+    try {
+      const response=await request('/admin/listings/review','GET',undefined,admin);
+      expect(response.status).toBe(200);
+      const page=await response.json() as {items:any[]};
+      expect(page.items.some(item=>item.id==='role-demoted-pending')).toBe(false);
+    } finally {
+      await env.DB.prepare("DELETE FROM listings WHERE id='role-demoted-pending'").run();
+    }
   });
 
   it('flags legacy D1 rows and blocks approval and publication until media is migrated',async()=>{
