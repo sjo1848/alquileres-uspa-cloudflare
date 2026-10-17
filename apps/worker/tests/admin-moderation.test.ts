@@ -45,6 +45,23 @@ describe('ADMIN moderation and publication',()=>{
     finally { await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id='moderation-admin'").run(); }
   }, 15_000);
 
+  it('preserves the source-compatible approve and reject routes',async()=>{
+    const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
+    const approved=await (await request('/listings','POST',{...fields,title:'Aprobación sintética por ruta fuente'},owner)).json() as {id:string};
+    await request(`/listings/${approved.id}/submit`,'POST',undefined,owner);
+    expect((await request(`/admin/listings/${approved.id}/approve`,'POST',undefined,owner)).status).toBe(401);
+    const approval=await request(`/admin/listings/${approved.id}/approve`,'POST',undefined,admin);
+    expect(approval.status).toBe(200);
+    expect(await approval.json()).toMatchObject({id:approved.id,status:'APPROVED',publicationStatus:'UNPUBLISHED'});
+
+    const rejected=await (await request('/listings','POST',{...fields,title:'Rechazo sintético por ruta fuente'},owner)).json() as {id:string};
+    await request(`/listings/${rejected.id}/submit`,'POST',undefined,owner);
+    const rejection=await request(`/admin/listings/${rejected.id}/reject`,'POST',{reason:'Faltan datos de disponibilidad.'},admin);
+    expect(rejection.status).toBe(200);
+    expect(await rejection.json()).toMatchObject({id:rejected.id,status:'REJECTED',publicationStatus:'UNPUBLISHED',rejectionReason:'Faltan datos de disponibilidad.'});
+    expect(await env.DB.prepare('SELECT action FROM admin_audit_events WHERE listing_id IN (?,?) ORDER BY action').bind(approved.id,rejected.id).all()).toMatchObject({results:[{action:'LISTING_APPROVED'},{action:'LISTING_REJECTED'}]});
+  },15_000);
+
   it('requires a meaningful rejection reason and keeps rejected listing unpublished',async()=>{
     const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
     const listing=await (await request('/listings','POST',{...fields,title:'Otra cabaña sintética'},owner)).json() as {id:string};
@@ -89,6 +106,14 @@ describe('ADMIN moderation and publication',()=>{
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(expect.arrayContaining([expect.objectContaining({id:'generic-audit-synthetic',entityType:'USER',entityId:'synthetic-target',listingId:null,targetOwnerId:null,targetOwner:null,metadata:{source:'test'},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}})]));
     await expect(env.DB.prepare('INSERT INTO admin_audit_events(id,actor_id,action,entity_type,metadata,created_at) VALUES(?,?,?,?,?,?)').bind('invalid-json-audit','moderation-admin','OWNER_ASSISTED','USER','not-json',at).run()).rejects.toThrow();
+  });
+
+  it('rejects fractional audit limits as a client error instead of binding them to SQLite',async()=>{
+    const admin=await login('moderation.admin@example.test');
+    const invalid=await request('/admin/listings/audit?limit=1.5','GET',undefined,admin);
+    expect(invalid.status).toBe(400);
+    expect(await invalid.json()).toMatchObject({error:'limit must be an integer'});
+    expect((await request('/admin/listings/audit?limit=1','GET',undefined,admin)).status).toBe(200);
   });
 
   it('paginates the moderation queue so listings after the first 100 remain reachable',async()=>{

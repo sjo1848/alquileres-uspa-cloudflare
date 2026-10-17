@@ -93,14 +93,14 @@ app.get('/admin/listings/review',async c=>{
   const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
   return c.json({items:rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
 });
-app.post('/admin/listings/:id/review',async c=>{
-  const listingId=c.req.param('id'),input=await c.req.json().catch(()=>null) as any;
-  if(!input||!['approve','reject'].includes(input.action))return c.json({error:'invalid review action'},400);
-  const reason=input.action==='reject'?input.reason:null;
-  if(input.action==='reject'&&(typeof reason!=='string'||reason.trim().length<3||reason.trim().length>1000))return c.json({error:'rejection reason must contain 3 to 1000 characters'},400);
-  if(input.action==='approve'&&input.reason!==undefined)return c.json({error:'approval does not accept a rejection reason'},400);
-  if(input.action==='approve'&&d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
-  const action=input.action==='approve'?'LISTING_APPROVED':'LISTING_REJECTED',status=input.action==='approve'?'APPROVED':'REJECTED',publication='UNPUBLISHED',at=now(),eventId=id();
+async function adminReview(c:any,routeAction?:'approve'|'reject'){
+  const listingId=c.req.param('id'),input=await c.req.json().catch(()=>null) as any,actionValue=routeAction??input?.action;
+  if(!['approve','reject'].includes(actionValue))return c.json({error:'invalid review action'},400);
+  const reason=actionValue==='reject'?input?.reason:null;
+  if(actionValue==='reject'&&(typeof reason!=='string'||reason.trim().length<3||reason.trim().length>1000))return c.json({error:'rejection reason must contain 3 to 1000 characters'},400);
+  if(actionValue==='approve'&&routeAction===undefined&&input?.reason!==undefined)return c.json({error:'approval does not accept a rejection reason'},400);
+  if(actionValue==='approve'&&d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
+  const action=actionValue==='approve'?'LISTING_APPROVED':'LISTING_REJECTED',status=actionValue==='approve'?'APPROVED':'REJECTED',publication='UNPUBLISHED',at=now(),eventId=id();
   const updated=c.env.DB.prepare('UPDATE listings SET status=?,publication_status=?,rejection_reason=?,updated_at=? WHERE id=? AND status=\'SUBMITTED\'').bind(status,publication,reason?.trim()??null,at,listingId);
   const reasonValue=reason?.trim()??null,metadata=JSON.stringify(reasonValue?{reason:reasonValue}:{});
   const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,?,?,?,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status=? AND l.updated_at=?").bind(eventId,c.get('user').id,action,metadata,reasonValue,at,listingId,status,at);
@@ -110,7 +110,10 @@ app.post('/admin/listings/:id/review',async c=>{
   }catch{return c.json({error:'review outcome could not be confirmed'},503);}
   const result=await c.env.DB.prepare("SELECT id,status,publication_status AS publicationStatus,rejection_reason AS rejectionReason,updated_at AS updatedAt FROM listings WHERE id=?").bind(listingId).first();
   return result?c.json(result):c.json({error:'listing not found'},404);
-});
+}
+app.post('/admin/listings/:id/review',c=>adminReview(c));
+app.post('/admin/listings/:id/approve',c=>adminReview(c,'approve'));
+app.post('/admin/listings/:id/reject',c=>adminReview(c,'reject'));
 app.post('/admin/listings/:id/publish',async c=>{
   const listingId=c.req.param('id'),at=now(),eventId=id();
   if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
@@ -121,7 +124,9 @@ app.post('/admin/listings/:id/publish',async c=>{
   return c.json(await c.env.DB.prepare('SELECT id,status,publication_status AS publicationStatus,updated_at AS updatedAt FROM listings WHERE id=?').bind(listingId).first());
 });
 app.get('/admin/listings/audit',async c=>{
-  const listingId=c.req.query('listingId'),limit=Math.min(Math.max(Number(c.req.query('limit')??50)||50,1),100);
+  const listingId=c.req.query('listingId'),requestedLimit=Number(c.req.query('limit')??50);
+  if(!Number.isInteger(requestedLimit))return c.json({error:'limit must be an integer'},400);
+  const limit=Math.min(Math.max(requestedLimit||50,1),100);
   const columns='SELECT a.id,a.entity_type AS entityType,a.entity_id AS entityId,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.metadata,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id LEFT JOIN users o ON o.id=a.target_owner_id';
   const rows=listingId
     ? (await c.env.DB.prepare(`${columns} WHERE a.listing_id=? ORDER BY a.created_at DESC,a.id DESC LIMIT ?`).bind(listingId,limit).all<any>()).results
