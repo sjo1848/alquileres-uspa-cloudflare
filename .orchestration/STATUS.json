@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "Local OWNER photo E2E 9/9 and ADMIN moderation E2E 9/9 PASS; GitHub P1/P2 fixes implemented; final PR checks and Controller pending",
+  "last_completed_task": "Local OWNER/ADMIN E2Es and focused checks pass; GitHub review has no major findings and prior threads are resolved; Controller review must be retried after evidence whitespace correction",
   "last_completed_head": "ccec80df4f273fee36dc4921b1af00b13c19ae36",
   "work_branch": "work/admin-moderation",
-  "next_action": "Push executable/evidence commit ccec80d and state checkpoint; verify worker/web checks, run GitHub automatic review on exact resulting PR #15 head, resolve material findings, then run separate read-only GPT-6 Luna High Controller against that exact head. Keep merge and Preview update behind these controls; remote photos remain BLOCKED_AUTH without an Access session, and remote ADMIN requires authorized role mapping.",
+  "next_action": "Commit/push evidence whitespace correction and state checkpoint; confirm worker/web checks and GitHub review on new PR #15 head, then run a distinct direct codex exec Controller on that exact SHA with GPT-6 Luna High and --sandbox read-only; do not spawn a nested reviewer.",
   "stop_reason": null,
   "event": {
-    "seq": 72,
-    "id": "OWNER_PHOTOS_ADMIN_E2E_GITHUB_FINDINGS_REPAIRED",
-    "type": "LOCAL_VALIDATION_AND_REWORK"
+    "seq": 73,
+    "id": "PRECITIC_WHITESPACE_CORRECTION_CONTROLLER_RETRY",
+    "type": "EVIDENCE_REWORK"
   },
   "external_review": {
     "required": true,
@@ -135,12 +135,12 @@
       "admin_playwright": "PASS 9/9 local",
       "remote_playwright": "BLOCKED_AUTH"
     },
-    "controller": "PENDING_EXACT_PR15_HEAD_AFTER_PUSH",
-    "github_quick_checks": "PENDING_NEW_PR15_HEAD",
-    "github_automatic_review": "PENDING_NEW_PR15_HEAD",
+    "controller": "RETRY_PENDING_EXACT_NEW_PR15_HEAD; prior attempt BLOCKED_MODEL_CONFIG after nested reviewer startup failure",
+    "github_quick_checks": "PASS on c554707; rerun after docs-only evidence correction",
+    "github_automatic_review": "NO_MAJOR_ISSUES on c554707; rerun after docs-only evidence correction",
     "preview_deployment": "UNCHANGED",
     "admin_remote_identity": "NOT_CREATED; explicit authorized role mapping required",
-    "candidate_pr_head": "ccec80df4f273fee36dc4921b1af00b13c19ae36 (executable/evidence candidate; state checkpoint to follow)",
+    "candidate_pr_head": "c55470740e8a730cc7bb03c2583fe37d3178f634 (pre-correction head; next commit is docs-only)",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"

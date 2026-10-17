@@ -1,7 +1,7 @@
 # CF-AU-I02 — OWNER photos and ADMIN moderation local E2E
 
-Date: 2026-10-16 (America/Argentina/Buenos_Aires)  
-Canonical base: `main@59660aed13f68b92b00cae0eced4494b54f2d8a7`  
+Date: 2026-10-16 (America/Argentina/Buenos_Aires)
+Canonical base: `main@59660aed13f68b92b00cae0eced4494b54f2d8a7`
 Scope: synthetic local Workerd + isolated D1 only. No remote resource or deployment changed.
 
 ## OWNER D1 BLOB photo journey — PASS
