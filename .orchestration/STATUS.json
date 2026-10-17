@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "Restored source ADMIN detail/approve/reject routes and complete response/audit/replay semantics; Worker ADMIN 10/10, Worker/Web checks and local ADMIN Playwright 12/12 pass locally; exact-head GitHub review and Controller pending.",
-  "last_completed_head": "5033f8bc2a8789d495af9fb9b7c9ab97f5401724",
+  "last_completed_task": "Restored source ADMIN detail/approve/reject route and image URL parity across review, published and rejected states; Worker ADMIN 10/10 PASS and local synthetic ADMIN Playwright 12/12 PASS; exact-head GitHub checks/review and Controller pending.",
+  "last_completed_head": "bf735e010a561b87503ba4605541252be516a48c",
   "work_branch": "work/admin-moderation",
-  "next_action": "Verify exact current PR #15 head and worker/web CI; process automatic GitHub review and resolve remaining material threads; run the separate GPT-6 Luna High read-only Controller on the exact final candidate; complete Pre-Critic and protected integration only if all checks pass.",
+  "next_action": "Verify exact current PR #15 worker/web checks and automatic review; process the image-state thread and any new material findings; run separate read-only GPT-6 Luna High Controller on the exact final candidate; complete Pre-Critic and protected integration only if clean.",
   "stop_reason": null,
   "event": {
-    "seq": 86,
-    "id": "ADMIN_SOURCE_DETAIL_ROUTE_PARITY",
+    "seq": 87,
+    "id": "ADMIN_IMAGE_READ_AFTER_STATE_TRANSITION",
     "type": "CHECKPOINT_SYNC"
   },
   "external_review": {
@@ -121,40 +121,36 @@
     "scope": "Synthetic local OWNER D1 BLOB images and ADMIN moderation/audit. USD 0; no R2, remote mutation, production, real data or source writes.",
     "admin_ui_implementation_commit": "f3366307556b536fa8d90a2572993c84c9ec0c99",
     "deterministic_admin_e2e_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
-    "latest_worker_code_test_commit": "5033f8bc2a8789d495af9fb9b7c9ab97f5401724",
-    "latest_worker_code_test_tree": "6f5c94137291388d7aa46154d19e6b2572867c2b",
+    "latest_worker_code_test_commit": "bf735e010a561b87503ba4605541252be516a48c",
+    "latest_worker_code_test_tree": "f9b9da218d4111cc0f4651a0e1b5f96f16f9bb45",
     "previous_controller_review": "PASS on f21dea8 before Worker route/limit changes; fresh review required for this code",
     "github_review_of_prior_head": {
-      "head": "3e936f1bcd7ab380ae1b1894e3875e7fff2b7d42",
-      "verdict": "COMPLETED_P2_FINDINGS",
-      "findings": [
-        "source approve/reject response and replay parity",
-        "stale STATUS checkpoint",
-        "missing GET /admin/listings/:id detail route"
-      ],
-      "all_material_code_findings": "fixed locally and pushed through 5033f8b; latest automatic review pending"
+      "head": "361448f65cc1b1e40c9dd680af91eb6bc71b47cd",
+      "verdict": "COMPLETED_P2_IMAGE_URL_STATE_MISMATCH",
+      "finding": "Authenticated ADMIN image URLs returned in reject/publish result failed after the listing left the review state; fixed on bf735e0."
     },
     "findings_fixed_locally": [
       "Restore source GET /admin/listings/:id detail route using full ADMIN DTO and ADMIN-only middleware",
       "Restore source POST /admin/listings/:id/approve and /reject routes with ADMIN authorization",
       "Reject fractional admin audit limits with HTTP 400 before SQLite binding",
       "Return source ADMIN listing shape and ADMIN_LISTING_* audit names/metadata",
-      "Return idempotent success for repeated approval, same-reason rejection, and publication; changed rejection reason remains conflict"
+      "Return idempotent success for repeated approval, same-reason rejection, and publication; changed rejection reason remains conflict",
+      "Keep authenticated ADMIN image read URLs valid for any listing state, including rejected and published, with explicit non-ADMIN denial."
     ],
     "checks": {
-      "worker_admin": "10/10 PASS on 5033f8b",
-      "worker_typecheck": "PASS on 5033f8b",
-      "admin_playwright": "12/12 PASS local synthetic after detail route fix",
-      "web_typecheck_build": "PASS on executable candidate 834bc37; no subsequent web source changes",
+      "worker_admin": "10/10 PASS on bf735e0, including D1 BLOB image reads after publication/rejection and OWNER denial",
+      "worker_typecheck": "PASS on bf735e0",
+      "admin_playwright": "12/12 PASS on 5033f8b; no Vue/browser code changed after that run",
+      "web_typecheck_build": "PASS on 834bc37; no Vue source changes since",
       "python_scripts": "9/9 PASS; migration 0010 applied local only",
       "owner_playwright": "9/9 prior local synthetic; OWNER implementation unchanged",
       "github_worker_web": "PENDING exact latest PR checkpoint head",
       "github_automatic_review": "PENDING exact latest PR checkpoint head",
-      "controller": "PENDING exact final PR SHA; previous reviews do not approve this code",
+      "controller": "PENDING exact final PR SHA",
       "remote_e2e": "BLOCKED_AUTH"
     },
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "next_action": "Verify exact current PR #15 checks/review and resolve material findings; then run exact-SHA Controller, finish Pre-Critic and protected integration if clean.",
+    "next_action": "Query current PR #15 head/checks; resolve image-state review finding after confirming fix, run exact-SHA Controller and Pre-Critic, then protected integration if gates pass.",
     "precritic": "PENDING exact-head GitHub review/checks and fresh Controller PASS",
     "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md"
   },
