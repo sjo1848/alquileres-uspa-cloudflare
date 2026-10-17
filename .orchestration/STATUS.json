@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "Restored source-compatible ADMIN approve/reject routes and rejected fractional audit LIMITs; ADMIN tests 10/10 and Worker typecheck pass; new code needs exact-head reviews",
-  "last_completed_head": "b9a3d503e9edd8bb6d7c3a0273d887cf9e5be5c1",
+  "last_completed_task": "Restored source ADMIN response/audit semantics and idempotent moderation replays; ADMIN tests 10/10, typechecks/build and local ADMIN Playwright 12/12 pass; exact-head reviews pending.",
+  "last_completed_head": "834bc37d4c38d7d00bb74398ec3f5955ad782a9b",
   "work_branch": "work/admin-moderation",
-  "next_action": "Reconcile local work/admin-moderation with origin; query exact PR #15 HEAD and publish b9a3d50 if absent; verify worker/web checks and automatic review; process the two route/limit findings; obtain a fresh exact-candidate delegated Controller PASS and complete Pre-Critic.",
+  "next_action": "Query exact PR #15 head and required checks; request/process GitHub automatic review, run delegated GPT-6 Luna High read-only Controller against the exact final tree, complete Pre-Critic and protected integration only if all controls pass.",
   "stop_reason": null,
   "event": {
-    "seq": 84,
-    "id": "ADMIN_SOURCE_ROUTES_AND_AUDIT_LIMIT_REWORK",
+    "seq": 85,
+    "id": "ADMIN_SOURCE_SEMANTICS_REPLAY_PARITY",
     "type": "CHECKPOINT_SYNC"
   },
   "external_review": {
@@ -121,27 +121,36 @@
     "scope": "Synthetic local OWNER D1 BLOB images and ADMIN moderation/audit. USD 0; no R2, remote mutation, production, real data or source writes.",
     "admin_ui_implementation_commit": "f3366307556b536fa8d90a2572993c84c9ec0c99",
     "deterministic_admin_e2e_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
-    "latest_worker_code_test_commit": "b9a3d503e9edd8bb6d7c3a0273d887cf9e5be5c1",
-    "latest_worker_code_test_tree": "a410e66e22f4ee888b86074031ba71591b99e363",
+    "latest_worker_code_test_commit": "834bc37d4c38d7d00bb74398ec3f5955ad782a9b",
+    "latest_worker_code_test_tree": "2be4e9f3ad1cd42ac1bb0f6ee82dec33afc3b2a8",
     "previous_controller_review": "PASS on f21dea8 before Worker route/limit changes; fresh review required for this code",
     "github_review_of_prior_head": {
-      "head": "9a9840549f5fb54d30a2f9c4c64b9e071846a047",
-      "verdict": "COMPLETED_TWO_P2",
-      "evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A98405-REVIEW.json"
+      "head": "3e936f1bcd7ab380ae1b1894e3875e7fff2b7d42",
+      "verdict": "COMPLETED_TWO_P2_CONTROLLER_REWORK",
+      "evidence": "controller finding persisted in Event 85; raw prior output unavailable in resumed runtime"
     },
     "findings_fixed_locally": [
-      "Restore /admin/listings/:id/approve and /reject source routes through shared authorized review transaction",
-      "Reject fractional admin audit limit with HTTP 400 before SQLite binding"
+      "Restore source POST /admin/listings/:id/approve and /reject and preserve ADMIN authorization",
+      "Reject fractional admin audit limits with HTTP 400 before SQLite binding",
+      "Return complete source ADMIN listing shape and source ADMIN_LISTING_* audit actions/metadata",
+      "Return idempotent success/audit on same approve/reject/publish outcome; reject different rejection reason"
     ],
     "checks": {
-      "worker_admin": "10/10 PASS",
-      "worker_typecheck": "PASS",
-      "admin_playwright": "12/12 PASS local synthetic",
-      "web_typecheck_build": "PASS",
+      "worker_admin": "10/10 PASS on 834bc37",
+      "worker_typecheck": "PASS on 834bc37",
+      "admin_playwright": "12/12 PASS local synthetic on 834bc37",
+      "web_typecheck_build": "PASS on 834bc37",
+      "python_scripts": "9/9 PASS; migration 0010 applied local only",
+      "owner_playwright": "9/9 prior local synthetic; OWNER implementation unchanged",
+      "github_worker_web": "PENDING exact current PR head",
+      "github_automatic_review": "PENDING exact current PR head",
+      "controller": "PENDING exact final PR SHA; prior 3e936f1 Controller REWORK must not be reused as approval",
       "remote_e2e": "BLOCKED_AUTH"
     },
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "next_action": "Resolve actual GitHub PR #15 HEAD; ensure it contains b9a3d50; verify required checks/review and the two documented fixes, then obtain a fresh Controller PASS and finish Pre-Critic."
+    "next_action": "Query exact PR #15 head/checks; complete GitHub automatic review, exact-SHA Controller, Pre-Critic and protected integration if all are clean.",
+    "precritic": "PENDING exact-head GitHub review/checks and fresh Controller PASS",
+    "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
 }
