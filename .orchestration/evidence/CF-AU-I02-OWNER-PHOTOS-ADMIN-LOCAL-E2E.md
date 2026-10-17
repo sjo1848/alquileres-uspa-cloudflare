@@ -87,6 +87,14 @@ Worker ADMIN Vitest passed **8/8**; Preview-auth passed **4/4**; Worker typechec
 
 The completed GitHub review on PR head `43d38cb` found one final P2: the machine-readable `apps/worker/docs/postgres-d1-map.json` still marked `AdminAuditLog` unimplemented after the Markdown map and D1 migration were corrected. The JSON ledger now records `OPERATIONAL_SYNTHETIC`, `admin_audit_events`, migration `0009`, source-shaped fields, JSON validation and indexes. JSON parsing and the Python migration regression suite pass 9/9. This is a parity-ledger correction; it does not change executable behavior. Re-run exact-head GitHub review and Controller after publishing it.
 
+## 2026-10-17 ADMIN source-route and audit-limit regressions
+
+GitHub's automatic review of PR HEAD `9a9840549f5fb54d30a2f9c4c64b9e071846a047` reported two P2 parity/input findings, preserved with the exact snapshot at `.orchestration/evidence/CF-AU-I02-GITHUB-9A98405-REVIEW.json`: the source-compatible POST `/admin/listings/:id/approve` and `/reject` endpoints were absent; fractional `audit?limit=1.5` was bound as a SQLite LIMIT and could produce HTTP 500.
+
+The Worker now exposes those source routes through the same authorization, legacy-media guard, D1 state/audit batch and response logic as `/review`. The approve route works with the source's empty body; reject requires the same validated reason. New tests prove both route outcomes/audit events and OWNER gets 401 on the approve alias. Audit LIMIT rejects non-integers with HTTP 400 before SQL binding, while integer requests still work.
+
+After these Worker changes, `npm run test:admin` passes **10/10**, Worker typecheck passes, and the complete integrated local synthetic ADMIN Playwright CLI flow passes **12/12**. That browser run covers the shared combined `/review` handler, approval/publication/rejection, D1 image visibility, deterministic pending-request selection lock, audit display, pagination and session expiry. `node --check apps/web/e2e/admin-moderation.playwright.js` and `git diff --check` pass. OWNER photo implementation is unchanged; its earlier local E2E remains **9/9**. The code/test commit is `b9a3d503e9edd8bb6d7c3a0273d887cf9e5be5c1` (tree `a410e66e22f4ee888b86074031ba71591b99e363`). The prior Controller PASS predates this Worker change and must not be reused as approval of this commit.
+
 ## 2026-10-17 Controller REWORK and ADMIN pending-action regression
 
 The separate read-only Controller inspected exact PR HEAD `18f405cb94f039392cdc5ff1cad23bc46706036c` (tree `40261e117fff9570e56fe605234ba59ebb131898`) and returned **REWORK, one P2**: while approval/rejection/publication was pending, the queue selection and refresh/load-more controls could change the visible listing before the server response, misattributing the result. Full finding and provenance: `.orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-18F405C-REWORK.md`.

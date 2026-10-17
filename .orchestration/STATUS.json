@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "ADMIN pending-action UI defect and deterministic regression completed; Controller PASS on f21dea8; GitHub checks pass but automatic review found stale nested current_functional_increment pointer, now being synchronized",
-  "last_completed_head": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
+  "last_completed_task": "Restored source-compatible ADMIN approve/reject routes and rejected fractional audit LIMITs; ADMIN tests 10/10 and Worker typecheck pass; new code needs exact-head reviews",
+  "last_completed_head": "b9a3d503e9edd8bb6d7c3a0273d887cf9e5be5c1",
   "work_branch": "work/admin-moderation",
-  "next_action": "Reconcile local branch with origin/work/admin-moderation; query actual PR #15 HEAD; verify worker/web checks and automatic review after this documentation-only pointer correction; resolve any material findings; then complete Pre-Critic and protected-merge checks. Do not deploy until separately validated.",
+  "next_action": "Reconcile local work/admin-moderation with origin; query exact PR #15 HEAD and publish b9a3d50 if absent; verify worker/web checks and automatic review; process the two route/limit findings; obtain a fresh exact-candidate delegated Controller PASS and complete Pre-Critic.",
   "stop_reason": null,
   "event": {
-    "seq": 83,
-    "id": "ADMIN_FUNCTIONAL_INCREMENT_POINTER_REWORK",
+    "seq": 84,
+    "id": "ADMIN_SOURCE_ROUTES_AND_AUDIT_LIMIT_REWORK",
     "type": "CHECKPOINT_SYNC"
   },
   "external_review": {
@@ -54,46 +54,32 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "f3366307556b536fa8d90a2572993c84c9ec0c99",
-    "code_tree": "123981ae2bd053ac9aa618bec231c892015be310",
-    "test_evidence_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
-    "test_evidence_tree": "a5e04d88cfac0da9bd6c2efc2c7eaa27b6e658ee",
-    "controller": {
+    "code_sha": "b9a3d503e9edd8bb6d7c3a0273d887cf9e5be5c1",
+    "code_tree": "a410e66e22f4ee888b86074031ba71591b99e363",
+    "previous_controller": {
       "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
       "reviewed_pr_head": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
-      "reviewed_tree": "b4133e78d4af65cb4b00360d075f0623b75cc43d",
-      "reviewer_kind": "delegated_codex_separate_process",
-      "model_requested": "gpt-6-luna",
-      "reasoning_requested": "high",
-      "sandbox": "read-only",
-      "cli_configuration_accepted": true,
-      "actual_backend_model_identity": "UNVERIFIED",
-      "session_id": "98162",
-      "thread_id": "01a14ab4-3f11-7240-ada5-0d4b95b6db47",
-      "process_exit": 0,
       "evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-F21DEA8-PASS.md",
-      "post_review_delta": "Documentation-only correction of duplicate current_functional_increment pointer; no executable/test files changed."
+      "note": "Predates Worker route/limit changes; not approval of b9a3d50."
     },
     "checks": {
-      "worker_admin": "8/8 PASS on unchanged Worker test tree da15d77",
-      "worker_preview_auth": "4/4 PASS on unchanged Worker test tree da15d77",
-      "worker_typecheck": "PASS",
-      "python_scripts": "9/9 PASS on migration/parity tree da15d77",
-      "owner_playwright": "PASS 9/9 local synthetic; no Owner implementation changed after tested tree",
-      "admin_playwright": "PASS 12/12 local synthetic on deterministic interception/gate test commit da1855d",
-      "web_typecheck": "PASS; ADMIN Vue implementation at f336630",
-      "web_build": "PASS; ADMIN Vue implementation at f336630",
-      "playwright_js_syntax": "PASS",
+      "worker_admin": "10/10 PASS on code/test commit b9a3d50",
+      "worker_typecheck": "PASS on b9a3d50",
+      "web_typecheck_build": "PASS; Vue implementation unchanged after f336630",
+      "owner_playwright": "9/9 PASS local synthetic; OWNER implementation unchanged",
+      "admin_playwright": "12/12 PASS local synthetic deterministic request gate; test commit da1855d",
+      "python_scripts": "9/9 PASS; migration/parity code unchanged",
+      "node_check": "PASS for ADMIN Playwright JS",
       "git_diff_check": "PASS",
-      "github_worker_web": "PASS exact f21dea8, run 39049685365",
-      "github_automatic_review": "COMPLETED with P2 stale nested current_functional_increment pointer on f21dea8; correcting in this docs-only checkpoint; rerun exact current HEAD",
-      "controller": "PASS exact f21dea8/tree b4133e78; bounded local/synthetic; backend identity UNVERIFIED",
+      "github_worker_web": "PASS exact state-only head 9a98405, run 39050084358; rerun after this correction is pushed",
+      "github_automatic_review": "COMPLETED on 9a98405 with two P2 findings: source approve/reject aliases; fractional audit limit 500. Both fixed/tested locally; new exact-head review pending",
+      "controller": "Prior PASS on f21dea8 does not cover Worker changes; fresh exact-candidate review pending",
       "remote_playwright": "BLOCKED_AUTH"
     },
-    "scope": "LOCAL_SYNTHETIC_ONLY; USD 0; no R2; remote Preview and Access unchanged",
-    "precritic": "PENDING refreshed GitHub checks/review on this docs-only canonical-pointer correction; Controller PASS covers exact code/test candidate and prior checkpoint, no executable/test delta since review.",
-    "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-F21DEA8-REVIEW.json",
-    "github_controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-F21DEA8-PASS.md",
+    "scope": "LOCAL_SYNTHETIC_ONLY; strict USD 0; no R2/billing/remote mutation/production/real data/source writes",
+    "precritic": "PENDING exact-head GH checks/review and fresh Controller on b9a3d50",
+    "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A98405-REVIEW.json",
+    "next_action": "Verify source-compatible approve/reject aliases and integer audit LIMIT in pushed PR candidate; process exact-head review; run Controller and Pre-Critic before protected merge.",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15"
   },
   "human_acceptance": {
@@ -133,29 +119,29 @@
   "current_functional_increment": {
     "canonical_main": "59660aed13f68b92b00cae0eced4494b54f2d8a7",
     "scope": "Synthetic local OWNER D1 BLOB images and ADMIN moderation/audit. USD 0; no R2, remote mutation, production, real data or source writes.",
-    "implementation_commit": "f3366307556b536fa8d90a2572993c84c9ec0c99",
-    "implementation_tree": "123981ae2bd053ac9aa618bec231c892015be310",
-    "deterministic_test_evidence_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
-    "deterministic_test_evidence_tree": "a5e04d88cfac0da9bd6c2efc2c7eaa27b6e658ee",
-    "latest_reviewed_checkpoint": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
+    "admin_ui_implementation_commit": "f3366307556b536fa8d90a2572993c84c9ec0c99",
+    "deterministic_admin_e2e_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
+    "latest_worker_code_test_commit": "b9a3d503e9edd8bb6d7c3a0273d887cf9e5be5c1",
+    "latest_worker_code_test_tree": "a410e66e22f4ee888b86074031ba71591b99e363",
+    "previous_controller_review": "PASS on f21dea8 before Worker route/limit changes; fresh review required for this code",
+    "github_review_of_prior_head": {
+      "head": "9a9840549f5fb54d30a2f9c4c64b9e071846a047",
+      "verdict": "COMPLETED_TWO_P2",
+      "evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A98405-REVIEW.json"
+    },
+    "findings_fixed_locally": [
+      "Restore /admin/listings/:id/approve and /reject source routes through shared authorized review transaction",
+      "Reject fractional admin audit limit with HTTP 400 before SQLite binding"
+    ],
     "checks": {
-      "worker_admin": "8/8 PASS",
-      "worker_preview_auth": "4/4 PASS",
+      "worker_admin": "10/10 PASS",
       "worker_typecheck": "PASS",
+      "admin_playwright": "12/12 PASS local synthetic",
       "web_typecheck_build": "PASS",
-      "python_scripts": "9/9 PASS",
-      "owner_playwright": "9/9 PASS local synthetic",
-      "admin_playwright": "12/12 PASS local synthetic deterministic request gate",
-      "github_worker_web": "PASS run 39049685365 on f21dea8",
-      "github_automatic_review": "P2 stale duplicate pointer found on f21dea8; fixed in current status checkpoint; exact current-head review pending",
-      "controller": "PASS on f21dea8; no P0/P1/P2 code/test finding; read-only delegated separate process; backend identity UNVERIFIED",
       "remote_e2e": "BLOCKED_AUTH"
     },
-    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-F21DEA8-PASS.md",
-    "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-F21DEA8-REVIEW.json",
-    "preview": "unchanged; Access protected; remote ADMIN role mapping absent",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "next_action": "Verify PR review thread PRRT_kwDOUEeGdc6tiFPl is resolved (reply and resolve only if still open); query actual PR #15 HEAD and verify exact worker/web checks plus automatic review. If only docs changed, retain Controller PASS on exact code/test tree; complete Pre-Critic and protected-merge review."
+    "next_action": "Resolve actual GitHub PR #15 HEAD; ensure it contains b9a3d50; verify required checks/review and the two documented fixes, then obtain a fresh Controller PASS and finish Pre-Critic."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
 }
