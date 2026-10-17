@@ -66,7 +66,7 @@ describe('ADMIN moderation and publication',()=>{
   });
 
   it('uses the recent-audit index for global activity ordering',async()=>{
-    const plan=await env.DB.prepare('EXPLAIN QUERY PLAN SELECT id FROM admin_audit_events ORDER BY created_at DESC,id DESC LIMIT 30').all<any>();
+    const plan=await env.DB.prepare('EXPLAIN QUERY PLAN SELECT a.id,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id JOIN users o ON o.id=a.target_owner_id ORDER BY a.created_at DESC,a.id DESC LIMIT 30').all<any>();
     const details=plan.results.map(row=>row.detail).join('\n');
     expect(details).toContain('admin_audit_events_recent_idx');
     expect(details).not.toContain('USE TEMP B-TREE FOR ORDER BY');

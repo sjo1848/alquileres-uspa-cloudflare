@@ -28,11 +28,15 @@ The prior P1 is covered by regression tests: legacy D1 BLOB NULL rows are flagge
 - The committed E2E evidence still says CI for the updated workflow is pending, while the current report says worker/web CI passed. Reconcile that evidence with the exact-head check result before finalizing the artifact record. The GitHub automatic review is still running; address any material finding before the next release boundary.
 - Remote E2E remains `BLOCKED_AUTH`; Preview is unchanged. No remote ADMIN mapping is required for this local verdict.
 
-`REVIEWER_KIND=delegated_codex_separate_process`  
-`MODEL_REQUESTED=gpt-6-luna`  
-`EFFORT_REQUESTED=high`  
-`ACTUAL_RUNTIME_MODEL_EVIDENCE=UNVERIFIED`  
-`ARTIFACT_SHA=d1bde27e82b7fe25f1896a740d849735f0b2440b`  
+`REVIEWER_KIND=delegated_codex_separate_process`
+`MODEL_REQUESTED=gpt-6-luna`
+`EFFORT_REQUESTED=high`
+`ACTUAL_RUNTIME_MODEL_EVIDENCE=UNVERIFIED`
+`ARTIFACT_SHA=d1bde27e82b7fe25f1896a740d849735f0b2440b`
 `CANONICAL_BASE_SHA=59660aed13f68b92b00cae0eced4494b54f2d8a7`
 
 This is a delegated Codex review, not a separate trusted external actor.
+
+## Parent follow-up after the review snapshot
+
+The contemporaneous review response said GitHub checks were running. The parent later verified required checks `worker` and `web` both completed SUCCESS on exact PR head `d1bde27e82b7fe25f1896a740d849735f0b2440b` (Actions run 39043504266). Its automatic review completed with P2 findings for canonical status and audit indexing; those findings are retained in STATE/STATUS and the PR threads. The subsequent correction adds `admin_audit_events_recent_idx`; the exact joined route query is now asserted by EXPLAIN in `test:admin`.

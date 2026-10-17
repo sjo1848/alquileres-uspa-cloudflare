@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "OWNER/ADMIN E2E and local tests pass; GitHub P2 fixes for ADMIN CI and audit ordering are being completed",
-  "last_completed_head": "d1bde27e82b7fe25f1896a740d849735f0b2440b",
+  "last_completed_task": "Local OWNER photos and ADMIN journeys pass; latest Controller rework for evidence whitespace and route-query plan test has been corrected locally",
+  "last_completed_head": "bb5d7dfb70db4465930ea69997489457f35e55c3",
   "work_branch": "work/admin-moderation",
-  "next_action": "After committing the current state/evidence/index/test corrections, push the candidate on PR #15; verify required checks and automatic review on that exact head, resolve material findings, then run a fresh exact-head GPT-6 Luna High/read-only Controller. Only after all controls pass proceed to protected integration and the already-authorized existing private Preview update.",
+  "next_action": "Commit/push the current correction (normalized Controller report and exact joined audit-query EXPLAIN regression); verify exact-head worker/web checks and automatic review, resolve remaining PR threads, then run a fresh direct GPT-6 Luna High read-only Controller. Do not merge/deploy until all controls pass.",
   "stop_reason": null,
   "event": {
-    "seq": 74,
-    "id": "ADMIN_AUDIT_INDEX_AND_STATE_RECONCILIATION_REWORK",
-    "type": "GITHUB_REVIEW_REWORK"
+    "seq": 75,
+    "id": "CONTROLLER_REWORK_EVIDENCE_AND_AUDIT_PLAN_FIX",
+    "type": "CONTROLLER_REWORK"
   },
   "external_review": {
     "required": true,
@@ -135,12 +135,12 @@
       "admin_playwright": "PASS 9/9 local",
       "remote_playwright": "BLOCKED_AUTH"
     },
-    "controller": "PASS on exact d1bde27; report persisted; fresh exact-head review required after current audit-index change",
-    "github_quick_checks": "PASS on d1bde27, including test:admin 4/4; new 5/5 suite and audit-index test await exact-head CI",
-    "github_automatic_review": "COMPLETED_WITH_P2 on d1bde27: stale controller checkpoint and missing global audit ordering index; both corrections are in current local changes",
+    "controller": "REWORK on bb5d7df: evidence whitespace and simplified EXPLAIN query; both corrected locally; exact-head Controller rerun pending",
+    "github_quick_checks": "PASS on bb5d7df; rerun after test/evidence correction",
+    "github_automatic_review": "COMPLETED_WITH_P2 on bb5d7df: stale checkpoint and missing audit index; state updated and index added; rerun after query-test correction",
     "preview_deployment": "UNCHANGED",
     "admin_remote_identity": "NOT_CREATED; explicit authorized role mapping required",
-    "candidate_pr_head": "d1bde27e82b7fe25f1896a740d849735f0b2440b is latest published base for local audit-index/test/state correction",
+    "candidate_pr_head": "bb5d7dfb70db4465930ea69997489457f35e55c3 is latest published; exact audit query/test and reviewer-report cleanup are local",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
