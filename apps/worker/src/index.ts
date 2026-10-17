@@ -60,6 +60,68 @@ app.get('/auth/me',async c=>{
 app.post('/auth/logout',c=>{if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});});
 app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
 app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image upload is not available with repository-managed media'},503);await next();});
+app.use('/admin/*',async(c,next)=>{
+  if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
+  const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
+  if(!raw)return c.json({error:'Invalid or expired token'},401);
+  if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)&&c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  let claims:{id:string;email:string};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();
+  if(!user||user.email!==claims.email)return c.json({error:'Invalid or expired token'},401);
+  if(user.role!=='ADMIN')return c.json({error:'Insufficient role'},403);
+  c.set('user',user);await next();
+});
+app.get('/admin/listings/review',async c=>{
+  const rows=(await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED') ORDER BY l.updated_at,l.id LIMIT 100").all<any>()).results;
+  if(!rows.length)return c.json([]);
+  const images=await publicImages(c.env.DB,rows.map(row=>row.id),c.env.MEDIA_STRATEGY==='STATIC_ASSETS',d1ImageStatus(c));
+  const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
+  return c.json(rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[]})));
+});
+app.post('/admin/listings/:id/review',async c=>{
+  const listingId=c.req.param('id'),input=await c.req.json().catch(()=>null) as any;
+  if(!input||!['approve','reject'].includes(input.action))return c.json({error:'invalid review action'},400);
+  const reason=input.action==='reject'?input.reason:null;
+  if(input.action==='reject'&&(typeof reason!=='string'||reason.trim().length<3||reason.trim().length>1000))return c.json({error:'rejection reason must contain 3 to 1000 characters'},400);
+  if(input.action==='approve'&&input.reason!==undefined)return c.json({error:'approval does not accept a rejection reason'},400);
+  const action=input.action==='approve'?'LISTING_APPROVED':'LISTING_REJECTED',status=input.action==='approve'?'APPROVED':'REJECTED',publication='UNPUBLISHED',at=now(),eventId=id();
+  const updated=c.env.DB.prepare('UPDATE listings SET status=?,publication_status=?,rejection_reason=?,updated_at=? WHERE id=? AND status=\'SUBMITTED\'').bind(status,publication,reason?.trim()??null,at,listingId);
+  const audit=c.env.DB.prepare('INSERT INTO admin_audit_events(id,actor_id,listing_id,target_owner_id,action,reason,created_at) SELECT ?,?,l.id,l.owner_id,?,?,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status=? AND l.updated_at=?').bind(eventId,c.get('user').id,action,reason?.trim()??null,at,listingId,status,at);
+  try{
+    const results=await c.env.DB.batch([updated,audit]);
+    if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'listing is no longer awaiting review'},409);
+  }catch{return c.json({error:'review outcome could not be confirmed'},503);}
+  const result=await c.env.DB.prepare("SELECT id,status,publication_status AS publicationStatus,rejection_reason AS rejectionReason,updated_at AS updatedAt FROM listings WHERE id=?").bind(listingId).first();
+  return result?c.json(result):c.json({error:'listing not found'},404);
+});
+app.post('/admin/listings/:id/publish',async c=>{
+  const listingId=c.req.param('id'),at=now(),eventId=id();
+  const updated=c.env.DB.prepare("UPDATE listings SET publication_status='PUBLISHED',updated_at=? WHERE id=? AND status='APPROVED' AND publication_status='UNPUBLISHED'").bind(at,listingId);
+  const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,listing_id,target_owner_id,action,reason,created_at) SELECT ?,?,l.id,l.owner_id,'LISTING_PUBLISHED',NULL,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status='APPROVED' AND l.publication_status='PUBLISHED' AND l.updated_at=?").bind(eventId,c.get('user').id,at,listingId,at);
+  try{const results=await c.env.DB.batch([updated,audit]);if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'only an approved unpublished listing can be published'},409);}
+  catch{return c.json({error:'publication outcome could not be confirmed'},503);}
+  return c.json(await c.env.DB.prepare('SELECT id,status,publication_status AS publicationStatus,updated_at AS updatedAt FROM listings WHERE id=?').bind(listingId).first());
+});
+app.get('/admin/listings/audit',async c=>{
+  const listingId=c.req.query('listingId'),limit=Math.min(Math.max(Number(c.req.query('limit')??50)||50,1),100);
+  const rows=listingId
+    ? (await c.env.DB.prepare('SELECT a.id,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id JOIN users o ON o.id=a.target_owner_id WHERE a.listing_id=? ORDER BY a.created_at DESC,a.id DESC LIMIT ?').bind(listingId,limit).all<any>()).results
+    : (await c.env.DB.prepare('SELECT a.id,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id JOIN users o ON o.id=a.target_owner_id ORDER BY a.created_at DESC,a.id DESC LIMIT ?').bind(limit).all<any>()).results;
+  return c.json(rows.map(row=>({...row,actor:{id:row.actorId,email:row.actorEmail,role:'ADMIN'},targetOwner:{id:row.targetOwnerId,email:row.targetOwnerEmail,role:'OWNER'}})));
+});
+app.get('/admin/listings/:listingId/images/:imageId',async c=>{
+  const listingId=c.req.param('listingId'),imageId=c.req.param('imageId');
+  if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'){
+    const row=await c.env.DB.prepare("SELECT i.asset_path AS url FROM static_listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))").bind(listingId,imageId).first<{url:string}>();
+    return row?c.redirect(row.url,302):c.json({error:'image not found'},404);
+  }
+  if(d1ImageStatus(c)){
+    const row=await c.env.DB.prepare("SELECT i.blob_data,i.mime_type,i.byte_size FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))").bind(listingId,imageId).first<any>();
+    if(!row)return c.json({error:'image not found'},404);const bytes=d1BlobBytes(row.blob_data);if(!bytes||bytes.byteLength!==row.byte_size)return c.json({error:'image data unavailable'},503);return imageResponse(bytes,row.mime_type,true);
+  }
+  const row=await c.env.DB.prepare("SELECT i.object_key AS objectKey,i.mime_type AS mimeType,i.byte_size AS byteSize FROM listing_images i JOIN listings l ON l.id=i.listing_id WHERE i.listing_id=? AND i.id=? AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))").bind(listingId,imageId).first<any>();
+  if(!row)return c.json({error:'image not found'},404);const object=await c.env.IMAGES.get(row.objectKey);return object?new Response(object.body,{headers:{'Content-Type':row.mimeType,'Content-Length':String(row.byteSize),'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}}):c.json({error:'image not found'},404);
+});
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
 function validListingInput(x:any){return !(!x||typeof x.title!=='string'||x.title.length<1||x.title.length>120||typeof x.description!=='string'||x.description.length>5000||typeof x.location!=='string'||x.location.length<1||x.location.length>240||!Number.isInteger(x.priceAmount)||x.priceAmount<0||x.priceAmount>2147483647||!['WEEK','MONTH'].includes(x.pricePeriod)||!['WEEKS','MONTHS','PERMANENT','FLEXIBLE'].includes(x.rentalDuration)||!Number.isInteger(x.maxOccupants)||x.maxOccupants<1||x.maxOccupants>2147483647||!['ARS','USD'].includes(x.currency));}
 app.post('/listings',async c=>{

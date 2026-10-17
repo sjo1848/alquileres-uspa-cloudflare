@@ -25,7 +25,7 @@ async function submit() {
     else if(strategy.value==='PASSWORD')await session.authenticate('/auth/login', email.value, password.value);
     else return;
     password.value = '';
-    await router.push(safeLoginRedirect(route.query.redirect) ?? '/owner');
+    await router.push(safeLoginRedirect(route.query.redirect) ?? (session.role.value === 'ADMIN' ? '/admin' : '/owner'));
   } catch (e) {
     error.value = e instanceof ApiError && e.status === 401
       ? strategy.value==='ACCESS_PREVIEW'?'No pudimos verificar tu acceso. Volvé a ingresar al Preview.':'Email o contraseña incorrectos.'

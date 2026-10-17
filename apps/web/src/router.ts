@@ -4,6 +4,7 @@ import HomeView from './views/HomeView.vue';
 import ListingView from './views/ListingView.vue';
 import AuthView from './views/AuthView.vue';
 import OwnerView from './views/OwnerView.vue';
+import AdminReviewView from './views/AdminReviewView.vue';
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -12,6 +13,7 @@ export const router = createRouter({
     { path: '/listings/:id', component: ListingView },
     { path: '/login', component: AuthView },
     { path: '/owner', component: OwnerView, meta: { requiresAuth:true, role:'OWNER' } },
+    { path: '/admin', component: AdminReviewView, meta: { requiresAuth:true, role:'ADMIN' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),
@@ -28,5 +30,5 @@ router.beforeEach(async to=>{
   }
   if(to.meta.requiresAuth&&!session.isAuthenticated.value)return {path:'/login',query:{redirect:to.fullPath}};
   if(to.meta.role&&session.role.value!==to.meta.role)return '/';
-  if(to.path==='/login'&&session.isAuthenticated.value)return session.role.value==='OWNER'?'/owner':'/';
+  if(to.path==='/login'&&session.isAuthenticated.value)return session.role.value==='OWNER'?'/owner':'/admin';
 });
