@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
-  "last_completed_task": "CF-AU-I02 OWNER D1 BLOB functional candidate has Controller bounded PASS, GitHub exact-head no-findings review and Pre-Critic PASS; final docs-only head checks/review pending",
-  "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
-  "work_branch": "work/cf-au-owner-d1-blob",
-  "next_action": "Run required worker/web checks and GitHub automatic review on the new docs-only PR #14 head. If both checks pass, review reports no findings, and conversations remain resolved, protected-merge PR #14 and update only the existing private synthetic Preview; measure actual Free CPU before requesting photo acceptance.",
+  "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
+  "last_completed_task": "Local OWNER photo E2E and ADMIN moderation E2E PASS on isolated Workerd/D1; remote Access session unavailable",
+  "last_completed_head": "d35e9f12523963d56fb9f8277d9b07907ced8796",
+  "work_branch": "work/admin-moderation",
+  "next_action": "Record event 70, push the consolidated branch and create its PR; process required Worker/Web checks and GitHub review, then run the separate exact-PR-head GPT-6 Luna High read-only Controller. Do not merge or update Preview until review gates pass. Remote OWNER photo E2E needs a legitimate Access session in the same executor context; remote ADMIN additionally needs explicit authorization for an ADMIN identity mapping.",
   "stop_reason": null,
   "event": {
-    "seq": 69,
-    "id": "OWNER_D1_BLOB_PRECRITIC_PASS",
-    "type": "PRECRITIC_GATE"
+    "seq": 70,
+    "id": "OWNER_PHOTO_ADMIN_LOCAL_E2E_PASS_REMOTE_ACCESS_BLOCKED",
+    "type": "LOCAL_FUNCTIONAL_EVIDENCE"
   },
   "external_review": {
     "required": true,
@@ -28,7 +28,12 @@
     ]
   },
   "human_gate": null,
-  "blocker": null,
+  "blocker": {
+    "scope": "REMOTE_E2E_ONLY",
+    "classification": "BLOCKED_AUTH",
+    "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md",
+    "detail": "Playwright reaches Cloudflare Access sign-in; no legitimate operator session is available in this executor context. The local delivery candidate remains actionable."
+  },
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "integration_commit": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "issue_4": "CLOSED",
@@ -115,5 +120,25 @@
     "owner_journey": "UNVERIFIED_PERSONAL_ACCESS_SESSION_REQUIRED",
     "evidence": ".orchestration/evidence/CF-AU-OWNER-PREVIEW-PUBLICATION.json"
   },
-  "integration_reference": "Resolve exact merge SHA from GitHub PR13 mergeCommit; no self-referential predicted SHA."
+  "integration_reference": "Resolve exact merge SHA from GitHub PR13 mergeCommit; no self-referential predicted SHA.",
+  "current_functional_increment": {
+    "canonical_main": "59660aed13f68b92b00cae0eced4494b54f2d8a7",
+    "candidate_commit": "d35e9f12523963d56fb9f8277d9b07907ced8796",
+    "candidate_tree": "876a308d813c9b02f39c5be6e3fe1b668adecc71",
+    "scope": "Synthetic local only; OWNER D1 BLOB photos E2E and ADMIN review/approve/publish/reject/audit. USD 0, no R2, no remote mutation.",
+    "checks": {
+      "worker_focused": "14/14 PASS",
+      "worker_typecheck": "PASS",
+      "web_typecheck": "PASS",
+      "web_build": "PASS",
+      "owner_playwright": "PASS",
+      "admin_playwright": "PASS",
+      "remote_playwright": "BLOCKED_AUTH"
+    },
+    "controller": "PENDING_EXACT_PR_HEAD",
+    "github_quick_checks": "PENDING",
+    "github_automatic_review": "PENDING",
+    "preview_deployment": "UNCHANGED",
+    "admin_remote_identity": "NOT_CREATED; authorization required before remote access is enabled"
+  }
 }

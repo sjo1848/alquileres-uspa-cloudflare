@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `CF-AU-I02 — accepted public Preview; OWNER PR #13 corrections / Free auth CPU`
+Active task: `CF-AU-I02 — OWNER D1 BLOB photo E2E and ADMIN moderation/publication`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -564,3 +564,14 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Pre-Critic **PASS for protected integration and the already-authorized same private Preview update**, with evidence in `evidence/CF-AU-I02-OWNER-D1-BLOB-PRECRITIC.md`. It does not assert actual Cloudflare CPU or Human photo acceptance. Strict USD0/no-R2/no-new-resource boundaries remain.
 - This checkpoint adds only the Pre-Critic/state evidence. Its resulting docs-only PR head must itself retain green `worker`/`web`, completed no-findings automatic review and zero unresolved threads before merge.
 - **READY_TO_RESUME:** run final checks/review on the docs-only head; if clean, protected-merge PR #14 preserving history, verify merge SHA/A4 ancestry/protection, then update only the existing Access-protected synthetic Preview. Measure Cloudflare Free CPU. Ask for the new 3–6-step OWNER photo journey only after the Preview works.
+
+## Event 70 — OWNER photos and ADMIN local journeys completed; remote Access boundary remains
+
+- Canonical `main` was fetched and verified at `59660aed13f68b92b00cae0eced4494b54f2d8a7`. All work below is on `work/admin-moderation`, candidate code commit `d35e9f12523963d56fb9f8277d9b07907ced8796`; source repository remains read-only and untouched.
+- OWNER photo UI E2E PASS on fresh isolated local Workerd/D1 after migrations `0001`–`0008`: two synthetic uploads, decoded thumbnails, dense order, reorder/reload persistence, authorized image-byte read, delete/compaction/reload persistence. D1 readback confirms `byte_size=length(blob_data)=775` for the remaining normalized JPEG and trigger-based media accounting.
+- ADMIN local UI/API journey PASS: submitted D1 BLOB image reviewed; approval remains unpublished; separate publication exposes the listing in catalog; rejection reason is required and rejected listings stay private; audit records actor, target OWNER, listing/action and reason. Audit-trigger failure injection confirms status/audit rollback. Approval/publication are separate to match the read-only source behavior.
+- Verification: focused Worker tests `admin-moderation`, `owner-lifecycle`, `public-listings` **14/14 PASS**; Worker typecheck PASS; Vue typecheck and integrated Worker/client build PASS; local Playwright OWNER and ADMIN journeys PASS; `git diff --check` PASS. Full test suite was not run because these changes require only the focused suites and product E2E.
+- Reproducible scripts, isolated local configs, fixtures, screenshots and D1 readback are recorded in `.orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md` and `output/playwright/`.
+- Remote check: the available Playwright context reached the Cloudflare Access sign-in page and had no legitimate operator session. State is **`LOCAL E2E PASS / REMOTE E2E BLOCKED_AUTH`**. Access policy, remote D1 and deployment remain unchanged. The Preview still maps the authorized operator only to the fixed synthetic OWNER; no ADMIN identity was created or inferred.
+- No defect in the existing OWNER photo lifecycle reproduced. A UI audit-label defect found during ADMIN screenshot review was corrected so approval, publication and rejection are distinguished.
+- **READY_TO_RESUME:** run exact-SHA local Controller and GitHub PR checks/review for `d35e9f1`, resolve material findings, then stop at the external review boundary. Resume remote photo E2E only with a legitimate Access login in the same executor context. Do not broaden Access identity mapping or publish ADMIN remotely until its role mapping is explicitly authorized; USD 0/no R2/no production/no real data remain in force.
