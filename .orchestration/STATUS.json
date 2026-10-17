@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "Filtered the ADMIN moderation queue to listings still owned by an OWNER; regression, ADMIN suite 11/11 and Worker typecheck pass.",
-  "last_completed_head": "2705692d4323c34e2053d605039476f0a6efa502",
+  "last_completed_task": "Filtered ADMIN moderation queue and image reads to listings whose current owner still has OWNER role. Regression, ADMIN suite 12/12, Worker typecheck and whitespace check pass.",
+  "last_completed_head": "c0d78392dceac2498e94ee095f374f6f452c8a09",
   "work_branch": "work/admin-moderation",
-  "next_action": "Wait for required worker/web checks and automatic review on exact PR head 2705692d4323c34e2053d605039476f0a6efa502; process material findings; then run separate GPT-6 Luna High read-only Controller on exact final candidate, complete Pre-Critic and protected integration only after all gates pass.",
+  "next_action": "Wait for required worker/web checks and automatic review on exact PR head c0d78392dceac2498e94ee095f374f6f452c8a09; process material findings; run fresh separate GPT-6 Luna High read-only Controller on exact final candidate; complete Pre-Critic and protected integration only if all gates pass.",
   "stop_reason": null,
   "event": {
-    "seq": 89,
-    "id": "ADMIN_QUEUE_OWNER_ROLE_AND_CANONICAL_CHECKPOINT",
+    "seq": 90,
+    "id": "ADMIN_IMAGE_CURRENT_OWNER_ROLE_BOUNDARY",
     "type": "REWORK_CHECKPOINT"
   },
   "external_review": {
@@ -54,8 +54,8 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "2705692d4323c34e2053d605039476f0a6efa502",
-    "code_tree": "d5d65bbf9ce539032c33f77593abf8e89de6f5a6",
+    "code_sha": "c0d78392dceac2498e94ee095f374f6f452c8a09",
+    "code_tree": "8c8c3c2ef7df2f5c8e071268c4d09520f79e1bdd",
     "previous_controller": {
       "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
       "reviewed_pr_head": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
@@ -79,11 +79,11 @@
     "scope": "LOCAL_SYNTHETIC_ONLY; strict USD 0; no R2/billing/remote mutation/production/real data/source writes",
     "precritic": "PENDING exact-head GitHub checks/review and fresh Controller PASS",
     "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A98405-REVIEW.json",
-    "next_action": "Wait for required worker/web checks and automatic review on exact PR head 2705692d4323c34e2053d605039476f0a6efa502; process material findings; then run separate GPT-6 Luna High read-only Controller on exact final candidate, complete Pre-Critic and protected integration only after all gates pass.",
+    "next_action": "Wait for required worker/web checks and automatic review on exact PR head c0d78392dceac2498e94ee095f374f6f452c8a09; process material findings; run fresh separate GPT-6 Luna High read-only Controller on exact final candidate; complete Pre-Critic and protected integration only if all gates pass.",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "github_worker_web": "PENDING exact current PR head 2705692",
-    "github_automatic_review": "PENDING exact current PR head 2705692; prior exact-head review reported P2 owner-role queue mismatch and stale nested candidate pointer, both addressed locally/pointer synchronized in this checkpoint",
-    "controller": "PENDING exact final candidate; prior PASS on f21dea8 predates current Worker changes"
+    "github_worker_web": "PENDING exact current PR head c0d78392dceac2498e94ee095f374f6f452c8a09",
+    "github_automatic_review": "PENDING exact current PR head c0d78392dceac2498e94ee095f374f6f452c8a09; prior exact-head review found stale ADMIN image reads after owner role change and stale next_action pointer; both corrected in this candidate/checkpoint",
+    "controller": "PENDING fresh exact-head review; prior review on 31e26bb predates Worker image-role fix"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -124,8 +124,8 @@
     "scope": "Synthetic local OWNER D1 BLOB images and ADMIN moderation/audit. USD 0; no R2, remote mutation, production, real data or source writes.",
     "admin_ui_implementation_commit": "f3366307556b536fa8d90a2572993c84c9ec0c99",
     "deterministic_admin_e2e_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
-    "latest_worker_code_test_commit": "2705692d4323c34e2053d605039476f0a6efa502",
-    "latest_worker_code_test_tree": "d5d65bbf9ce539032c33f77593abf8e89de6f5a6",
+    "latest_worker_code_test_commit": "c0d78392dceac2498e94ee095f374f6f452c8a09",
+    "latest_worker_code_test_tree": "8c8c3c2ef7df2f5c8e071268c4d09520f79e1bdd",
     "previous_controller_review": "PASS on f21dea8 before Worker route/limit changes; fresh review required for this code",
     "github_review_of_prior_head": {
       "head": "9d72f60003d59f5ad7952f753b6eb58210ed8270",
@@ -142,20 +142,20 @@
       "Route /admin/* to Hono Worker before SPA fallback in local, preview template and OWNER E2E configurations."
     ],
     "checks": {
-      "worker_admin": "11/11 PASS on 2705692",
-      "worker_typecheck": "PASS on 2705692",
+      "worker_admin": "12/12 PASS on c0d7839",
+      "worker_typecheck": "PASS on c0d7839",
       "admin_playwright": "12/12 PASS on 5033f8b; subsequent changes covered by focused Worker route/media assertions",
       "web_typecheck_build": "PASS after all route config changes on 42ecbeb",
       "python_scripts": "10/10 PASS on 42ecbeb including all three /admin/* dispatch configs",
       "owner_playwright": "9/9 prior local synthetic; OWNER implementation unchanged",
-      "github_worker_web": "PENDING exact latest PR head 2705692",
-      "github_automatic_review": "PENDING exact latest PR head 2705692; prior findings: exclude non-OWNER listing and stale candidate_review record; fixed in current candidate/checkpoint",
-      "controller": "PENDING exact final PR SHA",
+      "github_worker_web": "PENDING exact latest PR head c0d7839",
+      "github_automatic_review": "PENDING exact latest PR head c0d7839; fixes include OWNER role filter on moderation queue and image reads for STATIC_ASSETS, D1_BLOB and R2 strategies",
+      "controller": "PENDING fresh exact final PR SHA",
       "remote_e2e": "BLOCKED_AUTH",
       "local_direct_admin": "401 JSON from Worker, not SPA HTML, at /admin/listings/nonexistent with isolated local runtime config"
     },
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "next_action": "Wait for required worker/web checks and automatic review on exact PR head 2705692d4323c34e2053d605039476f0a6efa502; process material findings; then run separate GPT-6 Luna High read-only Controller on exact final candidate, complete Pre-Critic and protected integration only after all gates pass.",
+    "next_action": "Wait for required worker/web checks and automatic review on exact PR head c0d78392dceac2498e94ee095f374f6f452c8a09; process material findings; run fresh separate GPT-6 Luna High read-only Controller on exact final candidate; complete Pre-Critic and protected integration only if all gates pass.",
     "precritic": "PENDING exact-head GitHub review/checks and fresh Controller PASS",
     "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md"
   },
