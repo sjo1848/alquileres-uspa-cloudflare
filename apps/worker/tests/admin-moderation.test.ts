@@ -53,6 +53,10 @@ describe('ADMIN moderation and publication',()=>{
     const approved=await (await request('/listings','POST',{...fields,title:'Aprobación sintética por ruta fuente'},owner)).json() as {id:string};
     await request(`/listings/${approved.id}/submit`,'POST',undefined,owner);
     expect((await request(`/admin/listings/${approved.id}/approve`,'POST',undefined,owner)).status).toBe(401);
+    expect((await request(`/admin/listings/${approved.id}`,'GET',undefined,owner)).status).toBe(401);
+    const detail=await request(`/admin/listings/${approved.id}`,'GET',undefined,admin);
+    expect(detail.status).toBe(200);
+    expect(await detail.json()).toMatchObject({id:approved.id,status:'SUBMITTED',publicationStatus:'UNPUBLISHED',owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
     const approval=await request(`/admin/listings/${approved.id}/approve`,'POST',undefined,admin);
     expect(approval.status).toBe(200);
     expect(await approval.json()).toMatchObject({id:approved.id,status:'APPROVED',publicationStatus:'UNPUBLISHED',owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});

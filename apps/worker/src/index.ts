@@ -163,6 +163,7 @@ app.get('/admin/listings/audit',async c=>{
     : (await c.env.DB.prepare(`${columns} ORDER BY a.created_at DESC,a.id DESC LIMIT ?`).bind(limit).all<any>()).results;
   return c.json(rows.map(row=>({...row,metadata:JSON.parse(row.metadata),actor:{id:row.actorId,email:row.actorEmail,role:'ADMIN'},targetOwner:row.targetOwnerId?{id:row.targetOwnerId,email:row.targetOwnerEmail,role:'OWNER'}:null})));
 });
+app.get('/admin/listings/:id',async c=>{const result=await sourceAdminListing(c.env.DB,c.req.param('id'),c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);});
 app.get('/admin/listings/:listingId/images/:imageId',async c=>{
   const listingId=c.req.param('listingId'),imageId=c.req.param('imageId');
   if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'){
