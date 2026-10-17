@@ -34,8 +34,8 @@ describe('ADMIN moderation and publication',()=>{
     expect((await request('/public/listings/'+listing.id)).status).toBe(200);
     const audit=await request('/admin/listings/audit?listingId='+listing.id,'GET',undefined,admin);
     expect(await audit.json()).toEqual(expect.arrayContaining([
-      expect.objectContaining({listingId:listing.id,targetOwner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},action:'LISTING_APPROVED',actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
-      expect.objectContaining({listingId:listing.id,action:'LISTING_PUBLISHED',actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
+      expect.objectContaining({entityType:'LISTING',entityId:listing.id,listingId:listing.id,targetOwner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},action:'LISTING_APPROVED',metadata:{},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
+      expect.objectContaining({entityType:'LISTING',entityId:listing.id,listingId:listing.id,action:'LISTING_PUBLISHED',metadata:{},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
     ]));
     expect((await request('/admin/listings/audit','GET',undefined,owner)).status).toBe(401);
     expect((await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin)).status).toBe(409);
@@ -53,7 +53,7 @@ describe('ADMIN moderation and publication',()=>{
     const response=await request(`/admin/listings/${listing.id}/review`,'POST',{action:'reject',reason:'Falta confirmar servicios.'},admin);
     expect(await response.json()).toMatchObject({status:'REJECTED',publicationStatus:'UNPUBLISHED',rejectionReason:'Falta confirmar servicios.'});
     expect((await request(`/public/listings/${listing.id}`)).status).toBe(404);
-    expect(await env.DB.prepare('SELECT action,reason FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first()).toMatchObject({action:'LISTING_REJECTED',reason:'Falta confirmar servicios.'});
+    expect(await env.DB.prepare('SELECT action,entity_type,entity_id,metadata,reason FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first()).toMatchObject({action:'LISTING_REJECTED',entity_type:'LISTING',entity_id:listing.id,metadata:'{"reason":"Falta confirmar servicios."}',reason:'Falta confirmar servicios.'});
   }, 15_000);
 
   it('rolls back approval if the audit record cannot be written',async()=>{
@@ -69,10 +69,26 @@ describe('ADMIN moderation and publication',()=>{
   }, 15_000);
 
   it('uses the recent-audit index for global activity ordering',async()=>{
-    const plan=await env.DB.prepare('EXPLAIN QUERY PLAN SELECT a.id,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id JOIN users o ON o.id=a.target_owner_id ORDER BY a.created_at DESC,a.id DESC LIMIT 30').all<any>();
+    const plan=await env.DB.prepare('EXPLAIN QUERY PLAN SELECT a.id,a.entity_type AS entityType,a.entity_id AS entityId,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.metadata,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id LEFT JOIN users o ON o.id=a.target_owner_id ORDER BY a.created_at DESC,a.id DESC LIMIT 30').all<any>();
     const details=plan.results.map(row=>row.detail).join('\n');
     expect(details).toContain('admin_audit_events_recent_idx');
     expect(details).not.toContain('USE TEMP B-TREE FOR ORDER BY');
+  });
+
+  it('uses a partial index for the moderation cursor order',async()=>{
+    const plan=await env.DB.prepare("EXPLAIN QUERY PLAN SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED')) ORDER BY l.created_at DESC,l.id DESC LIMIT 101").all<any>();
+    const details=plan.results.map(row=>row.detail).join('\n');
+    expect(details).toContain('listings_admin_review_queue_created_idx');
+    expect(details).not.toContain('USE TEMP B-TREE FOR ORDER BY');
+  });
+
+  it('retains generic source-shaped ADMIN audit metadata and nullable targets',async()=>{
+    const admin=await login('moderation.admin@example.test'),at=new Date().toISOString();
+    await env.DB.prepare('INSERT INTO admin_audit_events(id,actor_id,action,entity_type,entity_id,listing_id,target_owner_id,metadata,created_at) VALUES(?,?,?,?,?,NULL,NULL,?,?)').bind('generic-audit-synthetic', 'moderation-admin','OWNER_ASSISTED','USER','synthetic-target','{"source":"test"}',at).run();
+    const response=await request('/admin/listings/audit?limit=100','GET',undefined,admin);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(expect.arrayContaining([expect.objectContaining({id:'generic-audit-synthetic',entityType:'USER',entityId:'synthetic-target',listingId:null,targetOwnerId:null,targetOwner:null,metadata:{source:'test'},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}})]));
+    await expect(env.DB.prepare('INSERT INTO admin_audit_events(id,actor_id,action,entity_type,metadata,created_at) VALUES(?,?,?,?,?,?)').bind('invalid-json-audit','moderation-admin','OWNER_ASSISTED','USER','not-json',at).run()).rejects.toThrow();
   });
 
   it('paginates the moderation queue so listings after the first 100 remain reachable',async()=>{

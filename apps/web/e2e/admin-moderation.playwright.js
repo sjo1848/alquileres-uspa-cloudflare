@@ -93,6 +93,7 @@ async (page) => {
   await login('e2e-admin@example.test');
   await page.goto(`${baseUrl}/admin`);
   await page.getByRole('heading', { name: 'Revisión de publicaciones' }).waitFor();
+  await page.getByRole('button', { name: new RegExp(`${paginatedPrefix} 100`) }).waitFor();
   const lastPageListing = page.getByRole('button', { name: new RegExp(`${paginatedPrefix} 000`) });
   let pagesLoaded = 0;
   while (!(await lastPageListing.count()) && pagesLoaded < 5) {

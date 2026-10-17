@@ -102,7 +102,8 @@ app.post('/admin/listings/:id/review',async c=>{
   if(input.action==='approve'&&d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
   const action=input.action==='approve'?'LISTING_APPROVED':'LISTING_REJECTED',status=input.action==='approve'?'APPROVED':'REJECTED',publication='UNPUBLISHED',at=now(),eventId=id();
   const updated=c.env.DB.prepare('UPDATE listings SET status=?,publication_status=?,rejection_reason=?,updated_at=? WHERE id=? AND status=\'SUBMITTED\'').bind(status,publication,reason?.trim()??null,at,listingId);
-  const audit=c.env.DB.prepare('INSERT INTO admin_audit_events(id,actor_id,listing_id,target_owner_id,action,reason,created_at) SELECT ?,?,l.id,l.owner_id,?,?,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status=? AND l.updated_at=?').bind(eventId,c.get('user').id,action,reason?.trim()??null,at,listingId,status,at);
+  const reasonValue=reason?.trim()??null,metadata=JSON.stringify(reasonValue?{reason:reasonValue}:{});
+  const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,?,?,?,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status=? AND l.updated_at=?").bind(eventId,c.get('user').id,action,metadata,reasonValue,at,listingId,status,at);
   try{
     const results=await c.env.DB.batch([updated,audit]);
     if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'listing is no longer awaiting review'},409);
@@ -114,17 +115,18 @@ app.post('/admin/listings/:id/publish',async c=>{
   const listingId=c.req.param('id'),at=now(),eventId=id();
   if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
   const updated=c.env.DB.prepare("UPDATE listings SET publication_status='PUBLISHED',updated_at=? WHERE id=? AND status='APPROVED' AND publication_status='UNPUBLISHED'").bind(at,listingId);
-  const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,listing_id,target_owner_id,action,reason,created_at) SELECT ?,?,l.id,l.owner_id,'LISTING_PUBLISHED',NULL,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status='APPROVED' AND l.publication_status='PUBLISHED' AND l.updated_at=?").bind(eventId,c.get('user').id,at,listingId,at);
+  const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,'LISTING_PUBLISHED','{}',NULL,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status='APPROVED' AND l.publication_status='PUBLISHED' AND l.updated_at=?").bind(eventId,c.get('user').id,at,listingId,at);
   try{const results=await c.env.DB.batch([updated,audit]);if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'only an approved unpublished listing can be published'},409);}
   catch{return c.json({error:'publication outcome could not be confirmed'},503);}
   return c.json(await c.env.DB.prepare('SELECT id,status,publication_status AS publicationStatus,updated_at AS updatedAt FROM listings WHERE id=?').bind(listingId).first());
 });
 app.get('/admin/listings/audit',async c=>{
   const listingId=c.req.query('listingId'),limit=Math.min(Math.max(Number(c.req.query('limit')??50)||50,1),100);
+  const columns='SELECT a.id,a.entity_type AS entityType,a.entity_id AS entityId,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.metadata,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id LEFT JOIN users o ON o.id=a.target_owner_id';
   const rows=listingId
-    ? (await c.env.DB.prepare('SELECT a.id,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id JOIN users o ON o.id=a.target_owner_id WHERE a.listing_id=? ORDER BY a.created_at DESC,a.id DESC LIMIT ?').bind(listingId,limit).all<any>()).results
-    : (await c.env.DB.prepare('SELECT a.id,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id JOIN users o ON o.id=a.target_owner_id ORDER BY a.created_at DESC,a.id DESC LIMIT ?').bind(limit).all<any>()).results;
-  return c.json(rows.map(row=>({...row,actor:{id:row.actorId,email:row.actorEmail,role:'ADMIN'},targetOwner:{id:row.targetOwnerId,email:row.targetOwnerEmail,role:'OWNER'}})));
+    ? (await c.env.DB.prepare(`${columns} WHERE a.listing_id=? ORDER BY a.created_at DESC,a.id DESC LIMIT ?`).bind(listingId,limit).all<any>()).results
+    : (await c.env.DB.prepare(`${columns} ORDER BY a.created_at DESC,a.id DESC LIMIT ?`).bind(limit).all<any>()).results;
+  return c.json(rows.map(row=>({...row,metadata:JSON.parse(row.metadata),actor:{id:row.actorId,email:row.actorEmail,role:'ADMIN'},targetOwner:row.targetOwnerId?{id:row.targetOwnerId,email:row.targetOwnerEmail,role:'OWNER'}:null})));
 });
 app.get('/admin/listings/:listingId/images/:imageId',async c=>{
   const listingId=c.req.param('listingId'),imageId=c.req.param('imageId');

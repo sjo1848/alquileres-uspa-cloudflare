@@ -13,7 +13,7 @@ type ReviewItem = {
 };
 type ReviewCursor = { createdAt: string; id: string };
 type ReviewPage = { items: ReviewItem[]; nextCursor: ReviewCursor | null };
-type Audit = { id: string; listingId: string; action: string; reason: string | null; createdAt: string; actor: { email: string }; targetOwner: { email: string } };
+type Audit = { id: string; entityType: string; entityId: string | null; listingId: string | null; action: string; reason: string | null; createdAt: string; actor: { email: string }; targetOwner: { email: string } | null };
 const session = useSession();
 const queue = ref<ReviewItem[]>([]), audit = ref<Audit[]>([]);
 const nextCursor = ref<ReviewCursor | null>(null);
@@ -108,7 +108,7 @@ onMounted(load);
     </div>
     <button v-if="!loading && nextCursor" class="secondary" @click="loadMore">Cargar más publicaciones</button>
     <section class="card admin-audit"><h3>Actividad reciente</h3><ul><li v-for="entry in audit" :key="entry.id">
-      {{ entry.action === 'LISTING_APPROVED' ? 'Aprobó' : entry.action === 'LISTING_PUBLISHED' ? 'Publicó' : 'Rechazó' }} — {{ entry.actor.email }} — {{ entry.targetOwner.email }} — {{ entry.reason ?? (entry.action === 'LISTING_PUBLISHED' ? 'Publicación visible en el catálogo' : 'Publicación aprobada') }}
+      {{ entry.action === 'LISTING_APPROVED' ? 'Aprobó' : entry.action === 'LISTING_PUBLISHED' ? 'Publicó' : entry.action === 'LISTING_REJECTED' ? 'Rechazó' : entry.action }} — {{ entry.actor.email }} — {{ entry.targetOwner?.email ?? (entry.entityType + (entry.entityId ? ' ' + entry.entityId : '')) }} — {{ entry.reason ?? (entry.action === 'LISTING_PUBLISHED' ? 'Publicación visible en el catálogo' : entry.action === 'LISTING_APPROVED' ? 'Publicación aprobada' : 'Evento registrado') }}
     </li></ul><p v-if="!audit.length">Todavía no hay decisiones registradas.</p></section>
   </section>
 </template>

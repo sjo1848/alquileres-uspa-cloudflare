@@ -71,3 +71,16 @@ The PR review on `54d6a42` identified four ADMIN defects. The candidate now retu
 Local Workerd and D1 are isolated under `/tmp/cf-au-admin-resume/state`, migrated through `0008`, and use synthetic identities/records only. Browser runs reuse this synthetic state. The ADMIN UI E2E creates 101 synthetic submissions to test pagination; screenshots were refreshed under `output/playwright/`.
 
 These fixes still require review on the new exact PR head. This executor has no authorized Cloudflare Access session, so remote photos remain **BLOCKED_AUTH** and remote ADMIN has no role mapping. The existing protected Preview was not accessed or modified. No Access policy, credential, remote data, billing, R2, production or source repository was used.
+
+## 2026-10-17 ADMIN schema/index REWORK and local rerun
+
+The exact-head GitHub and Controller reviews of `cbe1066` found two more material issues:
+
+- P1: the initial ADMIN audit table did not retain the source `AdminAuditLog` shape (`entityType`, nullable `entityId`/`listingId`/`targetOwnerId`, JSON `metadata`). Migration `0009_admin_audit_shape_and_review_queue_index.sql` rebuilds the table, preserves existing synthetic listing events and rejection reasons into JSON metadata, validates JSON, retains nullable relationships and source indexes, and keeps the UI-compatible `reason` convenience field. API audit output now handles a null target and exposes parsed metadata. A Python regression seeds an old-table event, applies the migration, verifies it is preserved, verifies a generic audit row with no listing/target can be stored, and rejects invalid JSON.
+- P2: the paginated queue's exact ordered query still scanned/sorted listings. Migration `0009` adds a partial index for pending/unpublished review rows in `created_at DESC,id DESC` order; Worker `EXPLAIN QUERY PLAN` test asserts that the route query uses it with no temporary sort.
+
+The local-only persistent D1 at `/tmp/cf-au-admin-resume/state` was upgraded with `wrangler d1 migrations apply DB --local --config wrangler.owner-e2e.runtime.jsonc --persist-to /tmp/cf-au-admin-resume/state`; output applied only `0009_admin_audit_shape_and_review_queue_index.sql` to local DB `00000000-0000-0000-0000-000000000071`. No remote operation occurred.
+
+After the final local migration and UI fix, Playwright ADMIN passed **11/11** including reaching item 000 through Load More and clearing a rejection reason on selection change; OWNER photo lifecycle passed **9/9** including uploads, browser decode, reorder, reload, byte read, delete and compaction. The ADMIN pagination E2E now waits for the first page to finish loading before asserting older-page reachability, eliminating a test-only race.
+
+Worker ADMIN Vitest passed **8/8**; Preview-auth passed **4/4**; Worker typecheck passed; Python `unittest discover -s scripts/tests` passed **9/9**, including legacy audit migration preservation and the partial-index query plan; Vue typecheck and integrated Worker/client build passed; `git diff --check` passed. These checks apply to the local candidate after `3e8b5e8`; GitHub checks and Controller must be rerun after publishing these changes. Remote photos remain `BLOCKED_AUTH`; Preview and Access policies are unchanged.
