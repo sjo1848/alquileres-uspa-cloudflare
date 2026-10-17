@@ -1,0 +1,17 @@
+## Verdict: PASS
+
+Bounded technical review of PR #15 at **`f21dea88e1e208da524dbeb2bb5f71b38e7b6f33`**, tree **`b4133e78d4af65cb4b00360d075f0623b75cc43d`**, against canonical main **`59660aed13f68b92b00cae0eced4494b54f2d8a7`**. The candidate descends from main; the worktree is clean.
+
+I read the active contract and review instructions, canonical state, invariants and Pre-Critic Gate; the prior Controller reports; the Vue ADMIN view, router and E2E; Worker authorization and moderation routes; migrations 0008–0009; ADMIN tests; and the exact-head state and GitHub snapshots. I did not run tests or make changes. `git diff --check` passed.
+
+The prior findings are addressed:
+
+- **Controller REWORK on f336630:** the E2E waits for the intercepted approval request to start, holds its response behind a promise gate, then checks every queue item is disabled, refresh is disabled, and the original listing remains selected before releasing the response. The gate is released in `finally`.
+- **GitHub stale `STATUS.json.next_action` finding:** f21dea8 records the completed regression and review finding, and directs the next step to exact-head checks/review and a fresh Controller review.
+- Earlier ADMIN findings are reflected in code and regressions: role demotion returns 401; Preview-auth misconfiguration fails closed for `/admin`; selection clears the previous rejection reason; keyset pagination keeps older work reachable; legacy D1 media blocks approval/publication; migrations preserve source-shaped audit records and add the queue ordering index. The API keeps review state changes and audit inserts in D1 batches.
+
+I found no material adjacent UI, authorization, API, or data-integrity defect in the reviewed scope. Local synthetic evidence reports the ADMIN Playwright flow passing 12/12, alongside the listed focused tests and typechecks; I did not independently rerun those checks.
+
+**GitHub status is separate from this code verdict:** the supplied exact-head snapshot shows `worker` and `web` succeeded on run `39049685365` and merge state `CLEAN`. The automatic review was still running at the snapshot, so it remains an unresolved gate. Remote Preview validation remains `BLOCKED_AUTH`; no remote behavior is asserted.
+
+**Operational provenance:** `codex-cli 0.163.0` is installed, and the active shell is under a read-only filesystem sandbox. This review context does not expose a separate `codex exec` command line, captured session, or selected model/reasoning metadata. Therefore GPT-6 Luna / High / separate-process invocation is **not independently evidenced here**. Provider backend identity is **UNVERIFIED**; no attestation is claimed. The review was read-only and local/synthetic only, with no R2, billing, remote mutation, production, or real data.
