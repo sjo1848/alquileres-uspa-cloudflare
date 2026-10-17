@@ -8,12 +8,12 @@
   "last_completed_task": "ADMIN audit D1/source schema, both query indexes, and machine-readable parity ledger fixed; exact-head GitHub worker/web and automatic review pass; fresh Controller is required because prior process could not verify live GitHub status",
   "last_completed_head": "3e84975c6021c199c094560ea3f3473d283f1b66",
   "work_branch": "work/admin-moderation",
-  "next_action": "Publish this canonical checkpoint. Then query the actual PR #15 HEAD and verify exact-head worker/web checks and automatic review; run a fresh project_controller on that exact SHA using the persisted GitHub evidence. Previous Controller result was BLOCKED (not PASS) solely because its GitHub fetch failed; do not merge/deploy until a fresh bounded PASS and Pre-Critic.",
+  "next_action": "Query the actual PR #15 HEAD from GitHub, verify required worker/web checks and automatic review for that exact SHA, then run a fresh project_controller against it using the latest committed GitHub snapshot. Do not merge/deploy until a bounded Controller PASS and Pre-Critic.",
   "stop_reason": null,
   "event": {
-    "seq": 79,
-    "id": "ADMIN_GITHUB_REVIEW_PASS_CONTROLLER_RETRY_REQUIRED",
-    "type": "GITHUB_REVIEW_COMPLETED"
+    "seq": 80,
+    "id": "ADMIN_REVIEW_STATE_FOLLOWUP_READY",
+    "type": "CHECKPOINT_SYNC"
   },
   "external_review": {
     "required": true,
@@ -146,7 +146,7 @@
     "github_automatic_review": "PASS/no findings and zero unresolved review threads on exact PR head 3e84975; snapshot .orchestration/evidence/CF-AU-I02-GITHUB-3E84975-REVIEW.json.",
     "preview_deployment": "UNCHANGED",
     "admin_remote_identity": "NOT_CREATED; explicit authorized role mapping required",
-    "candidate_pr_head": "3e84975c6021c199c094560ea3f3473d283f1b66 (map/evidence-only commit atop executable da15d77)",
+    "candidate_pr_head": "Use gh pr view 15 to resolve the current PR SHA; code/evidence commit da15d772e3d376a7164687fbedd8648826137c03 (tree 2f717e7efe9bc9fc186c4709f1249aa4720a7adb).",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
