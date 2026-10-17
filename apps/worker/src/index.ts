@@ -97,10 +97,12 @@ async function sourceAdminListing(db:D1Database,listingId:string,mediaStrategy?:
   const listing=await db.prepare(`SELECT l.id,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.status,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.id AS ownerId,u.email AS ownerEmail,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?`).bind(listingId).first<any>();
   if(!listing||listing.ownerRole!=='OWNER')return null;
   const staticImages=(await db.prepare('SELECT id,asset_path AS url,mime_type AS contentType,byte_size AS sizeBytes,position FROM static_listing_images WHERE listing_id=?').bind(listingId).all<any>()).results.map(image=>({...image,originalName:image.url.split('/').pop()??image.url}));
-  const storedImages=(await db.prepare('SELECT id,original_name AS originalName,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id=?').bind(listingId).all<any>()).results.map(image=>({...image,url:`/admin/listings/${encodeURIComponent(listingId)}/images/${encodeURIComponent(image.id)}`}));
+  const usesD1Blob=mediaStrategy==='D1_BLOB';
+  const storedImages=(await db.prepare(`SELECT id,original_name AS originalName,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id=?${usesD1Blob?' AND blob_data IS NOT NULL':''}`).bind(listingId).all<any>()).results.map(image=>({...image,url:`/admin/listings/${encodeURIComponent(listingId)}/images/${encodeURIComponent(image.id)}`}));
+  const legacyMedia=usesD1Blob?await db.prepare('SELECT EXISTS(SELECT 1 FROM listing_images WHERE listing_id=? AND blob_data IS NULL) AS hasLegacy').bind(listingId).first<{hasLegacy:number}>():null;
   const images=(mediaStrategy==='STATIC_ASSETS'?staticImages:[...staticImages,...storedImages]).sort((a:any,b:any)=>a.position-b.position||a.id.localeCompare(b.id));
   const {ownerId,ownerEmail,ownerRole,...fields}=listing;
-  return {...fields,owner:{id:ownerId,email:ownerEmail,role:ownerRole},images};
+  return {...fields,owner:{id:ownerId,email:ownerEmail,role:ownerRole},images,...(usesD1Blob?{requiresMediaRecovery:!!legacyMedia?.hasLegacy}:{})};
 }
 function sourceAuditInsert(c:any,eventId:string,listingId:string,action:string,reason:string|null,at:string,whereSql:string,whereArgs:unknown[]){
   const metadata=reason?JSON.stringify({reason}):'{}';

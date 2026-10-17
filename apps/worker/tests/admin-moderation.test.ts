@@ -220,6 +220,12 @@ describe('ADMIN moderation and publication',()=>{
     expect(approval.status).toBe(409);
     expect(await approval.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});
     expect(await env.DB.prepare('SELECT status,publication_status FROM listings WHERE id=?').bind(listing.id).first()).toMatchObject({status:'SUBMITTED',publication_status:'UNPUBLISHED'});
+    const detail=await request(`/admin/listings/${listing.id}`,'GET',undefined,admin,true,'D1_BLOB');
+    expect(detail.status).toBe(200);
+    expect(await detail.json()).toMatchObject({requiresMediaRecovery:true,images:[]});
+    const rejection=await request(`/admin/listings/${listing.id}/reject`,'POST',{reason:'Migrar imagen heredada'},admin,true,'D1_BLOB');
+    expect(rejection.status).toBe(200);
+    expect(await rejection.json()).toMatchObject({status:'REJECTED',requiresMediaRecovery:true,images:[]});
     await env.DB.prepare("UPDATE listings SET status='APPROVED' WHERE id=?").bind(listing.id).run();
     const publication=await request(`/admin/listings/${listing.id}/publish`,'POST',undefined,admin,true,'D1_BLOB');
     expect(publication.status).toBe(409);
