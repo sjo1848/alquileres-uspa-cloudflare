@@ -165,16 +165,24 @@ describe('ADMIN moderation and publication',()=>{
   });
 
   it('omits pending listings whose owner no longer has the OWNER role',async()=>{
-    const admin=await login('moderation.admin@example.test');
-    const at=new Date().toISOString();
-    await env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,location,created_at,updated_at) VALUES('role-demoted-pending','moderation-admin','SUBMITTED','Synthetic role transition','Uspallata',?,?)").bind(at,at).run();
+    const at=new Date().toISOString(),hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS';
+    await env.DB.prepare("INSERT OR IGNORE INTO users(id,email,password_hash,role,created_at,updated_at) VALUES('moderation-control-owner','moderation.control.owner@example.test',?,'OWNER',?,?)").bind(hash,at,at).run();
+    const controlOwner=await login('moderation.control.owner@example.test'),owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
+    const visible=await (await request('/listings','POST',{...fields,title:'Synthetic current OWNER queue control'},controlOwner)).json() as {id:string};
+    const demoted=await (await request('/listings','POST',{...fields,title:'Synthetic demoted OWNER queue control'},owner)).json() as {id:string};
+    expect((await request(`/listings/${visible.id}/submit`,'POST',undefined,controlOwner)).status).toBe(200);
+    expect((await request(`/listings/${demoted.id}/submit`,'POST',undefined,owner)).status).toBe(200);
+    await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id='moderation-owner'").run();
     try {
       const response=await request('/admin/listings/review','GET',undefined,admin);
       expect(response.status).toBe(200);
       const page=await response.json() as {items:any[]};
-      expect(page.items.some(item=>item.id==='role-demoted-pending')).toBe(false);
+      expect(page.items.some(item=>item.id===visible.id)).toBe(true);
+      expect(page.items.some(item=>item.id===demoted.id)).toBe(false);
     } finally {
-      await env.DB.prepare("DELETE FROM listings WHERE id='role-demoted-pending'").run();
+      await env.DB.prepare("UPDATE users SET role='OWNER' WHERE id='moderation-owner'").run();
+      await env.DB.prepare('DELETE FROM listings WHERE id IN (?,?)').bind(visible.id,demoted.id).run();
+      await env.DB.prepare("DELETE FROM users WHERE id='moderation-control-owner'").run();
     }
   });
 
