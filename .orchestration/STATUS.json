@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "Local OWNER/ADMIN E2Es and focused checks pass; GitHub review has no major findings and prior threads are resolved; Controller review must be retried after evidence whitespace correction",
-  "last_completed_head": "ccec80df4f273fee36dc4921b1af00b13c19ae36",
+  "last_completed_task": "OWNER/ADMIN E2E and local tests pass; GitHub P2 fixes for ADMIN CI and audit ordering are being completed",
+  "last_completed_head": "d1bde27e82b7fe25f1896a740d849735f0b2440b",
   "work_branch": "work/admin-moderation",
-  "next_action": "Commit/push evidence whitespace correction and state checkpoint; confirm worker/web checks and GitHub review on new PR #15 head, then run a distinct direct codex exec Controller on that exact SHA with GPT-6 Luna High and --sandbox read-only; do not spawn a nested reviewer.",
+  "next_action": "After committing the current state/evidence/index/test corrections, push the candidate on PR #15; verify required checks and automatic review on that exact head, resolve material findings, then run a fresh exact-head GPT-6 Luna High/read-only Controller. Only after all controls pass proceed to protected integration and the already-authorized existing private Preview update.",
   "stop_reason": null,
   "event": {
-    "seq": 73,
-    "id": "PRECITIC_WHITESPACE_CORRECTION_CONTROLLER_RETRY",
-    "type": "EVIDENCE_REWORK"
+    "seq": 74,
+    "id": "ADMIN_AUDIT_INDEX_AND_STATE_RECONCILIATION_REWORK",
+    "type": "GITHUB_REVIEW_REWORK"
   },
   "external_review": {
     "required": true,
@@ -135,12 +135,12 @@
       "admin_playwright": "PASS 9/9 local",
       "remote_playwright": "BLOCKED_AUTH"
     },
-    "controller": "RETRY_PENDING_EXACT_NEW_PR15_HEAD; prior attempt BLOCKED_MODEL_CONFIG after nested reviewer startup failure",
-    "github_quick_checks": "PASS on c554707; rerun after docs-only evidence correction",
-    "github_automatic_review": "NO_MAJOR_ISSUES on c554707; rerun after docs-only evidence correction",
+    "controller": "PASS on exact d1bde27; report persisted; fresh exact-head review required after current audit-index change",
+    "github_quick_checks": "PASS on d1bde27, including test:admin 4/4; new 5/5 suite and audit-index test await exact-head CI",
+    "github_automatic_review": "COMPLETED_WITH_P2 on d1bde27: stale controller checkpoint and missing global audit ordering index; both corrections are in current local changes",
     "preview_deployment": "UNCHANGED",
     "admin_remote_identity": "NOT_CREATED; explicit authorized role mapping required",
-    "candidate_pr_head": "c55470740e8a730cc7bb03c2583fe37d3178f634 (pre-correction head; next commit is docs-only)",
+    "candidate_pr_head": "d1bde27e82b7fe25f1896a740d849735f0b2440b is latest published base for local audit-index/test/state correction",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"

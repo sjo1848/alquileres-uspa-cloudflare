@@ -10,3 +10,6 @@ CREATE TABLE admin_audit_events (
 
 CREATE INDEX admin_audit_events_listing_idx
   ON admin_audit_events(listing_id, created_at DESC);
+
+CREATE INDEX admin_audit_events_recent_idx
+  ON admin_audit_events(created_at DESC, id DESC);

@@ -65,6 +65,13 @@ describe('ADMIN moderation and publication',()=>{
     } finally { await env.DB.prepare('DROP TRIGGER fail_admin_audit').run(); }
   });
 
+  it('uses the recent-audit index for global activity ordering',async()=>{
+    const plan=await env.DB.prepare('EXPLAIN QUERY PLAN SELECT id FROM admin_audit_events ORDER BY created_at DESC,id DESC LIMIT 30').all<any>();
+    const details=plan.results.map(row=>row.detail).join('\n');
+    expect(details).toContain('admin_audit_events_recent_idx');
+    expect(details).not.toContain('USE TEMP B-TREE FOR ORDER BY');
+  });
+
   it('flags legacy D1 rows and blocks approval and publication until media is migrated',async()=>{
     const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
     const listing=await (await request('/listings','POST',{...fields,title:'Publicación sintética con foto heredada'},owner)).json() as {id:string};
