@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "Controller P2 repaired locally: ADMIN controls lock during pending action; delayed-response Playwright passes 12 checks; Vue typecheck/build pass",
-  "last_completed_head": "3e84975c6021c199c094560ea3f3473d283f1b66",
+  "last_completed_task": "Controller P2 UI target-lock corrected; deterministic delayed-response Playwright passes 12 checks; GitHub worker/web passed on f336630; canonical next_action finding is being synchronized",
+  "last_completed_head": "da1855dd15e5e678976f464219c4638a0b92fd6e",
   "work_branch": "work/admin-moderation",
-  "next_action": "Commit and push the ADMIN pending-action UI/E2E fix and evidence to PR #15; verify exact-head worker/web checks and GitHub automatic review; then obtain fresh exact-candidate delegated Controller PASS and complete Pre-Critic",
+  "next_action": "Reconcile origin/work/admin-moderation with local HEAD (push if remote is behind; never reset); query actual PR #15 HEAD, verify exact worker/web checks and automatic review, process/resolve findings, then obtain fresh delegated GPT-6 Luna High read-only Controller PASS.",
   "stop_reason": null,
   "event": {
-    "seq": 81,
-    "id": "ADMIN_INFLIGHT_TARGET_REWORK_FIXED_LOCAL",
+    "seq": 82,
+    "id": "ADMIN_TEST_GATE_DETERMINISTIC_AND_STATUS_SYNC",
     "type": "CHECKPOINT_SYNC"
   },
   "external_review": {
@@ -57,18 +57,18 @@
     "code_sha": "2a65ad370fef062c217332c22492a4a5cb93ad4b",
     "code_tree": "55decd177d05f677a0f286d00fc39f397679a75d",
     "controller": {
-      "verdict": "REWORK_P2_REPAIRED_PENDING_FRESH_REVIEW",
-      "reviewed_pr_head": "18f405cb94f039392cdc5ff1cad23bc46706036c",
-      "reviewed_tree": "40261e117fff9570e56fe605234ba59ebb131898",
+      "verdict": "REWORK_P2_DETERMINISTIC_TEST_FIXED_PENDING_FRESH_REVIEW",
+      "reviewed_pr_head": "f3366307556b536fa8d90a2572993c84c9ec0c99",
+      "reviewed_tree": "123981ae2bd053ac9aa618bec231c892015be310",
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
       "reasoning_requested": "high",
       "sandbox": "read-only",
-      "cli_flags_passed": true,
+      "cli_configuration_accepted": true,
       "actual_backend_model_identity": "UNVERIFIED",
-      "finding": "P2 ADMIN selected listing could change while moderation request was pending",
-      "correction": "Selection, refresh, load-more disabled while busy; delayed Playwright regression PASS 12 checks",
-      "evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-18F405C-REWORK.md"
+      "finding": "P2 fixed 500ms wait was nondeterministic and checked only two queue items",
+      "correction": "Explicit request-start signal and response gate; all queue buttons and refresh checked; local Playwright E2E PASS 12/12",
+      "evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-F336-REWORK.md"
     },
     "checks": {
       "worker_media": "15/15 PASS on executable Worker/test tree 04951f0",
@@ -79,15 +79,17 @@
       "preview_template_build": "PASS after Vue P2 correction on 2a65ad3",
       "worker_audit": "0 vulnerabilities; dependencies unchanged since audit",
       "wrangler_dry_run": "PASS; 3 WASM assets included; no remote operation",
-      "github_worker_web": "PASS exact 18f405c, run 39047888346; rerun on pending correction",
-      "github_automatic_review": "PASS/no findings exact 18f405c; rerun on pending correction",
-      "admin_playwright": "PASS 12/12 local synthetic; delayed moderation response verifies target selection lock",
-      "controller": "REWORK P2 on exact 18f405c; corrected locally; fresh exact-candidate review pending"
+      "github_worker_web": "PASS exact f336630, run 39048992611; rerun after checkpoint update",
+      "github_automatic_review": "COMPLETED with P1 stale STATUS next_action on exact f336630; corrected in state checkpoint, resolve thread and rerun exact head",
+      "admin_playwright": "PASS 12/12 local synthetic; deterministic intercepted request gate, all queue items and refresh disabled while pending",
+      "controller": "REWORK P2 on f336630; deterministic regression fixed in da1855d; fresh exact-candidate review pending"
     },
     "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data",
     "precritic": "PASS for functional code/test tree 04951f0 and UI message correction 2a65ad3; conditional final docs-only PR head retains green checks, completed no-findings review and zero unresolved conversations.",
     "github_worker_web": "PASS on exact reviewed functional boundary 12cf3cf; new Pre-Critic documentation commit checks pending.",
-    "github_automatic_review": "PASS/no findings on exact functional boundary 12cf3cf; request current exact docs-only head review."
+    "github_automatic_review": "PASS/no findings on exact functional boundary 12cf3cf; request current exact docs-only head review.",
+    "candidate_test_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
+    "candidate_pr_head": "Resolve exact current HEAD from GitHub; tested regression commit da1855dd15e5e678976f464219c4638a0b92fd6e"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
