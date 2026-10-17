@@ -231,5 +231,18 @@ describe('ADMIN moderation and publication',()=>{
     expect(publication.status).toBe(409);
     expect(await publication.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});
     expect(await env.DB.prepare('SELECT publication_status FROM listings WHERE id=?').bind(listing.id).first('publication_status')).toBe('UNPUBLISHED');
+
+    await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id='moderation-owner'").run();
+    try {
+      const hiddenApproval=await request(`/admin/listings/${listing.id}/review`,'POST',{action:'approve'},admin,true,'D1_BLOB');
+      expect(hiddenApproval.status).toBe(404);
+      expect(await hiddenApproval.json()).toEqual({message:'Listing not found'});
+      const hiddenPublication=await request(`/admin/listings/${listing.id}/publish`,'POST',undefined,admin,true,'D1_BLOB');
+      expect(hiddenPublication.status).toBe(404);
+      expect(await hiddenPublication.json()).toEqual({message:'Listing not found'});
+      expect(await env.DB.prepare('SELECT status,publication_status FROM listings WHERE id=?').bind(listing.id).first()).toMatchObject({status:'APPROVED',publication_status:'UNPUBLISHED'});
+    } finally {
+      await env.DB.prepare("UPDATE users SET role='OWNER' WHERE id='moderation-owner'").run();
+    }
   }, 15_000);
 });

@@ -112,9 +112,9 @@ async function adminReviewSource(c:any,actionValue:'approve'|'reject',providedIn
   const listingId=c.req.param('id'),input=actionValue==='reject'?(providedInput??await c.req.json().catch(()=>null)):null;
   const reason=actionValue==='reject'&&typeof input?.reason==='string'?input.reason.trim():null;
   if(actionValue==='reject'&&(reason===null||reason.length<3||reason.length>1000))return c.json({error:'rejection reason must contain 3 to 1000 non-blank characters'},400);
-  if(actionValue==='approve'&&d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
-  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,l.rejection_reason AS rejectionReason,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first();
+  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,l.rejection_reason AS rejectionReason,u.role AS ownerRole,EXISTS(SELECT 1 FROM listing_images i WHERE i.listing_id=l.id AND i.blob_data IS NULL) AS hasLegacyMedia FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first() as any;
   if(!current||current.ownerRole!=='OWNER')return c.json({message:'Listing not found'},404);
+  if(actionValue==='approve'&&d1ImageStatus(c)&&current.hasLegacyMedia)return legacyD1Conflict(c);
   const at=now(),eventId=id(),action=actionValue==='approve'?'ADMIN_LISTING_APPROVED':'ADMIN_LISTING_REJECTED',status=actionValue==='approve'?'APPROVED':'REJECTED';
   if((actionValue==='approve'&&current.status==='APPROVED')||(actionValue==='reject'&&current.status==='REJECTED'&&current.rejectionReason===reason)){
     const conditions=actionValue==='approve'?"l.status='APPROVED'":"l.status='REJECTED' AND l.rejection_reason=?",args=actionValue==='approve'?[]:[reason];
@@ -139,9 +139,9 @@ app.post('/admin/listings/:id/approve',c=>adminReviewSource(c,'approve'));
 app.post('/admin/listings/:id/reject',c=>adminReviewSource(c,'reject'));
 app.post('/admin/listings/:id/publish',async c=>{
   const listingId=c.req.param('id');
-  if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
-  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first<any>();
+  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,u.role AS ownerRole,EXISTS(SELECT 1 FROM listing_images i WHERE i.listing_id=l.id AND i.blob_data IS NULL) AS hasLegacyMedia FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first() as any;
   if(!current||current.ownerRole!=='OWNER')return c.json({message:'Listing not found'},404);
+  if(d1ImageStatus(c)&&current.hasLegacyMedia)return legacyD1Conflict(c);
   const at=now(),eventId=id(),action='ADMIN_LISTING_PUBLISHED';
   if(current.status==='APPROVED'&&current.publicationStatus==='PUBLISHED'){
     try{const results=await c.env.DB.batch([sourceAuditInsert(c,eventId,listingId,action,null,at,"l.id=? AND owner.role='OWNER' AND l.status='APPROVED' AND l.publication_status='PUBLISHED'",[listingId])]);if(results[0]?.meta?.changes!==1)return c.json({error:'listing changed during publication'},409);}
