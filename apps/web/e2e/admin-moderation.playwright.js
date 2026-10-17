@@ -43,15 +43,26 @@ async (page) => {
   const previewImages = page.locator('.admin-review-images img');
   await previewImages.first().waitFor();
   assert(await previewImages.first().evaluate(image => image.complete && image.naturalWidth > 0), 'ADMIN must load the submitted D1 image');
+  let signalReviewRequestStarted;
+  let releaseReviewResponse;
+  const reviewRequestStarted = new Promise(resolve => { signalReviewRequestStarted = resolve; });
+  const reviewResponseGate = new Promise(resolve => { releaseReviewResponse = resolve; });
   await page.route('**/api/admin/listings/*/review', async route => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    signalReviewRequestStarted();
+    await reviewResponseGate;
     await route.continue();
   });
   await page.getByRole('button', { name: 'Aprobar', exact: true }).click();
-  const pendingQueueItems = page.locator('.admin-review-layout nav button');
-  assert(await pendingQueueItems.count() >= 2, 'delayed review regression needs a second queued listing');
-  assert(await pendingQueueItems.nth(0).isDisabled() && await pendingQueueItems.nth(1).isDisabled(), 'ADMIN must not switch the selected listing while a review action is pending');
-  assert(await page.getByRole('button', { name: new RegExp(approveTitle) }).getAttribute('aria-pressed') === 'true', 'the pending action must remain visually attached to its target listing');
+  await reviewRequestStarted;
+  try {
+    const pendingQueueItems = page.locator('.admin-review-layout nav button');
+    assert(await pendingQueueItems.count() >= 2, 'pending review regression needs multiple queued listings');
+    assert(await pendingQueueItems.evaluateAll(buttons => buttons.every(button => button.disabled)), 'ADMIN must not switch any listing while a review action is pending');
+    assert(await page.getByRole('button', { name: 'Actualizar cola' }).isDisabled(), 'ADMIN must not replace the review target by refreshing while an action is pending');
+    assert(await page.getByRole('button', { name: new RegExp(approveTitle) }).getAttribute('aria-pressed') === 'true', 'the pending action must remain visually attached to its target listing');
+  } finally {
+    releaseReviewResponse();
+  }
   await page.getByText('Publicación aprobada. Queda pendiente de publicación.', { exact: true }).waitFor();
   await page.unroute('**/api/admin/listings/*/review');
   await page.getByRole('button', { name: 'Publicar en catálogo' }).click();
@@ -77,6 +88,7 @@ async (page) => {
   await login('e2e-admin@example.test');
   await page.goto(`${baseUrl}/admin`);
   await page.getByRole('button', { name: 'Actualizar cola' }).waitFor();
+  await page.waitForFunction(() => [...document.querySelectorAll('button')].some(button => button.textContent?.includes('Actualizar cola') && !button.disabled));
   await page.context().clearCookies();
   await page.getByRole('button', { name: 'Actualizar cola' }).click();
   await page.waitForURL(url => url.pathname === '/login' && url.searchParams.get('redirect') === '/admin');
