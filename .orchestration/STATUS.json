@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 OWNER D1 BLOB photo lifecycle",
-  "last_completed_task": "CF-AU-I02 OWNER D1 BLOB functional candidate has Controller bounded PASS, GitHub exact-head no-findings review and Pre-Critic PASS; final docs-only head checks/review pending",
-  "last_completed_head": "f17adae431b92a4f66aecda066947b24164eb0e2",
-  "work_branch": "work/cf-au-owner-d1-blob",
-  "next_action": "Run required worker/web checks and GitHub automatic review on the new docs-only PR #14 head. If both checks pass, review reports no findings, and conversations remain resolved, protected-merge PR #14 and update only the existing private synthetic Preview; measure actual Free CPU before requesting photo acceptance.",
+  "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
+  "last_completed_task": "CF-AU-I02 ADMIN moderation/legacy-media authorization correction is consolidated; exact worker/web CI and no-major-issues automatic review pass; role-leak finding thread resolved.",
+  "last_completed_head": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
+  "work_branch": "work/admin-moderation",
+  "next_action": "Publish immutable CF-AU-I02-ADMIN-Artifact-A1 at the synchronized checkpoint commit; verify its tag/SHA and exact live PR checks; run project_controller GPT-6 Luna High read-only on that artifact; complete protected integration only after Controller PASS and all merge controls.",
   "stop_reason": null,
   "event": {
-    "seq": 69,
-    "id": "OWNER_D1_BLOB_PRECRITIC_PASS",
-    "type": "PRECRITIC_GATE"
+    "seq": 99,
+    "id": "ADMIN_PRECRITIC_READY_FOR_CONTROLLER",
+    "type": "PRECRITIC_CHECKPOINT"
   },
   "external_review": {
     "required": true,
@@ -28,8 +28,13 @@
     ]
   },
   "human_gate": null,
-  "blocker": null,
-  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
+  "blocker": {
+    "scope": "REMOTE_E2E_ONLY",
+    "classification": "BLOCKED_AUTH",
+    "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md",
+    "detail": "No legitimate Cloudflare Access session is available in this executor context; Preview remains protected and unchanged. Remote ADMIN also has no authorized role identity mapping."
+  },
+  "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
   "integration_commit": "f17adae431b92a4f66aecda066947b24164eb0e2",
   "issue_4": "CLOSED",
   "review_authority": {
@@ -49,38 +54,51 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "2a65ad370fef062c217332c22492a4a5cb93ad4b",
-    "code_tree": "55decd177d05f677a0f286d00fc39f397679a75d",
-    "controller": {
-      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC_FOR_D1_BLOB_LIFECYCLE",
-      "reviewed_pr_head": "d340e74445d07bdb799dec5022084867fc75189a",
-      "reviewed_executable_sha": "964da27fe57bbfb961618abd9b6be4fafc82b112",
-      "reviewed_code_tree": "04951f0af13335598a1dceb6fc08ac989f251a57",
-      "model_requested": "gpt-6-luna",
-      "reasoning_requested": "high",
-      "sandbox": "read-only",
-      "cli_configuration_accepted": true,
-      "process_exit": 0,
-      "actual_backend_model_identity": "UNVERIFIED",
-      "post_review_delta": "One Vue image-list error-mapper selection only; Web typecheck/build pass. No Worker/D1/test logic changed after Controller PASS.",
-      "evidence": ".orchestration/evidence/critics/CF-AU-I02-D1-BLOB-CONTROLLER-D340E74-PASS.md"
+    "code_sha": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
+    "code_tree": "0775136cc16240b4e2ace2a2972b6834500722dc",
+    "previous_controller": {
+      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
+      "reviewed_pr_head": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
+      "evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-F21DEA8-PASS.md",
+      "note": "Predates Worker route/limit changes; not approval of b9a3d50."
     },
     "checks": {
-      "worker_media": "15/15 PASS on executable Worker/test tree 04951f0",
-      "owner": "4/4 PASS on executable Worker/test tree 04951f0",
-      "catalog": "7/7 PASS on executable Worker/test tree 04951f0",
-      "worker_typecheck": "PASS on executable Worker/test tree 04951f0",
-      "web_typecheck_build": "PASS after Vue P2 correction on 2a65ad3",
-      "preview_template_build": "PASS after Vue P2 correction on 2a65ad3",
-      "worker_audit": "0 vulnerabilities; dependencies unchanged since audit",
-      "wrangler_dry_run": "PASS; 3 WASM assets included; no remote operation",
-      "github_worker_web": "PENDING on latest head",
-      "github_automatic_review": "PENDING on latest head; ee1bcaa findings addressed in 2a65ad3/state checkpoint"
+      "local_worker_admin": "12/12 PASS on e9e9e0b",
+      "local_worker_typecheck": "PASS on e9e9e0b",
+      "local_web_build": "PASS on prior candidate; no web code changed in this increment",
+      "local_owner_playwright": "9/9 PASS local synthetic; OWNER implementation unchanged",
+      "local_admin_playwright": "12/12 PASS local synthetic; final role-order fix covered by Worker regression suite",
+      "github_worker": "PASS exact checkpoint aa56460ff01d9df558feff49b0309d39438f7df4 in run 39071184086",
+      "github_web": "PASS exact checkpoint aa56460ff01d9df558feff49b0309d39438f7df4 in run 39071184086",
+      "github_automatic_review": "PASS/no major issues on exact code SHA e9e9e0b; review receipt 6241370515",
+      "github_review_thread": "P2 comment 4304562542 fixed and thread resolved; no unresolved threads",
+      "remote_admin_e2e": "BLOCKED_AUTH; Preview remains protected and unchanged"
     },
-    "scope": "LOCAL_SYNTHETIC_ONLY; remote Preview unchanged; no R2/billing/production/real data",
-    "precritic": "PASS for functional code/test tree 04951f0 and UI message correction 2a65ad3; conditional final docs-only PR head retains green checks, completed no-findings review and zero unresolved conversations.",
-    "github_worker_web": "PASS on exact reviewed functional boundary 12cf3cf; new Pre-Critic documentation commit checks pending.",
-    "github_automatic_review": "PASS/no findings on exact functional boundary 12cf3cf; request current exact docs-only head review."
+    "scope": "LOCAL_SYNTHETIC_ONLY; strict USD 0; no R2/billing/remote mutation/production/real data/source writes",
+    "precritic": "PASS_TO_DELEGATED_CONTROLLER: contract scope intact; applicable invariants 1-3,6-9,11,13-16,20,22-23 pass with current evidence; exact code SHA e9e9e0b; tag target will be the commit containing this checkpoint; no product/cost/deployment expansion. This is not technical PASS or merge authorization.",
+    "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A23517-LEGACY-DTO-FINDING.json",
+    "next_action": "Publish immutable CF-AU-I02-ADMIN-Artifact-A1 at the synchronized checkpoint commit; verify its tag/SHA and exact live PR checks; run project_controller GPT-6 Luna High read-only on that artifact; complete protected integration only after Controller PASS and all merge controls.",
+    "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
+    "github_worker_web": "PASS exact checkpoint aa56460ff01d9df558feff49b0309d39438f7df4, run 39071184086; executable/test SHA e9e9e0b4808e26980087c5b87f133974477c2e9c",
+    "github_automatic_review": "PASS/no major issues exact executable SHA e9e9e0b (issuecomment 6241370515); P2 fixed and thread resolved",
+    "controller": "Fresh exact immutable Artifact A1 review pending; earlier 4d attempt interrupted after new P2 and has no verdict",
+    "controller_evidence": "Pending Artifact A1 review; earlier REWORK reports remain historical evidence only",
+    "pr_head_resolution": {
+      "source": "live GitHub PR #15 headRefOid and immutable artifact tag target",
+      "last_checkpoint_with_required_checks": "aa56460ff01d9df558feff49b0309d39438f7df4",
+      "last_checkpoint_tree": "b597a2ca90fb883f057714682e2e9905583e0f1b",
+      "last_verified_at_utc": "2026-10-17T21:30:32Z",
+      "note": "The candidate artifact tag resolves the exact review commit; the live PR head is separately queried. Do not embed a commit SHA into its own tree."
+    },
+    "checkpoint_head": "aa56460ff01d9df558feff49b0309d39438f7df4 (latest checkpoint with exact required checks); executable/test candidate e9e9e0b4808e26980087c5b87f133974477c2e9c",
+    "checkpoint_tree": "b597a2ca90fb883f057714682e2e9905583e0f1b",
+    "artifact": {
+      "tag": "CF-AU-I02-ADMIN-Artifact-A1",
+      "target": "commit containing this synchronized Pre-Critic checkpoint (resolve immutable annotated tag after push)",
+      "code_sha": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
+      "code_tree": "0775136cc16240b4e2ace2a2972b6834500722dc",
+      "review_boundary": "delegated read-only project_controller; not merged or deployed"
+    }
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -115,5 +133,46 @@
     "owner_journey": "UNVERIFIED_PERSONAL_ACCESS_SESSION_REQUIRED",
     "evidence": ".orchestration/evidence/CF-AU-OWNER-PREVIEW-PUBLICATION.json"
   },
-  "integration_reference": "Resolve exact merge SHA from GitHub PR13 mergeCommit; no self-referential predicted SHA."
+  "integration_reference": "Resolve exact merge SHA from GitHub PR13 mergeCommit; no self-referential predicted SHA.",
+  "current_functional_increment": {
+    "canonical_main": "59660aed13f68b92b00cae0eced4494b54f2d8a7",
+    "scope": "Synthetic local OWNER D1 BLOB images and ADMIN moderation/audit. USD 0; no R2, remote mutation, production, real data or source writes.",
+    "admin_ui_implementation_commit": "f3366307556b536fa8d90a2572993c84c9ec0c99",
+    "deterministic_admin_e2e_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
+    "latest_worker_code_test_commit": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
+    "latest_worker_code_test_tree": "0775136cc16240b4e2ace2a2972b6834500722dc",
+    "previous_controller_review": "PASS on f21dea8 before Worker route/limit changes; fresh review required for this code",
+    "github_review_of_prior_head": {
+      "head": "9d72f60003d59f5ad7952f753b6eb58210ed8270",
+      "verdict": "COMPLETED_P2_DIRECT_ADMIN_DISPATCH",
+      "finding": "Added /admin/* to run_worker_first in all three lab configs and proved local direct path returns JSON 401 from Worker rather than SPA HTML."
+    },
+    "findings_fixed_locally": [
+      "Restore source GET /admin/listings/:id detail route using full ADMIN DTO and ADMIN-only middleware",
+      "Restore source POST /admin/listings/:id/approve and /reject routes with ADMIN authorization",
+      "Reject fractional admin audit limits with HTTP 400 before SQLite binding",
+      "Return source ADMIN listing shape and ADMIN_LISTING_* audit names/metadata",
+      "Return idempotent success for repeated approval, same-reason rejection, and publication; changed rejection reason remains conflict",
+      "Keep authenticated ADMIN image read URLs valid for any listing state, including rejected and published, with explicit non-ADMIN denial.",
+      "Route /admin/* to Hono Worker before SPA fallback in local, preview template and OWNER E2E configurations."
+    ],
+    "checks": {
+      "worker_admin": "12/12 PASS on e9e9e0b",
+      "worker_typecheck": "PASS on e9e9e0b",
+      "admin_playwright": "12/12 PASS on 5033f8b; subsequent changes covered by focused Worker route/media assertions",
+      "web_typecheck_build": "PASS after all route config changes on 42ecbeb",
+      "python_scripts": "10/10 PASS on 42ecbeb including all three /admin/* dispatch configs",
+      "owner_playwright": "9/9 prior local synthetic; OWNER implementation unchanged",
+      "github_worker_web": "PASS run 39071184086 on docs checkpoint; code unchanged from e9e9e0b",
+      "github_automatic_review": "PASS/no major issues on e9e9e0b; no new material finding; P2 thread resolved",
+      "controller": "Pending exact Artifact A1 review",
+      "remote_e2e": "BLOCKED_AUTH",
+      "local_direct_admin": "401 JSON from Worker, not SPA HTML, at /admin/listings/nonexistent with isolated local runtime config"
+    },
+    "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
+    "next_action": "Publish immutable CF-AU-I02-ADMIN-Artifact-A1 at the synchronized checkpoint commit; verify its tag/SHA and exact live PR checks; run project_controller GPT-6 Luna High read-only on that artifact; complete protected integration only after Controller PASS and all merge controls.",
+    "precritic": "PASS to delegated Controller review only; not technical PASS or merge approval",
+    "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md"
+  },
+  "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
 }
