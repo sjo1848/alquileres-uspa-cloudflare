@@ -78,12 +78,12 @@ onMounted(load);
     <p class="eyebrow">Administración</p><h2>Revisión de publicaciones</h2>
     <p>Revisá el contenido enviado por propietarios. Solo las publicaciones aprobadas aparecen en el catálogo.</p>
     <p v-if="error" role="alert" class="error">{{ error }}</p><p v-if="notice" role="status">{{ notice }}</p>
-    <button class="secondary" :disabled="loading" @click="() => load(false)">Actualizar cola</button>
+    <button class="secondary" :disabled="loading || busy" @click="() => load(false)">Actualizar cola</button>
     <p v-if="loading" role="status">Cargando publicaciones…</p>
     <p v-else-if="!queue.length" role="status">No hay publicaciones pendientes de revisión.</p>
     <div v-else class="admin-review-layout">
       <nav aria-label="Publicaciones pendientes">
-        <button v-for="item in queue" :key="item.id" class="secondary" :aria-pressed="selectedId === item.id" @click="selectListing(item.id)">
+        <button v-for="item in queue" :key="item.id" class="secondary" :disabled="busy" :aria-pressed="selectedId === item.id" @click="selectListing(item.id)">
           {{ item.title }}<small>{{ item.owner.email }}</small>
         </button>
       </nav>
@@ -106,7 +106,7 @@ onMounted(load);
         </div>
       </article>
     </div>
-    <button v-if="!loading && nextCursor" class="secondary" @click="loadMore">Cargar más publicaciones</button>
+    <button v-if="!loading && nextCursor" class="secondary" :disabled="busy" @click="loadMore">Cargar más publicaciones</button>
     <section class="card admin-audit"><h3>Actividad reciente</h3><ul><li v-for="entry in audit" :key="entry.id">
       {{ entry.action === 'LISTING_APPROVED' ? 'Aprobó' : entry.action === 'LISTING_PUBLISHED' ? 'Publicó' : entry.action === 'LISTING_REJECTED' ? 'Rechazó' : entry.action }} — {{ entry.actor.email }} — {{ entry.targetOwner?.email ?? (entry.entityType + (entry.entityId ? ' ' + entry.entityId : '')) }} — {{ entry.reason ?? (entry.action === 'LISTING_PUBLISHED' ? 'Publicación visible en el catálogo' : entry.action === 'LISTING_APPROVED' ? 'Publicación aprobada' : 'Evento registrado') }}
     </li></ul><p v-if="!audit.length">Todavía no hay decisiones registradas.</p></section>

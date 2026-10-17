@@ -34,6 +34,7 @@ async (page) => {
   await page.reload();
   await login('preview.owner@example.test');
   await createAndSubmit(approveTitle, true);
+  await createAndSubmit(rejectTitle);
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await login('e2e-admin@example.test');
   await page.waitForURL('**/admin');
@@ -42,19 +43,24 @@ async (page) => {
   const previewImages = page.locator('.admin-review-images img');
   await previewImages.first().waitFor();
   assert(await previewImages.first().evaluate(image => image.complete && image.naturalWidth > 0), 'ADMIN must load the submitted D1 image');
+  await page.route('**/api/admin/listings/*/review', async route => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await route.continue();
+  });
   await page.getByRole('button', { name: 'Aprobar', exact: true }).click();
+  const pendingQueueItems = page.locator('.admin-review-layout nav button');
+  assert(await pendingQueueItems.count() >= 2, 'delayed review regression needs a second queued listing');
+  assert(await pendingQueueItems.nth(0).isDisabled() && await pendingQueueItems.nth(1).isDisabled(), 'ADMIN must not switch the selected listing while a review action is pending');
+  assert(await page.getByRole('button', { name: new RegExp(approveTitle) }).getAttribute('aria-pressed') === 'true', 'the pending action must remain visually attached to its target listing');
   await page.getByText('Publicación aprobada. Queda pendiente de publicación.', { exact: true }).waitFor();
+  await page.unroute('**/api/admin/listings/*/review');
   await page.getByRole('button', { name: 'Publicar en catálogo' }).click();
   await page.getByText('Publicación visible en el catálogo.', { exact: true }).waitFor();
   await page.getByRole('link', { name: 'Catálogo' }).click();
   await page.getByRole('heading', { name: approveTitle }).waitFor();
 
-  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
-  await login('preview.owner@example.test');
-  await createAndSubmit(rejectTitle);
-  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
-  await login('e2e-admin@example.test');
-  await page.waitForURL('**/admin');
+  await page.goto(`${baseUrl}/admin`);
+  await page.getByRole('heading', { name: 'Revisión de publicaciones' }).waitFor();
   await page.getByRole('button', { name: new RegExp(rejectTitle) }).click();
   await page.getByLabel('Motivo si rechazás').fill('Falta información de disponibilidad.');
   await page.getByRole('button', { name: 'Rechazar', exact: true }).click();
@@ -112,5 +118,5 @@ async (page) => {
   await queueItems.nth(1).click();
   assert(await page.getByLabel('Motivo si rechazás').inputValue() === '', 'switching listings must clear a rejection reason from the prior listing');
   assert(await page.getByRole('button', { name: 'Rechazar', exact: true }).isDisabled(), 'a new listing must not inherit another listing rejection reason');
-  return { result: 'PASS', checks: ['OWNER submit', 'ADMIN role login', 'submitted D1 image review', 'approval stays unpublished', 'separate publish reaches catalog', 'rejection reason', 'admin audit', 'rejected listing stays private', 'ADMIN session expiry restores /admin destination', 'ADMIN queue reaches the 101st submitted listing through load-more', 'changing selected listing clears rejection reason'] };
+  return { result: 'PASS', checks: ['OWNER submit', 'ADMIN role login', 'submitted D1 image review', 'pending review locks queue selection until its response', 'approval stays unpublished', 'separate publish reaches catalog', 'rejection reason', 'admin audit', 'rejected listing stays private', 'ADMIN session expiry restores /admin destination', 'ADMIN queue reaches the 101st submitted listing through load-more', 'changing selected listing clears rejection reason'] };
 }
