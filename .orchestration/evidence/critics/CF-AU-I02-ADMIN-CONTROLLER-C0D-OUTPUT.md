@@ -1,0 +1,16 @@
+## Verdict: REWORK
+
+**Scope:** local synthetic technical review of PR #15 code/test candidate `c0d78392dceac2498e94ee095f374f6f452c8a09` (tree `8c8c3c2ef7df2f5c8e071268c4d09520f79e1bdd`), against base `59660aed13f68b92b00cae0eced4494b54f2d8a7`. The supplied PR head `044e6aead2cb3da723ccafc0eb748c95eab0570f` has the same code tree; `git diff` confirms its only changes over `c0d7839` are `STATE.md` and `STATUS.json`.
+
+I found no P0/P1 code defect in the reviewed ADMIN paths. The role checks, source-compatible routes and DTO/audit shape, `/admin` Preview-auth fail-closed guard, Static Assets dispatch configuration, transactional review/publication actions, replay behavior, legacy-media guards, image reads across listing states, and audit ordering/index evidence are consistent with the inspected code and tests. The regression also checks 404s for STATIC_ASSETS, D1_BLOB and R2 and confirms no R2 read after the owner’s role changes.
+
+Two items need correction before a bounded PASS:
+
+- **Canonical checkpoint is stale:** `STATUS.json` records the code SHA correctly, but its “exact PR head” and next-action fields still name `c0d7839`. The supplied current PR head is `044e6ae`, so the required checks and automatic review must be tracked against that head. The latest state-only commit does not correct those fields.
+- **Queue regression is weaker than its description:** `admin-moderation.test.ts:167–179` inserts the listing under a user already holding `ADMIN`; it does not change an existing OWNER to ADMIN. It also does not assert a valid OWNER listing remains in the queue within that test. An earlier test at lines 19–27 is a separate OWNER visibility positive control, but the role-transition regression itself does not prove both behaviors together.
+
+Local test results in the evidence ledger are recorded, but I did not rerun tests in this review. The OWNER E2E evidence is historical local synthetic evidence; it does not establish remote behavior. Remote ADMIN E2E remains **BLOCKED_AUTH**. GitHub checks and automatic review for the supplied current head remain **pending**; they are not PASS. No preview mutation, merge approval, or production readiness is claimed.
+
+**Reviewer provenance:** `reviewer_kind=delegated_codex_separate_process`; `model_requested=gpt-6-luna`; `effort_requested=high`; `sandbox_requested=read-only`. This session exposes no CLI invocation metadata, so acceptance of the model/effort/sandbox flags cannot be independently confirmed here. The runtime is read-only; `actual_backend_model_identity=UNVERIFIED`. Limitation: this verdict is not an independently authenticated reviewer or publisher approval.
+
+**Next action:** update the checkpoint to identify `044e6ae` as the current PR head while retaining `c0d7839` as the executable code SHA; strengthen the queue regression to perform a role transition and assert both exclusion and valid OWNER visibility. Then run the affected checks, obtain GitHub review/check results on the resulting exact head, and request a fresh exact-SHA Controller review.
