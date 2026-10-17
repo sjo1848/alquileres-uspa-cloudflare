@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "ADMIN audit source-shape and queue-query findings fixed; local OWNER/ADMIN browser and focused tests pass; new PR candidate awaits publication and exact-head review",
+  "last_completed_task": "ADMIN audit source-shape and indexed-queue fixes pushed on PR #15; local OWNER/ADMIN functional and focused evidence passes; exact-head GitHub review and Controller pending",
   "last_completed_head": "da15d772e3d376a7164687fbedd8648826137c03",
   "work_branch": "work/admin-moderation",
-  "next_action": "Push local candidate da15d772e3d376a7164687fbedd8648826137c03 and checkpoint to PR #15; verify exact-current-head worker/web checks, request/process automatic review and resolve material findings, then run a fresh project_controller review on the exact final SHA. Remote OWNER/ADMIN E2E remains BLOCKED_AUTH without legitimate Cloudflare Access authorization; do not change Access or role mapping.",
+  "next_action": "Read the actual PR #15 HEAD from GitHub; verify required worker/web checks and automatic review for that exact SHA, process material findings, then run project_controller on the exact final PR SHA. Do not change Access configuration/identity mapping; remote photo and ADMIN browser flows remain BLOCKED_AUTH without legitimate session/role authorization.",
   "stop_reason": null,
   "event": {
-    "seq": 77,
-    "id": "ADMIN_AUDIT_PARITY_AND_QUEUE_INDEX_REWORK",
-    "type": "CONTROLLER_REWORK"
+    "seq": 78,
+    "id": "ADMIN_REWORK_CANDIDATE_PUBLISHED",
+    "type": "CANDIDATE_PUBLISHED"
   },
   "external_review": {
     "required": true,
@@ -142,11 +142,11 @@
       "remote_playwright": "BLOCKED_AUTH"
     },
     "controller": "REWORK on cbe1066; full report/provenance at .orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-CBE1066-REWORK.md. Findings fixed in da15d77; rerun on exact final SHA after GitHub review.",
-    "github_quick_checks": "PASS on cbe1066; rerun after da15d77 publication.",
-    "github_automatic_review": "COMPLETED_WITH_P1_P2 on cbe1066; audit schema parity and moderation queue query plan fixed in da15d77; rerun after publication.",
+    "github_quick_checks": "PASS on checkpoint 1abd9d9; rerun/verify on exact current PR head after state sync.",
+    "github_automatic_review": "REWORK on cbe1066 P1/P2 repaired in da15d77; new exact-head review requested for current PR checkpoint.",
     "preview_deployment": "UNCHANGED",
     "admin_remote_identity": "NOT_CREATED; explicit authorized role mapping required",
-    "candidate_pr_head": "da15d772e3d376a7164687fbedd8648826137c03 (local commit; not yet pushed)",
+    "candidate_pr_head": "PR #15 current pushed checkpoint (read exact SHA from GitHub; code/evidence commit da15d772e3d376a7164687fbedd8648826137c03)",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"

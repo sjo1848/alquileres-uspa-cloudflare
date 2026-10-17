@@ -629,3 +629,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Corrected code/evidence commit `da15d772e3d376a7164687fbedd8648826137c03`, tree `2f717e7efe9bc9fc186c4709f1249aa4720a7adb`, is local and not yet pushed; all prior PR/P2 evidence and ancestry remain intact.
 - No authorized Cloudflare Access browser session is available. Remote photo E2E stays `BLOCKED_AUTH`; remote ADMIN identity mapping is absent. No deployment, Preview update, Access change, R2, billing, real data, production or source repository write occurred.
 - **READY_TO_RESUME:** publish `da15d77` plus this state checkpoint to PR #15, verify required worker/web checks on exact current head, request/process the new automatic review, reply to the two new material findings with test evidence and resolve only after review, then run a fresh Controller on the exact final SHA. Continue normal bounded rework without asking the Human to relay findings.
+
+## Event 78 — REWORK candidate and checkpoint published
+
+- Code/evidence commit `da15d772e3d376a7164687fbedd8648826137c03` and checkpoint commit `1abd9d9e877bb2c37bc6ee63a83c9baafb12b793` are both pushed to PR #15; branch history and canonical `main@59660aed13f68b92b00cae0eced4494b54f2d8a7` ancestry remain intact.
+- Required GitHub `worker` and `web` checks passed on `1abd9d9`. Automatic review was requested on that SHA and is being re-requested for the current checkpoint.
+- `STATUS.json` now distinguishes tested executable commit `da15d77` from the latest PR/checkpoint head. Re-check the exact GitHub PR head before consuming any check or review result.
+- **READY_TO_RESUME:** read current PR #15 HEAD from GitHub; wait for exact-head required checks and automatic review; resolve any material findings; then run the delegated Controller against that exact final PR SHA. Remote Access remains unchanged and remote OWNER/ADMIN E2E remains blocked without an authorized Access session.
