@@ -1,0 +1,9 @@
+-- Normalize earlier synthetic moderation actions to the source AdminAuditLog names.
+UPDATE admin_audit_events
+SET action = CASE action
+  WHEN 'LISTING_APPROVED' THEN 'ADMIN_LISTING_APPROVED'
+  WHEN 'LISTING_REJECTED' THEN 'ADMIN_LISTING_REJECTED'
+  WHEN 'LISTING_PUBLISHED' THEN 'ADMIN_LISTING_PUBLISHED'
+  ELSE action
+END
+WHERE action IN ('LISTING_APPROVED','LISTING_REJECTED','LISTING_PUBLISHED');

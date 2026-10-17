@@ -27,19 +27,22 @@ describe('ADMIN moderation and publication',()=>{
     expect((await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin,false)).status).toBe(403);
     const approved=await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin);
     expect(approved.status).toBe(200);
-    expect(await approved.json()).toMatchObject({id:listing.id,status:'APPROVED',publicationStatus:'UNPUBLISHED',rejectionReason:null});
+    expect(await approved.json()).toMatchObject({id:listing.id,status:'APPROVED',publicationStatus:'UNPUBLISHED',rejectionReason:null,owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
     expect((await request('/public/listings/'+listing.id)).status).toBe(404);
     const published=await request('/admin/listings/'+listing.id+'/publish','POST',undefined,admin);
     expect(await published.json()).toMatchObject({id:listing.id,status:'APPROVED',publicationStatus:'PUBLISHED'});
+    const publishedAgain=await request('/admin/listings/'+listing.id+'/publish','POST',undefined,admin);
+    expect(publishedAgain.status).toBe(200);
+    expect(await publishedAgain.json()).toMatchObject({id:listing.id,status:'APPROVED',publicationStatus:'PUBLISHED',owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
     expect((await request('/public/listings/'+listing.id)).status).toBe(200);
     const audit=await request('/admin/listings/audit?listingId='+listing.id,'GET',undefined,admin);
     expect(await audit.json()).toEqual(expect.arrayContaining([
-      expect.objectContaining({entityType:'LISTING',entityId:listing.id,listingId:listing.id,targetOwner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},action:'LISTING_APPROVED',metadata:{},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
-      expect.objectContaining({entityType:'LISTING',entityId:listing.id,listingId:listing.id,action:'LISTING_PUBLISHED',metadata:{},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
+      expect.objectContaining({entityType:'LISTING',entityId:listing.id,listingId:listing.id,targetOwner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},action:'ADMIN_LISTING_APPROVED',metadata:{},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
+      expect.objectContaining({entityType:'LISTING',entityId:listing.id,listingId:listing.id,action:'ADMIN_LISTING_PUBLISHED',metadata:{},actor:{id:'moderation-admin',email:'moderation.admin@example.test',role:'ADMIN'}}),
     ]));
     expect((await request('/admin/listings/audit','GET',undefined,owner)).status).toBe(401);
-    expect((await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin)).status).toBe(409);
-    expect(await env.DB.prepare('SELECT COUNT(*) FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first('COUNT(*)')).toBe(2);
+    expect((await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin)).status).toBe(200);
+    expect(await env.DB.prepare('SELECT COUNT(*) FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first('COUNT(*)')).toBe(4);
     await env.DB.prepare("UPDATE users SET role='OWNER' WHERE id='moderation-admin'").run();
     try { expect((await request('/admin/listings/review','GET',undefined,admin)).status).toBe(401); }
     finally { await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id='moderation-admin'").run(); }
@@ -52,14 +55,21 @@ describe('ADMIN moderation and publication',()=>{
     expect((await request(`/admin/listings/${approved.id}/approve`,'POST',undefined,owner)).status).toBe(401);
     const approval=await request(`/admin/listings/${approved.id}/approve`,'POST',undefined,admin);
     expect(approval.status).toBe(200);
-    expect(await approval.json()).toMatchObject({id:approved.id,status:'APPROVED',publicationStatus:'UNPUBLISHED'});
+    expect(await approval.json()).toMatchObject({id:approved.id,status:'APPROVED',publicationStatus:'UNPUBLISHED',owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
+    const approvalReplay=await request(`/admin/listings/${approved.id}/approve`,'POST',undefined,admin);
+    expect(approvalReplay.status).toBe(200);
+    expect(await approvalReplay.json()).toMatchObject({id:approved.id,status:'APPROVED',owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
 
     const rejected=await (await request('/listings','POST',{...fields,title:'Rechazo sintético por ruta fuente'},owner)).json() as {id:string};
     await request(`/listings/${rejected.id}/submit`,'POST',undefined,owner);
     const rejection=await request(`/admin/listings/${rejected.id}/reject`,'POST',{reason:'Faltan datos de disponibilidad.'},admin);
     expect(rejection.status).toBe(200);
-    expect(await rejection.json()).toMatchObject({id:rejected.id,status:'REJECTED',publicationStatus:'UNPUBLISHED',rejectionReason:'Faltan datos de disponibilidad.'});
-    expect(await env.DB.prepare('SELECT action FROM admin_audit_events WHERE listing_id IN (?,?) ORDER BY action').bind(approved.id,rejected.id).all()).toMatchObject({results:[{action:'LISTING_APPROVED'},{action:'LISTING_REJECTED'}]});
+    expect(await rejection.json()).toMatchObject({id:rejected.id,status:'REJECTED',publicationStatus:'UNPUBLISHED',rejectionReason:'Faltan datos de disponibilidad.',owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
+    const rejectionReplay=await request(`/admin/listings/${rejected.id}/reject`,'POST',{reason:'Faltan datos de disponibilidad.'},admin);
+    expect(rejectionReplay.status).toBe(200);
+    expect(await rejectionReplay.json()).toMatchObject({id:rejected.id,status:'REJECTED',rejectionReason:'Faltan datos de disponibilidad.'});
+    expect((await request(`/admin/listings/${rejected.id}/reject`,'POST',{reason:'Otro motivo diferente.'},admin)).status).toBe(409);
+    expect(await env.DB.prepare('SELECT action FROM admin_audit_events WHERE listing_id IN (?,?) ORDER BY action').bind(approved.id,rejected.id).all()).toMatchObject({results:[{action:'ADMIN_LISTING_APPROVED'},{action:'ADMIN_LISTING_APPROVED'},{action:'ADMIN_LISTING_REJECTED'},{action:'ADMIN_LISTING_REJECTED'}]});
   },15_000);
 
   it('requires a meaningful rejection reason and keeps rejected listing unpublished',async()=>{
@@ -70,7 +80,7 @@ describe('ADMIN moderation and publication',()=>{
     const response=await request(`/admin/listings/${listing.id}/review`,'POST',{action:'reject',reason:'Falta confirmar servicios.'},admin);
     expect(await response.json()).toMatchObject({status:'REJECTED',publicationStatus:'UNPUBLISHED',rejectionReason:'Falta confirmar servicios.'});
     expect((await request(`/public/listings/${listing.id}`)).status).toBe(404);
-    expect(await env.DB.prepare('SELECT action,entity_type,entity_id,metadata,reason FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first()).toMatchObject({action:'LISTING_REJECTED',entity_type:'LISTING',entity_id:listing.id,metadata:'{"reason":"Falta confirmar servicios."}',reason:'Falta confirmar servicios.'});
+    expect(await env.DB.prepare('SELECT action,entity_type,entity_id,metadata,reason FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first()).toMatchObject({action:'ADMIN_LISTING_REJECTED',entity_type:'LISTING',entity_id:listing.id,metadata:'{"reason":"Falta confirmar servicios."}',reason:'Falta confirmar servicios.'});
   }, 15_000);
 
   it('rolls back approval if the audit record cannot be written',async()=>{

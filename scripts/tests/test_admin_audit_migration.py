@@ -6,6 +6,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / 'apps/worker/migrations/0009_admin_audit_shape_and_review_queue_index.sql'
+ACTION_MIGRATION = ROOT / 'apps/worker/migrations/0010_source_admin_audit_action_names.sql'
 
 
 class AdminAuditMigrationTests(unittest.TestCase):
@@ -25,6 +26,8 @@ class AdminAuditMigrationTests(unittest.TestCase):
           CREATE INDEX admin_audit_events_listing_idx ON admin_audit_events(listing_id,created_at DESC);
           CREATE INDEX admin_audit_events_recent_idx ON admin_audit_events(created_at DESC,id DESC);
           INSERT INTO admin_audit_events VALUES ('legacy','admin','listing-1','owner','LISTING_REJECTED','synthetic reason','2026-01-01T00:00:00.000Z');
+          INSERT INTO admin_audit_events VALUES ('legacy-approved','admin','listing-2','owner','LISTING_APPROVED',NULL,'2026-01-02T00:00:00.000Z');
+          INSERT INTO admin_audit_events VALUES ('legacy-published','admin','listing-3','owner','LISTING_PUBLISHED',NULL,'2026-01-03T00:00:00.000Z');
         ''')
 
         db.executescript(MIGRATION.read_text())
@@ -34,6 +37,10 @@ class AdminAuditMigrationTests(unittest.TestCase):
         legacy = db.execute('SELECT entity_type,entity_id,listing_id,target_owner_id,metadata,reason FROM admin_audit_events WHERE id=?', ('legacy',)).fetchone()
         self.assertEqual(legacy, ('LISTING', 'listing-1', 'listing-1', 'owner', '{"reason":"synthetic reason"}', 'synthetic reason'))
         self.assertEqual(json.loads(legacy[4]), {'reason': 'synthetic reason'})
+
+        db.executescript(ACTION_MIGRATION.read_text())
+        normalized = dict(db.execute('SELECT id,action FROM admin_audit_events WHERE id LIKE \'legacy%\''))
+        self.assertEqual(normalized, {'legacy': 'ADMIN_LISTING_REJECTED', 'legacy-approved': 'ADMIN_LISTING_APPROVED', 'legacy-published': 'ADMIN_LISTING_PUBLISHED'})
 
         db.execute('INSERT INTO admin_audit_events(id,actor_id,action,entity_type,entity_id,metadata,created_at) VALUES(?,?,?,?,?,?,?)', ('generic','admin','OWNER_ASSISTED','USER','synthetic-user','{"synthetic":true}','2026-01-02T00:00:00.000Z'))
         generic = db.execute('SELECT entity_type,entity_id,listing_id,target_owner_id,metadata FROM admin_audit_events WHERE id=?', ('generic',)).fetchone()

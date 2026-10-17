@@ -93,35 +93,65 @@ app.get('/admin/listings/review',async c=>{
   const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
   return c.json({items:rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
 });
-async function adminReview(c:any,routeAction?:'approve'|'reject'){
-  const listingId=c.req.param('id'),input=await c.req.json().catch(()=>null) as any,actionValue=routeAction??input?.action;
-  if(!['approve','reject'].includes(actionValue))return c.json({error:'invalid review action'},400);
-  const reason=actionValue==='reject'?input?.reason:null;
-  if(actionValue==='reject'&&(typeof reason!=='string'||reason.trim().length<3||reason.trim().length>1000))return c.json({error:'rejection reason must contain 3 to 1000 characters'},400);
-  if(actionValue==='approve'&&routeAction===undefined&&input?.reason!==undefined)return c.json({error:'approval does not accept a rejection reason'},400);
+async function sourceAdminListing(db:D1Database,listingId:string,mediaStrategy?:string){
+  const listing=await db.prepare(`SELECT l.id,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.status,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.id AS ownerId,u.email AS ownerEmail,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?`).bind(listingId).first<any>();
+  if(!listing||listing.ownerRole!=='OWNER')return null;
+  const staticImages=(await db.prepare('SELECT id,asset_path AS url,mime_type AS contentType,byte_size AS sizeBytes,position FROM static_listing_images WHERE listing_id=?').bind(listingId).all<any>()).results.map(image=>({...image,originalName:image.url.split('/').pop()??image.url}));
+  const storedImages=(await db.prepare('SELECT id,original_name AS originalName,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id=?').bind(listingId).all<any>()).results.map(image=>({...image,url:`/admin/listings/${encodeURIComponent(listingId)}/images/${encodeURIComponent(image.id)}`}));
+  const images=(mediaStrategy==='STATIC_ASSETS'?staticImages:[...staticImages,...storedImages]).sort((a:any,b:any)=>a.position-b.position||a.id.localeCompare(b.id));
+  const {ownerId,ownerEmail,ownerRole,...fields}=listing;
+  return {...fields,owner:{id:ownerId,email:ownerEmail,role:ownerRole},images};
+}
+function sourceAuditInsert(c:any,eventId:string,listingId:string,action:string,reason:string|null,at:string,whereSql:string,whereArgs:unknown[]){
+  const metadata=reason?JSON.stringify({reason}):'{}';
+  return c.env.DB.prepare(`INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,?,?,?,? FROM listings l JOIN users owner ON owner.id=l.owner_id WHERE ${whereSql}`).bind(eventId,c.get('user').id,action,metadata,reason,at,...whereArgs);
+}
+async function adminReviewSource(c:any,actionValue:'approve'|'reject',providedInput?:any){
+  const listingId=c.req.param('id'),input=actionValue==='reject'?(providedInput??await c.req.json().catch(()=>null)):null;
+  const reason=actionValue==='reject'&&typeof input?.reason==='string'?input.reason.trim():null;
+  if(actionValue==='reject'&&(reason===null||reason.length<3||reason.length>1000))return c.json({error:'rejection reason must contain 3 to 1000 non-blank characters'},400);
   if(actionValue==='approve'&&d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
-  const action=actionValue==='approve'?'LISTING_APPROVED':'LISTING_REJECTED',status=actionValue==='approve'?'APPROVED':'REJECTED',publication='UNPUBLISHED',at=now(),eventId=id();
-  const updated=c.env.DB.prepare('UPDATE listings SET status=?,publication_status=?,rejection_reason=?,updated_at=? WHERE id=? AND status=\'SUBMITTED\'').bind(status,publication,reason?.trim()??null,at,listingId);
-  const reasonValue=reason?.trim()??null,metadata=JSON.stringify(reasonValue?{reason:reasonValue}:{});
-  const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,?,?,?,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status=? AND l.updated_at=?").bind(eventId,c.get('user').id,action,metadata,reasonValue,at,listingId,status,at);
+  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,l.rejection_reason AS rejectionReason,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first();
+  if(!current||current.ownerRole!=='OWNER')return c.json({message:'Listing not found'},404);
+  const at=now(),eventId=id(),action=actionValue==='approve'?'ADMIN_LISTING_APPROVED':'ADMIN_LISTING_REJECTED',status=actionValue==='approve'?'APPROVED':'REJECTED';
+  if((actionValue==='approve'&&current.status==='APPROVED')||(actionValue==='reject'&&current.status==='REJECTED'&&current.rejectionReason===reason)){
+    const conditions=actionValue==='approve'?"l.status='APPROVED'":"l.status='REJECTED' AND l.rejection_reason=?",args=actionValue==='approve'?[]:[reason];
+    try{const results=await c.env.DB.batch([sourceAuditInsert(c,eventId,listingId,action,reason,at,`l.id=? AND owner.role='OWNER' AND ${conditions}`,[listingId,...args])]);if(results[0]?.meta?.changes!==1)return c.json({error:'listing changed during review'},409);}
+    catch{return c.json({error:'review outcome could not be confirmed'},503);}
+    const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
+  }
+  if(actionValue==='reject'&&current.status==='REJECTED')return c.json({error:'listing already rejected with another reason'},409);
+  if(current.status!=='SUBMITTED')return c.json({error:'listing is no longer awaiting review'},409);
+  const updated=actionValue==='approve'
+    ? c.env.DB.prepare("UPDATE listings SET status='APPROVED',rejection_reason=NULL,updated_at=? WHERE id=? AND status='SUBMITTED' AND EXISTS (SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER')").bind(at,listingId)
+    : c.env.DB.prepare("UPDATE listings SET status='REJECTED',rejection_reason=?,updated_at=? WHERE id=? AND status='SUBMITTED' AND EXISTS (SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER')").bind(reason,at,listingId);
+  const audit=sourceAuditInsert(c,eventId,listingId,action,reason,at,`l.id=? AND owner.role='OWNER' AND changes()=1 AND l.status=? AND l.updated_at=?`,[listingId,status,at]);
   try{
     const results=await c.env.DB.batch([updated,audit]);
-    if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'listing is no longer awaiting review'},409);
+    if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'listing changed during review'},409);
   }catch{return c.json({error:'review outcome could not be confirmed'},503);}
-  const result=await c.env.DB.prepare("SELECT id,status,publication_status AS publicationStatus,rejection_reason AS rejectionReason,updated_at AS updatedAt FROM listings WHERE id=?").bind(listingId).first();
-  return result?c.json(result):c.json({error:'listing not found'},404);
+  const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
 }
-app.post('/admin/listings/:id/review',c=>adminReview(c));
-app.post('/admin/listings/:id/approve',c=>adminReview(c,'approve'));
-app.post('/admin/listings/:id/reject',c=>adminReview(c,'reject'));
+app.post('/admin/listings/:id/review',async c=>{const input=await c.req.json().catch(()=>null) as any;if(!input||!['approve','reject'].includes(input.action))return c.json({error:'invalid review action'},400);if(input.action==='approve'&&input.reason!==undefined)return c.json({error:'approval does not accept a rejection reason'},400);return adminReviewSource(c,input.action,input);});
+app.post('/admin/listings/:id/approve',c=>adminReviewSource(c,'approve'));
+app.post('/admin/listings/:id/reject',c=>adminReviewSource(c,'reject'));
 app.post('/admin/listings/:id/publish',async c=>{
-  const listingId=c.req.param('id'),at=now(),eventId=id();
+  const listingId=c.req.param('id');
   if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
-  const updated=c.env.DB.prepare("UPDATE listings SET publication_status='PUBLISHED',updated_at=? WHERE id=? AND status='APPROVED' AND publication_status='UNPUBLISHED'").bind(at,listingId);
-  const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,'LISTING_PUBLISHED','{}',NULL,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status='APPROVED' AND l.publication_status='PUBLISHED' AND l.updated_at=?").bind(eventId,c.get('user').id,at,listingId,at);
+  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first<any>();
+  if(!current||current.ownerRole!=='OWNER')return c.json({message:'Listing not found'},404);
+  const at=now(),eventId=id(),action='ADMIN_LISTING_PUBLISHED';
+  if(current.status==='APPROVED'&&current.publicationStatus==='PUBLISHED'){
+    try{const results=await c.env.DB.batch([sourceAuditInsert(c,eventId,listingId,action,null,at,"l.id=? AND owner.role='OWNER' AND l.status='APPROVED' AND l.publication_status='PUBLISHED'",[listingId])]);if(results[0]?.meta?.changes!==1)return c.json({error:'listing changed during publication'},409);}
+    catch{return c.json({error:'publication outcome could not be confirmed'},503);}
+    const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
+  }
+  if(current.status!=='APPROVED'||current.publicationStatus!=='UNPUBLISHED')return c.json({error:'only an approved unpublished listing can be published'},409);
+  const updated=c.env.DB.prepare("UPDATE listings SET publication_status='PUBLISHED',updated_at=? WHERE id=? AND status='APPROVED' AND publication_status='UNPUBLISHED' AND EXISTS (SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER')").bind(at,listingId);
+  const audit=sourceAuditInsert(c,eventId,listingId,action,null,at,"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.status='APPROVED' AND l.publication_status='PUBLISHED' AND l.updated_at=?",[listingId,at]);
   try{const results=await c.env.DB.batch([updated,audit]);if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'only an approved unpublished listing can be published'},409);}
   catch{return c.json({error:'publication outcome could not be confirmed'},503);}
-  return c.json(await c.env.DB.prepare('SELECT id,status,publication_status AS publicationStatus,updated_at AS updatedAt FROM listings WHERE id=?').bind(listingId).first());
+  const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
 });
 app.get('/admin/listings/audit',async c=>{
   const listingId=c.req.query('listingId'),requestedLimit=Number(c.req.query('limit')??50);

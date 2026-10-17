@@ -108,7 +108,7 @@ onMounted(load);
     </div>
     <button v-if="!loading && nextCursor" class="secondary" :disabled="busy" @click="loadMore">Cargar más publicaciones</button>
     <section class="card admin-audit"><h3>Actividad reciente</h3><ul><li v-for="entry in audit" :key="entry.id">
-      {{ entry.action === 'LISTING_APPROVED' ? 'Aprobó' : entry.action === 'LISTING_PUBLISHED' ? 'Publicó' : entry.action === 'LISTING_REJECTED' ? 'Rechazó' : entry.action }} — {{ entry.actor.email }} — {{ entry.targetOwner?.email ?? (entry.entityType + (entry.entityId ? ' ' + entry.entityId : '')) }} — {{ entry.reason ?? (entry.action === 'LISTING_PUBLISHED' ? 'Publicación visible en el catálogo' : entry.action === 'LISTING_APPROVED' ? 'Publicación aprobada' : 'Evento registrado') }}
+      {{ entry.action === 'LISTING_APPROVED' || entry.action === 'ADMIN_LISTING_APPROVED' ? 'Aprobó' : entry.action === 'LISTING_PUBLISHED' || entry.action === 'ADMIN_LISTING_PUBLISHED' ? 'Publicó' : entry.action === 'LISTING_REJECTED' || entry.action === 'ADMIN_LISTING_REJECTED' ? 'Rechazó' : entry.action }} — {{ entry.actor.email }} — {{ entry.targetOwner?.email ?? (entry.entityType + (entry.entityId ? ' ' + entry.entityId : '')) }} — {{ entry.reason ?? (entry.action === 'LISTING_PUBLISHED' || entry.action === 'ADMIN_LISTING_PUBLISHED' ? 'Publicación visible en el catálogo' : entry.action === 'LISTING_APPROVED' || entry.action === 'ADMIN_LISTING_APPROVED' ? 'Publicación aprobada' : 'Evento registrado') }}
     </li></ul><p v-if="!audit.length">Todavía no hay decisiones registradas.</p></section>
   </section>
 </template>
