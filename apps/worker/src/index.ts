@@ -75,8 +75,14 @@ app.get('/admin/listings/review',async c=>{
   const rows=(await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED') ORDER BY l.updated_at,l.id LIMIT 100").all<any>()).results;
   if(!rows.length)return c.json([]);
   const images=await publicImages(c.env.DB,rows.map(row=>row.id),c.env.MEDIA_STRATEGY==='STATIC_ASSETS',d1ImageStatus(c));
+  const legacyIds=new Set<string>();
+  if(d1ImageStatus(c)){
+    const slots=rows.map(()=>'?').join(',');
+    const legacy=(await c.env.DB.prepare(`SELECT DISTINCT listing_id AS listingId FROM listing_images WHERE listing_id IN (${slots}) AND blob_data IS NULL`).bind(...rows.map(row=>row.id)).all<any>()).results;
+    for(const row of legacy)legacyIds.add(row.listingId);
+  }
   const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
-  return c.json(rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[]})));
+  return c.json(rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})));
 });
 app.post('/admin/listings/:id/review',async c=>{
   const listingId=c.req.param('id'),input=await c.req.json().catch(()=>null) as any;
@@ -84,6 +90,7 @@ app.post('/admin/listings/:id/review',async c=>{
   const reason=input.action==='reject'?input.reason:null;
   if(input.action==='reject'&&(typeof reason!=='string'||reason.trim().length<3||reason.trim().length>1000))return c.json({error:'rejection reason must contain 3 to 1000 characters'},400);
   if(input.action==='approve'&&input.reason!==undefined)return c.json({error:'approval does not accept a rejection reason'},400);
+  if(input.action==='approve'&&d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
   const action=input.action==='approve'?'LISTING_APPROVED':'LISTING_REJECTED',status=input.action==='approve'?'APPROVED':'REJECTED',publication='UNPUBLISHED',at=now(),eventId=id();
   const updated=c.env.DB.prepare('UPDATE listings SET status=?,publication_status=?,rejection_reason=?,updated_at=? WHERE id=? AND status=\'SUBMITTED\'').bind(status,publication,reason?.trim()??null,at,listingId);
   const audit=c.env.DB.prepare('INSERT INTO admin_audit_events(id,actor_id,listing_id,target_owner_id,action,reason,created_at) SELECT ?,?,l.id,l.owner_id,?,?,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status=? AND l.updated_at=?').bind(eventId,c.get('user').id,action,reason?.trim()??null,at,listingId,status,at);
@@ -96,6 +103,7 @@ app.post('/admin/listings/:id/review',async c=>{
 });
 app.post('/admin/listings/:id/publish',async c=>{
   const listingId=c.req.param('id'),at=now(),eventId=id();
+  if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
   const updated=c.env.DB.prepare("UPDATE listings SET publication_status='PUBLISHED',updated_at=? WHERE id=? AND status='APPROVED' AND publication_status='UNPUBLISHED'").bind(at,listingId);
   const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,listing_id,target_owner_id,action,reason,created_at) SELECT ?,?,l.id,l.owner_id,'LISTING_PUBLISHED',NULL,? FROM listings l WHERE l.id=? AND changes()=1 AND l.status='APPROVED' AND l.publication_status='PUBLISHED' AND l.updated_at=?").bind(eventId,c.get('user').id,at,listingId,at);
   try{const results=await c.env.DB.batch([updated,audit]);if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'only an approved unpublished listing can be published'},409);}

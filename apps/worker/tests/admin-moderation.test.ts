@@ -5,7 +5,7 @@ import { app } from '../src/index';
 const origin='http://localhost', secret='synthetic-admin-moderation-secret-at-least-32-bytes';
 const bindings={...env,DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'STATIC_ASSETS'};
 const fields={title:'Cabaña sintética para moderación',description:'Datos ficticios de revisión',location:'Uspallata',priceAmount:25000,pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:2,currency:'ARS'};
-function request(path:string,method='GET',body?:unknown,cookie?:string,withOrigin=true){return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined},bindings);}
+function request(path:string,method='GET',body?:unknown,cookie?:string,withOrigin=true,mediaStrategy=bindings.MEDIA_STRATEGY){return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined},{...bindings,MEDIA_STRATEGY:mediaStrategy});}
 async function login(email:string){const response=await request('/auth/login','POST',{email,password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
 
 beforeAll(async()=>{
@@ -63,5 +63,24 @@ describe('ADMIN moderation and publication',()=>{
       expect(await env.DB.prepare('SELECT status,publication_status FROM listings WHERE id=?').bind(listing.id).first()).toMatchObject({status:'SUBMITTED',publication_status:'UNPUBLISHED'});
       expect(await env.DB.prepare('SELECT COUNT(*) FROM admin_audit_events WHERE listing_id=?').bind(listing.id).first('COUNT(*)')).toBe(0);
     } finally { await env.DB.prepare('DROP TRIGGER fail_admin_audit').run(); }
+  });
+
+  it('flags legacy D1 rows and blocks approval and publication until media is migrated',async()=>{
+    const owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
+    const listing=await (await request('/listings','POST',{...fields,title:'Publicación sintética con foto heredada'},owner)).json() as {id:string};
+    await request(`/listings/${listing.id}/submit`,'POST',undefined,owner);
+    const at=new Date().toISOString();
+    await env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at,blob_data) VALUES(?,?,?,?,?,?,?,?,?,NULL)').bind('legacy-'+listing.id,listing.id,'legacy:'+listing.id,'legacy.jpg','image/jpeg',12,0,at,at).run();
+    const queue=await (await request('/admin/listings/review','GET',undefined,admin,true,'D1_BLOB')).json() as any[];
+    expect(queue.find(item=>item.id===listing.id)).toMatchObject({requiresMediaRecovery:true,images:[]});
+    const approval=await request(`/admin/listings/${listing.id}/review`,'POST',{action:'approve'},admin,true,'D1_BLOB');
+    expect(approval.status).toBe(409);
+    expect(await approval.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});
+    expect(await env.DB.prepare('SELECT status,publication_status FROM listings WHERE id=?').bind(listing.id).first()).toMatchObject({status:'SUBMITTED',publication_status:'UNPUBLISHED'});
+    await env.DB.prepare("UPDATE listings SET status='APPROVED' WHERE id=?").bind(listing.id).run();
+    const publication=await request(`/admin/listings/${listing.id}/publish`,'POST',undefined,admin,true,'D1_BLOB');
+    expect(publication.status).toBe(409);
+    expect(await publication.json()).toMatchObject({code:'LEGACY_MEDIA_MIGRATION_REQUIRED'});
+    expect(await env.DB.prepare('SELECT publication_status FROM listings WHERE id=?').bind(listing.id).first('publication_status')).toBe('UNPUBLISHED');
   });
 });

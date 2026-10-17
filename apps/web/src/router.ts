@@ -18,7 +18,11 @@ export const router = createRouter({
   ],
   scrollBehavior: () => ({ top: 0 }),
 });
-setSessionExpiredHandler(()=>void router.replace({path:'/login',query:{expired:'1',redirect:'/owner'}}));
+setSessionExpiredHandler(()=>{
+  const current=router.currentRoute.value;
+  const redirect=current.meta.requiresAuth?current.fullPath:'/owner';
+  void router.replace({path:'/login',query:{expired:'1',redirect}});
+});
 router.beforeEach(async to=>{
   const session=useSession();
   if((to.meta.requiresAuth||to.path==='/login')&&['unknown','loading','error'].includes(session.status.value)){

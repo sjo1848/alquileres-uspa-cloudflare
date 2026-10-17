@@ -68,5 +68,13 @@ async (page) => {
   await page.screenshot({ path: 'output/playwright/admin-moderation-audit.png' });
   await page.getByRole('link', { name: 'Catálogo' }).click();
   assert(!(await page.getByText(rejectTitle, { exact: false }).count()), 'rejected listing must remain absent from catalog');
-  return { result: 'PASS', checks: ['OWNER submit', 'ADMIN role login', 'submitted D1 image review', 'approval publishes to catalog', 'rejection reason', 'admin audit', 'rejected listing stays private'] };
+  await login('e2e-admin@example.test');
+  await page.goto(`${baseUrl}/admin`);
+  await page.getByRole('button', { name: 'Actualizar cola' }).waitFor();
+  await page.context().clearCookies();
+  await page.getByRole('button', { name: 'Actualizar cola' }).click();
+  await page.waitForURL(url => url.pathname === '/login' && url.searchParams.get('redirect') === '/admin');
+  await login('e2e-admin@example.test');
+  await page.getByRole('heading', { name: 'Revisión de publicaciones' }).waitFor();
+  return { result: 'PASS', checks: ['OWNER submit', 'ADMIN role login', 'submitted D1 image review', 'approval stays unpublished', 'separate publish reaches catalog', 'rejection reason', 'admin audit', 'rejected listing stays private', 'ADMIN session expiry restores /admin destination'] };
 }

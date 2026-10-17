@@ -38,3 +38,16 @@ The final isolated database was freshly migrated through `0008_admin_moderation_
 The automated browser context has no authorized Cloudflare Access session; navigating to the existing private Preview reaches its Access sign-in page. Therefore `LOCAL E2E PASS / REMOTE E2E BLOCKED_AUTH`. No remote product actions were attempted, no Access policy or identity was changed, and no credential, cookie, OTP or API token was used as an Access identity. The existing operator-only Preview remains protected.
 
 This evidence does not claim remote photo acceptance or remote ADMIN acceptance. Remote ADMIN also needs an explicitly authorized ADMIN identity mapping; the current Preview exchange intentionally maps the operator to the fixed synthetic OWNER identity. Do not broaden that mapping or weaken Access as part of this increment.
+
+## 2026-10-17 local rerun and PR findings
+
+The current PR #15 candidate was rerun with Playwright CLI against a newly migrated isolated Workerd/D1 database at `/tmp/cf-au-admin-resume/state` (migrations `0001`–`0008`, synthetic OWNER/ADMIN only). No remote binding was configured.
+
+- OWNER photo E2E: **PASS, 9 checks** using `apps/web/e2e/owner-d1-blob.playwright.js` — two uploads, browser decode, order, reorder, reload persistence, authorized byte GET, delete, compaction and delete persistence.
+- ADMIN E2E: **PASS, 9 checks** using `apps/web/e2e/admin-moderation.playwright.js` — OWNER submission, ADMIN review, approval separated from publication, public catalog visibility after publish, reasoned rejection, audit actor/owner/reason, rejected listing stays private, and ADMIN session expiry returns to `/admin` after reauthentication.
+- D1 readback: one approved/published synthetic listing has its 775-byte JPEG BLOB; rejected listing is `REJECTED/UNPUBLISHED` with no image. Audit rows show `e2e-admin` and synthetic OWNER plus approval/publication/rejection actions and the rejection reason.
+- Worker focused suite: **15/15 PASS** (`admin-moderation`, `owner-lifecycle`, `public-listings`). One initial run hit the existing 5-second timeout on the OWNER lifecycle test while local browser/build processes competed for CPU. The test's assertions passed on rerun after its per-test execution allowance was raised to 15 seconds; the focused suite then passed 15/15. No application behavior was changed for this timing adjustment.
+- Worker TypeScript typecheck: **PASS**. Vue typecheck and integrated Worker/client build: **PASS**. `git diff --check`: **PASS**.
+- GitHub review findings on prior head `e20a65e`: P1 legacy D1 rows could otherwise be approved/published while image bytes are unavailable; queue now marks affected listings and API guards reject approval/publication with `409 LEGACY_MEDIA_MIGRATION_REQUIRED` until migration. Regression verifies both responses and unchanged unpublished state. P2 expired ADMIN session used to redirect to `/owner`; handler now preserves the protected current route (`/admin`) and the Playwright regression covers it.
+
+These results are local synthetic evidence only. The existing private Preview remains Access-protected and unchanged; no authorized Access session is present in this executor, so remote photo E2E remains **BLOCKED_AUTH**. ADMIN has no remote identity mapping. No R2, billing, paid resources, production, real data, or source repository changes were used.

@@ -7,6 +7,7 @@ type ReviewItem = {
   id: string; title: string; description: string; location: string;
   priceAmount: number | null; currency: string | null; status: string;
   publicationStatus: 'UNPUBLISHED' | 'PUBLISHED';
+  requiresMediaRecovery: boolean;
   owner: { id: string; email: string; role: 'OWNER' };
   images: { id: string; contentType: string; sizeBytes: number; position: number; url: string }[];
 };
@@ -72,14 +73,15 @@ onMounted(load);
         <div v-if="selected()!.images.length" class="admin-review-images">
           <img v-for="image in selected()!.images" :key="image.id" :src="image.url.startsWith('/media/catalog/') ? image.url : apiUrl(image.url)" :alt="`Imagen ${image.position + 1} de ${selected()!.title}`" />
         </div><p v-else>Sin imágenes.</p>
+        <p v-if="selected()!.requiresMediaRecovery" role="alert" class="error">Esta publicación conserva fotos de una carga anterior. Hay que migrarlas antes de aprobarla o publicarla.</p>
         <label for="rejection-reason">Motivo si rechazás</label><textarea id="rejection-reason" v-model="reason" maxlength="1000" rows="3" />
         <div v-if="selected()!.status === 'SUBMITTED'" class="admin-review-actions">
-          <button :disabled="busy" @click="review('approve')">{{ busy ? 'Guardando…' : 'Aprobar' }}</button>
+          <button :disabled="busy || selected()!.requiresMediaRecovery" @click="review('approve')">{{ busy ? 'Guardando…' : 'Aprobar' }}</button>
           <button class="secondary" :disabled="busy || reason.trim().length < 3" @click="review('reject')">Rechazar</button>
         </div>
         <div v-else-if="selected()!.status === 'APPROVED' && selected()!.publicationStatus === 'UNPUBLISHED'" class="admin-review-actions">
           <p>La aprobación está registrada. La ficha sigue oculta hasta que la publiques.</p>
-          <button :disabled="busy" @click="publish">{{ busy ? 'Publicando…' : 'Publicar en catálogo' }}</button>
+          <button :disabled="busy || selected()!.requiresMediaRecovery" @click="publish">{{ busy ? 'Publicando…' : 'Publicar en catálogo' }}</button>
         </div>
       </article>
     </div>

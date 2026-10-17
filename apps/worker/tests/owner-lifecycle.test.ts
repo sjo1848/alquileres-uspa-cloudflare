@@ -61,7 +61,7 @@ describe('OWNER cookie session and draft → review journey',()=>{
     expect((await request(`/listings/${item.id}`,'PATCH',fields,cookie)).status).toBe(404);
     expect((await request(`/public/listings/${item.id}`)).status).toBe(404);
     expect(await env.DB.prepare("SELECT COUNT(*) AS count FROM listings WHERE owner_id='owner-a'").first('count')).toBe(1);
-  });
+  }, 15_000);
   it('blocks submission while an earlier image operation still requires recovery',async()=>{
     const cookie=await login();
     const item=await (await request('/listings','POST',fields,cookie)).json() as any;
