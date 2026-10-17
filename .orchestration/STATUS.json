@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "Closed ADMIN stale image authorization after owner role changes and strengthened the queue regression to prove current OWNER visibility plus demoted OWNER exclusion; local ADMIN suite 12/12 and Worker typecheck pass.",
-  "last_completed_head": "af1680e263067645ece58dc735647e7202982111",
+  "last_completed_task": "ADMIN legacy D1 image DTO issue fixed and reviewed; exact worker/web checks and GitHub automatic review pass on a9f2b9c. Controller REWORK is checkpoint-only and is being resolved by this evidence/state commit.",
+  "last_completed_head": "a9f2b9cab4df4865d7b9ee796cf7ec690adf9036",
   "work_branch": "work/admin-moderation",
-  "next_action": "Query live PR #15 HEAD after checkpoint publication; verify exact worker/web checks and automatic review, resolve material findings, then run fresh separate GPT-6 Luna High read-only Controller on the exact final code/test candidate; complete Pre-Critic and protected integration only after all gates pass.",
+  "next_action": "Publish the synchronized checkpoint/evidence commit; verify exact live PR #15 HEAD, worker/web checks and automatic review; run a fresh separate read-only GPT-6 Luna High Controller on that exact candidate; complete Pre-Critic and protected integration only if every gate passes.",
   "stop_reason": null,
   "event": {
-    "seq": 91,
-    "id": "ADMIN_CONTROLLER_REWORK_REPAIRED",
+    "seq": 94,
+    "id": "ADMIN_D1_LEGACY_DTO_CHECKPOINT",
     "type": "REWORK_CHECKPOINT"
   },
   "external_review": {
@@ -54,8 +54,8 @@
     "main_auto_merge": true
   },
   "candidate_review": {
-    "code_sha": "af1680e263067645ece58dc735647e7202982111",
-    "code_tree": "b44005e44115fc809b449a5a3a4157ef1e291f23",
+    "code_sha": "a9f2b9cab4df4865d7b9ee796cf7ec690adf9036",
+    "code_tree": "ccef2fc55804a811a322e41d01d3e3a37978b269",
     "previous_controller": {
       "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
       "reviewed_pr_head": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
@@ -77,13 +77,14 @@
       "remote_playwright": "BLOCKED_AUTH"
     },
     "scope": "LOCAL_SYNTHETIC_ONLY; strict USD 0; no R2/billing/remote mutation/production/real data/source writes",
-    "precritic": "PENDING exact-head GitHub checks/review and fresh Controller PASS",
-    "github_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-C0D-REWORK.md",
-    "next_action": "Query live PR #15 HEAD after checkpoint publication; verify exact worker/web checks and automatic review, resolve material findings, then run fresh separate GPT-6 Luna High read-only Controller on the exact final code/test candidate; complete Pre-Critic and protected integration only after all gates pass.",
+    "precritic": "PENDING exact live checkpoint head checks/review and Controller PASS",
+    "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A23517-LEGACY-DTO-FINDING.json",
+    "next_action": "Publish the synchronized checkpoint/evidence commit; verify exact live PR #15 HEAD, worker/web checks and automatic review; run a fresh separate read-only GPT-6 Luna High Controller on that exact candidate; complete Pre-Critic and protected integration only if every gate passes.",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "github_worker_web": "PENDING on latest exact PR head; query GitHub after checkpoint push",
-    "github_automatic_review": "PENDING on latest exact PR head; prior review findings fixed: current OWNER check for all ADMIN image strategies and queue regression actual role transition with positive control",
-    "controller": "REWORK on c0d7839; both findings repaired in af1680e; fresh exact candidate review pending"
+    "github_worker_web": "PASS on exact code/test SHA a9f2b9c; run 39069959770",
+    "github_automatic_review": "PASS on exact code/test SHA a9f2b9c (2026-10-17 21:16Z); no major issues; legacy DTO P2 fix verified",
+    "controller": "REWORK on a9f2b9c solely for uncommitted checkpoint pointer; synchronized in current docs/evidence-only commit; exact-head re-review pending",
+    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-A9F2B9C-REWORK.md"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -124,8 +125,8 @@
     "scope": "Synthetic local OWNER D1 BLOB images and ADMIN moderation/audit. USD 0; no R2, remote mutation, production, real data or source writes.",
     "admin_ui_implementation_commit": "f3366307556b536fa8d90a2572993c84c9ec0c99",
     "deterministic_admin_e2e_commit": "da1855dd15e5e678976f464219c4638a0b92fd6e",
-    "latest_worker_code_test_commit": "af1680e263067645ece58dc735647e7202982111",
-    "latest_worker_code_test_tree": "b44005e44115fc809b449a5a3a4157ef1e291f23",
+    "latest_worker_code_test_commit": "a9f2b9cab4df4865d7b9ee796cf7ec690adf9036",
+    "latest_worker_code_test_tree": "ccef2fc55804a811a322e41d01d3e3a37978b269",
     "previous_controller_review": "PASS on f21dea8 before Worker route/limit changes; fresh review required for this code",
     "github_review_of_prior_head": {
       "head": "9d72f60003d59f5ad7952f753b6eb58210ed8270",
@@ -142,21 +143,21 @@
       "Route /admin/* to Hono Worker before SPA fallback in local, preview template and OWNER E2E configurations."
     ],
     "checks": {
-      "worker_admin": "12/12 PASS on af1680e",
-      "worker_typecheck": "PASS on af1680e",
+      "worker_admin": "12/12 PASS on a9f2b9c",
+      "worker_typecheck": "PASS on a9f2b9c",
       "admin_playwright": "12/12 PASS on 5033f8b; subsequent changes covered by focused Worker route/media assertions",
       "web_typecheck_build": "PASS after all route config changes on 42ecbeb",
       "python_scripts": "10/10 PASS on 42ecbeb including all three /admin/* dispatch configs",
       "owner_playwright": "9/9 prior local synthetic; OWNER implementation unchanged",
       "github_worker_web": "PENDING latest exact PR head after checkpoint publication",
-      "github_automatic_review": "PENDING latest exact PR head after checkpoint publication; fixes include role revalidation on ADMIN image reads and genuine role-transition queue regression",
-      "controller": "REWORK on c0d7839; findings addressed on af1680e; fresh review pending",
+      "github_automatic_review": "P2 legacy D1 image links in detail/rejection DTO found on 9a23517; fixed in a9f2b9c; exact-head review pending",
+      "controller": "Prior PASS on af1680e; fresh exact candidate review pending after a9f2b9c correction",
       "remote_e2e": "BLOCKED_AUTH",
       "local_direct_admin": "401 JSON from Worker, not SPA HTML, at /admin/listings/nonexistent with isolated local runtime config"
     },
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
-    "next_action": "Query live PR #15 HEAD after checkpoint publication; verify exact worker/web checks and automatic review, resolve material findings, then run fresh separate GPT-6 Luna High read-only Controller on the exact final code/test candidate; complete Pre-Critic and protected integration only after all gates pass.",
-    "precritic": "PENDING exact-head GitHub review/checks and fresh Controller PASS",
+    "next_action": "Verify live PR #15 HEAD after this checkpoint publication; wait for exact-head required worker/web checks and automatic review; process material findings; then run a fresh separate read-only GPT-6 Luna High Controller on the exact final code/test candidate and complete Pre-Critic before protected integration.",
+    "precritic": "PENDING latest exact-head CI/review and fresh Controller PASS",
     "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
