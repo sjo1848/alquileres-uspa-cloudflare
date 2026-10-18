@@ -926,3 +926,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Worker/web typechecks PASS; focused Worker tests 2 files / 10 tests PASS; web build PASS; local Playwright against synthetic D1 completed contact, OWNER inbox/read state/availability/reconfirm and ADMIN-assisted creation; diff check PASS. Evidence: `.orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md`; screenshot: `output/playwright/admin-assisted-local.png`.
 - The user began normal Access login in the visible headed browser. Remote authenticated E2E is pending that login; no authentication material was exported or saved. This does not block local implementation. No Preview mutation, Access-policy change, R2, paid service, Service Token, real data, production, new Cloudflare resource or source-repository write.
 - **READY_TO_RESUME:** publish this branch as a protected PR, process required quick checks and GitHub review, and update only the existing private Preview after approved integration. If the operator session is not ready, retain `BLOCKED_AUTH` only for remote validation and continue the next local functional work.
+
+## Event 115 — CF-AU-I03 protected PR opened
+
+- PR #19: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19; branch `work/contact-availability-journeys`; code provenance `df7e178d6b12729eb39971b76778cad54d5899ab`; current observed documentation checkpoint `7f34358088b3ef0b938a4f8dbf4b15cd776e51f0`.
+- `main` protection currently requires PR plus strict `worker` and `web` checks, resolved conversations/admin enforcement, and disallows force push and branch deletion; required approving review count is zero. At observation PR is OPEN/MERGEABLE, checks are still IN_PROGRESS.
+- GitHub automated review is pending. No merge or Preview update yet. Continue from live GitHub head and do not rely on this observation if the PR changes.
+- **READY_TO_RESUME:** reconcile exact current PR head/checks/review, resolve any material findings, then retain protected merge controls. Remote authenticated validation uses only the user’s visible Access session; if unavailable, report `BLOCKED_AUTH` for remote validation alone.

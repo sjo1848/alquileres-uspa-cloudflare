@@ -8,7 +8,7 @@
   "last_completed_task": "Local synthetic contact, OWNER availability/inbox, and ADMIN-assisted draft journeys implemented and verified; PR publication pending.",
   "last_completed_head": "df7e178d6b12729eb39971b76778cad54d5899ab",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Push work/contact-availability-journeys, open a protected PR, verify required quick checks and GitHub review, then publish the approved functional increment to the existing private Preview only if merge controls pass. Complete authenticated remote smoke in the visible headed Access browser after the user confirms login; otherwise record BLOCKED_AUTH for remote validation only and continue local work.",
+  "next_action": "Resolve live PR #19 head, required worker/web checks, automated review and unresolved material comments. If clean, preserve protected merge requirements. After integration update only the existing private Preview when authenticated remote smoke can be completed or record BLOCKED_AUTH; continue next local journey meanwhile.",
   "stop_reason": null,
   "event": {
     "seq": 114,
@@ -24,13 +24,13 @@
   "human_gate": null,
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "state": "NOT_CREATED",
-    "url": null,
+    "number": 19,
+    "state": "OPEN",
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "df7e178d6b12729eb39971b76778cad54d5899ab",
+    "last_observed_head": "7f34358088b3ef0b938a4f8dbf4b15cd776e51f0",
     "merge_commit": null,
-    "head_source": "Local code candidate; based on canonical main a1626e3a375a33bb76561e8666d6bdb070b77de5."
+    "head_source": "Current remote PR head; executable provenance remains df7e178d6b12729eb39971b76778cad54d5899ab."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -71,7 +71,12 @@
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
     "remote_authenticated_e2e": "PENDING_OPERATOR_ACCESS_LOGIN",
     "preview_update": "NOT_PERFORMED",
-    "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes."
+    "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
+    "pr": 19,
+    "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
+    "checkpoint_sha": "7f34358088b3ef0b938a4f8dbf4b15cd776e51f0",
+    "github_checks": "IN_PROGRESS at observed PR head 7f34358088b3ef0b938a4f8dbf4b15cd776e51f0; worker/web required.",
+    "github_automatic_review": "PENDING"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
