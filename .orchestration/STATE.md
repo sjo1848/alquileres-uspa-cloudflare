@@ -941,3 +941,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - After rework, focused tests passed: 2 Worker test files / 11 tests. Worker/web typechecks, web build and diff check pass. Local Playwright completed ADMIN assisted creation; existing local contact and OWNER flows remain covered by focused tests and prior browser evidence. Screenshot updated at `output/playwright/admin-assisted-local.png`.
 - Previous exact-head GitHub quick checks are only valid for pre-rework code; final worker/web CI and automated review must run on the new pushed SHA. Access login is complete in the visible browser; no auth material is stored. No Preview update, resource mutation, policy change, spend, R2, production, real data, or source write.
 - **READY_TO_RESUME:** commit/push this bounded rework; process exact new PR #19 checks/review. If clean, complete one consolidated delegated read-only Controller pass. Only then use protected merge and update the existing private Preview; run authenticated remote smoke using the already-open authorized browser, then anonymous Access denial.
+
+## Event 117 — rework candidate published for exact-head checks
+
+- Rework commit `e0f87ae` is on PR #19 and resolves all three auto-review findings recorded in Event 116. Worker/web quick checks and automated review must be observed on the current live PR head after this synchronization.
+- The code SHA is recorded as executable provenance; the moving PR checkpoint is always resolved from GitHub before merge.
+- **READY_TO_RESUME:** wait for final worker/web CI and GitHub review on the current PR head; resolve any material comment. Then complete one consolidated Controller review of the final code and evidence, maintain protected merge controls, update existing Preview after integration, and run remote authenticated smoke in the user-authorized session.

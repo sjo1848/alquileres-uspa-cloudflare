@@ -6,7 +6,7 @@
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
   "last_completed_task": "CF-AU-I03 journeys plus GitHub review rework (assisted idempotency, paginated inbox, source index ledger); final publication checks pending.",
-  "last_completed_head": "9e7b336515311725ea8dd88412d851c3a6a18aa8",
+  "last_completed_head": "e0f87ae",
   "work_branch": "work/contact-availability-journeys",
   "next_action": "Run the affected final local tests/typechecks/build/diff check, commit and push the three GitHub review corrections, then verify worker/web checks and automated review on the exact new PR #19 head. Complete one consolidated read-only Controller review if all material findings are closed. Preserve protected merge controls; update existing private Preview only after approved integration and run authenticated smoke in the already-authorized headed browser, plus anonymous Access denial.",
   "stop_reason": null,
@@ -29,9 +29,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "9e7b336515311725ea8dd88412d851c3a6a18aa8",
+    "last_observed_head": "e0f87ae",
     "merge_commit": null,
-    "head_source": "Current remote PR head; executable provenance remains df7e178d6b12729eb39971b76778cad54d5899ab."
+    "head_source": "Executable rework commit e0f87ae; resolve current docs checkpoint from live PR #19 before merge."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -60,7 +60,7 @@
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
     "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-    "executable_commit": "PENDING_COMMIT",
+    "executable_commit": "e0f87ae",
     "local_checks": {
       "worker_typecheck": "PASS",
       "web_typecheck": "PASS",
@@ -76,15 +76,18 @@
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "checkpoint_sha": "7f34358088b3ef0b938a4f8dbf4b15cd776e51f0",
-    "github_checks": "worker/web passed on pre-rework 9e7b336 only; exact final head must rerun.",
-    "github_automatic_review": "Three P2 findings fixed locally; exact-head final review pending.",
+    "github_checks": "Pending exact final checkpoint; worker/web required.",
+    "github_automatic_review": "Rework pushed at e0f87ae; final automated review pending.",
     "status": "REWORK_IN_PROGRESS",
-    "controller": "PENDING one consolidated read-only review after exact-head checks and GitHub review.",
+    "controller": "PENDING one consolidated read-only review after final GitHub review and CI.",
     "findings_resolved": [
       "ADMIN-assisted creation requires idempotency key; replays original result and rejects changed payload.",
       "OWNER inbox is cursor-paginated with max 30 events and SQL unread count.",
       "ContactEvent parity ledger and third source index reconciled."
-    ]
+    ],
+    "executable_sha": "e0f87ae",
+    "rework_commit": "e0f87ae",
+    "checkpoint_note": "Resolve live PR #19 head at resume; this field pins executable provenance, not a moving branch ref."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
