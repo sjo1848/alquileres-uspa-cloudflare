@@ -5,22 +5,23 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03 executable code and Controller/Pre-Critic PASS on 63f28ad; exact-head CI/review fixes published through 01ebb9d, latest GitHub findings repaired in follow-up.",
-  "last_completed_head": "01ebb9d183b43fcfc2866f1dc66cd5d8a303b676 (CI/status repair; no application code change after Controller-reviewed 63f28ad).",
+  "last_completed_task": "CF-AU-I03 Artifact A1 frozen for exact-artifact delegated review; executable journeys and required CI are green, Controller review pending.",
+  "last_completed_head": "CF-AU-I03-Artifact-A1 -> ccd6902357e797a1bc65706074c7daf37301f50d (tree e0afc36eac01ac7b6742a3e2931c667a9b0a4034).",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Publish the canonical-status and whitespace-evidence correction; verify required worker/web checks, latest automatic review and zero unresolved threads on the resulting exact PR #19 head. If branch protection remains active and mergeStateStatus is CLEAN, protected-merge preserving history; then apply only pending migrations 0011/0012 to the existing synthetic D1, update the existing private Worker using wrangler preview only, and run authenticated contact/OWNER/ADMIN Playwright smoke if the current Access session is available, plus anonymous Access-denial verification.",
+  "next_action": "Run a separate delegated Codex Controller process on immutable tag CF-AU-I03-Artifact-A1 at exact SHA ccd6902357e797a1bc65706074c7daf37301f50d, requesting gpt-6-luna / High / --sandbox read-only. Persist invocation, session/result, exact SHA and verdict. Do not merge or update Preview unless it returns PASS; then resolve the GitHub P1 sequencing thread, verify resulting-head checks/review and protected main, protected-merge, apply only pending migrations 0011/0012 to existing synthetic D1, update only the existing private Worker with wrangler preview, attempt authenticated Playwright only if an authorized session is available, and verify anonymous Access denial.",
   "stop_reason": null,
   "event": {
-    "seq": 129,
-    "id": "CF_AU_I03_CANONICAL_STATUS_AND_REVIEW_EVIDENCE_REPAIR",
-    "type": "AUTOMATED_REVIEW_REWORK"
+    "seq": 130,
+    "id": "CF_AU_I03_ARTIFACT_A1_PRECRITIC",
+    "type": "IMMUTABLE_ARTIFACT_PRECRITIC_PASS_TO_CONTROLLER"
   },
   "external_review": {
-    "required": false,
-    "status": "LOCAL_SYNTHETIC_INCREMENT",
-    "delegated_controller_required": true,
-    "controller_status": "PASS_BOUNDED_LOCAL_SYNTHETIC_ON_63F28AD",
-    "note": "One consolidated delegated technical review completed on exact executable candidate 63f28ad. This is not external ChatGPT approval, production readiness, or remote Preview validation."
+    "required": true,
+    "status": "AWAITING_DELEGATED_CONTROLLER_REVIEW",
+    "artifact_tag": "CF-AU-I03-Artifact-A1",
+    "artifact_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
+    "precritic": ".orchestration/evidence/CF-AU-I03-PRECRITIC-A1.md",
+    "note": "Previous Controller PASS on 63f28ad is historical and is not treated as approval of Artifact A1. Fresh exact-artifact review pending."
   },
   "human_gate": null,
   "blocker": null,
@@ -29,9 +30,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "01ebb9d183b43fcfc2866f1dc66cd5d8a303b676",
+    "last_observed_head": "ccd6902357e797a1bc65706074c7daf37301f50d",
     "merge_commit": null,
-    "head_source": "Live GitHub PR #19 head observed after exact-head CI and automatic review; latest canonical correction follows this SHA."
+    "head_source": "Exact immutable Artifact A1 target; Pre-Critic evidence and fresh Controller verdict are recorded in subsequent PR evidence commits."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -66,7 +67,7 @@
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
     "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-    "executable_commit": "63f28ade483c57c7b9aed3f0e9852a405d760e0d; no executable behavior changed in follow-up commits.",
+    "executable_commit": "CF-AU-I03-Artifact-A1 exact SHA ccd6902357e797a1bc65706074c7daf37301f50d; tree e0afc36eac01ac7b6742a3e2931c667a9b0a4034.",
     "local_checks": {
       "worker_focused": "contact-workflow + preview-auth; 2 files / 11 tests PASS, including contact replay and searchable OWNER beyond initial result set",
       "worker_typecheck": "PASS",
@@ -81,15 +82,15 @@
       "git_diff_check": "PASS on retained evidence after trimming trailing spaces only from the raw Controller transcript; final exact commit check pending."
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
-    "remote_authenticated_e2e": "READY_OPERATOR_ACCESS_LOGIN_CONFIRMED; run after updated existing Preview",
-    "preview_update": "PENDING_PROTECTED_INTEGRATION",
+    "remote_authenticated_e2e": "ACCESS_BROWSER_PROFILE_AVAILABLE_TO_EXECUTOR_IS_UNAUTHENTICATED; do not bypass or export credentials. Retry only if the previously authorized session is available.",
+    "preview_update": "PENDING_EXACT_ARTIFACT_CONTROLLER_PASS_AND_PROTECTED_MERGE",
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
-    "checkpoint_sha": "01ebb9d183b43fcfc2866f1dc66cd5d8a303b676",
-    "github_checks": "PASS worker/web on exact PR head 01ebb9d in run 39143613186; both required checks completed successfully.",
-    "github_automatic_review": "Manual review completed on 01ebb9d with two P2 evidence findings: stale next_action and whitespace in retained raw Controller transcript. Both are corrected in this follow-up; resulting-head review remains pending.",
-    "status": "CONTROLLER_PREVIOUS_CODE_PASS; GITHUB_P2_CI_COVERAGE_FIXED_LOCALLY",
+    "checkpoint_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
+    "github_checks": "PASS worker/web on exact A1 SHA ccd6902 in run 39144203779.",
+    "github_automatic_review": "Review of exact A1 SHA completed with one P1 requiring immutable Artifact A before its Controller verdict. Tag A1 is now published before the fresh Controller review; thread remains open until exact-A1 PASS. Resulting-head review after the gate evidence commit must be checked before merge.",
+    "status": "ARTIFACT_A1_FROZEN_PRECRITIC_PASS_CONTROLLER_PENDING_NOT_MERGEABLE",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
@@ -140,12 +141,15 @@
       "GitHub P2: README still denied ContactEvent/AdminAuditLog and omitted public contact, OWNER inbox/availability, and ADMIN-assisted routes; route inventory corrected. Migration 0011 does create all three source indexes, and the parity ledger now names each explicitly.",
       "GitHub P2: required worker job omitted contact-workflow.test.ts; added an explicit package script and workflow step, verified locally 5/5."
     ],
-    "precritic_gate": "PASS; .orchestration/evidence/CF-AU-I03-PRECRITIC-63F28AD.md",
+    "precritic_gate": "PASS_TO_SUBMIT_TO_DELEGATED_CONTROLLER; .orchestration/evidence/CF-AU-I03-PRECRITIC-A1.md",
     "github_review_threads_unresolved": "Two latest evidence findings addressed in this follow-up; resolve/verify via GitHub after push.",
     "evidence_checkpoint_sha": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "evidence_commit": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "controller_rework_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
-    "ci_contact_workflow": "Required worker workflow invokes npm run test:contact-workflow; focused local execution 1 file / 5 tests PASS in 7.26s; exact-head GitHub run 39143613186 passed worker and web."
+    "ci_contact_workflow": "Required worker workflow invokes npm run test:contact-workflow; focused local execution 1 file / 5 tests PASS in 7.26s; exact-head GitHub run 39143613186 passed worker and web.",
+    "artifact_tag": "CF-AU-I03-Artifact-A1",
+    "artifact_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
+    "controller_status": "PENDING_FRESH_EXACT_ARTIFACT_REVIEW; 63f28ad PASS is historical only."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
