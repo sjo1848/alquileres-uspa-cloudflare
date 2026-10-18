@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I02 OWNER D1 BLOB photos and ADMIN moderation/publication",
-  "last_completed_task": "CF-AU-I02 ADMIN moderation/legacy-media authorization correction is consolidated; exact worker/web CI and no-major-issues automatic review pass; role-leak finding thread resolved.",
+  "last_completed_task": "ADMIN Artifact A1 code candidate passed GitHub review/checks; delegated Controller attempt was BLOCKED and one stale E2E evidence sentence was corrected.",
   "last_completed_head": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
   "work_branch": "work/admin-moderation",
-  "next_action": "Publish immutable CF-AU-I02-ADMIN-Artifact-A1 at the synchronized checkpoint commit; verify its tag/SHA and exact live PR checks; run project_controller GPT-6 Luna High read-only on that artifact; complete protected integration only after Controller PASS and all merge controls.",
+  "next_action": "Commit and push the evidence-only correction; verify exact-head checks; prepare immutable Artifact A2 with synchronized Pre-Critic evidence; run one tightly scoped, valid GPT-6 Luna High read-only Controller review. Integrate only after PASS and protected controls.",
   "stop_reason": null,
   "event": {
-    "seq": 99,
-    "id": "ADMIN_PRECRITIC_READY_FOR_CONTROLLER",
-    "type": "PRECRITIC_CHECKPOINT"
+    "seq": 100,
+    "id": "ADMIN_CONTROLLER_A1_BLOCKED_EVIDENCE_DRIFT",
+    "type": "CONTROLLER_REVIEW"
   },
   "external_review": {
     "required": true,
@@ -81,8 +81,8 @@
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
     "github_worker_web": "PASS exact checkpoint aa56460ff01d9df558feff49b0309d39438f7df4, run 39071184086; executable/test SHA e9e9e0b4808e26980087c5b87f133974477c2e9c",
     "github_automatic_review": "PASS/no major issues exact executable SHA e9e9e0b (issuecomment 6241370515); P2 fixed and thread resolved",
-    "controller": "Fresh exact immutable Artifact A1 review pending; earlier 4d attempt interrupted after new P2 and has no verdict",
-    "controller_evidence": "Pending Artifact A1 review; earlier REWORK reports remain historical evidence only",
+    "controller": "BLOCKED: attempted separate process reported read-only filesystem startup failure; no valid PASS.",
+    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-A1-BLOCKED.md",
     "pr_head_resolution": {
       "source": "live GitHub PR #15 headRefOid and immutable artifact tag target",
       "last_checkpoint_with_required_checks": "aa56460ff01d9df558feff49b0309d39438f7df4",
@@ -98,6 +98,13 @@
       "code_sha": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
       "code_tree": "0775136cc16240b4e2ace2a2972b6834500722dc",
       "review_boundary": "delegated read-only project_controller; not merged or deployed"
+    },
+    "evidence_correction": "Repeated ADMIN approval/publication return successful outcomes and append audit records; corrected stale contrary sentence in local E2E evidence. No executable change.",
+    "artifact_a1": {
+      "tag": "CF-AU-I02-ADMIN-Artifact-A1",
+      "sha": "254917fbff8495a32f0113da8b0851036b7c1c64",
+      "immutable": true,
+      "controller_verdict": "BLOCKED"
     }
   },
   "human_acceptance": {

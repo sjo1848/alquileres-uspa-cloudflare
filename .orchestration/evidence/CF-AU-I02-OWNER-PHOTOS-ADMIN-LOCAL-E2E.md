@@ -18,7 +18,7 @@ Automated script: `apps/web/e2e/owner-d1-blob.playwright.js`. Synthetic fixtures
 
 Playwright completed an OWNER submission with a D1 BLOB image, signed in as a synthetic local ADMIN, loaded the pending listing and image, approved it, and confirmed it remained out of the public catalog until the separate publish action. Publishing made the listing visible in the catalog. A second submission was rejected with a required reason, remained absent from the catalog, and displayed the actor/action/reason in audit history.
 
-The approval/publication split follows the read-only source application. The D1 audit row and status transition are committed as a batch; the focused failure test injects an audit insert failure and confirms the listing remains `SUBMITTED/UNPUBLISHED` with no partial audit event. Repeated approval is rejected without adding a duplicate event. Audit rows preserve actor, target OWNER, listing ID, action, reason, and time independently of listing deletion.
+The approval/publication split follows the read-only source application. The D1 audit row and status transition are committed as a batch; the focused failure test injects an audit insert failure and confirms the listing remains `SUBMITTED/UNPUBLISHED` with no partial audit event. Repeated approval and publication return the same successful outcome and record the repeated ADMIN action in audit history; repeating a rejection with the same reason behaves likewise. Audit rows preserve actor, target OWNER, listing ID, action, reason, and time independently of listing deletion.
 
 Automated script: `apps/web/e2e/admin-moderation.playwright.js`. Capture: `output/playwright/admin-moderation-audit.png`.
 
