@@ -4,11 +4,11 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I03 — cerrar evidencia de Preview; continuar siguiente recorrido funcional autorizado",
+  "active_task": "Issue #7 — deterministic quality preflight before new workflows",
   "last_completed_task": "CF-AU-I03 Artifact A2 integrado en main y publicado en el Preview privado existente; local ADMIN UI/API smoke PASS. El smoke remoto autenticado queda BLOCKED_AUTH por falta de sesión en el contexto de ejecución.",
   "last_completed_head": "Artifact A2 exacto 76fbdfd2b711f4f765be122ba9f539f0ca101963; merge protegido PR #19 0db6c0c79aaeae2204c0fe704c66d4faccdb3c05; diff ejecutable posterior al Artifact A2: ninguno.",
   "work_branch": "work/i03-preview-closeout",
-  "next_action": "If PR #20 remains open, complete its required checks, automatic review and protected merge. Once integrated, continue the next functional journey authorized by Issue #7 with local Playwright/Workerd; do not repeat CF-AU-I03 review or long suites without an executable change.",
+  "next_action": "Resume the next explicitly authorized Issue #7 product task only after the deterministic state-and-diff quality gate is integrated. Do not repeat prior Controller review, long suites, or closeout-only PRs without a material code change.",
   "stop_reason": null,
   "event": {
     "seq": 136,
