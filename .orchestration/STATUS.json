@@ -8,7 +8,7 @@
   "last_completed_task": "CF-AU-I03 Artifact A2 integrado en main y publicado en el Preview privado existente; local ADMIN UI/API smoke PASS. El smoke remoto autenticado queda BLOCKED_AUTH por falta de sesión en el contexto de ejecución.",
   "last_completed_head": "Artifact A2 exacto 76fbdfd2b711f4f765be122ba9f539f0ca101963; merge protegido PR #19 0db6c0c79aaeae2204c0fe704c66d4faccdb3c05; diff ejecutable posterior al Artifact A2: ninguno.",
   "work_branch": "work/i03-preview-closeout",
-  "next_action": "Publicar este cierre documental/evidencia con PR protegido y checks rápidos; después continuar el siguiente recorrido funcional autorizado desde Issue #7 con Playwright local y D1 sintética. Smoke remoto autenticado solo si el navegador executor tiene una sesión normal de Access; no cambiar Access ni crear credenciales.",
+  "next_action": "If PR #20 remains open, complete its required checks, automatic review and protected merge. Once integrated, continue the next functional journey authorized by Issue #7 with local Playwright/Workerd; do not repeat CF-AU-I03 review or long suites without an executable change.",
   "stop_reason": null,
   "event": {
     "seq": 136,
@@ -52,7 +52,7 @@
     "canonical_base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
     "verdict": "PASS",
     "report": ".orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A2-CONTROLLER-PASS.md",
-    "next_action": "Update active authority and resolve the P1, then verify resulting-head GitHub checks/review/protection. No Controller rerun is needed for evidence-only changes.",
+    "next_action": "Exact Artifact A2 delegated PASS remains the active technical verdict; PR #19 is protected-merged. No further action is needed on this review. Continue the next functional journey authorized by Issue #7.",
     "cli_version": "codex-cli 0.163.0",
     "cli_configuration_accepted": true,
     "process_exit_code": 0,
@@ -81,7 +81,7 @@
       "playwright_pagination": "PASS: synthetic contact arrived after loading page 2; page-two state changed and page-one row retained; screenshot output/playwright/owner-contact-concurrent-arrival-local.png",
       "playwright_contact_route_reset": "PASS: after drafting a contact for one listing and navigating in-app to another, fields were cleared; output/playwright/public-contact-reset-route-change-local.png",
       "playwright_contact_stale_response": "PASS: delayed success for listing A after navigating to B did not change B's fields, busy state or feedback; output/playwright/public-contact-stale-response-local.png",
-      "git_diff_check": "PASS on retained evidence after trimming trailing spaces only from the raw Controller transcript; final exact commit check pending."
+      "git_diff_check": "PASS after final state/evidence edits; current closeout branch head."
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
     "remote_authenticated_e2e": "BLOCKED_AUTH: Playwright CLI context remained at Cloudflare Access sign-in; in-app browser connection could not initialize. No credentials exported and no Access policy changes.",
@@ -126,7 +126,7 @@
     "rework_commit": "ea42913: final assisted-create batch state is guarded by listing+audit existence; zero-row regression added; parity map now records no configured R2.",
     "checkpoint_note": "PR #19 final head 00f723695d0b89042b33c8e6e1c9c96f28dd9ca8 passed required checks and automatic review, then merged protected. No executable changes followed exact Artifact A2.",
     "controller_reviewed_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
-    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md",
+    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A2-CONTROLLER-PASS.md",
     "local_playwright_pagination": "PASS: a new synthetic event arrived while older pages were loaded; page-two state changed and page-one row remained. See output/playwright/owner-contact-concurrent-arrival-local.png.",
     "github_findings_resolved_locally": [
       "Controller P2: preserve previously loaded inbox pages after state change; fixed at 2060a26 and Playwright verified.",
