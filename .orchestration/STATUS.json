@@ -4,37 +4,37 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03 Artifact A2 has Pre-Critic PASS and exact-A2 delegated Controller PASS; only resulting-head GitHub review/checks, P1 closure and protected integration remain.",
-  "last_completed_head": "CF-AU-I03-Artifact-A2 exact immutable SHA 76fbdfd2b711f4f765be122ba9f539f0ca101963; tree 355013f5d90ab437fa332a944af9e52a1776c10b. PR evidence head at Controller review 738bda6101086711161dd2cf7f2e3bc861c422d.",
-  "work_branch": "work/contact-availability-journeys",
-  "next_action": "Verify exact current PR #19 head worker/web required checks, completed automatic review, zero unresolved threads and main protections. If CLEAN, protected-merge preserving history. After merge, apply only pending 0011/0012 migrations to the existing synthetic D1, update only the same private Preview with wrangler preview, verify anonymous Access denial and attempt authenticated Playwright only if a valid authorized browser session is available. Do not use R2, add resources, spend, alter Access policy, use real data or deploy production.",
+  "active_task": "CF-AU-I03 — cerrar evidencia de Preview; continuar siguiente recorrido funcional autorizado",
+  "last_completed_task": "CF-AU-I03 Artifact A2 integrado en main y publicado en el Preview privado existente; local ADMIN UI/API smoke PASS. El smoke remoto autenticado queda BLOCKED_AUTH por falta de sesión en el contexto de ejecución.",
+  "last_completed_head": "Artifact A2 exacto 76fbdfd2b711f4f765be122ba9f539f0ca101963; merge protegido PR #19 0db6c0c79aaeae2204c0fe704c66d4faccdb3c05; diff ejecutable posterior al Artifact A2: ninguno.",
+  "work_branch": "work/i03-preview-closeout",
+  "next_action": "Publicar este cierre documental/evidencia con PR protegido y checks rápidos; después continuar el siguiente recorrido funcional autorizado desde Issue #7 con Playwright local y D1 sintética. Smoke remoto autenticado solo si el navegador executor tiene una sesión normal de Access; no cambiar Access ni crear credenciales.",
   "stop_reason": null,
   "event": {
-    "seq": 135,
-    "id": "CF_AU_I03_CONTROLLER_PASS_ACTIVE_AND_P1_RESOLVED",
-    "type": "EXACT_ARTIFACT_CONTROLLER_PASS_GITHUB_P1_RESOLVED"
+    "seq": 136,
+    "id": "CF_AU_I03_INTEGRATED_PREVIEW_UPDATED_LOCAL_ADMIN_PASS",
+    "type": "PROTECTED_INTEGRATION_PREVIEW_AND_LOCAL_ADMIN_E2E"
   },
   "external_review": {
     "required": false,
-    "status": "DELEGATED_LOCAL_TECHNICAL_PASS_WAITING_GITHUB_FINAL_CONTROLS",
+    "status": "DELEGATED_LOCAL_TECHNICAL_PASS_AND_PROTECTED_INTEGRATION_COMPLETE",
     "artifact_tag": "CF-AU-I03-Artifact-A2",
     "artifact_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
     "controller_report": ".orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A2-CONTROLLER-PASS.md",
-    "note": "This is a delegated local Controller PASS, not an external ChatGPT verdict or remote E2E."
+    "note": "Artifact A2 conserva su PASS delegado exacto; PR #19 protegido se integró. El test remoto Access autenticado no se afirma como PASS."
   },
   "human_gate": null,
   "blocker": null,
   "pull_request": {
     "number": 19,
-    "state": "OPEN",
+    "state": "MERGED",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "4cc215eff8b2346d90cb95ebc930320f16ab14c7",
-    "merge_commit": null,
-    "head_source": "Live PR #19 head observed after A2 Controller PASS evidence publication and P1 thread resolution; resulting-head checks/review are required."
+    "last_observed_head": "00f723695d0b89042b33c8e6e1c9c96f28dd9ca8",
+    "merge_commit": "0db6c0c79aaeae2204c0fe704c66d4faccdb3c05",
+    "head_source": "Live PR #19 merged after exact Artifact A2 Controller PASS and required GitHub controls."
   },
-  "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
+  "integration_commit": "0db6c0c79aaeae2204c0fe704c66d4faccdb3c05",
   "issue_4": "CLOSED",
   "review_authority": {
     "scope": "CF-AU-I03 Artifact A2 exact immutable tag; repaired assisted-create atomicity and configured media parity",
@@ -84,15 +84,15 @@
       "git_diff_check": "PASS on retained evidence after trimming trailing spaces only from the raw Controller transcript; final exact commit check pending."
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
-    "remote_authenticated_e2e": "ACCESS_BROWSER_PROFILE_AVAILABLE_TO_EXECUTOR_IS_UNAUTHENTICATED; do not bypass or export credentials. Retry only if the previously authorized session is available.",
-    "preview_update": "PENDING_EXACT_ARTIFACT_CONTROLLER_PASS_AND_PROTECTED_MERGE",
+    "remote_authenticated_e2e": "BLOCKED_AUTH: Playwright CLI context remained at Cloudflare Access sign-in; in-app browser connection could not initialize. No credentials exported and no Access policy changes.",
+    "preview_update": "Published through Wrangler preview to the existing private Worker after protected PR #19 merge; no wrangler deploy.",
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "checkpoint_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
-    "github_checks": "PASS worker/web on exact A2 SHA 76fbdfd in run 39145163840.",
-    "github_automatic_review": "Exact A2 review P1 was resolved after publishing active A2 Controller PASS. Automatic review/checks for the resulting evidence head are pending and required before merge.",
-    "status": "A2_CONTROLLER_PASS_P1_RESOLVED_WAITING_RESULTING_HEAD_CONTROLS",
+    "github_checks": "PASS worker/web on final PR #19 head 00f723695d0b89042b33c8e6e1c9c96f28dd9ca8, run 39145758201; executable tree unchanged from Artifact A2.",
+    "github_automatic_review": "Completed on exact final PR #19 head 00f723695d0b89042b33c8e6e1c9c96f28dd9ca8 with has_any_findings=false and has_unresolved_findings=false; all review threads resolved before protected merge.",
+    "status": "INTEGRATED_A2_PREVIEW_UPDATED_LOCAL_ADMIN_PASS_REMOTE_AUTH_BLOCKED",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
@@ -172,7 +172,10 @@
       "token_usage_output": 3622,
       "token_usage_reasoning_output": 1564,
       "report": ".orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A2-CONTROLLER-PASS.md"
-    }
+    },
+    "local_admin_moderation_e2e": "PASS: preview-role-switch.playwright.js on integrated main code with isolated local Workerd/D1; OWNER submit, explicit ADMIN switch, approve unpublished, separate publish, listing visible in catalog. Screenshot output/playwright/preview-admin-role-switch.png.",
+    "worker_admin_focused": "PASS: npm run test:admin, 1 file / 12 tests.",
+    "integration_review": "PASS: no executable changes after exact Artifact A2; docs/evidence-only tail, migrations 0011/0012 applied to existing synthetic D1, same private Preview updated via wrangler preview."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -462,5 +465,17 @@
       "reasoning_output": 12211
     },
     "next_review": "No repeat required for documentation-only closeout. Re-review only if executable/security behavior changes or a new substantive increment requires review."
+  },
+  "preview": {
+    "name": "private",
+    "worker": "alquileres-uspa-lab",
+    "status": "UPDATED_WITH_WRANGLER_PREVIEW",
+    "deployment_id": "d613b6dc-fdcb-48a0-a47a-4eaa44578c64",
+    "deployment_number": 5,
+    "stable_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
+    "immutable_url": "https://d613b6dc-alquileres-uspa-lab.sjo1848.workers.dev",
+    "auth": "Cloudflare Access remains enabled; anonymous probes denied 8/8 across stable and immutable URLs. Executor browser context unauthenticated; authenticated remote E2E=BLOCKED_AUTH.",
+    "data": "synthetic D1 only; migrations 0011/0012 applied; read-only inventory says no pending migrations.",
+    "limits": "USD 0; no R2, new resources, Access changes, billing, real data, or production."
   }
 }
