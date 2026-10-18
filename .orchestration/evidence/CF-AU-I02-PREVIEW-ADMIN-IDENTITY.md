@@ -54,3 +54,7 @@ GitHub's automatic review on checkpoint `5d87e13...` found that a stale role-spe
 - Playwright CLI against local Vite + Workerd and isolated D1 with migrations 0001–0010 and synthetic data: **8/8 checks PASS**, including both stale redirect cases and the complete OWNER/ADMIN journey. The Preview-session exchange is adapted locally to fixed synthetic password identities; signed Access JWT checks remain covered by Worker test 6/6. Four browser-console 401s were expected anonymous `/auth/me` restore probes before authentication, not runtime errors.
 - SHA-256: `AuthView.vue` `d73f36fd31d706857e3ca6d55b8db8d7a6710a8adb2f79a1fd6122b02dcaecb8`; `auth-helpers.ts` `583cf2e930531ee3c0d0105dd36aa7a425b9d649e65067b1b2e06945ba2a5315`; focused E2E `736f8c534f7ff9b058821c34cd48bdf41ce1a09d61697f941b62ec4a889c7abd`.
 - No remote Access session, Preview/D1/config, billing, production, real data, R2, or source repo was used or modified.
+
+## Pre-Critic and Artifact A1
+
+Pre-Critic PASS to publish A1 is recorded in PR comment `6245482422`. The immutable annotated tag `CF-AU-I02-PREVIEW-ADMIN-Artifact-A1` points to `67b3585235f3af7ef6fa9c13b6b2693d92cbeac8` (tree `89e9b4d52089121b5b0abfced437b808e29aa4ed`), tag object `23c0d3ac787c9da5d4c43ef7168a461460587125`. Exact-target worker/web CI run `39095728852` passed; GitHub automatic review found no issues and no threads remain. This A1 is submitted to the delegated Controller; no Controller PASS, merge or deployment is claimed here.

@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I02 local synthetic OWNER D1 BLOB photos and ADMIN moderation/publication integrated via protected PR #15 merge commit aff1d44; Artifact A2 has delegated Controller PASS.",
   "last_completed_head": "aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e",
   "work_branch": "work/preview-admin-role-switch",
-  "next_action": "Resolve the live PR #17 head and confirm checked-out ancestry. Verify exact-head worker/web checks, automatic review, zero unresolved threads, and main protections; fix material findings. Complete the mandatory Pre-Critic Gate against the consolidated executable tree, record PASS, and publish one immutable annotated Artifact A1 on the exact reviewed checkpoint. Obtain one valid focused delegated read-only Controller PASS on that artifact. Only then protected-merge PR #17 preserving history. After merge, inspect existing synthetic Preview D1 migrations and fixed ADMIN row; apply only pending migrations and seed it idempotently if absent; update only the same private Preview with `wrangler preview`; verify anonymous Access denial. Remote authenticated E2E remains BLOCKED_AUTH without a legitimate operator browser session.",
+  "next_action": "Resolve the live PR #17 head and confirm it contains immutable Artifact A1 target 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8 without later executable changes. Verify exact-head worker/web checks, automatic review, zero unresolved threads and main protections. Obtain one valid focused delegated read-only Controller PASS on A1. Then protected-merge PR #17 preserving history. After merge, inspect existing synthetic Preview D1 migrations and the fixed ADMIN row; apply only pending migrations and seed it idempotently if absent; update only the same private Preview with `wrangler preview`; verify anonymous Access denial. Remote authenticated E2E remains BLOCKED_AUTH without a legitimate operator browser session.",
   "stop_reason": null,
   "event": {
-    "seq": 109,
-    "id": "CF_AU_I02_ROLE_REDIRECT_COMPATIBILITY_REWORK",
-    "type": "TARGETED_WEB_REWORK"
+    "seq": 110,
+    "id": "CF_AU_I02_ARTIFACT_A1_PUBLISHED",
+    "type": "IMMUTABLE_ARTIFACT_REVIEW_BOUNDARY"
   },
   "external_review": {
     "required": false,
@@ -30,8 +30,8 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/17",
     "branch": "work/preview-admin-role-switch",
-    "last_observed_head": "64120b7a7f1008ee7ae98f938392d6ccf890e816",
-    "head_source": "Resolve live GitHub PR #17 headRefOid and confirm this checked-out descendant before any action.",
+    "last_observed_head": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
+    "head_source": "Resolve the live GitHub PR #17 headRefOid before every action; the immutable Artifact A1 target is separately identified by tag.",
     "merge_policy": "protected merge commit only; preserve history; no bypass"
   },
   "integration_commit": null,
@@ -50,7 +50,7 @@
   "candidate_review": {
     "scope": "CF-AU-I02 Preview OWNER/ADMIN demo identity switching and moderation",
     "base_sha": "42bef5c53abea65720082bbd86da9a082a51ed51",
-    "executable_commit": "PENDING_RESOLVE_LIVE_PR_HEAD",
+    "executable_commit": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
     "files_sha256": {
       "apps/web/src/views/AuthView.vue": "d73f36fd31d706857e3ca6d55b8db8d7a6710a8adb2f79a1fd6122b02dcaecb8",
       "apps/web/src/views/auth-helpers.ts": "583cf2e930531ee3c0d0105dd36aa7a425b9d649e65067b1b2e06945ba2a5315",
@@ -64,11 +64,14 @@
       "playwright": "8/8 PASS local integrated Workerd + isolated D1; owner submit, explicit admin switch, moderation/publication, role-specific stale redirects both directions",
       "git_diff_check": "PASS"
     },
-    "github_checks": "PENDING exact current checkpoint",
-    "github_automatic_review": "PENDING exact current checkpoint; prior P2 fixed/resolved and current redirect P2 fixed in code",
+    "github_checks": "PASS exact executable/artifact commit; worker/web Actions run 39095728852",
+    "github_automatic_review": "PASS/no findings exact SHA 67b3585, completed 2026-10-18 04:05:14 UTC; zero unresolved threads",
     "controller": "PENDING after mandatory Pre-Critic and immutable Artifact A1",
     "remote_admin_e2e": "BLOCKED_AUTH; local E2E is not represented as remote Access login",
-    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md"
+    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
+    "executable_tree": "89e9b4d52089121b5b0abfced437b808e29aa4ed",
+    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1 -> 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
+    "precritic": "PASS to publish Artifact A1; not Controller PASS, merge approval or Preview authorization"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -109,17 +112,18 @@
     "pr": "#17",
     "code_sha": "e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3",
     "checkpoint_sha": "64120b7a7f1008ee7ae98f938392d6ccf890e816",
-    "status": "PENDING_EXACT_CHECKPOINT_REVIEWS_PRECRITIC_ARTIFACT_A1_AND_CONTROLLER",
+    "status": "ARTIFACT_A1_PUBLISHED; CONTROLLER_REVIEW_PENDING",
     "preview": "Existing private Access-protected Preview only; no update yet",
     "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "next_action": "Resolve the live PR #17 head and confirm checked-out ancestry. Verify exact-head worker/web checks, automatic review, zero unresolved threads, and main protections; fix material findings. Complete the mandatory Pre-Critic Gate against the consolidated executable tree, record PASS, and publish one immutable annotated Artifact A1 on the exact reviewed checkpoint. Obtain one valid focused delegated read-only Controller PASS on that artifact. Only then protected-merge PR #17 preserving history. After merge, inspect existing synthetic Preview D1 migrations and fixed ADMIN row; apply only pending migrations and seed it idempotently if absent; update only the same private Preview with `wrangler preview`; verify anonymous Access denial. Remote authenticated E2E remains BLOCKED_AUTH without a legitimate operator browser session.",
-    "code_status": "Targeted role-compatible redirect fix implemented; exact checkpoint reviews pending."
+    "next_action": "Resolve the live PR #17 head and confirm it contains immutable Artifact A1 target 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8 without later executable changes. Verify exact-head worker/web checks, automatic review, zero unresolved threads and main protections. Obtain one valid focused delegated read-only Controller PASS on A1. Then protected-merge PR #17 preserving history. After merge, inspect existing synthetic Preview D1 migrations and the fixed ADMIN row; apply only pending migrations and seed it idempotently if absent; update only the same private Preview with `wrangler preview`; verify anonymous Access denial. Remote authenticated E2E remains BLOCKED_AUTH without a legitimate operator browser session.",
+    "code_status": "Targeted role-compatible redirect fix implemented; exact checkpoint reviews pending.",
+    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1 -> 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
     "contract": ".orchestration/contracts/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "code_sha": "e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3",
-    "tree": "9145e36e2d6aebb39b13c9dae8e5197724dd4b64",
+    "code_sha": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
+    "tree": "89e9b4d52089121b5b0abfced437b808e29aa4ed",
     "base_sha": "42bef5c53abea65720082bbd86da9a082a51ed51",
     "local_checks": {
       "worker_preview_auth": "6/6 PASS",
@@ -130,10 +134,10 @@
       "git_diff_check": "PASS"
     },
     "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "controller": "PENDING_VALID_FINAL_EXACT_CANDIDATE_PASS; previous review was bounded code PASS but overall BLOCKED pending canonical STATUS corrections and/or operational evidence",
-    "github_checks": "PASS worker/web on exact pre-correction checkpoint 64120b7a7f1008ee7ae98f938392d6ccf890e816, Actions run 39095070029; new status-only checkpoint needs exact-head checks",
-    "github_automatic_review": "Completed on 64120b7a7f1008ee7ae98f938392d6ccf890e816; P2 findings 4305567281 and 4305627046 fixed in Events 105/107; threads to be resolved after response; new checkpoint review required",
-    "preview_update": "PENDING_PROTECTED_INTEGRATION",
+    "controller": "PENDING_EXACT_IMMUTABLE_ARTIFACT_A1",
+    "github_checks": "PASS worker/web exact A1 target; run 39095728852",
+    "github_automatic_review": "PASS/no findings exact A1 target 67b3585; all review threads resolved",
+    "preview_update": "PENDING_CONTROLLER_PASS_AND_PROTECTED_INTEGRATION",
     "preview_access_policy": "unchanged; operator-only",
     "remote_admin_e2e": "BLOCKED_AUTH until legitimate current Access session is available to executor",
     "no_remote_mutation": "true",
@@ -141,10 +145,11 @@
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/17",
     "last_observed_pr_head": "64120b7a7f1008ee7ae98f938392d6ccf890e816",
     "last_observed_pr_head_tree": "4a2b3a25e05a3ba4108ff0d7c5c77e7f0dc17519",
-    "executable_provenance_sha": "e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3",
-    "executable_provenance_tree": "9145e36e2d6aebb39b13c9dae8e5197724dd4b64",
-    "next_action": "Resolve the live PR #17 head and confirm checked-out ancestry. Verify exact-head worker/web checks, automatic review, zero unresolved threads, and main protections; fix material findings. Complete the mandatory Pre-Critic Gate against the consolidated executable tree, record PASS, and publish one immutable annotated Artifact A1 on the exact reviewed checkpoint. Obtain one valid focused delegated read-only Controller PASS on that artifact. Only then protected-merge PR #17 preserving history. After merge, inspect existing synthetic Preview D1 migrations and fixed ADMIN row; apply only pending migrations and seed it idempotently if absent; update only the same private Preview with `wrangler preview`; verify anonymous Access denial. Remote authenticated E2E remains BLOCKED_AUTH without a legitimate operator browser session.",
-    "head_observation_note": "Historical observation before Event 107 correction; resolve live PR #17 head and verify checkout ancestry before acting. Executable provenance SHA is not a candidate checkout target."
+    "executable_provenance_sha": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
+    "executable_provenance_tree": "89e9b4d52089121b5b0abfced437b808e29aa4ed",
+    "next_action": "Resolve the live PR #17 head and confirm it contains immutable Artifact A1 target 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8 without later executable changes. Verify exact-head worker/web checks, automatic review, zero unresolved threads and main protections. Obtain one valid focused delegated read-only Controller PASS on A1. Then protected-merge PR #17 preserving history. After merge, inspect existing synthetic Preview D1 migrations and the fixed ADMIN row; apply only pending migrations and seed it idempotently if absent; update only the same private Preview with `wrangler preview`; verify anonymous Access denial. Remote authenticated E2E remains BLOCKED_AUTH without a legitimate operator browser session.",
+    "head_observation_note": "Historical observation before Event 107 correction; resolve live PR #17 head and verify checkout ancestry before acting. Executable provenance SHA is not a candidate checkout target.",
+    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1"
   },
   "historical_status": {
     "pr15_completed": {
@@ -274,9 +279,17 @@
   },
   "artifact_publication": {
     "milestone": "CF-AU-I02 Preview OWNER/ADMIN identity switch",
-    "artifact_a1": "PENDING_EXACT_FINAL_CHECKPOINT_AND_PRECRITIC",
-    "immutable_tag_target": null,
-    "controller": "PENDING_AFTER_ARTIFACT_A1",
-    "reason": "P2 role-redirect finding repaired; exact current-head GitHub review/checks, Pre-Critic, immutable A1 and Controller remain required."
+    "precritic": "PASS_TO_PUBLISH_ARTIFACT_A1",
+    "precritic_evidence": "PR #17 comment 6245482422 and .orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
+    "artifact_a1": {
+      "tag": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1",
+      "target_sha": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
+      "target_tree": "89e9b4d52089121b5b0abfced437b808e29aa4ed",
+      "tag_object": "23c0d3ac787c9da5d4c43ef7168a461460587125",
+      "immutable": true,
+      "verified_remote": true
+    },
+    "controller": "PENDING_EXACT_A1_REVIEW",
+    "review_boundary": "Delegated local Controller only; no merge or Preview deployment approval until PASS."
   }
 }
