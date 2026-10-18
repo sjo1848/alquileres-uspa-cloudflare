@@ -6,7 +6,7 @@
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
   "last_completed_task": "Controller P2 pagination-state finding fixed locally and reproduced as closed by local Playwright; exact-head publication gates pending.",
-  "last_completed_head": "e0f87ae",
+  "last_completed_head": "2060a26",
   "work_branch": "work/contact-availability-journeys",
   "next_action": "Commit/push the OwnerView pagination-state fix and evidence to PR #19. Verify worker/web CI and GitHub automatic review on the exact final checkpoint, then perform a narrowly scoped read-only Controller follow-up on the changed UI behavior only. If clean, preserve protected merge controls, update the existing private Preview and run authenticated smoke with the already-authorized browser session plus anonymous Access denial.",
   "stop_reason": null,
@@ -29,9 +29,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "e0f87ae",
+    "last_observed_head": "2060a26",
     "merge_commit": null,
-    "head_source": "Executable rework commit e0f87ae; resolve current docs checkpoint from live PR #19 before merge."
+    "head_source": "Executable Controller-rework commit 2060a26; resolve current docs checkpoint from live PR #19 before further action."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -60,7 +60,7 @@
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
     "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-    "executable_commit": "PENDING_COMMIT_OF_CONTROLLER_REWORK",
+    "executable_commit": "2060a26",
     "local_checks": {
       "worker_typecheck": "PASS",
       "web_typecheck": "PASS",
@@ -76,18 +76,18 @@
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "checkpoint_sha": "7f34358088b3ef0b938a4f8dbf4b15cd776e51f0",
-    "github_checks": "PASS on prior candidate only; rerun required after UI fix.",
-    "github_automatic_review": "Pending fixed UI candidate.",
+    "github_checks": "Pending exact final checkpoint after 2060a26.",
+    "github_automatic_review": "Pending exact final checkpoint after 2060a26.",
     "status": "CONTROLLER_REWORK_FIXED_LOCALLY",
-    "controller": "REWORK on e0f87ae: state change on a later inbox page dropped earlier pages. Fixed in OwnerView by refreshing all loaded page cursors. Exact fixed SHA, CI and final review pending.",
+    "controller": "REWORK on e0f87ae fixed in 2060a26; one narrow Controller follow-up remains pending.",
     "findings_resolved": [
       "ADMIN-assisted creation requires idempotency key; replays original result and rejects changed payload.",
       "OWNER inbox is cursor-paginated with max 30 events and SQL unread count.",
       "ContactEvent parity ledger and third source index reconciled."
     ],
-    "executable_sha": "e0f87ae",
-    "rework_commit": "e0f87ae",
-    "checkpoint_note": "Resolve live PR #19 head at resume; this field pins executable provenance, not a moving branch ref.",
+    "executable_sha": "2060a26",
+    "rework_commit": "2060a26",
+    "checkpoint_note": "Live PR head remains authoritative; current commit is the executable fix plus its committed evidence.",
     "controller_reviewed_sha": "e0f87ae398078ff04ce7774738dac90f03ae1296",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
     "local_playwright_pagination": "PASS: with 31 additional local synthetic events, state changed on second page; first-page row retained and changed event showed Leída. See evidence screenshot."
