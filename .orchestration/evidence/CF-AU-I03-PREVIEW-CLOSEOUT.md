@@ -1,8 +1,8 @@
 # CF-AU-I03 — integración y Preview privado
 
-Fecha: 2026-10-18  
-PR funcional: [#19](https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19)  
-Artifact A2: `CF-AU-I03-Artifact-A2` → `76fbdfd2b711f4f765be122ba9f539f0ca101963`  
+Fecha: 2026-10-18
+PR funcional: [#19](https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19)
+Artifact A2: `CF-AU-I03-Artifact-A2` → `76fbdfd2b711f4f765be122ba9f539f0ca101963`
 Integración protegida: `0db6c0c79aaeae2204c0fe704c66d4faccdb3c05`
 
 ## Resultado

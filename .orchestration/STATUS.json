@@ -81,7 +81,7 @@
       "playwright_pagination": "PASS: synthetic contact arrived after loading page 2; page-two state changed and page-one row retained; screenshot output/playwright/owner-contact-concurrent-arrival-local.png",
       "playwright_contact_route_reset": "PASS: after drafting a contact for one listing and navigating in-app to another, fields were cleared; output/playwright/public-contact-reset-route-change-local.png",
       "playwright_contact_stale_response": "PASS: delayed success for listing A after navigating to B did not change B's fields, busy state or feedback; output/playwright/public-contact-stale-response-local.png",
-      "git_diff_check": "PASS after final state/evidence edits; current closeout branch head."
+      "git_diff_check": "PASS after removing Markdown trailing spaces; verified with git diff --check against the exact closeout candidate commit."
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
     "remote_authenticated_e2e": "BLOCKED_AUTH: Playwright CLI context remained at Cloudflare Access sign-in; in-app browser connection could not initialize. No credentials exported and no Access policy changes.",
