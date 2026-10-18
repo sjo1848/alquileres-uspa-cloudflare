@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03 code and Controller/Pre-Critic passed on executable candidate 63f28ad; GitHub P2 CI coverage and active evidence pointer are fixed locally with contact-workflow 5/5.",
-  "last_completed_head": "63f28ade483c57c7b9aed3f0e9852a405d760e0d (reviewed executable candidate); evidence checkpoint e8e6fe212bd459055d43f1cf6c12a590ff5af3d7.",
+  "last_completed_task": "CF-AU-I03 executable code and Controller/Pre-Critic PASS on 63f28ad; exact-head CI/review fixes published through 01ebb9d, latest GitHub findings repaired in follow-up.",
+  "last_completed_head": "01ebb9d183b43fcfc2866f1dc66cd5d8a303b676 (CI/status repair; no application code change after Controller-reviewed 63f28ad).",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Commit/push the focused CI coverage and status-pointer rework to PR #19; verify worker/web required checks and latest automatic review on the new exact head, with all fixed threads resolved. No functional code changed, so do not repeat Controller or prior local suites. If protected controls are green, merge preserving history, then update the existing private Preview and run remote authenticated Playwright plus anonymous Access-denial checks.",
+  "next_action": "Publish the canonical-status and whitespace-evidence correction; verify required worker/web checks, latest automatic review and zero unresolved threads on the resulting exact PR #19 head. If branch protection remains active and mergeStateStatus is CLEAN, protected-merge preserving history; then apply only pending migrations 0011/0012 to the existing synthetic D1, update the existing private Worker using wrangler preview only, and run authenticated contact/OWNER/ADMIN Playwright smoke if the current Access session is available, plus anonymous Access-denial verification.",
   "stop_reason": null,
   "event": {
-    "seq": 128,
-    "id": "CF_AU_I03_CONTACT_TEST_CI_COVERAGE",
+    "seq": 129,
+    "id": "CF_AU_I03_CANONICAL_STATUS_AND_REVIEW_EVIDENCE_REPAIR",
     "type": "AUTOMATED_REVIEW_REWORK"
   },
   "external_review": {
@@ -29,9 +29,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "f2e578aa02bd4174cacbde54ae602d2eba7da3da",
+    "last_observed_head": "01ebb9d183b43fcfc2866f1dc66cd5d8a303b676",
     "merge_commit": null,
-    "head_source": "Last live PR #19 head before the focused CI coverage/evidence-pointer correction; resolve the new exact head after pushing."
+    "head_source": "Live GitHub PR #19 head observed after exact-head CI and automatic review; latest canonical correction follows this SHA."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -66,7 +66,7 @@
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
     "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-    "executable_commit": "Resolve exact candidate SHA from current PR #19 head; see branch history.",
+    "executable_commit": "63f28ade483c57c7b9aed3f0e9852a405d760e0d; no executable behavior changed in follow-up commits.",
     "local_checks": {
       "worker_focused": "contact-workflow + preview-auth; 2 files / 11 tests PASS, including contact replay and searchable OWNER beyond initial result set",
       "worker_typecheck": "PASS",
@@ -78,7 +78,7 @@
       "playwright_pagination": "PASS: synthetic contact arrived after loading page 2; page-two state changed and page-one row retained; screenshot output/playwright/owner-contact-concurrent-arrival-local.png",
       "playwright_contact_route_reset": "PASS: after drafting a contact for one listing and navigating in-app to another, fields were cleared; output/playwright/public-contact-reset-route-change-local.png",
       "playwright_contact_stale_response": "PASS: delayed success for listing A after navigating to B did not change B's fields, busy state or feedback; output/playwright/public-contact-stale-response-local.png",
-      "git_diff_check": "PASS"
+      "git_diff_check": "PASS on retained evidence after trimming trailing spaces only from the raw Controller transcript; final exact commit check pending."
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
     "remote_authenticated_e2e": "READY_OPERATOR_ACCESS_LOGIN_CONFIRMED; run after updated existing Preview",
@@ -86,9 +86,9 @@
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
-    "checkpoint_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
-    "github_checks": "PASS worker/web on exact executable candidate 63f28ad in run 39123528540; evidence-only closeout checkpoint e8e6fe2 has its own required checks pending and they must be verified before integration.",
-    "github_automatic_review": "f2e578a auto review found two P2: required worker CI omitted contact-workflow.test.ts and candidate_review.controller_evidence pointed to the historical REWORK. Both corrected locally; exact-head review pending.",
+    "checkpoint_sha": "01ebb9d183b43fcfc2866f1dc66cd5d8a303b676",
+    "github_checks": "PASS worker/web on exact PR head 01ebb9d in run 39143613186; both required checks completed successfully.",
+    "github_automatic_review": "Manual review completed on 01ebb9d with two P2 evidence findings: stale next_action and whitespace in retained raw Controller transcript. Both are corrected in this follow-up; resulting-head review remains pending.",
     "status": "CONTROLLER_PREVIOUS_CODE_PASS; GITHUB_P2_CI_COVERAGE_FIXED_LOCALLY",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
@@ -141,11 +141,11 @@
       "GitHub P2: required worker job omitted contact-workflow.test.ts; added an explicit package script and workflow step, verified locally 5/5."
     ],
     "precritic_gate": "PASS; .orchestration/evidence/CF-AU-I03-PRECRITIC-63F28AD.md",
-    "github_review_threads_unresolved": 0,
+    "github_review_threads_unresolved": "Two latest evidence findings addressed in this follow-up; resolve/verify via GitHub after push.",
     "evidence_checkpoint_sha": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "evidence_commit": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "controller_rework_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
-    "ci_contact_workflow": "Added npm run test:contact-workflow to required worker job; local execution 1 file / 5 tests PASS in 7.26s. Exact-head GitHub checks pending after push."
+    "ci_contact_workflow": "Required worker workflow invokes npm run test:contact-workflow; focused local execution 1 file / 5 tests PASS in 7.26s; exact-head GitHub run 39143613186 passed worker and web."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",

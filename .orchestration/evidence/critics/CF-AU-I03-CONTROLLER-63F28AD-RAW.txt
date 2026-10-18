@@ -2,8 +2,8 @@ INTERMEDIATE RESPONSE (same reviewer thread; later corrected after clarifying th
 
 ## BLOCKED — Controller configuration
 
-**Candidate:** `63f28ade483c57c7b9aed3f0e9852a405d760e0d`  
-**Tree:** `c35dc499f5d42b7c29c59e99f2c61509446d6cad`  
+**Candidate:** `63f28ade483c57c7b9aed3f0e9852a405d760e0d`
+**Tree:** `c35dc499f5d42b7c29c59e99f2c61509446d6cad`
 **Base:** `a1626e3a375a33bb76561e8666d6bdb070b77de5` — confirmed ancestor. The checkout was clean at the candidate.
 
 I found no blocking code defect in the requested journeys during static inspection. Contact replay and payload conflict handling are in [index.ts](apps/worker/src/index.ts:575); OWNER-scoped inbox, availability, and reconfirmation are at [index.ts](apps/worker/src/index.ts:232); assisted creation batches the listing, audit row, and idempotency transition at [index.ts](apps/worker/src/index.ts:102). The UI retains inbox rows after state changes in [OwnerView.vue](apps/web/src/views/OwnerView.vue:163) and guards contact responses after route changes in [ListingView.vue](apps/web/src/views/ListingView.vue:46). The three dispatch configs and Preview guard/tests cover the requested routing and fail-closed paths; migrations and parity ledgers agree on the three ContactEvent indexes and contact idempotency columns.
@@ -18,8 +18,8 @@ FINAL RESPONSE AFTER CLARIFICATION:
 
 ## PASS — bounded CF-AU-I03 local technical review
 
-**Reviewed commit:** `63f28ade483c57c7b9aed3f0e9852a405d760e0d`  
-**Tree:** `c35dc499f5d42b7c29c59e99f2c61509446d6cad`  
+**Reviewed commit:** `63f28ade483c57c7b9aed3f0e9852a405d760e0d`
+**Tree:** `c35dc499f5d42b7c29c59e99f2c61509446d6cad`
 **Canonical base:** `a1626e3a375a33bb76561e8666d6bdb070b77de5` — ancestor confirmed.
 
 The reviewer runtime was the separate `codex exec` process launched with `--model gpt-6-luna`, High reasoning, and `--sandbox read-only`. The supplied CLI/session evidence identifies thread `01a14eca-b537-7470-afb2-665647c1a19f`; read-only inspections succeeded, and the exact candidate checkout remained clean. The selected model and effort were requested; **provider backend identity remains UNVERIFIED**. The nested CLI attempt I made was unnecessary and does not affect this review.
