@@ -200,25 +200,27 @@
   },
   "auth_decision": ".orchestration/decisions/ACCESS_PREVIEW_OWNER_AUTH.md",
   "preview_delivery": {
-    "application_sha": "fccdb43397988e5fd4c467452d80a036b9eea69a",
-    "deployment_id": null,
+    "application_sha": "0db6c0c79aaeae2204c0fe704c66d4faccdb3c05",
+    "deployment_id": "d613b6dc-fdcb-48a0-a47a-4eaa44578c64",
     "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
     "strategy": "ACCESS_PREVIEW",
-    "anonymous_denials": "8/8 across stable+immutable URL routes /, /login, /admin, /health",
+    "anonymous_denials": "8/8 across stable+immutable URL routes /, /health, /admin, /api/owner/contact-events",
     "production": "disabled; only wrangler preview used",
-    "operator_policy": "unchanged, operator-only",
+    "operator_policy": "unchanged, operator-only; Access remains enabled",
     "owner_journey": "Human accepted OWNER remote journey on 2026-10-16; not repeated after this role-switch update; local integrated OWNER/ADMIN E2E remains 8/8 PASS.",
-    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md",
+    "evidence": ".orchestration/evidence/CF-AU-I03-PREVIEW-CLOSEOUT.md",
     "previous_deployment_id": "6c368527-60e1-4fa8-9232-b8d354301bb2",
     "preview_name": "private",
-    "deployment_url": "https://f5c694bb-alquileres-uspa-lab.sjo1848.workers.dev",
+    "deployment_url": "https://d613b6dc-alquileres-uspa-lab.sjo1848.workers.dev",
     "media_strategy": "D1_BLOB",
     "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
-    "migrations_applied": "0001–0010; no pending migrations",
+    "migrations_applied": "0001–0012; 0011/0012 applied to existing synthetic D1; final inventory reports no pending migrations",
     "admin_seed": "synthetic-catalog-admin / preview.admin@example.test / ADMIN",
     "owner_preserved": "1 OWNER row, 3 synthetic listings, 2 D1 BLOB images / 21,015 bytes verified after migrations",
-    "remote_admin_e2e": "BLOCKED_AUTH; human browser validation pending",
-    "deployed_at_utc": "2026-10-18T04:20:09Z"
+    "remote_admin_e2e": "BLOCKED_AUTH; Playwright executor context remains unauthenticated; no policy or credential changes",
+    "deployment_number": 5,
+    "local_admin_e2e": "PASS: OWNER submits, ADMIN approves, separately publishes, and catalog shows listing; output/playwright/preview-admin-role-switch.png",
+    "worker": "alquileres-uspa-lab"
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
@@ -465,17 +467,5 @@
       "reasoning_output": 12211
     },
     "next_review": "No repeat required for documentation-only closeout. Re-review only if executable/security behavior changes or a new substantive increment requires review."
-  },
-  "preview": {
-    "name": "private",
-    "worker": "alquileres-uspa-lab",
-    "status": "UPDATED_WITH_WRANGLER_PREVIEW",
-    "deployment_id": "d613b6dc-fdcb-48a0-a47a-4eaa44578c64",
-    "deployment_number": 5,
-    "stable_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
-    "immutable_url": "https://d613b6dc-alquileres-uspa-lab.sjo1848.workers.dev",
-    "auth": "Cloudflare Access remains enabled; anonymous probes denied 8/8 across stable and immutable URLs. Executor browser context unauthenticated; authenticated remote E2E=BLOCKED_AUTH.",
-    "data": "synthetic D1 only; migrations 0011/0012 applied; read-only inventory says no pending migrations.",
-    "limits": "USD 0; no R2, new resources, Access changes, billing, real data, or production."
   }
 }
