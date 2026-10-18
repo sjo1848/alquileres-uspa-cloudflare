@@ -42,12 +42,15 @@ const failedImages = ref(new Set<string>());
 const contact = ref({ visitorName: '', visitorEmail: '', message: '' });
 const contactBusy = ref(false), contactError = ref(''), contactNotice = ref('');
 let pendingContact:{identity:string;key:string}|undefined;
+let contactRequestGeneration = 0;
 function resetState() {
+  contactRequestGeneration++;
   loading.value = true;
   error.value = '';
   listing.value = undefined;
   failedImages.value = new Set();
   contact.value = { visitorName: '', visitorEmail: '', message: '' };
+  contactBusy.value = false;
   contactError.value = '';
   contactNotice.value = '';
   pendingContact = undefined;
@@ -74,17 +77,19 @@ function imageFailed(imageId: string) {
 }
 async function sendContact() {
   if (!listing.value || contactBusy.value) return;
+  const submittedListingId=listing.value.id,generation=contactRequestGeneration;
   contactBusy.value = true; contactError.value = ''; contactNotice.value = '';
   try {
     const body = JSON.stringify(contact.value), identity = `${listing.value.id}|${body}`;
     if (pendingContact?.identity !== identity) pendingContact = { identity, key: crypto.randomUUID() };
-    await request(`/public/listings/${encodeURIComponent(listing.value.id)}/contact`, { method: 'POST', body, headers: { 'Idempotency-Key': pendingContact.key } });
+    await request(`/public/listings/${encodeURIComponent(submittedListingId)}/contact`, { method: 'POST', body, headers: { 'Idempotency-Key': pendingContact.key } });
+    if(generation!==contactRequestGeneration||route.params.id!==submittedListingId)return;
     pendingContact = undefined;
     contact.value = { visitorName: '', visitorEmail: '', message: '' };
     contactNotice.value = 'Tu consulta fue enviada. El propietario podrá contactarte.';
   } catch (error) {
-    contactError.value = error instanceof ApiError && error.status === 400 ? 'Revisá tu nombre, correo y mensaje.' : 'No pudimos enviar la consulta. Intentá nuevamente.';
-  } finally { contactBusy.value = false; }
+    if(generation===contactRequestGeneration&&route.params.id===submittedListingId)contactError.value = error instanceof ApiError && error.status === 400 ? 'Revisá tu nombre, correo y mensaje.' : 'No pudimos enviar la consulta. Intentá nuevamente.';
+  } finally { if(generation===contactRequestGeneration&&route.params.id===submittedListingId)contactBusy.value = false; }
 }
 const freshness = computed(() =>
   freshnessLabel(

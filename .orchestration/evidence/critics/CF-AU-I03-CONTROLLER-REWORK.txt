@@ -1,13 +1,13 @@
-REVIEWER_KIND=delegated_codex_separate_process  
+REVIEWER_KIND=delegated_codex_separate_process
 VERDICT=REWORK
 
-MODEL_REQUESTED=gpt-6-luna  
-EFFORT_REQUESTED=high  
-CLI_SANDBOX=read-only; the provided runtime was read-only. No separate CLI invocation or acceptance receipt was available, and no child process was spawned.  
+MODEL_REQUESTED=gpt-6-luna
+EFFORT_REQUESTED=high
+CLI_SANDBOX=read-only; the provided runtime was read-only. No separate CLI invocation or acceptance receipt was available, and no child process was spawned.
 ACTUAL_BACKEND_MODEL_IDENTITY=UNVERIFIED
 
-ARTIFACT_SHA=e0f87ae398078ff04ce7774738dac90f03ae1296  
-CANONICAL_BASE_SHA=a1626e3a375a33bb76561e8666d6bdb070b77de5  
+ARTIFACT_SHA=e0f87ae398078ff04ce7774738dac90f03ae1296
+CANONICAL_BASE_SHA=a1626e3a375a33bb76561e8666d6bdb070b77de5
 EXACT_TREE_SHA=9e06feb19fefd136e4c0336a20bb27be6c9eb9e6
 
 CODE_SHA_AND_TEST_PROVENANCE=The repository HEAD is the PR documentation checkpoint `5a6dff95a73d46a1d3a4f267ba42a3fabeb8d018`. Its only changes from the reviewed executable commit are `.orchestration/STATE.md` and `.orchestration/STATUS.json`; no executable code changed. The pinned commit is descended from the specified canonical main base. Recorded checks for the pinned implementation: focused Worker tests, 2 files/11 tests; Worker and web typechecks; web build; local Playwright; and whitespace check all PASS. I did not rerun suites.

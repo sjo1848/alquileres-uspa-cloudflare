@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03: GitHub public contact retry, availability-routing, pagination, ADMIN owner-search and contact route-reset findings fixed locally; exact-head gates pending.",
-  "last_completed_head": "Prior observed PR #19 head was 41022aabff0e9bb97aa82bccaf7d7e1c5a57a1a2; resolve the consolidated follow-up from the live PR head.",
+  "last_completed_task": "CF-AU-I03: GitHub delayed contact-response leakage, ADMIN owner-search, public contact retry and inbox routing/idempotency findings fixed locally; exact-head gates pending.",
+  "last_completed_head": "Prior observed PR #19 head was 40eabb19ac878d757344537e10bb3185a35342fc; resolve the consolidated follow-up from the live PR head.",
   "work_branch": "work/contact-availability-journeys",
   "next_action": "Resolve the live PR #19 head and verify exact-head worker/web checks and GitHub automatic review; resolve only threads whose fixes are present. Then run a narrowly scoped Controller follow-up on inbox retention. If all gates pass, use protected merge and update only the authorized existing private Preview; run authenticated OWNER and anonymous Access-denial smoke.",
   "stop_reason": null,
   "event": {
-    "seq": 123,
-    "id": "CF_AU_I03_ADMIN_OWNER_SEARCH_CONTACT_ROUTE_RESET",
+    "seq": 124,
+    "id": "CF_AU_I03_IGNORE_STALE_CONTACT_RESPONSE",
     "type": "AUTOMATED_REVIEW_REWORK"
   },
   "external_review": {
@@ -29,9 +29,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "7f7de6c74e5bf7c1be3353bfa414dc1e3e473f85",
+    "last_observed_head": "40eabb19ac878d757344537e10bb3185a35342fc",
     "merge_commit": null,
-    "head_source": "Live PR #19 head observed before current local availability/inbox repair; resolve the exact candidate from GitHub before final gates."
+    "head_source": "Last live PR #19 head observed before the current bounded stale-response/evidence repair; resolve the new exact head for final gates."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -67,9 +67,11 @@
       "web_typecheck": "PASS",
       "web_build": "PASS on consolidated candidate",
       "python_config_tests": "12/12 PASS",
+      "playwright_admin_owner_search": "PASS: synthetic ADMIN searched preview.owner and confirmed the filtered owner remained selectable; output/playwright/admin-assist-owner-search-local.png",
       "local_contact_idempotency": "PASS: local migration 0012 applied; same-key retry returned identical 201 result/ID; changed payload returned 409",
       "playwright_pagination": "PASS: synthetic contact arrived after loading page 2; page-two state changed and page-one row retained; screenshot output/playwright/owner-contact-concurrent-arrival-local.png",
       "playwright_contact_route_reset": "PASS: after drafting a contact for one listing and navigating in-app to another, fields were cleared; output/playwright/public-contact-reset-route-change-local.png",
+      "playwright_contact_stale_response": "PASS: delayed success for listing A after navigating to B did not change B's fields, busy state or feedback; output/playwright/public-contact-stale-response-local.png",
       "git_diff_check": "PASS"
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
@@ -78,9 +80,9 @@
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
-    "checkpoint_sha": "41022aabff0e9bb97aa82bccaf7d7e1c5a57a1a2",
-    "github_checks": "PASS on 18f2143 before later changes; exact consolidated candidate checks pending.",
-    "github_automatic_review": "Latest review found ADMIN owner selector cap and contact form state leaking across listing route changes in addition to prior addressed issues; local repairs pending exact-head re-review.",
+    "checkpoint_sha": "40eabb19ac878d757344537e10bb3185a35342fc",
+    "github_checks": "PASS on previous exact checkpoint 40eabb19ac878d757344537e10bb3185a35342fc (run 39122629327); rerun after current bounded repair.",
+    "github_automatic_review": "Latest review found stale async contact response leakage, duplicate Event 122 and trailing whitespace in Controller evidence; local repairs pending exact-head re-review.",
     "status": "AUTOMATED_REVIEW_REWORK_FIXED_LOCALLY",
     "controller": "REWORK on e0f87ae for inbox page retention; fix covered in 2060a26. Narrow follow-up pending; later GitHub findings also fixed locally.",
     "findings_resolved": [
@@ -91,7 +93,7 @@
       "Listing parity ledger includes owner availability/reconfirmation journeys."
     ],
     "executable_sha": "Resolve the current consolidated candidate SHA from live PR #19 head; do not infer from prior checkpoints.",
-    "rework_commit": "Current local candidate includes contact idempotency migration and client retry fix; exact SHA follows live PR head.",
+    "rework_commit": "Current local candidate includes contact idempotency, searchable assisted OWNERs, route reset and stale-response guards; exact SHA follows live PR head.",
     "checkpoint_note": "Live PR head remains authoritative; current code/evidence candidate is being prepared for exact-head checks.",
     "controller_reviewed_sha": "e0f87ae398078ff04ce7774738dac90f03ae1296",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
@@ -106,7 +108,10 @@
       "GitHub P2: replay public contact submissions by stable key and reject key/payload mismatch.",
       "GitHub P2: update Listing parity disposition for owner availability/reconfirmation.",
       "GitHub P2: searchable OWNER lookup must reach accounts beyond the first result set.",
-      "GitHub P2: clear contact fields/feedback/idempotency key when changing listing detail route."
+      "GitHub P2: clear contact fields/feedback/idempotency key when changing listing detail route.",
+      "GitHub P2: ignore responses from contact requests started on a different listing route.",
+      "GitHub P2: retain chronological canonical event ordering without duplicate Event 122.",
+      "GitHub P2: remove trailing whitespace from Controller evidence and rerun diff check."
     ]
   },
   "human_acceptance": {
