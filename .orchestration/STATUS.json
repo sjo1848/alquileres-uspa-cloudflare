@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I03 Artifact A2 has Pre-Critic PASS and exact-A2 delegated Controller PASS; only resulting-head GitHub review/checks, P1 closure and protected integration remain.",
   "last_completed_head": "CF-AU-I03-Artifact-A2 exact immutable SHA 76fbdfd2b711f4f765be122ba9f539f0ca101963; tree 355013f5d90ab437fa332a944af9e52a1776c10b. PR evidence head at Controller review 738bda6101086711161dd2cf7f2e3bc861c422d.",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Publish the A2 Controller PASS evidence and update active review authority. Reply to and resolve GitHub P1 thread 4307796968, then verify exact latest PR #19 head, worker/web checks, completed automatic review, zero unresolved threads and main protection. If CLEAN, protected-merge preserving history; then apply only missing migrations 0011/0012 to the existing synthetic D1, update only the existing private Worker via wrangler preview, probe anonymous Access denial, and attempt authenticated Playwright only if the legitimate session is available. No R2, new resources, spending, Access changes, production or real data.",
+  "next_action": "Verify exact current PR #19 head worker/web required checks, completed automatic review, zero unresolved threads and main protections. If CLEAN, protected-merge preserving history. After merge, apply only pending 0011/0012 migrations to the existing synthetic D1, update only the same private Preview with wrangler preview, verify anonymous Access denial and attempt authenticated Playwright only if a valid authorized browser session is available. Do not use R2, add resources, spend, alter Access policy, use real data or deploy production.",
   "stop_reason": null,
   "event": {
-    "seq": 134,
-    "id": "CF_AU_I03_ARTIFACT_A2_CONTROLLER_PASS",
-    "type": "DELEGATED_EXACT_ARTIFACT_CONTROLLER_PASS"
+    "seq": 135,
+    "id": "CF_AU_I03_CONTROLLER_PASS_ACTIVE_AND_P1_RESOLVED",
+    "type": "EXACT_ARTIFACT_CONTROLLER_PASS_GITHUB_P1_RESOLVED"
   },
   "external_review": {
     "required": false,
@@ -30,9 +30,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "738bda6101086711161dd2cf7f2e3bc861c422d",
+    "last_observed_head": "4cc215eff8b2346d90cb95ebc930320f16ab14c7",
     "merge_commit": null,
-    "head_source": "Live evidence head observed during exact-A2 Controller review; retrieve current PR head before integration."
+    "head_source": "Live PR #19 head observed after A2 Controller PASS evidence publication and P1 thread resolution; resulting-head checks/review are required."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -91,8 +91,8 @@
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "checkpoint_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
     "github_checks": "PASS worker/web on exact A2 SHA 76fbdfd in run 39145163840.",
-    "github_automatic_review": "Review on exact A2 candidate 76fbdfd found only procedural P1 requiring exact-A2 Controller PASS and active-authority update before integration. PASS now obtained; update status and resolve the thread. Latest evidence-head automatic review/checks remain to be verified.",
-    "status": "A2_CONTROLLER_PASS_WAITING_GITHUB_P1_RESOLUTION_AND_RESULTING_HEAD_CONTROLS",
+    "github_automatic_review": "Exact A2 review P1 was resolved after publishing active A2 Controller PASS. Automatic review/checks for the resulting evidence head are pending and required before merge.",
+    "status": "A2_CONTROLLER_PASS_P1_RESOLVED_WAITING_RESULTING_HEAD_CONTROLS",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
@@ -146,7 +146,7 @@
       "GitHub P2: required worker job omitted contact-workflow.test.ts; added an explicit package script and workflow step, verified locally 5/5."
     ],
     "precritic_gate": "PASS_TO_FREEZE_AND_SUBMIT_A2; .orchestration/evidence/CF-AU-I03-PRECRITIC-A2.md",
-    "github_review_threads_unresolved": "One A2 sequencing P1 thread 4307796968; resolve after publishing this exact-A2 PASS evidence and active authority update.",
+    "github_review_threads_unresolved": "0 at exact observed head 4cc215e after resolving A2 sequencing P1 thread 4307796968; verify again on current resulting PR head.",
     "evidence_checkpoint_sha": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "evidence_commit": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "controller_rework_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
