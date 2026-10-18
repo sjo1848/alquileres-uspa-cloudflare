@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ApiError, request } from '../api';
+import { ApiError } from '../api';
 import { useSession } from '../session';
 import { safeLoginRedirect } from './auth-helpers';
 const email = ref(''), password = ref(''), error = ref('');
+const demoRole = ref<'OWNER'|'ADMIN'>('OWNER');
 const loading = ref(false);
 const strategy = ref<'LOADING'|'PASSWORD'|'ACCESS_PREVIEW'|'ERROR'>('LOADING');
 const session = useSession(), router = useRouter(), route = useRoute();
 async function loadConfig() {
   strategy.value = 'LOADING'; error.value = '';
   try {
-    const config = await request<{strategy:string}>('/auth/config');
-    if(config.strategy!=='PASSWORD'&&config.strategy!=='ACCESS_PREVIEW')throw Error('Unsupported authentication');
-    strategy.value = config.strategy;
+    strategy.value = await session.loadAuthStrategy();
   } catch { strategy.value='ERROR';error.value='El ingreso no está disponible. Reintentá en unos instantes.'; }
 }
 onMounted(loadConfig);
@@ -21,7 +20,7 @@ async function submit() {
   if (loading.value) return;
   loading.value = true; error.value = '';
   try {
-    if(strategy.value==='ACCESS_PREVIEW')await session.authenticatePreview();
+    if(strategy.value==='ACCESS_PREVIEW')await session.authenticatePreview(demoRole.value);
     else if(strategy.value==='PASSWORD')await session.authenticate('/auth/login', email.value, password.value);
     else return;
     password.value = '';
@@ -42,8 +41,13 @@ async function submit() {
     <p v-if="strategy==='LOADING'" role="status">Preparando el ingreso…</p>
     <button v-if="strategy==='ERROR'" @click="loadConfig">Reintentar</button>
     <form v-if="strategy==='ACCESS_PREVIEW'" @submit.prevent="submit" :aria-busy="loading">
-      <p>Ingresá con el acceso con el que abriste este Preview. Las publicaciones son de prueba.</p>
-      <button type="submit" :disabled="loading">{{ loading?'Ingresando…':'Ingresar como propietario' }}</button>
+      <p>Ingresá con tu acceso habitual. Elegí un perfil sintético de demostración; no cambia tu rol ni tus datos de producción.</p>
+      <fieldset :disabled="loading">
+        <legend>Entrar como</legend>
+        <label><input v-model="demoRole" type="radio" name="demo-role" value="OWNER" /> Propietario (demo)</label>
+        <label><input v-model="demoRole" type="radio" name="demo-role" value="ADMIN" /> Administrador (demo)</label>
+        <button type="submit">{{ loading?'Ingresando…':demoRole==='ADMIN'?'Ingresar como administrador (demo)':'Ingresar como propietario (demo)' }}</button>
+      </fieldset>
     </form>
     <form v-if="strategy==='PASSWORD'" @submit.prevent="submit" :aria-busy="loading">
       <fieldset :disabled="loading">

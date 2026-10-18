@@ -3,8 +3,10 @@ import { ApiError, request, type Role, type User } from './api';
 
 export type SessionStatus =
   'unknown' | 'loading' | 'authenticated' | 'anonymous' | 'error';
+export type AuthStrategy = 'PASSWORD' | 'ACCESS_PREVIEW' | 'UNKNOWN';
 const status = ref<SessionStatus>('unknown');
 const user = ref<User | null>(null);
+const authStrategy = ref<AuthStrategy>('UNKNOWN');
 let restorePromise: Promise<void> | undefined;
 let onSessionExpired: (() => void) | undefined;
 
@@ -41,8 +43,16 @@ export function useSession() {
     user.value = result.user;
   }
 
-  async function authenticatePreview() {
-    const result = await request<{ user: User }>('/auth/preview-session', { method: 'POST' });
+  async function loadAuthStrategy() {
+    const config = await request<{strategy:string}>('/auth/config');
+    if(config.strategy!=='PASSWORD'&&config.strategy!=='ACCESS_PREVIEW')throw Error('Unsupported authentication');
+    authStrategy.value=config.strategy;
+    return authStrategy.value;
+  }
+
+  async function authenticatePreview(role: Extract<Role,'OWNER'|'ADMIN'>) {
+    if(authStrategy.value!=='ACCESS_PREVIEW')throw Error('Preview identity selection is unavailable');
+    const result = await request<{ user: User }>('/auth/preview-session', { method: 'POST', body:JSON.stringify({role}) });
     status.value = 'authenticated';
     user.value = result.user;
   }
@@ -87,9 +97,11 @@ export function useSession() {
     status,
     user,
     role,
+    authStrategy,
     isAuthenticated,
     authenticate,
     authenticatePreview,
+    loadAuthStrategy,
     restore,
     clear,
     anonymous,
