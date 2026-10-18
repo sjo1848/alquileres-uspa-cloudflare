@@ -39,6 +39,8 @@ const listing = ref<Listing>();
 const loading = ref(true);
 const error = ref('');
 const failedImages = ref(new Set<string>());
+const contact = ref({ visitorName: '', visitorEmail: '', message: '' });
+const contactBusy = ref(false), contactError = ref(''), contactNotice = ref('');
 function resetState() {
   loading.value = true;
   error.value = '';
@@ -64,6 +66,17 @@ function retry() {
 }
 function imageFailed(imageId: string) {
   failedImages.value = new Set(failedImages.value).add(imageId);
+}
+async function sendContact() {
+  if (!listing.value || contactBusy.value) return;
+  contactBusy.value = true; contactError.value = ''; contactNotice.value = '';
+  try {
+    await request(`/public/listings/${encodeURIComponent(listing.value.id)}/contact`, { method: 'POST', body: JSON.stringify(contact.value) });
+    contact.value = { visitorName: '', visitorEmail: '', message: '' };
+    contactNotice.value = 'Tu consulta fue enviada. El propietario podrá contactarte.';
+  } catch (error) {
+    contactError.value = error instanceof ApiError && error.status === 400 ? 'Revisá tu nombre, correo y mensaje.' : 'No pudimos enviar la consulta. Intentá nuevamente.';
+  } finally { contactBusy.value = false; }
 }
 const freshness = computed(() =>
   freshnessLabel(
@@ -154,5 +167,19 @@ watch(
         {{ formatConfirmationDate(listing.lastConfirmedAt) }}
       </p>
     </article>
+    <section class="card contact" aria-labelledby="contact-title">
+      <h3 id="contact-title">Consultar por esta propiedad</h3>
+      <p>Tu mensaje llegará al propietario de la publicación.</p>
+      <p v-if="contactError" class="error" role="alert">{{ contactError }}</p>
+      <p v-if="contactNotice" class="success" role="status">{{ contactNotice }}</p>
+      <form @submit.prevent="sendContact" :aria-busy="contactBusy">
+        <fieldset :disabled="contactBusy">
+          <label>Tu nombre<input v-model="contact.visitorName" name="visitorName" required maxlength="120" autocomplete="name" /></label>
+          <label>Tu correo<input v-model="contact.visitorEmail" name="visitorEmail" required maxlength="254" type="email" autocomplete="email" /></label>
+          <label>Mensaje<textarea v-model="contact.message" name="message" required maxlength="2000" rows="4"></textarea></label>
+          <button type="submit">{{ contactBusy ? 'Enviando…' : 'Enviar consulta' }}</button>
+        </fieldset>
+      </form>
+    </section>
   </template>
 </template>

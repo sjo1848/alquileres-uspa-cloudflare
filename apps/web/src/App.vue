@@ -28,6 +28,7 @@ async function switchDemoIdentity(){
       <RouterLink to="/">Catálogo</RouterLink>
       <RouterLink v-if="session.role.value==='OWNER'" to="/owner">Mis publicaciones</RouterLink>
       <RouterLink v-if="session.role.value==='ADMIN'" to="/admin">Revisión</RouterLink>
+      <RouterLink v-if="session.role.value==='ADMIN'" to="/admin-assist">Gestión asistida</RouterLink>
       <button v-if="session.isAuthenticated.value&&session.authStrategy.value==='ACCESS_PREVIEW'" class="secondary" :disabled="loggingOut" @click="switchDemoIdentity">Cambiar perfil de prueba</button>
       <button v-if="session.isAuthenticated.value" class="secondary" :disabled="loggingOut" @click="logout">{{ loggingOut?'Cerrando sesión…':'Cerrar sesión' }}</button>
       <RouterLink v-else to="/login">Ingresar como propietario</RouterLink>

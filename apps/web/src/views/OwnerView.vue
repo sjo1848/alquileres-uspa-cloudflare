@@ -4,13 +4,15 @@ import { ApiError, apiUrl } from '../api';
 import { useSession } from '../session';
 import { currencyOptions, pricePeriodOptions, rentalDurationOptions, formatRentalPrice, type Currency, type PricePeriod, type RentalDuration } from './rental-domain';
 type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number };
-type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string };
+type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null };
 type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt:string };
+type ContactEvent = { id:string; state:'UNREAD'|'READ'; visitorName:string; visitorEmail:string; message:string; createdAt:string; listing:{id:string;title:string;location:string} };
 const MAX_IMAGE_BYTES=1_800_000, MAX_IMAGES=20;
 const MAX_IMAGE_WIDTH=640,MAX_IMAGE_HEIGHT=480;
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
 const images=ref<Image[]>([]),imagesLoading=ref(false),imageBusy=ref<'upload'|'delete'|'reorder'|null>(null);
+const contacts=ref<ContactEvent[]>([]), unreadContacts=ref(0), contactsLoading=ref(false), contactBusy=ref('');
 const confirmReload=ref(false);
 const pendingSelection=ref<{item?:Listing}|null>(null);
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
@@ -158,7 +160,11 @@ async function moveImage(image:Image,delta:number){
   catch(e){error.value=imageMessage(e);}
   finally{busy.value=false;imageBusy.value=null;}
 }
-onMounted(()=>load());
+async function loadContacts(){contactsLoading.value=true;try{const result=await session.apiRequest<{items:ContactEvent[];unreadCount:number}>('/owner/contact-events');contacts.value=result.items;unreadContacts.value=result.unreadCount;}catch{error.value='No pudimos cargar tus consultas.';}finally{contactsLoading.value=false;}}
+async function setContactState(event:ContactEvent,state:'UNREAD'|'READ'){if(contactBusy.value)return;contactBusy.value=event.id;error.value='';try{await session.apiRequest(`/owner/contact-events/${encodeURIComponent(event.id)}/state`,{method:'PATCH',body:JSON.stringify({state})});await loadContacts();}catch{error.value='No pudimos actualizar el estado de la consulta.';}finally{contactBusy.value='';}}
+async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/availability`,{method:'PATCH',body:JSON.stringify({availabilityStatus:status})});Object.assign(item,updated);notice.value='Disponibilidad actualizada.';}catch{error.value='No pudimos actualizar la disponibilidad.';}finally{contactBusy.value='';}}
+async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
+onMounted(()=>{void load();void loadContacts();});
 </script>
 <template>
   <section>
@@ -187,6 +193,12 @@ onMounted(()=>load());
       <article class="card editor">
         <h3>{{ selected ? 'Tu publicación' : 'Nuevo borrador' }}</h3>
         <p v-if="selected" class="status">{{ label(selected.status) }}</p>
+        <section v-if="selected" class="subsection" aria-labelledby="owner-availability-title">
+          <h3 id="owner-availability-title">Disponibilidad</h3>
+          <p>{{ selected.availabilityStatus === 'AVAILABLE' ? 'Disponible' : 'No disponible' }}</p>
+          <button type="button" :disabled="contactBusy!==''" @click="updateAvailability(selected.availabilityStatus==='AVAILABLE'?'UNAVAILABLE':'AVAILABLE')">{{ selected.availabilityStatus === 'AVAILABLE' ? 'Marcar no disponible' : 'Marcar disponible' }}</button>
+          <button type="button" class="secondary" :disabled="contactBusy!==''" @click="reconfirmAvailability">Confirmar que sigue vigente</button>
+        </section>
         <p v-if="selected?.rejectionReason" class="error">Motivo: {{ selected.rejectionReason }}</p>
         <form @submit.prevent="save" :aria-busy="busy">
           <fieldset :disabled="busy||!canEdit">
@@ -230,5 +242,18 @@ onMounted(()=>load());
         </div>
       </article>
     </div>
+    <section class="card contacts-section" aria-labelledby="owner-contacts-title">
+      <h3 id="owner-contacts-title">Consultas recibidas <span v-if="unreadContacts">({{ unreadContacts }} sin leer)</span></h3>
+      <p v-if="contactsLoading" role="status">Cargando consultas…</p>
+      <p v-else-if="!contacts.length">Todavía no recibiste consultas.</p>
+      <ul v-else class="contact-list">
+        <li v-for="event in contacts" :key="event.id" class="contact-card" :class="{unread:event.state==='UNREAD'}">
+          <div class="contact-card-heading"><h4>{{ event.visitorName }}</h4><span>{{ event.state==='UNREAD'?'Sin leer':'Leída' }}</span></div>
+          <p class="contact-meta"><a :href="`mailto:${event.visitorEmail}`">{{ event.visitorEmail }}</a> · {{ event.listing.title }} · {{ new Date(event.createdAt).toLocaleString('es-AR') }}</p>
+          <p class="contact-message">{{ event.message }}</p>
+          <button type="button" class="secondary" :disabled="contactBusy===event.id" @click="setContactState(event,event.state==='UNREAD'?'READ':'UNREAD')">{{ event.state==='UNREAD'?'Marcar leída':'Marcar sin leer' }}</button>
+        </li>
+      </ul>
+    </section>
   </section>
 </template>
