@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I02 local synthetic OWNER D1 BLOB photos and ADMIN moderation/publication integrated via protected PR #15 merge commit aff1d44; Artifact A2 has delegated Controller PASS.",
   "last_completed_head": "aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e",
   "work_branch": "work/preview-admin-role-switch",
-  "next_action": "Push executable candidate e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3 with the evidence checkpoint; verify required worker/web checks and exact-head GitHub review; run one delegated read-only GPT-6 Luna High Controller on the exact final PR candidate; integrate only via protected PR; then migrate/seed only the existing synthetic Preview D1 and update the existing Access-protected Preview.",
+  "next_action": "Resolve the live PR #17 head from GitHub and confirm it is the checked-out descendant checkpoint; do not checkout the executable provenance SHA as a candidate. Verify exact-head worker/web checks, automatic review and branch protection; obtain the required focused Controller PASS on that exact candidate, then protected-merge PR #17. After merge, seed only the fixed synthetic ADMIN row into the existing synthetic Preview D1 if absent, update only the existing private Preview with Wrangler preview, verify anonymous Access denial, and report remote authenticated UI as BLOCKED_AUTH unless a legitimate operator browser session is available.",
   "stop_reason": null,
   "event": {
-    "seq": 104,
-    "id": "CF_AU_I02_PREVIEW_ADMIN_IDENTITY_IMPLEMENTED_LOCAL",
-    "type": "IMPLEMENTATION_CHECKPOINT"
+    "seq": 106,
+    "id": "CF_AU_I02_PREVIEW_ADMIN_RESUME_STATE_RECONCILED",
+    "type": "CANONICAL_STATE_CORRECTION"
   },
   "external_review": {
     "required": true,
@@ -205,19 +205,20 @@
       "git_diff_check": "PASS"
     },
     "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "controller": "PENDING focused exact final PR candidate review",
-    "github_checks": "PASS worker/web exact previously observed PR head; current documentation checkpoint needs exact-head rerun",
-    "github_automatic_review": "P2 documentation finding on 09575923; fix is to identify live PR head/checkpoint separately from executable provenance; no P0/P1 noted",
+    "controller": "Prior code review found no P0/P1/material P2; final PASS pending after canonical-status correction and exact candidate verification",
+    "github_checks": "PASS worker/web on exact observed checkpoint 20c80c6fd7f120909a916f1acfe0b78105c6cf7c, run 39094859225; status-only correction requires exact new-head check",
+    "github_automatic_review": "Completed on 20c80c6fd7f120909a916f1acfe0b78105c6cf7c; one historical P2 resume-thread finding fixed/resolved; unresolved findings 0",
     "preview_update": "PENDING_PROTECTED_INTEGRATION",
     "preview_access_policy": "unchanged; operator-only",
     "remote_admin_e2e": "BLOCKED_AUTH until legitimate current Access session is available to executor",
     "no_remote_mutation": "true",
     "pr": "#17",
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/17",
-    "last_observed_pr_head": "09575923ee4f61945d686dec9864bf129e41a293",
-    "last_observed_pr_head_tree": "bc94f09527709e2c90cbc09fa869e8b493787dee",
+    "last_observed_pr_head": "20c80c6fd7f120909a916f1acfe0b78105c6cf7c",
+    "last_observed_pr_head_tree": "51c8344945f84e0c7ab049d0a2e170ef35c946bb",
     "executable_provenance_sha": "e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3",
     "executable_provenance_tree": "9145e36e2d6aebb39b13c9dae8e5197724dd4b64",
-    "next_action": "Resolve the READY_TO_RESUME traceability finding, then resolve the live PR #17 head from GitHub and verify checkout ancestry. Run one focused GPT-6 Luna High read-only Controller on that exact candidate. If PASS and protected controls remain valid, merge PR #17 with history preserved, seed only the fixed synthetic ADMIN row in existing synthetic D1 if absent, update only the same private Preview using Wrangler preview, verify anonymous Access denial, and report remote authenticated UI as BLOCKED_AUTH unless an authorized Access browser session exists."
+    "next_action": "Resolve live PR #17 head from GitHub; verify exact required checks, automatic review and protections; obtain Controller PASS on that exact candidate; protected-merge; then seed fixed synthetic ADMIN only if absent and update the same protected private Preview using Wrangler preview. Verify anonymous Access denial; do not claim remote authenticated E2E without authorized operator browser session.",
+    "head_observation_note": "Historical observed head only; on resume resolve current live PR #17 head from GitHub and verify checkout ancestry. Executable provenance SHA is not the candidate checkout target."
   }
 }

@@ -31,3 +31,7 @@ This is local/synthetic evidence, not remote Access or remote browser evidence. 
 ## Checkpoint traceability correction
 
 GitHub's review of the initial checkpoint `09575923ee4f61945d686dec9864bf129e41a293` found that `READY_TO_RESUME` directed the next run to its sibling executable commit `e12dbd...`, omitting the checkpoint commit itself. Corrected in Event 105 and STATUS: `e12dbd...` is explicitly the executable/test provenance only; the authoritative candidate is the live PR #17 head resolved from GitHub and verified against the checked-out branch. The fix is documentation-only; all executable tests above remain applicable to the unchanged tree. Exact-head checks and the focused Controller remain pending.
+
+## Canonical resume-field correction
+
+A focused Controller inspection found the top-level STATUS event sequence and resume action remained stale after Event 105. Corrected in Event 106: the next runner must resolve the live PR #17 HEAD and verify ancestry; `e12dbd...` is executable provenance only and must not be used as a checkout/push target. The nested Preview ADMIN record keeps `20c80c6...` as the last observed (not perpetually current) PR checkpoint, with live GitHub ref required at resume. No executable files changed; exact new-head checks/review and final Controller PASS remain pending.
