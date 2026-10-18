@@ -39,3 +39,7 @@ A focused Controller inspection found the top-level STATUS event sequence and re
 ## Top-level active-state correction
 
 GitHub review of checkpoint `64120b7...` found stale top-level `pull_request` and `external_review` fields still pointing at completed PR #15 and historical CF-AU-I01-P2 A4. Event 107 updates current STATUS to CF-AU-I02 / PR #17 and archives those previous values under `historical_status.pr15_completed` without deleting or rewriting their evidence. The active candidate/checkpoint/executable provenance are distinct, current integration is pending, and the resume action resolves the live GitHub PR head. This is documentation-only; worker/web checks remain the latest verified evidence on the prior state checkpoint and will be refreshed for this checkpoint.
+
+## Immutable review boundary
+
+GitHub's review of `1f47c90...` found the canonical resume path omitted the mandatory Pre-Critic and immutable Artifact A boundary. Event 108 now requires, in order: exact live PR head/checks/review/protection; Pre-Critic PASS; one immutable annotated A1 tag on the exact checkpoint; exact-tag Controller PASS; protected integration. STATUS expressly says A1 is pending, with no premature PASS/tag claim. This change is documentation-only.
