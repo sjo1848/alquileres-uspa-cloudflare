@@ -19,3 +19,4 @@ Complete the local synthetic user journeys for public contact submission, OWNER 
 - ADMIN-assisted creation requires a valid idempotency key, binds it to the normalized request, atomically commits draft + audit + replay snapshot, and returns the exact original result on replay.
 - OWNER contact inbox returns at most 30 events per page, stable descending cursor pagination, and computes unread count in SQL.
 - D1 parity ledgers record migration 0011 and all three source indexes, including owner/state/created time.
+- After changing a contact state on any loaded page, all pages already displayed remain available and reflect the updated state.
