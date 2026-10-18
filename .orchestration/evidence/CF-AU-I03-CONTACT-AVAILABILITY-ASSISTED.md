@@ -50,3 +50,11 @@ GitHub identified that the ADMIN selector only showed its first 200 accounts. It
 Local Playwright also signed into the synthetic ADMIN identity, searched by `preview.owner`, and confirmed the filtered OWNER remains selectable in assisted management. Screenshot: `output/playwright/admin-assist-owner-search-local.png`.
 
 The next GitHub pass found an in-flight response race: if a contact request for listing A finishes after navigating to listing B, it could still write success/error state into the reused view. `ListingView` now resets the busy state on route changes and gates all request completion updates by route ID and generation. Local Playwright deliberately paused A's submission, navigated to B, resumed A's successful response, and verified B remained enabled, empty, and without A feedback. Screenshot: `output/playwright/public-contact-stale-response-local.png`. The repeated Event 122 tail entry has been removed while retaining its earlier chronological entry; the Controller text evidence had trailing whitespace normalized and the whitespace check rerun.
+
+
+## Consolidated final candidate — 2026-10-18
+
+- Exact executable candidate: `63f28ade483c57c7b9aed3f0e9852a405d760e0d` (tree `c35dc499f5d42b7c29c59e99f2c61509446d6cad`), based on main `a1626e3a375a33bb76561e8666d6bdb070b77de5`. Only documentation/canonical review evidence followed this executable candidate; no code or test files changed afterward.
+- GitHub worker/web quick checks pass on exact candidate (run `39123528540`); automatic review completed with no new findings; unresolved review threads 0.
+- Delegated Controller PASS on exact candidate: `.orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md`. Pre-Critic PASS: `.orchestration/evidence/CF-AU-I03-PRECRITIC-63F28AD.md`.
+- Remote authenticated Playwright against the updated Preview remains pending. The operator confirmed the normal Access login is complete; no auth state is exported.

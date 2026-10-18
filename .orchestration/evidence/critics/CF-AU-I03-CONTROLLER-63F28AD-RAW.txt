@@ -1,0 +1,31 @@
+INTERMEDIATE RESPONSE (same reviewer thread; later corrected after clarifying that the running process itself was the requested separate Controller):
+
+## BLOCKED — Controller configuration
+
+**Candidate:** `63f28ade483c57c7b9aed3f0e9852a405d760e0d`  
+**Tree:** `c35dc499f5d42b7c29c59e99f2c61509446d6cad`  
+**Base:** `a1626e3a375a33bb76561e8666d6bdb070b77de5` — confirmed ancestor. The checkout was clean at the candidate.
+
+I found no blocking code defect in the requested journeys during static inspection. Contact replay and payload conflict handling are in [index.ts](apps/worker/src/index.ts:575); OWNER-scoped inbox, availability, and reconfirmation are at [index.ts](apps/worker/src/index.ts:232); assisted creation batches the listing, audit row, and idempotency transition at [index.ts](apps/worker/src/index.ts:102). The UI retains inbox rows after state changes in [OwnerView.vue](apps/web/src/views/OwnerView.vue:163) and guards contact responses after route changes in [ListingView.vue](apps/web/src/views/ListingView.vue:46). The three dispatch configs and Preview guard/tests cover the requested routing and fail-closed paths; migrations and parity ledgers agree on the three ContactEvent indexes and contact idempotency columns.
+
+I could not issue a delegated PASS: both separate `codex exec` attempts requested `gpt-6-luna`, High, and `--sandbox read-only`, but failed before reviewer session startup with `failed to initialize in-process app-server client: Read-only file system (os error 30)`. CLI version was `0.163.0`; no reviewer session/result was produced, and backend model identity remains unverified. This is a review-configuration blocker, not a code finding.
+
+I did not rerun tests. I used the supplied evidence as historical: focused Worker tests 2 files/11 tests, typechecks, web build, Python config tests 12/12, and the listed local Playwright journeys. GitHub access was unavailable because `gh auth status` reported an invalid token; I therefore relied on your supplied exact-head checks (run `39123528540`), completed automatic review with no new findings, and resolved-thread status.
+
+**Correction:** retry the separate read-only GPT-6 Luna High review on this same SHA when the CLI can start under the required sandbox. No code correction is indicated by this inspection.
+
+FINAL RESPONSE AFTER CLARIFICATION:
+
+## PASS — bounded CF-AU-I03 local technical review
+
+**Reviewed commit:** `63f28ade483c57c7b9aed3f0e9852a405d760e0d`  
+**Tree:** `c35dc499f5d42b7c29c59e99f2c61509446d6cad`  
+**Canonical base:** `a1626e3a375a33bb76561e8666d6bdb070b77de5` — ancestor confirmed.
+
+The reviewer runtime was the separate `codex exec` process launched with `--model gpt-6-luna`, High reasoning, and `--sandbox read-only`. The supplied CLI/session evidence identifies thread `01a14eca-b537-7470-afb2-665647c1a19f`; read-only inspections succeeded, and the exact candidate checkout remained clean. The selected model and effort were requested; **provider backend identity remains UNVERIFIED**. The nested CLI attempt I made was unnecessary and does not affect this review.
+
+I found no P0, P1, or material P2 defect in the requested journeys. Inspection covered contact key/fingerprint replay and conflict handling; OWNER authorization, bounded cursor pagination, state updates and availability/reconfirmation; ADMIN idempotent draft creation with listing, audit, and replay state committed in one D1 batch; stale contact-response guards on route changes; Worker-first route configs and Preview fail-closed coverage; and migration/parity consistency.
+
+I did not rerun tests. I treated the recorded local test and Playwright evidence as historical. I could not independently query GitHub because `gh` access was unavailable; I relied on the supplied exact-head checks, completed automatic review, and resolved-thread state.
+
+This PASS applies only to the bounded local synthetic increment at the exact reviewed tree. It does not attest to production or remote Preview behavior.

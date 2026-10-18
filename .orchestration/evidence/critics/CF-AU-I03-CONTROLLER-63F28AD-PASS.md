@@ -1,0 +1,12 @@
+# CF-AU-I03 delegated Controller — PASS
+
+- Reviewer kind: `delegated_codex_separate_process`; this is an internal local technical review, not an authenticated external principal.
+- Exact launch: `codex exec --model gpt-6-luna -c 'model_reasoning_effort="high"' --sandbox read-only --json`; CLI version `0.163.0`. Model and effort were requested exactly; the process started and completed.
+- Reviewer thread: `01a14eca-b537-7470-afb2-665647c1a19f`. The follow-up resumed the same reviewer thread to correct its initial mistaken interpretation that it needed to spawn another CLI reviewer. Both CLI invocations completed with exit code 0; no nested reviewer PASS is claimed.
+- Read-only evidence: successful reads of the exact commit/tree and canonical docs, `git status` clean before and after, and inspection commands only; no repository mutation or test execution occurred. The reviewer had no GitHub authentication and relied on parent-provided GitHub evidence.
+- Requested candidate: `63f28ade483c57c7b9aed3f0e9852a405d760e0d`; tree `c35dc499f5d42b7c29c59e99f2c61509446d6cad`; canonical base `a1626e3a375a33bb76561e8666d6bdb070b77de5` (ancestor).
+- Verdict: **PASS**, bounded to local synthetic CF-AU-I03. No P0/P1/material P2 found in public contact idempotency/replay, OWNER inbox isolation/pagination/state, availability/reconfirmation, ADMIN-assisted creation/audit atomicity, stale response handling, Worker-first routing, Preview fail-closed behavior, and ContactEvent migration/parity.
+- Test evidence was reviewed as historical; no tests were rerun by Controller. Parent-recorded evidence: focused Worker 2 files/11 tests, Worker/web typechecks, web build, Python config tests 12/12, and local Playwright scenarios; exact-head GitHub worker/web run `39123528540` passed and automatic review completed with no new findings. The reviewer did not independently query GitHub.
+- `actual_backend_model_identity=UNVERIFIED`; no provider attestation is claimed. A few MCP transport-close errors appeared during the session, but did not prevent the completed read-only code inspection or final report.
+- Raw final output (including intermediate misinterpretation) is preserved in `CF-AU-I03-CONTROLLER-63F28AD-RAW.txt`, with repository-root absolute prefixes removed.
+- Recorded CLI token usage: 1,186,132 input (1,086,336 cached), 10,582 output in initial pass; 1,297,223 input (1,190,272 cached), 11,454 output in the same-thread clarification. This costly review is complete; do not repeat it for documentation-only changes.

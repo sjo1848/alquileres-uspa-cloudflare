@@ -5,22 +5,22 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03 implementation consolidated; exact-head P2 README/parity observation repaired locally; Controller subagent read-only enforcement unavailable, separate CLI review pending.",
-  "last_completed_head": "074c8a16ae76c49118e335fd27603adb5901fe78 (executable candidate; docs/status follow-up pending publication)",
+  "last_completed_task": "CF-AU-I03 local synthetic journeys consolidated; final GitHub checks/review, delegated Controller and Pre-Critic Gate passed on executable candidate 63f28ad.",
+  "last_completed_head": "63f28ade483c57c7b9aed3f0e9852a405d760e0d (exact reviewed executable candidate; later closeout changes are evidence/canonical docs only)",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Commit and push the bounded README/parity plus status reconciliation to PR #19; verify exact-head worker/web checks and GitHub review; then run one separate codex exec Controller review using GPT-6 Luna High --sandbox read-only on the exact candidate SHA and recorded evidence. After PASS, protected-merge PR #19, update only the existing private Preview, and run authenticated Playwright smoke using the operator Access session plus anonymous Access denial.",
+  "next_action": "Commit and push the evidence-only closeout to PR #19; verify required worker/web checks and latest GitHub review on the resulting head without rerunning unchanged local suites or Controller. If protected controls remain green, merge PR #19 preserving history. Then apply migrations 0011/0012 to the existing synthetic Preview D1 if pending, update only the existing private Worker with wrangler preview, and run authenticated Playwright journeys using the existing Access session plus anonymous Access-denial checks. Never export session credentials.",
   "stop_reason": null,
   "event": {
-    "seq": 125,
-    "id": "CF_AU_I03_REVIEW_STATUS_AND_PARITY",
-    "type": "GITHUB_REVIEW_REWORK"
+    "seq": 126,
+    "id": "CF_AU_I03_CONTROLLER_AND_PRECRITIC_PASS",
+    "type": "LOCAL_MILESTONE_PASS"
   },
   "external_review": {
     "required": false,
     "status": "LOCAL_SYNTHETIC_INCREMENT",
     "delegated_controller_required": true,
-    "controller_status": "PENDING_SEPARATE_PROCESS_OPERATIONAL_REVIEW",
-    "note": "One consolidated review for this functional increment. The earlier native delegated subagent could not verify read-only restrictions in its unrestricted parent runtime and returned BLOCKED_MODEL_CONFIG; invoke the documented separate read-only CLI process on the exact candidate. This is not a GitHub external approval."
+    "controller_status": "PASS_BOUNDED_LOCAL_SYNTHETIC_ON_63F28AD",
+    "note": "One consolidated delegated technical review completed on exact executable candidate 63f28ad. This is not external ChatGPT approval, production readiness, or remote Preview validation."
   },
   "human_gate": null,
   "blocker": null,
@@ -29,34 +29,39 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "074c8a16ae76c49118e335fd27603adb5901fe78",
+    "last_observed_head": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
     "merge_commit": null,
-    "head_source": "GitHub exact-head observation 2026-10-18; follow-up documentation/status reconciliation must be pushed and checked."
+    "head_source": "Exact final executable candidate inspected on GitHub; evidence-only closeout not yet pushed."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
   "review_authority": {
+    "scope": "Active CF-AU-I03 local synthetic candidate 63f28ade483c57c7b9aed3f0e9852a405d760e0d; tree c35dc499f5d42b7c29c59e99f2c61509446d6cad.",
     "reviewer_kind": "delegated_codex_separate_process",
     "reviewer_role": "project_controller",
     "model_requested": "gpt-6-luna",
     "reasoning_effort_requested": "high",
     "sandbox_requested": "read-only",
-    "runtime_verified_for_current_artifact": false,
+    "runtime_verified_for_current_artifact": true,
     "actual_backend_model_identity": "UNVERIFIED",
     "operational_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
-    "next_review": "Historical A1 PASS remains valid only for that immutable A1. Current CF-AU-I03 requires one separate operationally verified GPT-6 Luna / High / read-only review on the exact PR #19 candidate SHA.",
-    "review_report": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-PASS.md",
-    "review_raw_output": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-RAW.txt",
+    "cli_version": "codex-cli 0.163.0",
     "cli_configuration_accepted": true,
     "process_exit_code": 0,
-    "codex_thread_id": "01a14d33-9af5-79b2-bcf2-9d1892bfe5b1",
+    "codex_thread_id": "01a14eca-b537-7470-afb2-665647c1a19f",
+    "review_report": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md",
+    "review_raw_output": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-RAW.txt",
+    "reviewed_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
+    "reviewed_tree": "c35dc499f5d42b7c29c59e99f2c61509446d6cad",
+    "canonical_base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
+    "verdict": "PASS",
     "token_usage": {
-      "input": 400433,
-      "cached_input": 338816,
-      "output": 5466,
-      "reasoning_output": 3355
+      "input": 2483355,
+      "cached_input": 2276608,
+      "output": 22036,
+      "reasoning_output": 12211
     },
-    "scope": "Historical only: CF-AU-I02 Preview OWNER/ADMIN A1, SHA 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; does not apply to CF-AU-I03 / PR #19."
+    "next_review": "No repeat required for documentation-only closeout. Re-review only if executable/security behavior changes or a new substantive increment requires review."
   },
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
@@ -76,26 +81,32 @@
       "git_diff_check": "PASS"
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
-    "remote_authenticated_e2e": "READY_OPERATOR_COMPLETED_ACCESS_LOGIN; run only after approved Preview update",
-    "preview_update": "NOT_PERFORMED",
+    "remote_authenticated_e2e": "READY_OPERATOR_ACCESS_LOGIN_CONFIRMED; run after updated existing Preview",
+    "preview_update": "PENDING_PROTECTED_INTEGRATION",
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
-    "checkpoint_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
-    "github_checks": "PASS on exact executable/checkpoint SHA 074c8a16ae76c49118e335fd27603adb5901fe78 (run 39123104654; worker/web). Re-run after bounded docs/status repair is pushed.",
-    "github_automatic_review": "Completed on exact SHA 074c8a16ae76c49118e335fd27603adb5901fe78; P2 README route inventory and ContactEvent parity wording corrected locally. Preserve reviewer claim that migration 0011 contains all three indexes; review comment incorrectly counted only two.",
-    "status": "GITHUB_P2_DOCS_REWORK_FIXED_LOCALLY_CONTROLLER_OPERATIONAL_REVIEW_PENDING",
+    "checkpoint_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
+    "github_checks": "PASS worker/web on exact SHA 63f28ade483c57c7b9aed3f0e9852a405d760e0d, run 39123528540.",
+    "github_automatic_review": "Completed on exact SHA 63f28ade483c57c7b9aed3f0e9852a405d760e0d with no new findings; all 18 review threads resolved.",
+    "status": "PASS_CONTROLLER_AND_PRECRITIC_READY_FOR_PROTECTED_INTEGRATION",
     "controller": {
-      "reviewer_kind": "delegated_codex_subagent",
+      "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
       "reasoning_effort_requested": "high",
-      "verdict": "BLOCKED_MODEL_CONFIG",
-      "read_only_enforcement": "UNVERIFIED: this runtime reports unrestricted filesystem permissions",
-      "artifact_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
+      "sandbox_requested": "read-only",
+      "cli_configuration_accepted": true,
+      "cli_version": "0.163.0",
+      "thread_id": "01a14eca-b537-7470-afb2-665647c1a19f",
+      "verdict": "PASS",
+      "artifact_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
+      "artifact_tree": "c35dc499f5d42b7c29c59e99f2c61509446d6cad",
       "canonical_base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-      "p0_p1": "none reported",
-      "p2": "STATUS.json had contradictory current-vs-historical Controller pointers; reconciled in this checkpoint.",
-      "next_action": "Separate codex exec using the documented --sandbox read-only protocol; do not claim PASS for this subagent run."
+      "actual_backend_model_identity": "UNVERIFIED",
+      "p0_p1_material_p2": "none",
+      "tests_rerun_by_controller": false,
+      "report": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md",
+      "raw_output": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-RAW.txt"
     },
     "findings_resolved": [
       "ADMIN-assisted creation requires idempotency key; replays original result and rejects changed payload.",
@@ -105,10 +116,10 @@
       "Listing parity ledger includes owner availability/reconfirmation journeys.",
       "GitHub P2: update Worker README route inventory and explicitly account for the ContactEvent three-index parity in migration 0011."
     ],
-    "executable_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
+    "executable_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
     "rework_commit": "Current local candidate includes contact idempotency, searchable assisted OWNERs, route reset and stale-response guards; exact SHA follows live PR head.",
     "checkpoint_note": "Live PR head remains authoritative; current code/evidence candidate is being prepared for exact-head checks.",
-    "controller_reviewed_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
+    "controller_reviewed_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
     "local_playwright_pagination": "PASS: a new synthetic event arrived while older pages were loaded; page-two state changed and page-one row remained. See output/playwright/owner-contact-concurrent-arrival-local.png.",
     "github_findings_resolved_locally": [
@@ -126,7 +137,9 @@
       "GitHub P2: retain chronological canonical event ordering without duplicate Event 122.",
       "GitHub P2: remove trailing whitespace from Controller evidence and rerun diff check.",
       "GitHub P2: README still denied ContactEvent/AdminAuditLog and omitted public contact, OWNER inbox/availability, and ADMIN-assisted routes; route inventory corrected. Migration 0011 does create all three source indexes, and the parity ledger now names each explicitly."
-    ]
+    ],
+    "precritic_gate": "PASS; .orchestration/evidence/CF-AU-I03-PRECRITIC-63F28AD.md",
+    "github_review_threads_unresolved": 0
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -365,5 +378,28 @@
     "review_boundary": "Delegated local Controller PASS; protected merge controls and post-merge same-Preview update remain.",
     "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
     "deployment_evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md"
+  },
+  "historical_review_authority_i02_a1": {
+    "reviewer_kind": "delegated_codex_separate_process",
+    "reviewer_role": "project_controller",
+    "model_requested": "gpt-6-luna",
+    "reasoning_effort_requested": "high",
+    "sandbox_requested": "read-only",
+    "runtime_verified_for_current_artifact": false,
+    "actual_backend_model_identity": "UNVERIFIED",
+    "operational_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
+    "next_review": "Historical A1 PASS remains valid only for that immutable A1. Current CF-AU-I03 requires one separate operationally verified GPT-6 Luna / High / read-only review on the exact PR #19 candidate SHA.",
+    "review_report": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-PASS.md",
+    "review_raw_output": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-RAW.txt",
+    "cli_configuration_accepted": true,
+    "process_exit_code": 0,
+    "codex_thread_id": "01a14d33-9af5-79b2-bcf2-9d1892bfe5b1",
+    "token_usage": {
+      "input": 400433,
+      "cached_input": 338816,
+      "output": 5466,
+      "reasoning_output": 3355
+    },
+    "scope": "Historical only: CF-AU-I02 Preview OWNER/ADMIN A1, SHA 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; does not apply to CF-AU-I03 / PR #19."
   }
 }
