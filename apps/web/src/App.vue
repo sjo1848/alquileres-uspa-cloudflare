@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSession } from './session';
 const session=useSession(),router=useRouter(),loggingOut=ref(false),logoutError=ref('');
+onMounted(()=>{void session.loadAuthStrategy().catch(()=>{});});
 async function logout(){
   if(loggingOut.value)return;
   loggingOut.value=true;logoutError.value='';
   try{await session.clear();await router.push('/');}
   catch{logoutError.value='No pudimos cerrar la sesión. Reintentá.';}
+  finally{loggingOut.value=false;}
+}
+async function switchDemoIdentity(){
+  if(loggingOut.value)return;
+  loggingOut.value=true;logoutError.value='';
+  try{await session.clear();await router.push('/login');}
+  catch{logoutError.value='No pudimos cambiar la identidad de prueba. Reintentá.';}
   finally{loggingOut.value=false;}
 }
 </script>
@@ -20,6 +28,7 @@ async function logout(){
       <RouterLink to="/">Catálogo</RouterLink>
       <RouterLink v-if="session.role.value==='OWNER'" to="/owner">Mis publicaciones</RouterLink>
       <RouterLink v-if="session.role.value==='ADMIN'" to="/admin">Revisión</RouterLink>
+      <button v-if="session.isAuthenticated.value&&session.authStrategy.value==='ACCESS_PREVIEW'" class="secondary" :disabled="loggingOut" @click="switchDemoIdentity">Cambiar perfil de prueba</button>
       <button v-if="session.isAuthenticated.value" class="secondary" :disabled="loggingOut" @click="logout">{{ loggingOut?'Cerrando sesión…':'Cerrar sesión' }}</button>
       <RouterLink v-else to="/login">Ingresar como propietario</RouterLink>
     </nav>

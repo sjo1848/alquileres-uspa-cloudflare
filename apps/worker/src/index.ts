@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
-import { previewAuthConfigured, requiresPreviewAuth, verifyPreviewOperator, PREVIEW_OWNER_ID, PREVIEW_OWNER_EMAIL, type PreviewAuthEnv } from './preview-auth';
+import { previewAuthConfigured, requiresPreviewAuth, verifyPreviewOperator, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole } from './preview-auth';
 import { cleanImageName, d1BlobBytes, D1_IMAGE_MAX_BYTES, D1_IMAGE_MAX_COUNT, D1_MEDIA_QUOTA_BYTES, readBoundedBody, validateImageBytes } from './d1-blob-media';
 
 type Env = PreviewAuthEnv & { MEDIA_STRATEGY?:string; DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
@@ -41,8 +41,11 @@ app.post('/auth/preview-session',async c=>{
   let identity:{expiresAt:number};
   try{identity=await verifyPreviewOperator(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,new URL(c.req.url).origin);}
   catch{return c.json({error:'Authorized Access identity required'},401);}
-  const user=await c.env.DB.prepare("SELECT id,email,role FROM users WHERE id=? AND email=? AND role='OWNER'").bind(PREVIEW_OWNER_ID,PREVIEW_OWNER_EMAIL).first<User>();
-  if(!user)return c.json({error:'Synthetic owner unavailable'},503);
+  const request=await c.req.json().catch(()=>null) as {role?:unknown}|null;
+  if(!request||Object.keys(request).some(key=>key!=='role')||!['OWNER','ADMIN'].includes(String(request.role)))return c.json({error:'Choose a demo identity'},400);
+  const role=request.role as PreviewDemoRole, expected=PREVIEW_DEMO_USERS[role];
+  const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=? AND email=? AND role=?').bind(expected.id,expected.email,role).first<User>();
+  if(!user)return c.json({error:'Synthetic demo identity unavailable'},503);
   return c.json({user},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt),c.env)});
 });
 app.get('/health',c=>c.json({ok:true}));

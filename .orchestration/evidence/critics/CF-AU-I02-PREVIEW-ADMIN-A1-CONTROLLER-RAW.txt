@@ -1,0 +1,19 @@
+REVIEWER_KIND=delegated_codex_separate_process
+VERDICT=PASS
+MODEL_REQUESTED=gpt-6-luna
+EFFORT_REQUESTED=high
+ACTUAL_RUNTIME_MODEL_EVIDENCE=unverified
+ARTIFACT_SHA=67b3585235f3af7ef6fa9c13b6b2693d92cbeac8
+CANONICAL_BASE_SHA=42bef5c53abea65720082bbd86da9a082a51ed51
+
+Scope: PASS for the local/synthetic Preview ADMIN role-switch milestone only. The tag resolves to the expected commit and tree, and the canonical base is an ancestor. The final branch differs from the tag only in the three stated orchestration documents; I confirmed the executable source and test trees are unchanged.
+
+Findings: The Worker verifies a signed RS256 Access JWT against the pinned issuer and configured audience, checks required time and identity claims, the exact operator email, non-empty subject, app-token type, and exact Preview origin. It accepts only a fixed role choice, maps that choice to fixed synthetic D1 identities, checks each identity’s current email and role, and re-reads D1 roles for route authorization. Session cookies are HttpOnly, Secure in Preview, SameSite, short-lived and capped by Access-token expiry; mutating cookie requests enforce Origin, and switching identities clears the previous session. The selector is limited to ACCESS_PREVIEW; the password-auth path remains separate. Role-specific redirects and backend route checks preserve OWNER/ADMIN separation.
+
+The focused Worker tests cover signed-token and claim failures, fixed D1 role mapping, forged identity fields, origin checks and route separation. The recorded Playwright run covers OWNER submission, explicit ADMIN selection, approval, separate publication, catalog visibility, PASSWORD-mode selector absence and both stale role-redirect mismatch directions. Its local adapter substitutes synthetic login only for the browser exchange; JWT verification is covered separately by Worker tests. It does not establish remote authenticated E2E. Test and CI provenance is recorded in the milestone evidence. The relevant redirect finding is recorded as fixed and covered there. I relied on the parent’s supplied exact-head GitHub check and review results; I did not independently query GitHub.
+
+Remote boundary: Remote Access authentication remains BLOCKED_AUTH without a legitimate operator session. This PASS does not authorize Access-policy changes or a Preview update before protected merge.
+
+Next step: Proceed through the protected merge gates, then perform only the already-authorized update to the same Preview and recheck anonymous Access denial. Do not report remote authenticated E2E PASS without exercising the operator’s Access session.
+
+Codex CLI completion: process exit 0; thread 01a14d33-9af5-79b2-bcf2-9d1892bfe5b1; token usage 400433 input (338816 cached), 5466 output (3355 reasoning). Actual backend model identity unverified.

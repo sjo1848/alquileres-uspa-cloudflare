@@ -6,6 +6,13 @@ export const PREVIEW_ISSUER = 'https://sebastian-ojeda-pages.cloudflareaccess.co
 export const PREVIEW_OPERATOR = 'sjo1848@gmail.com';
 export const PREVIEW_OWNER_ID = 'synthetic-catalog-owner';
 export const PREVIEW_OWNER_EMAIL = 'preview.owner@example.test';
+export const PREVIEW_ADMIN_ID = 'synthetic-catalog-admin';
+export const PREVIEW_ADMIN_EMAIL = 'preview.admin@example.test';
+export type PreviewDemoRole = 'OWNER' | 'ADMIN';
+export const PREVIEW_DEMO_USERS: Record<PreviewDemoRole, { id: string; email: string }> = {
+  OWNER: { id: PREVIEW_OWNER_ID, email: PREVIEW_OWNER_EMAIL },
+  ADMIN: { id: PREVIEW_ADMIN_ID, email: PREVIEW_ADMIN_EMAIL },
+};
 export type PreviewAuthEnv = { AUTH_STRATEGY?: string; ACCESS_AUD?: string };
 
 export function requiresPreviewAuth(origin: string) {
