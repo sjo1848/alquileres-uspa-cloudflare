@@ -37,7 +37,7 @@ async (page) => {
     await page.waitForURL(role === 'ADMIN' ? '**/admin' : '**/owner');
   }
 
-  await page.goto(`${baseUrl}/login`);
+  await page.goto(`${baseUrl}/login?expired=1&redirect=%2Fadmin`);
   await page.getByRole('radio', { name: 'Propietario (demo)' }).waitFor();
   await chooseRole('OWNER');
   await page.getByRole('heading', { name: 'Mis publicaciones' }).waitFor();
@@ -54,6 +54,8 @@ async (page) => {
 
   await page.getByRole('button', { name: 'Cambiar perfil de prueba' }).click();
   await page.getByRole('radio', { name: 'Propietario (demo)' }).waitFor();
+  await page.goto(`${baseUrl}/login?expired=1&redirect=%2Fowner`);
+  await page.getByRole('radio', { name: 'Administrador (demo)' }).waitFor();
   await chooseRole('ADMIN');
   await page.getByRole('heading', { name: 'Revisión de publicaciones' }).waitFor();
   await page.getByRole('button', { name: new RegExp(title) }).click();
@@ -74,6 +76,8 @@ async (page) => {
     checks: [
       'Preview-only role choices are visible',
       'PASSWORD auth configuration does not expose demo role switching',
+      'OWNER selection ignores a stale ADMIN-only redirect and opens /owner',
+      'ADMIN selection ignores a stale OWNER-only redirect and opens /admin',
       'OWNER session creates and submits a synthetic listing',
       'explicit switch clears OWNER session and authenticates ADMIN demo identity',
       'ADMIN approves while listing remains unpublished',

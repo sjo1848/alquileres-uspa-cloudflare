@@ -43,3 +43,14 @@ GitHub review of checkpoint `64120b7...` found stale top-level `pull_request` an
 ## Immutable review boundary
 
 GitHub's review of `1f47c90...` found the canonical resume path omitted the mandatory Pre-Critic and immutable Artifact A boundary. Event 108 now requires, in order: exact live PR head/checks/review/protection; Pre-Critic PASS; one immutable annotated A1 tag on the exact checkpoint; exact-tag Controller PASS; protected integration. STATUS expressly says A1 is pending, with no premature PASS/tag claim. This change is documentation-only.
+
+## GitHub finding — role-incompatible login redirect
+
+GitHub's automatic review on checkpoint `5d87e13...` found that a stale role-specific redirect could win over the demo role selection after an expired session (`/login?redirect=/owner`, then selecting ADMIN). `safeLoginRedirect` now rejects `/owner` destinations for ADMIN and `/admin` destinations for OWNER; login falls back to that identity's own route. The focused Playwright journey now covers both mismatch directions and still performs OWNER submit → ADMIN approve → separate publish → public catalog.
+
+- `npm --prefix apps/web run typecheck`: PASS.
+- `npm --prefix apps/web run build`: PASS.
+- `node --check apps/web/e2e/preview-role-switch.playwright.js`: PASS.
+- Playwright CLI against local Vite + Workerd and isolated D1 with migrations 0001–0010 and synthetic data: **8/8 checks PASS**, including both stale redirect cases and the complete OWNER/ADMIN journey. The Preview-session exchange is adapted locally to fixed synthetic password identities; signed Access JWT checks remain covered by Worker test 6/6. Four browser-console 401s were expected anonymous `/auth/me` restore probes before authentication, not runtime errors.
+- SHA-256: `AuthView.vue` `d73f36fd31d706857e3ca6d55b8db8d7a6710a8adb2f79a1fd6122b02dcaecb8`; `auth-helpers.ts` `583cf2e930531ee3c0d0105dd36aa7a425b9d649e65067b1b2e06945ba2a5315`; focused E2E `736f8c534f7ff9b058821c34cd48bdf41ce1a09d61697f941b62ec4a889c7abd`.
+- No remote Access session, Preview/D1/config, billing, production, real data, R2, or source repo was used or modified.
