@@ -5,23 +5,24 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "Artifact A1 received delegated Controller REWORK (two P2s); atomicity and configured-media documentation repairs are local and focused contact tests pass 6/6.",
-  "last_completed_head": "ea42913 (A1 rework: guarded assisted-create idempotency/audit commit; corrected media map; zero-row regression).",
+  "last_completed_task": "CF-AU-I03 Artifact A2 frozen after A1 Controller REWORK repairs; local focused suite and exact-head CI pass; exact-A2 Controller review pending.",
+  "last_completed_head": "CF-AU-I03-Artifact-A2 -> 76fbdfd2b711f4f765be122ba9f539f0ca101963; tree 355013f5d90ab437fa332a944af9e52a1776c10b.",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Verify exact PR #19 head ea42913 worker/web checks and latest automatic review; resolve material findings autonomously. If clean, run the artifact-scoped Pre-Critic against the consolidated candidate, publish a new immutable A2 before its fresh delegated read-only Controller review, and stop at that review boundary. No merge/Preview update without exact-A2 PASS and clean protected GitHub controls.",
+  "next_action": "Run a separate Codex delegated project_controller process against immutable tag CF-AU-I03-Artifact-A2 at exact SHA 76fbdfd2b711f4f765be122ba9f539f0ca101963, requesting gpt-6-luna / High / --sandbox read-only. Review only the repaired diff from A1 plus affected tests/docs; do not launch a nested codex process. Persist invocation, session/result, exact SHA and runtime caveats. Do not merge or update Preview unless exact-A2 PASS; afterward update active review authority, resolve the P1 review thread, verify latest PR-head checks/review/branch protections, and only then proceed to protected merge and the existing synthetic Preview.",
   "stop_reason": null,
   "event": {
-    "seq": 132,
-    "id": "CF_AU_I03_REWORK_PUBLISHED",
-    "type": "CODE_REWORK_PUBLISHED_PENDING_EXACT_HEAD_CONTROLS"
+    "seq": 133,
+    "id": "CF_AU_I03_ARTIFACT_A2_PRECRITIC",
+    "type": "IMMUTABLE_ARTIFACT_PRECRITIC_PASS_TO_CONTROLLER"
   },
   "external_review": {
     "required": true,
-    "status": "REWORK",
-    "artifact_tag": "CF-AU-I03-Artifact-A1",
-    "artifact_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
-    "controller_report": ".orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A1-CONTROLLER-REWORK.md",
-    "note": "Two P2 findings are repaired locally; A1 remains immutable with REWORK history. No PASS claimed."
+    "status": "AWAITING_EXACT_ARTIFACT_A2_CONTROLLER_REVIEW",
+    "artifact_tag": "CF-AU-I03-Artifact-A2",
+    "artifact_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
+    "artifact_tree": "355013f5d90ab437fa332a944af9e52a1776c10b",
+    "precritic": ".orchestration/evidence/CF-AU-I03-PRECRITIC-A2.md",
+    "note": "A1 remains immutable with REWORK; no A1 PASS is used for A2."
   },
   "human_gate": null,
   "blocker": null,
@@ -30,44 +31,34 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "ea42913",
+    "last_observed_head": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
     "merge_commit": null,
-    "head_source": "Live PR #19 head after the bounded A1 Controller rework; resulting-head GitHub controls are pending."
+    "head_source": "Exact immutable Artifact A2 target; Pre-Critic and fresh Controller result are recorded in subsequent evidence commits."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
   "review_authority": {
-    "scope": "Active CF-AU-I03 local synthetic candidate 63f28ade483c57c7b9aed3f0e9852a405d760e0d; tree c35dc499f5d42b7c29c59e99f2c61509446d6cad.",
+    "scope": "CF-AU-I03 Artifact A2 exact immutable tag, repaired ADMIN assisted-creation atomicity and configured media parity",
     "reviewer_kind": "delegated_codex_separate_process",
     "reviewer_role": "project_controller",
     "model_requested": "gpt-6-luna",
     "reasoning_effort_requested": "high",
     "sandbox_requested": "read-only",
-    "runtime_verified_for_current_artifact": true,
+    "runtime_verified_for_current_artifact": false,
     "actual_backend_model_identity": "UNVERIFIED",
     "operational_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
-    "cli_version": "codex-cli 0.163.0",
-    "cli_configuration_accepted": true,
-    "process_exit_code": 0,
-    "codex_thread_id": "01a14eca-b537-7470-afb2-665647c1a19f",
-    "review_report": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md",
-    "review_raw_output": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-RAW.txt",
-    "reviewed_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
-    "reviewed_tree": "c35dc499f5d42b7c29c59e99f2c61509446d6cad",
+    "artifact_tag": "CF-AU-I03-Artifact-A2",
+    "artifact_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
+    "artifact_tree": "355013f5d90ab437fa332a944af9e52a1776c10b",
     "canonical_base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-    "verdict": "PASS",
-    "token_usage": {
-      "input": 2483355,
-      "cached_input": 2276608,
-      "output": 22036,
-      "reasoning_output": 12211
-    },
-    "next_review": "No repeat required for documentation-only closeout. Re-review only if executable/security behavior changes or a new substantive increment requires review."
+    "verdict": "PENDING",
+    "report": null,
+    "next_action": "Run fresh bounded exact-A2 review; do not merge before PASS."
   },
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
     "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-    "executable_commit": "CF-AU-I03-Artifact-A1 exact SHA ccd6902357e797a1bc65706074c7daf37301f50d; tree e0afc36eac01ac7b6742a3e2931c667a9b0a4034.",
+    "executable_commit": "CF-AU-I03-Artifact-A2 exact SHA 76fbdfd2b711f4f765be122ba9f539f0ca101963; tree 355013f5d90ab437fa332a944af9e52a1776c10b.",
     "local_checks": {
       "worker_focused": "contact-workflow + preview-auth; 2 files / 11 tests PASS, including contact replay and searchable OWNER beyond initial result set",
       "worker_typecheck": "PASS",
@@ -87,10 +78,10 @@
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
-    "checkpoint_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
-    "github_checks": "PASS worker/web on exact A1 SHA ccd6902 in run 39144203779.",
-    "github_automatic_review": "Review of exact A1 SHA completed with one P1 requiring immutable Artifact A before its Controller verdict. Tag A1 is now published before the fresh Controller review; thread remains open until exact-A1 PASS. Resulting-head review after the gate evidence commit must be checked before merge.",
-    "status": "A1_REWORK_PUSHED_EA42913; EXACT_HEAD_CHECKS_AND_AUTOREVIEW_PENDING; NEW_A2_NOT_FROZEN",
+    "checkpoint_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
+    "github_checks": "PASS worker/web on exact A2 SHA 76fbdfd in run 39145163840.",
+    "github_automatic_review": "Exact A2 code SHA review completed with only a P1 requiring publish A2 then obtain fresh exact-A2 Controller PASS before integration. A2 tag is now published after Pre-Critic; P1 remains merge-blocking until Controller PASS and active authority update.",
+    "status": "ARTIFACT_A2_FROZEN_PRECRITIC_PASS_CONTROLLER_PENDING_NOT_MERGEABLE",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
@@ -143,16 +134,17 @@
       "GitHub P2: README still denied ContactEvent/AdminAuditLog and omitted public contact, OWNER inbox/availability, and ADMIN-assisted routes; route inventory corrected. Migration 0011 does create all three source indexes, and the parity ledger now names each explicitly.",
       "GitHub P2: required worker job omitted contact-workflow.test.ts; added an explicit package script and workflow step, verified locally 5/5."
     ],
-    "precritic_gate": "PASS_TO_SUBMIT_TO_DELEGATED_CONTROLLER; .orchestration/evidence/CF-AU-I03-PRECRITIC-A1.md",
+    "precritic_gate": "PASS_TO_FREEZE_AND_SUBMIT_A2_TO_DELEGATED_CONTROLLER; .orchestration/evidence/CF-AU-I03-PRECRITIC-A2.md",
     "github_review_threads_unresolved": "Two latest evidence findings addressed in this follow-up; resolve/verify via GitHub after push.",
     "evidence_checkpoint_sha": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "evidence_commit": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
     "controller_rework_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
     "ci_contact_workflow": "Required worker workflow invokes npm run test:contact-workflow; focused local execution 1 file / 5 tests PASS in 7.26s; exact-head GitHub run 39143613186 passed worker and web.",
-    "artifact_tag": "CF-AU-I03-Artifact-A1",
-    "artifact_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
-    "controller_status": "REWORK on A1: assisted-create batch could falsely commit after zero-row writes; parity map incorrectly described R2 as active. See .orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A1-CONTROLLER-REWORK.md.",
-    "artifact_rework": "A1 REWORK; focused test 6/6, Worker typecheck, parity JSON and diff checks pass; new artifact A2 pending exact-head CI/review and Pre-Critic."
+    "artifact_tag": "CF-AU-I03-Artifact-A2",
+    "artifact_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
+    "controller_status": "PENDING_FRESH_EXACT_A2_REVIEW; A1 REWORK is historical only.",
+    "artifact_rework": "A1 REWORK; focused test 6/6, Worker typecheck, parity JSON and diff checks pass; new artifact A2 pending exact-head CI/review and Pre-Critic.",
+    "precritic_artifact_a2": ".orchestration/evidence/CF-AU-I03-PRECRITIC-A2.md"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -414,5 +406,33 @@
       "reasoning_output": 3355
     },
     "scope": "Historical only: CF-AU-I02 Preview OWNER/ADMIN A1, SHA 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; does not apply to CF-AU-I03 / PR #19."
+  },
+  "historical_controller_review_63f28ad": {
+    "scope": "Active CF-AU-I03 local synthetic candidate 63f28ade483c57c7b9aed3f0e9852a405d760e0d; tree c35dc499f5d42b7c29c59e99f2c61509446d6cad.",
+    "reviewer_kind": "delegated_codex_separate_process",
+    "reviewer_role": "project_controller",
+    "model_requested": "gpt-6-luna",
+    "reasoning_effort_requested": "high",
+    "sandbox_requested": "read-only",
+    "runtime_verified_for_current_artifact": true,
+    "actual_backend_model_identity": "UNVERIFIED",
+    "operational_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
+    "cli_version": "codex-cli 0.163.0",
+    "cli_configuration_accepted": true,
+    "process_exit_code": 0,
+    "codex_thread_id": "01a14eca-b537-7470-afb2-665647c1a19f",
+    "review_report": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md",
+    "review_raw_output": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-RAW.txt",
+    "reviewed_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
+    "reviewed_tree": "c35dc499f5d42b7c29c59e99f2c61509446d6cad",
+    "canonical_base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
+    "verdict": "PASS",
+    "token_usage": {
+      "input": 2483355,
+      "cached_input": 2276608,
+      "output": 22036,
+      "reasoning_output": 12211
+    },
+    "next_review": "No repeat required for documentation-only closeout. Re-review only if executable/security behavior changes or a new substantive increment requires review."
   }
 }
