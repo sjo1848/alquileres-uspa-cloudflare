@@ -27,3 +27,7 @@ The UI sends only an enum role. The server maps it to constants `synthetic-catal
 ## Review/deployment boundary
 
 This is local/synthetic evidence, not remote Access or remote browser evidence. GitHub required checks/review and the exact-candidate delegated Controller are pending. No Preview D1 migrations or seed, deployment, or remote mutation has occurred. After protected integration, the existing synthetic Preview needs migrations `0008`–`0010` if not already present, idempotent application of `tests/seed-preview-admin.sql`, then a guarded Preview-only update and anonymous Access denial verification. Do not report authenticated remote E2E PASS unless the operator's real Access session is exercised.
+
+## Checkpoint traceability correction
+
+GitHub's review of the initial checkpoint `09575923ee4f61945d686dec9864bf129e41a293` found that `READY_TO_RESUME` directed the next run to its sibling executable commit `e12dbd...`, omitting the checkpoint commit itself. Corrected in Event 105 and STATUS: `e12dbd...` is explicitly the executable/test provenance only; the authoritative candidate is the live PR #17 head resolved from GitHub and verified against the checked-out branch. The fix is documentation-only; all executable tests above remain applicable to the unchanged tree. Exact-head checks and the focused Controller remain pending.

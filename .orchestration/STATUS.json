@@ -205,12 +205,19 @@
       "git_diff_check": "PASS"
     },
     "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "controller": "PENDING_EXACT_PR_CANDIDATE",
-    "github_checks": "PENDING",
-    "github_automatic_review": "PENDING",
+    "controller": "PENDING focused exact final PR candidate review",
+    "github_checks": "PASS worker/web exact previously observed PR head; current documentation checkpoint needs exact-head rerun",
+    "github_automatic_review": "P2 documentation finding on 09575923; fix is to identify live PR head/checkpoint separately from executable provenance; no P0/P1 noted",
     "preview_update": "PENDING_PROTECTED_INTEGRATION",
     "preview_access_policy": "unchanged; operator-only",
-    "remote_admin_e2e": "PENDING_REAL_OPERATOR_ACCESS_SESSION",
-    "no_remote_mutation": "true"
+    "remote_admin_e2e": "BLOCKED_AUTH until legitimate current Access session is available to executor",
+    "no_remote_mutation": "true",
+    "pr": "#17",
+    "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/17",
+    "last_observed_pr_head": "09575923ee4f61945d686dec9864bf129e41a293",
+    "last_observed_pr_head_tree": "bc94f09527709e2c90cbc09fa869e8b493787dee",
+    "executable_provenance_sha": "e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3",
+    "executable_provenance_tree": "9145e36e2d6aebb39b13c9dae8e5197724dd4b64",
+    "next_action": "Resolve the READY_TO_RESUME traceability finding, then resolve the live PR #17 head from GitHub and verify checkout ancestry. Run one focused GPT-6 Luna High read-only Controller on that exact candidate. If PASS and protected controls remain valid, merge PR #17 with history preserved, seed only the fixed synthetic ADMIN row in existing synthetic D1 if absent, update only the same private Preview using Wrangler preview, verify anonymous Access denial, and report remote authenticated UI as BLOCKED_AUTH unless an authorized Access browser session exists."
   }
 }
