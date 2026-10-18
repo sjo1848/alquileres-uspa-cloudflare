@@ -1,0 +1,19 @@
+## Review — `CF-AU-I03-Artifact-A2`
+
+**Verdict: PASS** for the bounded A2 review. I found no P0, code P1, or material P2 defect in the reviewed delta.
+
+- **Artifact:** tag `CF-AU-I03-Artifact-A2` resolves to commit `76fbdfd2b711f4f765be122ba9f539f0ca101963`, tree `355013f5d90ab437fa332a944af9e52a1776c10b`.
+- **Base:** `a1626e3a375a33bb76561e8666d6bdb070b77de5` is an ancestor.
+- **Evidence head:** `738bda6101086711161dd2cf7f2e3bc861c422d` descends from A2; its delta from A2 is limited to `.orchestration/STATE.md`, `.orchestration/STATUS.json`, and the A2 Pre-Critic evidence.
+
+**Atomicity repair:** The final transition checks for the expected DRAFT listing and matching audit row before setting `COMMITTED`. If either is missing, it selects a CHECK-invalid state inside the D1 batch, causing rollback; the handler returns retryable 503 unless it can verify an already committed result. [index.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/src/index.ts:127)
+
+The regression does exercise the zero-row listing path: after an injected first-attempt failure, it inserts the reserved listing ID, then retries. The retry’s `NOT EXISTS` guard makes the listing insert affect zero rows; assertions check for 503, no audit row, and a still-PENDING idempotency record. [contact-workflow.test.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/tests/contact-workflow.test.ts:94)
+
+**Media parity:** The local config selects Static Assets and the Preview example selects D1 BLOB; neither config binds R2. The parity maps describe those strategies and label legacy R2 code as outside the configured path. [wrangler.jsonc](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/wrangler.jsonc:5) · [wrangler.preview.example.jsonc](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/wrangler.preview.example.jsonc:24) · [postgres-d1-map.md](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/docs/postgres-d1-map.md:9)
+
+**P1 sequencing:** The recorded GitHub P1 requires exact-A2 review before integration. This review supplies the technical review result; the GitHub P1 must still be formally resolved in the active review authority, and final required checks must pass. I did not merge.
+
+**Integration conclusion:** Exact A2 is technically acceptable for protected integration once that P1 is resolved and final checks pass.
+
+**Runtime disclosure:** The requested settings are `gpt-6-luna`, High reasoning, and read-only sandbox. The supplied environment permission profile declares read-only access, and I made no writes, test runs, or remote calls. This session exposes no independent model/effort launch attestation or backend identity; **backend model identity remains UNVERIFIED**. CLI/session metadata is not exposed to me.
