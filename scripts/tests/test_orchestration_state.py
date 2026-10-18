@@ -23,7 +23,7 @@ class CanonicalStateTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         (self.root / ".orchestration/evidence/critics").mkdir(parents=True)
         (self.root / EVIDENCE).write_text(f"# A2 PASS\nExact reviewed artifact: {SHA}\n", encoding="utf-8")
-        (self.root / ".orchestration/STATE.md").write_text("State: \u0060READY_TO_RESUME\u0060\nPhase: \u0060LAB\u0060\nActive task: \u0060next task\u0060\n\n## Event 42 — integrated\n", encoding="utf-8")
+        (self.root / ".orchestration/STATE.md").write_text("State: \u0060READY_TO_RESUME\u0060\nPhase: \u0060LAB\u0060\nActive task: \u0060next task\u0060\n\n## Event 41 — old\n\n## Event 42 — integrated\n", encoding="utf-8")
         self.state = {
             "phase": "LAB", "runtime_status": "READY_TO_RESUME", "active_task": "next task", "event": {"seq": 42},
             "next_action": "Continue authorized product work",
@@ -74,9 +74,14 @@ class CanonicalStateTests(unittest.TestCase):
         self.state["candidate_review"]["remote_admin_e2e"] = "PASS"
         self.assertIn("PASS and BLOCKED_AUTH", " ".join(self.check()))
 
+    def test_blocked_note_does_not_count_as_pass(self):
+        self.state["preview_delivery"]["remote_admin_e2e"] = "BLOCKED_AUTH; this is not a PASS"
+        self.state["candidate_review"]["remote_admin_e2e"] = "BLOCKED_AUTH; still unverified"
+        self.assertEqual(self.check(), [])
+
     def test_event_must_be_in_state_ledger(self):
         self.state["event"]["seq"] = 41
-        self.assertIn("event sequence missing", " ".join(self.check()))
+        self.assertIn("differs from final STATE.md event", " ".join(self.check()))
 
     def test_linear_history_claim_in_changed_document(self):
         subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)

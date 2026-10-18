@@ -88,13 +88,19 @@ def state_errors(root: Path) -> list[str]:
     # Access denials are not authenticated UI E2E evidence.
     for field in ("remote_authenticated_e2e", "remote_admin_e2e"):
         values = [get("candidate_review", field), get("preview_delivery", field)]
-        if any(isinstance(v, str) and "BLOCKED_AUTH" in v for v in values) and any(isinstance(v, str) and re.search(r"\bPASS\b", v) for v in values):
+        statuses = {
+            match.group(1).upper()
+            for value in values if isinstance(value, str)
+            if (match := re.match(r"^\s*(BLOCKED_AUTH|PASS)\b", value, re.IGNORECASE))
+        }
+        if "BLOCKED_AUTH" in statuses and "PASS" in statuses:
             errors.append(f"{field} simultaneously claims PASS and BLOCKED_AUTH")
 
     event = state.get("event") or {}
     seq = event.get("seq") if isinstance(event, dict) else None
-    if not isinstance(seq, int) or not re.search(rf"(?m)^## Event {seq}\b", narrative):
-        errors.append("STATUS.json event sequence missing from STATE.md")
+    ledger_events = re.findall(r"(?m)^## Event (\d+)\b", narrative)
+    if not isinstance(seq, int) or not ledger_events or seq != int(ledger_events[-1]):
+        errors.append("STATUS.json event sequence differs from final STATE.md event")
     if f"State: \u0060{state.get('runtime_status')}\u0060" not in narrative[:500]:
         errors.append("STATE.md header runtime state differs from STATUS.json")
     if f"Phase: \u0060{state.get('phase')}\u0060" not in narrative[:500]:
