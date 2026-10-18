@@ -56,10 +56,21 @@ Seed owners use `synthetic-owner-password-1`; password hashes are bcrypt cost 12
 | `GET` | `/public/listings` | Paginated/filterable APPROVED + PUBLISHED catalog |
 | `GET` | `/public/listings/:id` | Public detail for APPROVED + PUBLISHED listing |
 | `GET` | `/public/listings/:id/images/:imageId` | Public image bytes only for visible listings |
+| `POST` | `/public/listings/:id/contact` | Validated public contact; requires `Idempotency-Key`, persists one unread event and replays the original event on retry |
+| `GET` | `/owner/contact-events` | OWNER-only cursor-paginated inbox (30 per page) and unread count |
+| `PATCH` | `/owner/contact-events/:id/state` | OWNER-scoped `UNREAD`/`READ` update |
+| `PATCH` | `/listings/:id/availability` | OWNER-scoped availability update |
+| `POST` | `/listings/:id/reconfirm` | OWNER-scoped availability reconfirmation |
+| `GET` | `/admin/owners?search=` | ADMIN-only bounded OWNER search for assisted management |
+| `POST` | `/admin/listings/assisted` | ADMIN-only idempotent draft creation for an existing OWNER, with audit event |
+| `GET` | `/admin/listings/review`, `/admin/listings/audit` | ADMIN review queue and audit history |
+| `GET` | `/admin/listings/:id` | ADMIN listing detail |
+| `POST` | `/admin/listings/:id/review`, `/approve`, `/reject`, `/publish` | ADMIN moderation and publication actions with audit history |
+| `GET` | `/admin/listings/:id/images/:imageId` | ADMIN review image bytes |
 
 Listing create/list returns source camelCase fields; image list/add/reorder returns `id`, `originalName`, `contentType`, `sizeBytes`, `position` and `createdAt`; delete returns an empty 200 response. These mappings and tested denial statuses are asserted by the HTTP suite.
 
-Private OWNER image-byte GET is not present as an OWNER route in the pinned source controller; P2 adds this bounded route to make the requested private retrieval journey executable. **Source route parity remains unresolved** pending controller/product confirmation. Auth also retains three explicitly unresolved P0/P1 details: its email check is narrower than source `class-validator` `IsEmail`; JWT expiry parsing accepts only integer `s/m/h/d` forms rather than the full source `jsonwebtoken` option behavior; and malformed percent-encoding in a cookie returns 401 here while source decoding escapes as 500. No ADMIN endpoints, registration, ContactEvent or AdminAuditLog are claimed.
+Private OWNER image-byte GET is not present as an OWNER route in the pinned source controller; P2 adds this bounded route to make the requested private retrieval journey executable. **Source route parity remains unresolved** pending controller/product confirmation. Auth also retains three explicitly unresolved P0/P1 details: its email check is narrower than source `class-validator` `IsEmail`; JWT expiry parsing accepts only integer `s/m/h/d` forms rather than the full source `jsonwebtoken` option behavior; and malformed percent-encoding in a cookie returns 401 here while source decoding escapes as 500. Registration remains out of scope. ContactEvent and AdminAuditLog are implemented for the bounded synthetic journeys documented above; they do not claim historical data migration.
 
 The listing lock is a D1 lease with token-fenced image metadata writes; the per-listing operation is serialized while its lease is held. Image routes recheck OWNER/status under the lease and fence their D1 mutations against both the lease and current DRAFT/REJECTED ownership. Any later listing status transition must use the same listing lease. A five-minute cron reconciles pending operations under the same lock, rotates attempts by `updated_at`, and the local test harness invokes its scheduled handler directly. D1 batch is transactional only for its SQL statements; R2+D1 is not an atomic distributed transaction. Persistent provider failures may leave `NEEDS_REPAIR`; this is surfaced in the operation ledger and never described as success. Reconciled DELETE operations become terminal `CLEANED`, so they cannot starve later recovery work.
 

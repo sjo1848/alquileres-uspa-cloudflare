@@ -5,22 +5,22 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03: GitHub delayed contact-response leakage, ADMIN owner-search, public contact retry and inbox routing/idempotency findings fixed locally; exact-head gates pending.",
-  "last_completed_head": "Prior observed PR #19 head was 40eabb19ac878d757344537e10bb3185a35342fc; resolve the consolidated follow-up from the live PR head.",
+  "last_completed_task": "CF-AU-I03 implementation consolidated; exact-head P2 README/parity observation repaired locally; Controller subagent read-only enforcement unavailable, separate CLI review pending.",
+  "last_completed_head": "074c8a16ae76c49118e335fd27603adb5901fe78 (executable candidate; docs/status follow-up pending publication)",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Resolve the live PR #19 head and verify exact-head worker/web checks and GitHub automatic review; resolve only threads whose fixes are present. Then run a narrowly scoped Controller follow-up on inbox retention. If all gates pass, use protected merge and update only the authorized existing private Preview; run authenticated OWNER and anonymous Access-denial smoke.",
+  "next_action": "Commit and push the bounded README/parity plus status reconciliation to PR #19; verify exact-head worker/web checks and GitHub review; then run one separate codex exec Controller review using GPT-6 Luna High --sandbox read-only on the exact candidate SHA and recorded evidence. After PASS, protected-merge PR #19, update only the existing private Preview, and run authenticated Playwright smoke using the operator Access session plus anonymous Access denial.",
   "stop_reason": null,
   "event": {
-    "seq": 124,
-    "id": "CF_AU_I03_IGNORE_STALE_CONTACT_RESPONSE",
-    "type": "AUTOMATED_REVIEW_REWORK"
+    "seq": 125,
+    "id": "CF_AU_I03_REVIEW_STATUS_AND_PARITY",
+    "type": "GITHUB_REVIEW_REWORK"
   },
   "external_review": {
     "required": false,
     "status": "LOCAL_SYNTHETIC_INCREMENT",
     "delegated_controller_required": true,
-    "controller_status": "PENDING_CONSOLIDATED_REVIEW_AFTER_GITHUB_REWORK",
-    "note": "One consolidated review for this functional increment; no repeated controller loops for micro changes. Exact candidate and review configuration must be recorded honestly."
+    "controller_status": "PENDING_SEPARATE_PROCESS_OPERATIONAL_REVIEW",
+    "note": "One consolidated review for this functional increment. The earlier native delegated subagent could not verify read-only restrictions in its unrestricted parent runtime and returned BLOCKED_MODEL_CONFIG; invoke the documented separate read-only CLI process on the exact candidate. This is not a GitHub external approval."
   },
   "human_gate": null,
   "blocker": null,
@@ -29,9 +29,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "40eabb19ac878d757344537e10bb3185a35342fc",
+    "last_observed_head": "074c8a16ae76c49118e335fd27603adb5901fe78",
     "merge_commit": null,
-    "head_source": "Last live PR #19 head observed before the current bounded stale-response/evidence repair; resolve the new exact head for final gates."
+    "head_source": "GitHub exact-head observation 2026-10-18; follow-up documentation/status reconciliation must be pushed and checked."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -41,10 +41,10 @@
     "model_requested": "gpt-6-luna",
     "reasoning_effort_requested": "high",
     "sandbox_requested": "read-only",
-    "runtime_verified_for_current_artifact": true,
+    "runtime_verified_for_current_artifact": false,
     "actual_backend_model_identity": "UNVERIFIED",
     "operational_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
-    "next_review": "No additional Controller required for this publication-only closeout; A1 PASS remains scoped to immutable code artifact. Re-review only if executable/security changes occur.",
+    "next_review": "Historical A1 PASS remains valid only for that immutable A1. Current CF-AU-I03 requires one separate operationally verified GPT-6 Luna / High / read-only review on the exact PR #19 candidate SHA.",
     "review_report": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-PASS.md",
     "review_raw_output": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-RAW.txt",
     "cli_configuration_accepted": true,
@@ -55,7 +55,8 @@
       "cached_input": 338816,
       "output": 5466,
       "reasoning_output": 3355
-    }
+    },
+    "scope": "Historical only: CF-AU-I02 Preview OWNER/ADMIN A1, SHA 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; does not apply to CF-AU-I03 / PR #19."
   },
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
@@ -80,22 +81,34 @@
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
-    "checkpoint_sha": "40eabb19ac878d757344537e10bb3185a35342fc",
-    "github_checks": "PASS on previous exact checkpoint 40eabb19ac878d757344537e10bb3185a35342fc (run 39122629327); rerun after current bounded repair.",
-    "github_automatic_review": "Latest review found stale async contact response leakage, duplicate Event 122 and trailing whitespace in Controller evidence; local repairs pending exact-head re-review.",
-    "status": "AUTOMATED_REVIEW_REWORK_FIXED_LOCALLY",
-    "controller": "REWORK on e0f87ae for inbox page retention; fix covered in 2060a26. Narrow follow-up pending; later GitHub findings also fixed locally.",
+    "checkpoint_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
+    "github_checks": "PASS on exact executable/checkpoint SHA 074c8a16ae76c49118e335fd27603adb5901fe78 (run 39123104654; worker/web). Re-run after bounded docs/status repair is pushed.",
+    "github_automatic_review": "Completed on exact SHA 074c8a16ae76c49118e335fd27603adb5901fe78; P2 README route inventory and ContactEvent parity wording corrected locally. Preserve reviewer claim that migration 0011 contains all three indexes; review comment incorrectly counted only two.",
+    "status": "GITHUB_P2_DOCS_REWORK_FIXED_LOCALLY_CONTROLLER_OPERATIONAL_REVIEW_PENDING",
+    "controller": {
+      "reviewer_kind": "delegated_codex_subagent",
+      "model_requested": "gpt-6-luna",
+      "reasoning_effort_requested": "high",
+      "verdict": "BLOCKED_MODEL_CONFIG",
+      "read_only_enforcement": "UNVERIFIED: this runtime reports unrestricted filesystem permissions",
+      "artifact_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
+      "canonical_base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
+      "p0_p1": "none reported",
+      "p2": "STATUS.json had contradictory current-vs-historical Controller pointers; reconciled in this checkpoint.",
+      "next_action": "Separate codex exec using the documented --sandbox read-only protocol; do not claim PASS for this subagent run."
+    },
     "findings_resolved": [
       "ADMIN-assisted creation requires idempotency key; replays original result and rejects changed payload.",
       "OWNER inbox is cursor-paginated with max 30 events and SQL unread count.",
       "ContactEvent parity ledger and third source index reconciled.",
       "Public contact retry replays original D1 event by key and rejects changed-payload reuse.",
-      "Listing parity ledger includes owner availability/reconfirmation journeys."
+      "Listing parity ledger includes owner availability/reconfirmation journeys.",
+      "GitHub P2: update Worker README route inventory and explicitly account for the ContactEvent three-index parity in migration 0011."
     ],
-    "executable_sha": "Resolve the current consolidated candidate SHA from live PR #19 head; do not infer from prior checkpoints.",
+    "executable_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
     "rework_commit": "Current local candidate includes contact idempotency, searchable assisted OWNERs, route reset and stale-response guards; exact SHA follows live PR head.",
     "checkpoint_note": "Live PR head remains authoritative; current code/evidence candidate is being prepared for exact-head checks.",
-    "controller_reviewed_sha": "e0f87ae398078ff04ce7774738dac90f03ae1296",
+    "controller_reviewed_sha": "074c8a16ae76c49118e335fd27603adb5901fe78",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
     "local_playwright_pagination": "PASS: a new synthetic event arrived while older pages were loaded; page-two state changed and page-one row remained. See output/playwright/owner-contact-concurrent-arrival-local.png.",
     "github_findings_resolved_locally": [
@@ -111,7 +124,8 @@
       "GitHub P2: clear contact fields/feedback/idempotency key when changing listing detail route.",
       "GitHub P2: ignore responses from contact requests started on a different listing route.",
       "GitHub P2: retain chronological canonical event ordering without duplicate Event 122.",
-      "GitHub P2: remove trailing whitespace from Controller evidence and rerun diff check."
+      "GitHub P2: remove trailing whitespace from Controller evidence and rerun diff check.",
+      "GitHub P2: README still denied ContactEvent/AdminAuditLog and omitted public contact, OWNER inbox/availability, and ADMIN-assisted routes; route inventory corrected. Migration 0011 does create all three source indexes, and the parity ledger now names each explicitly."
     ]
   },
   "human_acceptance": {
@@ -166,9 +180,11 @@
     "status": "ADMIN_PRIVATE_PREVIEW_PUBLISHED; HUMAN_REMOTE_VALIDATION_PENDING",
     "preview": "Same private Preview updated at fccdb43397988e5fd4c467452d80a036b9eea69a",
     "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md",
-    "next_action": "Human may validate the new ADMIN path at https://private-alquileres-uspa-lab.sjo1848.workers.dev/admin using the existing Access identity: choose administrator demo, approve the submitted synthetic listing, publish separately, confirm catalog visibility. Remote authenticated E2E remains BLOCKED_AUTH for this executor. Then continue the authorized contact/availability journey; do not repeat already-accepted OWNER tests.",
+    "next_action": "The CF-AU-I02 ADMIN remote validation note is historical. Active work is CF-AU-I03 / PR #19; see top-level next_action and candidate_review.",
     "code_status": "Artifact A1 Controller PASS; integrated as protected merge fccdb43397988e5fd4c467452d80a036b9eea69a; same private Preview updated and Access denial verified. Only human-authenticated remote UI journey remains pending.",
-    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1 -> 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8"
+    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1 -> 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
+    "record_scope": "HISTORICAL_COMPLETED_INCREMENT_CF_AU_I02; retained as the latest prior integrated Preview milestone, not the active task.",
+    "active": false
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
