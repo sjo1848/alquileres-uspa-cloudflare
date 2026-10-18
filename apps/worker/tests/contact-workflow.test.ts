@@ -91,6 +91,23 @@ describe('public contact and owner availability journey',()=>{
     expect(JSON.stringify(await queue.json())).toContain('Borrador creado con asistencia');
   });
 
+  it('does not commit assisted creation when the listing insert affects zero rows',async()=>{
+    const cookie=await adminSession(),fields={ownerId:'contact-owner',title:'Duplicate assisted target',description:'Synthetic atomicity regression.',location:'Uspallata',priceAmount:50000,pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:2,currency:'ARS'},key={'Idempotency-Key':'assist-zero-row-guard'};
+    await env.DB.exec("CREATE TRIGGER fail_assisted_first_attempt BEFORE INSERT ON listings WHEN NEW.title='Duplicate assisted target' BEGIN SELECT RAISE(ABORT,'injected first-attempt failure'); END;");
+    const first=await request('/admin/listings/assisted','POST',fields,cookie,true,key);
+    await env.DB.exec('DROP TRIGGER fail_assisted_first_attempt');
+    expect(first.status).toBe(503);
+    const reservation=await env.DB.prepare("SELECT resource_id AS id,state FROM idempotency_records WHERE owner_id='contact-admin' AND scope='ADMIN_ASSISTED_LISTING_CREATE' AND request_key=?").bind(key['Idempotency-Key']).first<{id:string;state:string}>();
+    expect(reservation?.state).toBe('PENDING');
+    const at=new Date().toISOString();
+    await env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,location_search,publication_status,availability_status,created_at,updated_at) VALUES(?,?,'DRAFT',?,?,?,?,'UNPUBLISHED','AVAILABLE',?,?)").bind(reservation!.id,'contact-owner',fields.title,fields.description,fields.location,'uspallata',at,at).run();
+
+    const retry=await request('/admin/listings/assisted','POST',fields,cookie,true,key);
+    expect(retry.status).toBe(503);
+    expect(await env.DB.prepare('SELECT id FROM admin_audit_events WHERE listing_id=?').bind(reservation!.id).first()).toBeNull();
+    expect((await env.DB.prepare("SELECT state FROM idempotency_records WHERE owner_id='contact-admin' AND scope='ADMIN_ASSISTED_LISTING_CREATE' AND request_key=?").bind(key['Idempotency-Key']).first<{state:string}>())?.state).toBe('PENDING');
+  });
+
   it('searches OWNER accounts beyond the initial assisted-management result page',async()=>{
     const at=new Date().toISOString();
     for(let i=0;i<60;i++)await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,\'OWNER\',?,?)').bind(`late-owner-${i}`,`zz-late-owner-${i}@example.test`,'synthetic-only',at,at).run();

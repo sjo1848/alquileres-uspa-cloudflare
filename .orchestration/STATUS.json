@@ -5,23 +5,23 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03 Artifact A1 frozen for exact-artifact delegated review; executable journeys and required CI are green, Controller review pending.",
+  "last_completed_task": "Artifact A1 received delegated Controller REWORK (two P2s); atomicity and configured-media documentation repairs are local and focused contact tests pass 6/6.",
   "last_completed_head": "CF-AU-I03-Artifact-A1 -> ccd6902357e797a1bc65706074c7daf37301f50d (tree e0afc36eac01ac7b6742a3e2931c667a9b0a4034).",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Run a separate delegated Codex Controller process on immutable tag CF-AU-I03-Artifact-A1 at exact SHA ccd6902357e797a1bc65706074c7daf37301f50d, requesting gpt-6-luna / High / --sandbox read-only. Persist invocation, session/result, exact SHA and verdict. Do not merge or update Preview unless it returns PASS; then resolve the GitHub P1 sequencing thread, verify resulting-head checks/review and protected main, protected-merge, apply only pending migrations 0011/0012 to existing synthetic D1, update only the existing private Worker with wrangler preview, attempt authenticated Playwright only if an authorized session is available, and verify anonymous Access denial.",
+  "next_action": "Commit and push the bounded A1 rework plus preserved Controller findings. Observe exact-head worker/web checks and GitHub automatic review; repair any material findings. Then run the mandatory Pre-Critic for a new immutable A2, publish it before a fresh read-only Controller review, and stop at that review boundary. Do not merge or update Preview until exact-A2 PASS and GitHub controls are clean.",
   "stop_reason": null,
   "event": {
-    "seq": 130,
-    "id": "CF_AU_I03_ARTIFACT_A1_PRECRITIC",
-    "type": "IMMUTABLE_ARTIFACT_PRECRITIC_PASS_TO_CONTROLLER"
+    "seq": 131,
+    "id": "CF_AU_I03_ARTIFACT_A1_REWORK",
+    "type": "CONTROLLER_REWORK_AUTONOMOUS_REPAIR"
   },
   "external_review": {
     "required": true,
-    "status": "AWAITING_DELEGATED_CONTROLLER_REVIEW",
+    "status": "REWORK",
     "artifact_tag": "CF-AU-I03-Artifact-A1",
     "artifact_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
-    "precritic": ".orchestration/evidence/CF-AU-I03-PRECRITIC-A1.md",
-    "note": "Previous Controller PASS on 63f28ad is historical and is not treated as approval of Artifact A1. Fresh exact-artifact review pending."
+    "controller_report": ".orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A1-CONTROLLER-REWORK.md",
+    "note": "Two P2 findings are repaired locally; A1 remains immutable with REWORK history. No PASS claimed."
   },
   "human_gate": null,
   "blocker": null,
@@ -30,9 +30,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "ccd6902357e797a1bc65706074c7daf37301f50d",
+    "last_observed_head": "8e6e5edf47559444498b6b1e201db703c245a97b",
     "merge_commit": null,
-    "head_source": "Exact immutable Artifact A1 target; Pre-Critic evidence and fresh Controller verdict are recorded in subsequent PR evidence commits."
+    "head_source": "Last live PR #19 evidence head observed at A1 Controller REWORK; local A1 repairs are pending publication."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -90,7 +90,7 @@
     "checkpoint_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
     "github_checks": "PASS worker/web on exact A1 SHA ccd6902 in run 39144203779.",
     "github_automatic_review": "Review of exact A1 SHA completed with one P1 requiring immutable Artifact A before its Controller verdict. Tag A1 is now published before the fresh Controller review; thread remains open until exact-A1 PASS. Resulting-head review after the gate evidence commit must be checked before merge.",
-    "status": "ARTIFACT_A1_FROZEN_PRECRITIC_PASS_CONTROLLER_PENDING_NOT_MERGEABLE",
+    "status": "ARTIFACT_A1_REWORK_TWO_P2_REPAIRED_LOCALLY_FOCUSED_TESTS_PASS_6_OF_6_NEW_A2_PENDING",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
@@ -116,7 +116,9 @@
       "Public contact retry replays original D1 event by key and rejects changed-payload reuse.",
       "Listing parity ledger includes owner availability/reconfirmation journeys.",
       "GitHub P2: update Worker README route inventory and explicitly account for the ContactEvent three-index parity in migration 0011.",
-      "GitHub P2: add contact-workflow.test.ts to the required quick worker check; focused command passes 5/5."
+      "GitHub P2: add contact-workflow.test.ts to the required quick worker check; focused command passes 5/5.",
+      "Controller A1 P2: assisted create could commit idempotency despite missing listing/audit rows; guarded final transition and added zero-row regression.",
+      "Controller A1 P2: ListingImage map implied active R2; documented Static Assets local and D1 BLOB Preview with no R2 binding/use."
     ],
     "executable_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
     "rework_commit": "Current local candidate includes contact idempotency, searchable assisted OWNERs, route reset and stale-response guards; exact SHA follows live PR head.",
@@ -149,7 +151,8 @@
     "ci_contact_workflow": "Required worker workflow invokes npm run test:contact-workflow; focused local execution 1 file / 5 tests PASS in 7.26s; exact-head GitHub run 39143613186 passed worker and web.",
     "artifact_tag": "CF-AU-I03-Artifact-A1",
     "artifact_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
-    "controller_status": "PENDING_FRESH_EXACT_ARTIFACT_REVIEW; 63f28ad PASS is historical only."
+    "controller_status": "REWORK on A1: assisted-create batch could falsely commit after zero-row writes; parity map incorrectly described R2 as active. See .orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A1-CONTROLLER-REWORK.md.",
+    "artifact_rework": "A1 REWORK; focused test 6/6, Worker typecheck, parity JSON and diff checks pass; new artifact A2 pending exact-head CI/review and Pre-Critic."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
