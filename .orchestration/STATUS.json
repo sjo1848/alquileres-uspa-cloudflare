@@ -4,36 +4,33 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 — ADMIN Preview human validation, then contact/availability journey",
-  "last_completed_task": "CF-AU-I02 Preview OWNER/ADMIN role switch integrated via protected PR #17 and published to the existing private synthetic Preview.",
-  "last_completed_head": "fccdb43397988e5fd4c467452d80a036b9eea69a",
-  "work_branch": "work/preview-admin-publish",
-  "next_action": "Human may validate the new ADMIN path at https://private-alquileres-uspa-lab.sjo1848.workers.dev/admin using the existing Access identity: choose administrator demo, approve the submitted synthetic listing, publish separately, confirm catalog visibility. Remote authenticated E2E remains BLOCKED_AUTH for this executor. Then continue the authorized contact/availability journey; do not repeat already-accepted OWNER tests.",
+  "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
+  "last_completed_task": "Local synthetic contact, OWNER availability/inbox, and ADMIN-assisted draft journeys implemented and verified; PR publication pending.",
+  "last_completed_head": "df7e178d6b12729eb39971b76778cad54d5899ab",
+  "work_branch": "work/contact-availability-journeys",
+  "next_action": "Push work/contact-availability-journeys, open a protected PR, verify required quick checks and GitHub review, then publish the approved functional increment to the existing private Preview only if merge controls pass. Complete authenticated remote smoke in the visible headed Access browser after the user confirms login; otherwise record BLOCKED_AUTH for remote validation only and continue local work.",
   "stop_reason": null,
   "event": {
-    "seq": 113,
-    "id": "CF_AU_I02_ADMIN_PREVIEW_PUBLISHED",
-    "type": "PROTECTED_INTEGRATION_AND_PREVIEW_PUBLICATION"
+    "seq": 114,
+    "id": "CF_AU_I03_LOCAL_JOURNEYS_READY",
+    "type": "LOCAL_SYNTHETIC_FUNCTIONAL_INCREMENT"
   },
   "external_review": {
     "required": false,
     "status": "NOT_APPLICABLE_LOCAL_SYNTHETIC",
-    "delegated_controller_required": true,
-    "controller_status": "PASS_BOUNDED_LOCAL_SYNTHETIC on immutable Artifact A1",
-    "policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
-    "note": "Prior I01-P2 external Artifact A4 PASS remains historical under historical_status; this local Preview identity increment uses the delegated Controller contract."
+    "delegated_controller_required": false,
+    "note": "Functional increment follows Issue #7 local-first delivery directive; use focused automated checks and GitHub review. Do not repeat a broad Controller cycle for micro changes; revisit only if an applicable material review gate requires it."
   },
   "human_gate": null,
   "blocker": null,
   "pull_request": {
-    "number": 17,
-    "state": "MERGED",
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/17",
-    "branch": "work/preview-admin-role-switch",
-    "last_observed_head": "cf1f2cc2be41266143ede17ff3c5e50e9ce299d6",
-    "merge_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
-    "head_source": "Protected merge commit; A1 code candidate preserved as ancestor.",
-    "merge_policy": "protected merge commit; history preserved; worker/web exact-head checks passed."
+    "number": null,
+    "state": "NOT_CREATED",
+    "url": null,
+    "branch": "work/contact-availability-journeys",
+    "last_observed_head": "df7e178d6b12729eb39971b76778cad54d5899ab",
+    "merge_commit": null,
+    "head_source": "Local code candidate; based on canonical main a1626e3a375a33bb76561e8666d6bdb070b77de5."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -60,41 +57,21 @@
     }
   },
   "candidate_review": {
-    "scope": "CF-AU-I02 Preview OWNER/ADMIN demo identity switching and moderation",
-    "base_sha": "42bef5c53abea65720082bbd86da9a082a51ed51",
-    "executable_commit": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
-    "files_sha256": {
-      "apps/web/src/views/AuthView.vue": "d73f36fd31d706857e3ca6d55b8db8d7a6710a8adb2f79a1fd6122b02dcaecb8",
-      "apps/web/src/views/auth-helpers.ts": "583cf2e930531ee3c0d0105dd36aa7a425b9d649e65067b1b2e06945ba2a5315",
-      "apps/web/e2e/preview-role-switch.playwright.js": "736f8c534f7ff9b058821c34cd48bdf41ce1a09d61697f941b62ec4a889c7abd"
-    },
+    "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
+    "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
+    "executable_commit": "df7e178d6b12729eb39971b76778cad54d5899ab",
     "local_checks": {
-      "worker_preview_auth": "6/6 PASS unchanged Worker tree e12dbd",
-      "worker_typecheck": "PASS unchanged Worker tree e12dbd",
-      "web_typecheck": "PASS after redirect fix",
-      "web_build": "PASS after redirect fix",
-      "playwright": "8/8 PASS local integrated Workerd + isolated D1; owner submit, explicit admin switch, moderation/publication, role-specific stale redirects both directions",
+      "worker_typecheck": "PASS",
+      "web_typecheck": "PASS",
+      "focused_worker_tests": "2 files / 10 tests PASS",
+      "web_build": "PASS",
+      "local_playwright": "PASS contact, owner inbox/state/availability/reconfirm, ADMIN-assisted draft and audit",
       "git_diff_check": "PASS"
     },
-    "github_checks": "PASS exact executable/artifact commit; worker/web Actions run 39095728852",
-    "github_automatic_review": "PASS/no findings exact SHA 67b3585, completed 2026-10-18 04:05:14 UTC; zero unresolved threads",
-    "controller": "PASS_BOUNDED_LOCAL_SYNTHETIC on immutable A1 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; delegated_codex_separate_process; GPT-6 Luna/High/read-only requested and CLI sandbox accepted; backend identity UNVERIFIED; exit 0.",
-    "remote_admin_e2e": "BLOCKED_AUTH; authorized Access browser session unavailable to executor",
-    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "executable_tree": "89e9b4d52089121b5b0abfced437b808e29aa4ed",
-    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1 -> 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
-    "precritic": "PASS to publish Artifact A1; not Controller PASS, merge approval or Preview authorization",
-    "controller_evidence": [
-      ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-PASS.md",
-      ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-RAW.txt"
-    ],
-    "controller_reviewed_checkpoint": "f4d86b4300f584b8ea95f80f1f4ac69703673c72; documentation-only after immutable tag",
-    "github_current_head_checks": "PASS worker/web on f4d86b4300f584b8ea95f80f1f4ac69703673c72, run 39095982852",
-    "github_current_head_review": "completed; has_any_findings=false; has_unresolved_findings=false; unresolved threads 0",
-    "controller_scope": "PASS local/synthetic Preview OWNER/ADMIN role-switch only; remote authenticated E2E BLOCKED_AUTH; no Access change/deploy authorized by this verdict",
-    "controller_followup": "No repeat; docs/publication only after PASS on A1.",
-    "integration": "PR #17 merged protected by fccdb43397988e5fd4c467452d80a036b9eea69a",
-    "preview_publication": "Existing private Preview updated via wrangler preview; see .orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md"
+    "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
+    "remote_authenticated_e2e": "PENDING_OPERATOR_ACCESS_LOGIN",
+    "preview_update": "NOT_PERFORMED",
+    "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
