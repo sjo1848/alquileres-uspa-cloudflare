@@ -5,6 +5,7 @@ import ListingView from './views/ListingView.vue';
 import AuthView from './views/AuthView.vue';
 import OwnerView from './views/OwnerView.vue';
 import AdminReviewView from './views/AdminReviewView.vue';
+import AdminAssistView from './views/AdminAssistView.vue';
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -14,6 +15,7 @@ export const router = createRouter({
     { path: '/login', component: AuthView },
     { path: '/owner', component: OwnerView, meta: { requiresAuth:true, role:'OWNER' } },
     { path: '/admin', component: AdminReviewView, meta: { requiresAuth:true, role:'ADMIN' } },
+    { path: '/admin-assist', component: AdminAssistView, meta: { requiresAuth:true, role:'ADMIN' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),

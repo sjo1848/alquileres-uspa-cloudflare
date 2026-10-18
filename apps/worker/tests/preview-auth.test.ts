@@ -113,6 +113,7 @@ describe('Access identity → fixed synthetic role session, Preview only',()=>{
         expect((await app.request(url+'/auth/login',{method:'POST',headers:{Origin:url},body:'{}'},broken)).status).toBe(503);
         expect((await app.request(url+'/auth/config',{},broken)).status).toBe(503);
         expect((await app.request(url+'/admin/listings/review',{headers:{Cookie:'alquileres_session=synthetic-stale-admin-token'}},broken)).status).toBe(503);
+        expect((await app.request(url+'/owner/contact-events',{headers:{Cookie:'alquileres_session=synthetic-stale-owner-token'}},broken)).status).toBe(503);
       }
     }
     expect(passwordCompare).not.toHaveBeenCalled();

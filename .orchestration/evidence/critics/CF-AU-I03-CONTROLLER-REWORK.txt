@@ -1,0 +1,21 @@
+REVIEWER_KIND=delegated_codex_separate_process
+VERDICT=REWORK
+
+MODEL_REQUESTED=gpt-6-luna
+EFFORT_REQUESTED=high
+CLI_SANDBOX=read-only; the provided runtime was read-only. No separate CLI invocation or acceptance receipt was available, and no child process was spawned.
+ACTUAL_BACKEND_MODEL_IDENTITY=UNVERIFIED
+
+ARTIFACT_SHA=e0f87ae398078ff04ce7774738dac90f03ae1296
+CANONICAL_BASE_SHA=a1626e3a375a33bb76561e8666d6bdb070b77de5
+EXACT_TREE_SHA=9e06feb19fefd136e4c0336a20bb27be6c9eb9e6
+
+CODE_SHA_AND_TEST_PROVENANCE=The repository HEAD is the PR documentation checkpoint `5a6dff95a73d46a1d3a4f267ba42a3fabeb8d018`. Its only changes from the reviewed executable commit are `.orchestration/STATE.md` and `.orchestration/STATUS.json`; no executable code changed. The pinned commit is descended from the specified canonical main base. Recorded checks for the pinned implementation: focused Worker tests, 2 files/11 tests; Worker and web typechecks; web build; local Playwright; and whitespace check all PASS. I did not rerun suites.
+
+P0_P1_AND_MATERIAL_P2_FINDINGS=**P2 — paginated OWNER inbox loses earlier pages after changing an event’s state.** After “Ver consultas anteriores” loads another page, `loadContacts` stores the cursor used for that fetch. `setContactState` then reloads from that cursor with `append=false`, replacing the accumulated inbox with only that page. Previously loaded events disappear from the view, with no way to page backward. See [OwnerView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/OwnerView.vue:164). This affects the requested paginated inbox/state journey.
+
+NONBLOCKING_FOLLOWUPS=The backend cursor uses the requested descending `(created_at,id)` ordering and 30-item bound, with unread count computed in SQL. The tests cover page bounds, nonduplicate pages, and count comparison, but do not exercise tied timestamps or cross-owner access with a second OWNER. Assisted creation requires a key, rejects a changed request, replays the stored response, and links audit actor and target owner; the tests verify one listing and the associated audit result. The pending-record retry path is present in code, but recorded tests do not inject a batch failure or explicitly retry a seeded PENDING record. Migration 0011 and both parity ledgers agree on the three indexes, including `(owner_id,state,created_at DESC)`.
+
+LIMITATIONS=The later checkpoint’s required worker/web CI passed, as specified, but its GitHub automatic review was still running at review start. Remote authenticated E2E against updated Preview has not run. No production, cost, Access-policy, or remote Preview validation is claimed.
+
+NEXT_STEP=Repair OWNER inbox state updates so the accumulated pages remain visible (or are consistently reloaded), add a regression for state changes after pagination, then obtain fresh exact-head checks and review. The independent GitHub automatic-review gate remains pending.

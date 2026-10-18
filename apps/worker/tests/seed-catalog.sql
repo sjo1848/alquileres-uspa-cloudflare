@@ -1,6 +1,8 @@
 PRAGMA foreign_keys=ON;
 INSERT OR IGNORE INTO users(id,email,password_hash,role,created_at,updated_at)
 VALUES('synthetic-catalog-owner','preview.owner@example.test','not-used','OWNER','2026-10-16T00:00:00.000Z','2026-10-16T00:00:00.000Z');
+INSERT OR IGNORE INTO users(id,email,password_hash,role,created_at,updated_at)
+VALUES('synthetic-catalog-admin','preview.admin@example.test','not-used','ADMIN','2026-10-16T00:00:00.000Z','2026-10-16T00:00:00.000Z');
 INSERT OR IGNORE INTO listings(
   id,owner_id,status,title,description,location,price_amount,price_period,
   rental_duration,max_occupants,currency,publication_status,availability_status,
@@ -21,3 +23,4 @@ INSERT OR REPLACE INTO static_listing_images(id,listing_id,asset_path,mime_type,
 
 -- Synthetic OWNER login; password: synthetic-owner-password-1 (bcrypt cost 12).
 UPDATE users SET password_hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS' WHERE id='synthetic-catalog-owner';
+UPDATE users SET password_hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS' WHERE id='synthetic-catalog-admin';
