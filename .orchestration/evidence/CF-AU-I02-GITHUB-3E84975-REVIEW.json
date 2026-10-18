@@ -1,0 +1,31 @@
+{
+  "captured_at_utc": "2026-10-17T16:03:23Z",
+  "repository": "sjo1848/alquileres-uspa-cloudflare",
+  "pull_request": 15,
+  "head_sha": "3e84975c6021c199c094560ea3f3473d283f1b66",
+  "state": "OPEN",
+  "merge_state": "CLEAN",
+  "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
+  "required_checks": [
+    {
+      "name": "worker",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/39047395792/job/117438785618"
+    },
+    {
+      "name": "web",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/39047395792/job/117438785744"
+    }
+  ],
+  "automatic_review": {
+    "commit_sha": "3e84975c6021c199c094560ea3f3473d283f1b66",
+    "has_any_findings": false,
+    "has_unresolved_findings": false,
+    "status": "completed"
+  },
+  "unresolved_review_threads": 0,
+  "remote_scope": "No Cloudflare remote mutations or deployments in this increment."
+}

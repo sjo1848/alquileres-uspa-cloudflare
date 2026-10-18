@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "reviewed_head": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
+  "base": "main",
+  "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
+  "merge_state": "BLOCKED",
+  "checks": [
+    {
+      "name": "worker",
+      "conclusion": "SUCCESS",
+      "run_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/39049685365/job/117445553332"
+    },
+    {
+      "name": "web",
+      "conclusion": "SUCCESS",
+      "run_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/39049685365/job/117445553219"
+    }
+  ],
+  "automatic_review": {
+    "commit_sha": "f21dea88e1e208da524dbeb2bb5f71b38e7b6f33",
+    "has_any_findings": true,
+    "has_unresolved_findings": true,
+    "status": "completed"
+  },
+  "review_comments_on_head": [
+    {
+      "path": "apps/worker/src/index.ts",
+      "line": 117,
+      "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Block publication when legacy media remains**\n\nWhen `MEDIA_STRATEGY` is `D1_BLOB` and a submitted listing still contains a preserved `listing_images` row with `blob_data IS NULL`, this update publishes it without the legacy-media guard used by the owner and public endpoints. The admin queue also omits that row, so an admin can unknowingly publish the listing; afterward `/public/listings` returns `LEGACY_MEDIA_MIGRATION_REQUIRED` for the entire catalog page containing it. Check `hasLegacyD1Images` before approval/publication and fail closed until migration is complete.\n\nAGENTS.md reference: [AGENTS.md:L42-L44](https://github.com/sjo1848/alquileres-uspa-cloudflare/blob/e20a65e971ab147f622ae99462a5bc65714175bb/AGENTS.md#L42-L44)\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T01:53:30Z"
+    },
+    {
+      "path": "apps/web/src/router.ts",
+      "line": 16,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve the admin destination after session expiry**\n\nWhen an admin's session expires while using this new route, `setSessionExpiredHandler` still redirects to login with `redirect=/owner`. After the admin signs in, `AuthView` honors that redirect, and the OWNER-only route guard then sends the admin to `/`, so reauthentication loses the moderation workflow instead of returning to `/admin`. Make the expiry redirect retain the current protected route or select a role-appropriate destination.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T01:53:30Z"
+    },
+    {
+      "path": "apps/worker/src/index.ts",
+      "line": 117,
+      "body": "Addressed in ccec80df4f273fee36dc4921b1af00b13c19ae36. The ADMIN review queue now explicitly flags preserved D1_BLOB rows with NULL blob_data, and both approval and publication fail closed with 409 LEGACY_MEDIA_MIGRATION_REQUIRED while such a row exists. Added a regression that checks queue visibility, both responses, and unchanged SUBMITTED/UNPUBLISHED state; focused Worker suite passes 15/15.",
+      "created_at": "2026-10-17T14:57:21Z"
+    },
+    {
+      "path": "apps/web/src/router.ts",
+      "line": 16,
+      "body": "Addressed in ccec80df4f273fee36dc4921b1af00b13c19ae36. Session expiry now preserves the current protected destination (including /admin), falling back to /owner only when the current route is public. The Playwright ADMIN E2E clears the cookie, calls the protected queue endpoint, verifies login?redirect=/admin, then reauthenticates back to the review screen; the full local ADMIN flow passes 9/9.",
+      "created_at": "2026-10-17T14:57:26Z"
+    },
+    {
+      "path": "apps/worker/vitest.config.ts",
+      "line": 20,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Run the admin moderation suite in CI**\n\nAdding `admin-moderation.test.ts` to Vitest's `include` list does not make the repository's checks execute it: `apps/worker/package.json` has no admin test script, and the worker job in `.github/workflows/quick-checks.yml` invokes only the catalog, media, owner, and preview-auth scripts, each with explicit test filenames. Consequently, regressions in the new ADMIN authorization and atomic review/audit transitions can merge while all required checks remain green; add this suite to an invoked script or workflow step.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T15:03:34Z"
+    },
+    {
+      "path": "apps/worker/vitest.config.ts",
+      "line": 20,
+      "body": "Fixed in d1bde27e82b7fe25f1896a740d849735f0b2440b: added the `test:admin` npm script and a worker-job step in `.github/workflows/quick-checks.yml`. Local `npm run test:admin` passes 4/4 and Worker typecheck passes. The required worker check is running on this exact PR head and now invokes the ADMIN suite; I will resolve this thread after that check passes.",
+      "created_at": "2026-10-17T15:05:40Z"
+    },
+    {
+      "path": "apps/worker/migrations/0008_admin_moderation_audit.sql",
+      "line": 12,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Index the global audit ordering**\n\nWhen the new admin view loads or refreshes, it calls `/admin/listings/audit?limit=30` without a `listingId`, and that endpoint orders the entire table by `created_at DESC, id DESC`. This index starts with `listing_id`, so SQLite cannot use it for that global ordering and must scan and sort the growing audit history before applying the limit; the moderation page will therefore become progressively slower and more expensive. Add an index led by `created_at` (with `id` as the tie-breaker), especially since the pinned source mapping records multiple audit indexes that this parity-first migration currently reduces to one.\n\nAGENTS.md reference: [AGENTS.md:L125-L130](https://github.com/sjo1848/alquileres-uspa-cloudflare/blob/d1bde27e82b7fe25f1896a740d849735f0b2440b/AGENTS.md#L125-L130)\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T15:09:58Z"
+    },
+    {
+      "path": "apps/worker/migrations/0008_admin_moderation_audit.sql",
+      "line": 12,
+      "body": "Fixed in `bb5d7dfb70db4465930ea69997489457f35e55c3`. Migration `0008` adds `admin_audit_events_recent_idx(created_at DESC,id DESC)` for the global recent activity ordering. `test:admin` now asserts via EXPLAIN QUERY PLAN that the query uses this index without a temporary sort; local suite passes 5/5 and Worker typecheck passes. Exact-head GitHub checks/review are pending.",
+      "created_at": "2026-10-17T15:12:13Z"
+    },
+    {
+      "path": "apps/worker/src/index.ts",
+      "line": 64,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Apply the Preview configuration fail-closed check to ADMIN**\n\nWhen an Access Preview is missing or has invalid Access configuration while a previously issued ADMIN JWT remains valid, these new routes still accept that token because the global `previewAuthConfigured` gate matches only `/auth` and `/listings`. OWNER operations fail with 503 in the same configuration, but ADMIN review and publication can continue; include `/admin` in that Preview-auth availability gate before this middleware authenticates the session.\n\nAGENTS.md reference: [AGENTS.md:L130-L130](https://github.com/sjo1848/alquileres-uspa-cloudflare/blob/54d6a4253a0779cddeafb7c4932804163bff5792/AGENTS.md#L130-L130)\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T15:18:48Z"
+    },
+    {
+      "path": "apps/worker/src/index.ts",
+      "line": 64,
+      "body": "Addressed in `3e8b5e8829250a53f52f68dff620f4ef6e4fbef6`: global Preview-auth availability middleware now includes `/admin`, before its JWT middleware. `preview-auth.test.ts` asserts a stale synthetic ADMIN cookie receives 503 under invalid Preview auth configuration; `test:preview-auth` passes 4/4 and exact-head CI passes.",
+      "created_at": "2026-10-17T15:35:59Z"
+    },
+    {
+      "path": "apps/worker/migrations/0008_admin_moderation_audit.sql",
+      "line": 12,
+      "body": "Addressed in `3e8b5e8829250a53f52f68dff620f4ef6`: migration 0008 adds `admin_audit_events_recent_idx(created_at DESC,id DESC)`, and the ADMIN regression EXPLAINs the exact joined global-audit query and asserts index use without a temp sort. `test:admin` passes 6/6; required exact-head worker/web checks pass on PR head `cbe1066ef488073ca2ebca297e5eed8a4ad0c616`.",
+      "created_at": "2026-10-17T15:36:00Z"
+    },
+    {
+      "path": "apps/worker/migrations/0008_admin_moderation_audit.sql",
+      "line": 7,
+      "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Preserve the source audit record shape**\n\nWhen existing source `AdminAuditLog` rows are migrated—or later ADMIN actions audit entities other than listings—this table cannot represent the documented source contract in `apps/worker/docs/postgres-d1-map.md:11`: it omits `entityType`, nullable `entityId`, and JSON `metadata`, while making `listingId` and `targetOwnerId` mandatory. That forces migration code to discard or coerce audit history and prevents generic ADMIN events from being recorded; mirror the source nullability and structured metadata, including JSON validation, before treating this as the ADMIN audit migration.\n\nAGENTS.md reference: [AGENTS.md:L127-L127](https://github.com/sjo1848/alquileres-uspa-cloudflare/blob/cbe1066ef488073ca2ebca297e5eed8a4ad0c616/AGENTS.md#L127-L127)\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T15:37:39Z"
+    },
+    {
+      "path": "apps/worker/src/index.ts",
+      "line": 79,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Index the moderation queue ordering**\n\nWith migrations 0001–0008 applied, SQLite reports `SCAN l` and `USE TEMP B-TREE FOR ORDER BY` for this exact queue query because no index supports the pending-state predicate followed by `created_at DESC, id DESC`. Thus every initial refresh and every cursor page scans and sorts the growing listings table before returning at most 101 rows, negating the scalability benefit of the new pagination and increasing D1 rows read; add an index/query shape that supports this moderation ordering.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T15:37:39Z"
+    },
+    {
+      "path": "apps/worker/migrations/0008_admin_moderation_audit.sql",
+      "line": 7,
+      "body": "Addressed in `da15d772e3d376a7164687fbedd8648826137c03` (migration 0009): the D1 audit table now preserves source `entity_type`, nullable `entity_id`/`listing_id`/`target_owner_id`, JSON-validated metadata and RESTRICT actor/target FKs. Migration copies prior synthetic listing events and rejection reason into JSON metadata. A Python regression verifies preservation, generic targetless events and invalid-JSON rejection; Worker tests verify the ADMIN DTO and rollback.",
+      "created_at": "2026-10-17T15:53:28Z"
+    },
+    {
+      "path": "apps/worker/src/index.ts",
+      "line": 79,
+      "body": "Addressed in `da15d772e3d376a7164687fbedd8648826137c03`: migration 0009 adds a partial `listings_admin_review_queue_created_idx` for submitted and approved-unpublished rows ordered by `created_at DESC,id DESC`. Worker and Python EXPLAIN regressions verify the exact queue query uses the index without a temporary sort. ADMIN suite passes 8/8.",
+      "created_at": "2026-10-17T15:53:28Z"
+    },
+    {
+      "path": "apps/worker/docs/postgres-d1-map.md",
+      "line": 11,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Synchronize the machine-readable audit mapping**\n\nThis row now marks `AdminAuditLog` operational, but the paired machine-readable ledger at `apps/worker/docs/postgres-d1-map.json:8` still reports `NOT_IMPLEMENTED_NOT_MIGRATED`. Any tooling or later migration planning that consumes the required JSON ledger will therefore conclude that the new audit table and routes do not exist; update its status and D1 representation alongside this human-readable mapping.\n\nAGENTS.md reference: [AGENTS.md:L127-L127](https://github.com/sjo1848/alquileres-uspa-cloudflare/blob/43d38cb1aaf0c2065f7ad79f3ce8647c22cd0ee8/AGENTS.md#L127-L127)\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T15:57:28Z"
+    },
+    {
+      "path": "apps/worker/docs/postgres-d1-map.md",
+      "line": 11,
+      "body": "Addressed in `3e84975c6021c199c094560ea3f3473d283f1b66`: `apps/worker/docs/postgres-d1-map.json` now marks `AdminAuditLog` `OPERATIONAL_SYNTHETIC` and records the `admin_audit_events` D1 table, migration 0009, source-shaped nullable fields, JSON validation, and indexes, matching the Markdown ledger. JSON parsing and `python3 -B -m unittest discover -s scripts/tests` pass (9/9). This updates only the parity ledger/evidence; the runtime code is unchanged.",
+      "created_at": "2026-10-17T15:58:44Z"
+    },
+    {
+      "path": ".orchestration/STATUS.json",
+      "line": 130,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Update the canonical functional-increment pointer**\n\nFresh evidence after the repaired `next_action` shows that this newly added canonical section still identifies `da15d77` as the candidate, with the superseded 11-check Playwright result and the old `3e84975` BLOCKED review, while the top-level checkpoint identifies `da1855d` and the 12-check deterministic regression as current. A resumed orchestrator consuming `current_functional_increment` can therefore review the wrong artifact or repeat an obsolete Controller retry; synchronize this section with the latest tested candidate and pending exact-head review state.\n\nAGENTS.md reference: [AGENTS.md:L135-L139](https://github.com/sjo1848/alquileres-uspa-cloudflare/blob/f21dea88e1e208da524dbeb2bb5f71b38e7b6f33/AGENTS.md#L135-L139)\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-17T16:33:17Z"
+    }
+  ],
+  "unresolved_threads": [
+    {
+      "path": ".orchestration/STATUS.json",
+      "thread_id": "PRRT_kwDOUEeGdc6tiFPl",
+      "root_body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Update the canonical functional-increment pointer**\n\nFresh evidence after the repaired `next_action` shows that this newly added canonical section still identifies `da15d77` as the candidate, with the superseded 11-check Playwright result and the old `3e84975` BLOCKED review, while the top-level checkpoint identifies `da1855d` and the 12-check deterministic regression as current. A resumed orchestrator consuming `current_functional_increment` can therefore review the wrong artifact or repeat an obsolete Controller retry; synchronize this section with the latest tested candidate and pending exact-head review state.\n\nAGENTS.md reference: [AGENTS.md:L135-L139](https://github.com/sjo1848/alquileres-uspa-cloudflare/blob/f21dea88e1e208da524dbeb2bb5f71b38e7b6f33/AGENTS.md#L135-L139)\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->"
+    }
+  ],
+  "source_hashes": {
+    "/tmp/cf-au-i02-f21-final-pr.json": "a0e77d944112e55e39fe06f7edd5b7e787f654c9a96277605228e48d2a74aa8b",
+    "/tmp/cf-au-i02-f21-final-comments.json": "826ffa01a455c28f95193837fa9c54dd2605791230a946f730b5b96ca74d120b",
+    "/tmp/cf-au-i02-f21-final-review-comments.json": "36b7f9b96865a5d239db031cb4935ed4a9db5508a9c647ef78ae7c265b974895",
+    "/tmp/cf-au-i02-f21-final-threads.json": "abbffb340d22af3b339d58cbe3976c8bc8a3d51518a12fc8a18b08b89ca53861"
+  }
+}

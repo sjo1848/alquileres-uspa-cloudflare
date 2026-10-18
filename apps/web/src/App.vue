@@ -19,6 +19,7 @@ async function logout(){
     <nav class="session-actions" aria-label="Navegación principal">
       <RouterLink to="/">Catálogo</RouterLink>
       <RouterLink v-if="session.role.value==='OWNER'" to="/owner">Mis publicaciones</RouterLink>
+      <RouterLink v-if="session.role.value==='ADMIN'" to="/admin">Revisión</RouterLink>
       <button v-if="session.isAuthenticated.value" class="secondary" :disabled="loggingOut" @click="logout">{{ loggingOut?'Cerrando sesión…':'Cerrar sesión' }}</button>
       <RouterLink v-else to="/login">Ingresar como propietario</RouterLink>
     </nav>

@@ -73,6 +73,20 @@ main {
   margin: 0;
   accent-color: #145b8c;
 }
+.admin-review { display: grid; gap: 1rem; }
+.admin-review-layout { display: grid; grid-template-columns: minmax(12rem, 0.35fr) 1fr; gap: 1rem; }
+.admin-review-layout nav { display: grid; align-content: start; gap: .5rem; }
+.admin-review-layout nav button { display: grid; text-align: left; gap: .25rem; }
+.admin-review-layout nav button[aria-pressed="true"] { border-color: #145b8c; }
+.admin-review-layout small { color: #52677a; }
+.admin-review dl { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1rem; }
+.admin-review dt { font-weight: 700; }
+.admin-review-images { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
+.admin-review-images img { width: min(12rem, 40vw); aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
+.admin-review textarea { display: block; width: 100%; margin: .4rem 0 1rem; }
+.admin-review-actions { display: flex; gap: .75rem; }
+.admin-audit { margin-top: 1.5rem; }
+@media (max-width: 42rem) { .admin-review-layout { grid-template-columns: 1fr; } }
 .listing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));

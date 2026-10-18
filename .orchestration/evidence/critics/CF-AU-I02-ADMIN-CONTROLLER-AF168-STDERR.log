@@ -1,0 +1,3 @@
+2026-10-17T21:08:19.714617Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:4401/mcp)")))
+2026-10-17T21:08:19.996961Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:4401/mcp)")))
+2026-10-17T21:08:21.100102Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:4401/mcp)")))

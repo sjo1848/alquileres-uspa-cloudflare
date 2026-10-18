@@ -1,0 +1,21 @@
+## Verdict: REWORK
+
+**Exact candidate reviewed:** PR #15 HEAD `18f405cb94f039392cdc5ff1cad23bc46706036c`, tree `40261e117fff9570e56fe605234ba59ebb131898`. Canonical base: `59660aed13f68b92b00cae0eced4494b54f2d8a7`.
+
+The committed GitHub snapshot identifies that exact HEAD, reports `CLEAN`, shows successful `worker` and `web` checks, and contains a no-findings automated review receipt for `18f405c`. The snapshot files’ hashes match the supplied values. I also confirmed the later commits `43d38cb`, `3e84975`, `6199696`, and `18f405c` add state, evidence, and parity-ledger updates; they do not change executable behavior after `da15d77`.
+
+### Finding
+
+- **P2 — The moderation UI allows changing the selected listing while an action is in flight.** In [AdminReviewView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/AdminReviewView.vue:50), `review()` and `publish()` capture the selected item before awaiting the request. The queue buttons remain enabled during that request at [line 86](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/AdminReviewView.vue:86). A moderator can start approval, rejection, or publication for listing A, switch the panel to listing B while the request is pending, and then see the shared busy label or success notice beside B. The server still applies the action to A, but the UI can misattribute a consequential moderation result. Disable selection while `busy`, or keep the pending target and result visibly tied to the item acted on; add a delayed-response UI regression.
+
+### Scope and review method
+
+I inspected the ADMIN authorization and Preview-auth guards, queue keyset cursor and partial index, review/publication D1 batches and audit inserts, legacy-media checks, migration `0009`, its migration and query-plan regressions, both mapping ledgers, the Vue moderation view/router, and the OWNER image controls and local E2E evidence. I reviewed the supplied GitHub snapshots and prior review threads. I did not rerun tests.
+
+The prior exact-head findings about legacy-media publication and session-expiry routing are present in the final executable tree through ancestor `ccec80d`; the review-thread replies correspond to implemented regressions. Migration `0009` preserves audit rows, supports nullable entity/listing/target fields and JSON metadata, and adds the audit-feed and moderation-queue indexes. The test evidence distinguishes local synthetic E2E from the remote Access boundary; it does not claim remote ADMIN or photo validation.
+
+**Remaining limitation:** Remote browser E2E remains `BLOCKED_AUTH`, as recorded. This is not a code defect and no remote result is claimed.
+
+**Runtime/provenance:** The task metadata requests GPT-6 Luna / High / read-only. The environment permits read-only filesystem access, and I performed repository reads only. This session exposes no CLI argv acceptance record, session ID, or independent model/effort verification; provider backend identity is **UNVERIFIED**. I make no cryptographic or external-review claim.
+
+**Pre-Critic:** This candidate should not pass technical Pre-Critic until the P2 UI ambiguity is addressed and the focused UI regression is recorded.

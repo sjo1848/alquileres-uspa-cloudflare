@@ -30,7 +30,7 @@ function setCookie(token:string,env:Env,clear=false) { const same=['strict','non
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
 app.use('*',async(c,next)=>{
   const strategy=c.env.AUTH_STRATEGY;
-  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path))
+  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path)||/^\/admin(?:\/|$)/.test(c.req.path))
     && !previewAuthConfigured(c.env,new URL(c.req.url).origin))return c.json({error:'Preview authentication unavailable'},503);
   await next();
 });
@@ -60,6 +60,125 @@ app.get('/auth/me',async c=>{
 app.post('/auth/logout',c=>{if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});});
 app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
 app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image upload is not available with repository-managed media'},503);await next();});
+app.use('/admin/*',async(c,next)=>{
+  if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
+  const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
+  if(!raw)return c.json({error:'Invalid or expired token'},401);
+  if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)&&c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  let claims:{id:string;email:string};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();
+  if(!user||user.email!==claims.email)return c.json({error:'Invalid or expired token'},401);
+  if(user.role!=='ADMIN')return c.json({error:'Invalid or expired token'},401);
+  c.set('user',user);await next();
+});
+app.get('/admin/listings/review',async c=>{
+  const afterCreatedAt=c.req.query('afterCreatedAt'),afterId=c.req.query('afterId');
+  const hasCursor=afterCreatedAt!==undefined||afterId!==undefined;
+  if(hasCursor&&(!afterCreatedAt||!afterId||afterCreatedAt.length>40||afterId.length>64||!Number.isFinite(Date.parse(afterCreatedAt))))return c.json({error:'invalid review cursor'},400);
+  const cursorClause=hasCursor?' AND (l.created_at<? OR (l.created_at=? AND l.id<?))':'';
+  const query=`SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE u.role='OWNER' AND (l.status='SUBMITTED' OR (l.status='APPROVED' AND l.publication_status='UNPUBLISHED'))${cursorClause} ORDER BY l.created_at DESC,l.id DESC LIMIT 101`;
+  const statement=c.env.DB.prepare(query);
+  const fetched=hasCursor
+    ? (await statement.bind(afterCreatedAt,afterCreatedAt,afterId).all<any>()).results
+    : (await statement.all<any>()).results;
+  const hasMore=fetched.length>100,rows=fetched.slice(0,100);
+  if(!rows.length)return c.json({items:[],nextCursor:null});
+  const images=await publicImages(c.env.DB,rows.map(row=>row.id),c.env.MEDIA_STRATEGY==='STATIC_ASSETS',d1ImageStatus(c));
+  const legacyIds=new Set<string>();
+  if(d1ImageStatus(c)){
+    const slots=rows.map(()=>'?').join(',');
+    const legacy=(await c.env.DB.prepare(`SELECT DISTINCT listing_id AS listingId FROM listing_images WHERE listing_id IN (${slots}) AND blob_data IS NULL`).bind(...rows.map(row=>row.id)).all<any>()).results;
+    for(const row of legacy)legacyIds.add(row.listingId);
+  }
+  const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
+  return c.json({items:rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
+});
+async function sourceAdminListing(db:D1Database,listingId:string,mediaStrategy?:string){
+  const listing=await db.prepare(`SELECT l.id,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.status,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.id AS ownerId,u.email AS ownerEmail,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?`).bind(listingId).first<any>();
+  if(!listing||listing.ownerRole!=='OWNER')return null;
+  const staticImages=(await db.prepare('SELECT id,asset_path AS url,mime_type AS contentType,byte_size AS sizeBytes,position FROM static_listing_images WHERE listing_id=?').bind(listingId).all<any>()).results.map(image=>({...image,originalName:image.url.split('/').pop()??image.url}));
+  const usesD1Blob=mediaStrategy==='D1_BLOB';
+  const storedImages=(await db.prepare(`SELECT id,original_name AS originalName,mime_type AS contentType,byte_size AS sizeBytes,position FROM listing_images WHERE listing_id=?${usesD1Blob?' AND blob_data IS NOT NULL':''}`).bind(listingId).all<any>()).results.map(image=>({...image,url:`/admin/listings/${encodeURIComponent(listingId)}/images/${encodeURIComponent(image.id)}`}));
+  const legacyMedia=usesD1Blob?await db.prepare('SELECT EXISTS(SELECT 1 FROM listing_images WHERE listing_id=? AND blob_data IS NULL) AS hasLegacy').bind(listingId).first<{hasLegacy:number}>():null;
+  const images=(mediaStrategy==='STATIC_ASSETS'?staticImages:[...staticImages,...storedImages]).sort((a:any,b:any)=>a.position-b.position||a.id.localeCompare(b.id));
+  const {ownerId,ownerEmail,ownerRole,...fields}=listing;
+  return {...fields,owner:{id:ownerId,email:ownerEmail,role:ownerRole},images,...(usesD1Blob?{requiresMediaRecovery:!!legacyMedia?.hasLegacy}:{})};
+}
+function sourceAuditInsert(c:any,eventId:string,listingId:string,action:string,reason:string|null,at:string,whereSql:string,whereArgs:unknown[]){
+  const metadata=reason?JSON.stringify({reason}):'{}';
+  return c.env.DB.prepare(`INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,?,?,?,? FROM listings l JOIN users owner ON owner.id=l.owner_id WHERE ${whereSql}`).bind(eventId,c.get('user').id,action,metadata,reason,at,...whereArgs);
+}
+async function adminReviewSource(c:any,actionValue:'approve'|'reject',providedInput?:any){
+  const listingId=c.req.param('id'),input=actionValue==='reject'?(providedInput??await c.req.json().catch(()=>null)):null;
+  const reason=actionValue==='reject'&&typeof input?.reason==='string'?input.reason.trim():null;
+  if(actionValue==='reject'&&(reason===null||reason.length<3||reason.length>1000))return c.json({error:'rejection reason must contain 3 to 1000 non-blank characters'},400);
+  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,l.rejection_reason AS rejectionReason,u.role AS ownerRole,EXISTS(SELECT 1 FROM listing_images i WHERE i.listing_id=l.id AND i.blob_data IS NULL) AS hasLegacyMedia FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first() as any;
+  if(!current||current.ownerRole!=='OWNER')return c.json({message:'Listing not found'},404);
+  if(actionValue==='approve'&&d1ImageStatus(c)&&current.hasLegacyMedia)return legacyD1Conflict(c);
+  const at=now(),eventId=id(),action=actionValue==='approve'?'ADMIN_LISTING_APPROVED':'ADMIN_LISTING_REJECTED',status=actionValue==='approve'?'APPROVED':'REJECTED';
+  if((actionValue==='approve'&&current.status==='APPROVED')||(actionValue==='reject'&&current.status==='REJECTED'&&current.rejectionReason===reason)){
+    const conditions=actionValue==='approve'?"l.status='APPROVED'":"l.status='REJECTED' AND l.rejection_reason=?",args=actionValue==='approve'?[]:[reason];
+    try{const results=await c.env.DB.batch([sourceAuditInsert(c,eventId,listingId,action,reason,at,`l.id=? AND owner.role='OWNER' AND ${conditions}`,[listingId,...args])]);if(results[0]?.meta?.changes!==1)return c.json({error:'listing changed during review'},409);}
+    catch{return c.json({error:'review outcome could not be confirmed'},503);}
+    const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
+  }
+  if(actionValue==='reject'&&current.status==='REJECTED')return c.json({error:'listing already rejected with another reason'},409);
+  if(current.status!=='SUBMITTED')return c.json({error:'listing is no longer awaiting review'},409);
+  const updated=actionValue==='approve'
+    ? c.env.DB.prepare("UPDATE listings SET status='APPROVED',rejection_reason=NULL,updated_at=? WHERE id=? AND status='SUBMITTED' AND EXISTS (SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER')").bind(at,listingId)
+    : c.env.DB.prepare("UPDATE listings SET status='REJECTED',rejection_reason=?,updated_at=? WHERE id=? AND status='SUBMITTED' AND EXISTS (SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER')").bind(reason,at,listingId);
+  const audit=sourceAuditInsert(c,eventId,listingId,action,reason,at,`l.id=? AND owner.role='OWNER' AND changes()=1 AND l.status=? AND l.updated_at=?`,[listingId,status,at]);
+  try{
+    const results=await c.env.DB.batch([updated,audit]);
+    if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'listing changed during review'},409);
+  }catch{return c.json({error:'review outcome could not be confirmed'},503);}
+  const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
+}
+app.post('/admin/listings/:id/review',async c=>{const input=await c.req.json().catch(()=>null) as any;if(!input||!['approve','reject'].includes(input.action))return c.json({error:'invalid review action'},400);if(input.action==='approve'&&input.reason!==undefined)return c.json({error:'approval does not accept a rejection reason'},400);return adminReviewSource(c,input.action,input);});
+app.post('/admin/listings/:id/approve',c=>adminReviewSource(c,'approve'));
+app.post('/admin/listings/:id/reject',c=>adminReviewSource(c,'reject'));
+app.post('/admin/listings/:id/publish',async c=>{
+  const listingId=c.req.param('id');
+  const current=await c.env.DB.prepare('SELECT l.status,l.publication_status AS publicationStatus,u.role AS ownerRole,EXISTS(SELECT 1 FROM listing_images i WHERE i.listing_id=l.id AND i.blob_data IS NULL) AS hasLegacyMedia FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?').bind(listingId).first() as any;
+  if(!current||current.ownerRole!=='OWNER')return c.json({message:'Listing not found'},404);
+  if(d1ImageStatus(c)&&current.hasLegacyMedia)return legacyD1Conflict(c);
+  const at=now(),eventId=id(),action='ADMIN_LISTING_PUBLISHED';
+  if(current.status==='APPROVED'&&current.publicationStatus==='PUBLISHED'){
+    try{const results=await c.env.DB.batch([sourceAuditInsert(c,eventId,listingId,action,null,at,"l.id=? AND owner.role='OWNER' AND l.status='APPROVED' AND l.publication_status='PUBLISHED'",[listingId])]);if(results[0]?.meta?.changes!==1)return c.json({error:'listing changed during publication'},409);}
+    catch{return c.json({error:'publication outcome could not be confirmed'},503);}
+    const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
+  }
+  if(current.status!=='APPROVED'||current.publicationStatus!=='UNPUBLISHED')return c.json({error:'only an approved unpublished listing can be published'},409);
+  const updated=c.env.DB.prepare("UPDATE listings SET publication_status='PUBLISHED',updated_at=? WHERE id=? AND status='APPROVED' AND publication_status='UNPUBLISHED' AND EXISTS (SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER')").bind(at,listingId);
+  const audit=sourceAuditInsert(c,eventId,listingId,action,null,at,"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.status='APPROVED' AND l.publication_status='PUBLISHED' AND l.updated_at=?",[listingId,at]);
+  try{const results=await c.env.DB.batch([updated,audit]);if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'only an approved unpublished listing can be published'},409);}
+  catch{return c.json({error:'publication outcome could not be confirmed'},503);}
+  const result=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);
+});
+app.get('/admin/listings/audit',async c=>{
+  const listingId=c.req.query('listingId'),requestedLimit=Number(c.req.query('limit')??50);
+  if(!Number.isInteger(requestedLimit))return c.json({error:'limit must be an integer'},400);
+  const limit=Math.min(Math.max(requestedLimit||50,1),100);
+  const columns='SELECT a.id,a.entity_type AS entityType,a.entity_id AS entityId,a.listing_id AS listingId,a.target_owner_id AS targetOwnerId,a.metadata,a.action,a.reason,a.created_at AS createdAt,u.id AS actorId,u.email AS actorEmail,o.email AS targetOwnerEmail FROM admin_audit_events a JOIN users u ON u.id=a.actor_id LEFT JOIN users o ON o.id=a.target_owner_id';
+  const rows=listingId
+    ? (await c.env.DB.prepare(`${columns} WHERE a.listing_id=? ORDER BY a.created_at DESC,a.id DESC LIMIT ?`).bind(listingId,limit).all<any>()).results
+    : (await c.env.DB.prepare(`${columns} ORDER BY a.created_at DESC,a.id DESC LIMIT ?`).bind(limit).all<any>()).results;
+  return c.json(rows.map(row=>({...row,metadata:JSON.parse(row.metadata),actor:{id:row.actorId,email:row.actorEmail,role:'ADMIN'},targetOwner:row.targetOwnerId?{id:row.targetOwnerId,email:row.targetOwnerEmail,role:'OWNER'}:null})));
+});
+app.get('/admin/listings/:id',async c=>{const result=await sourceAdminListing(c.env.DB,c.req.param('id'),c.env.MEDIA_STRATEGY);return result?c.json(result):c.json({message:'Listing not found'},404);});
+app.get('/admin/listings/:listingId/images/:imageId',async c=>{
+  const listingId=c.req.param('listingId'),imageId=c.req.param('imageId');
+  if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'){
+    const row=await c.env.DB.prepare("SELECT i.asset_path AS url FROM static_listing_images i JOIN listings l ON l.id=i.listing_id JOIN users owner ON owner.id=l.owner_id WHERE i.listing_id=? AND i.id=? AND owner.role='OWNER'").bind(listingId,imageId).first<{url:string}>();
+    return row?c.redirect(row.url,302):c.json({error:'image not found'},404);
+  }
+  if(d1ImageStatus(c)){
+    const row=await c.env.DB.prepare("SELECT i.blob_data,i.mime_type,i.byte_size FROM listing_images i JOIN listings l ON l.id=i.listing_id JOIN users owner ON owner.id=l.owner_id WHERE i.listing_id=? AND i.id=? AND owner.role='OWNER'").bind(listingId,imageId).first<any>();
+    if(!row)return c.json({error:'image not found'},404);const bytes=d1BlobBytes(row.blob_data);if(!bytes||bytes.byteLength!==row.byte_size)return c.json({error:'image data unavailable'},503);return imageResponse(bytes,row.mime_type,true);
+  }
+  const row=await c.env.DB.prepare("SELECT i.object_key AS objectKey,i.mime_type AS mimeType,i.byte_size AS byteSize FROM listing_images i JOIN listings l ON l.id=i.listing_id JOIN users owner ON owner.id=l.owner_id WHERE i.listing_id=? AND i.id=? AND owner.role='OWNER'").bind(listingId,imageId).first<any>();
+  if(!row)return c.json({error:'image not found'},404);const object=await c.env.IMAGES.get(row.objectKey);return object?new Response(object.body,{headers:{'Content-Type':row.mimeType,'Content-Length':String(row.byteSize),'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}}):c.json({error:'image not found'},404);
+});
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
 function validListingInput(x:any){return !(!x||typeof x.title!=='string'||x.title.length<1||x.title.length>120||typeof x.description!=='string'||x.description.length>5000||typeof x.location!=='string'||x.location.length<1||x.location.length>240||!Number.isInteger(x.priceAmount)||x.priceAmount<0||x.priceAmount>2147483647||!['WEEK','MONTH'].includes(x.pricePeriod)||!['WEEKS','MONTHS','PERMANENT','FLEXIBLE'].includes(x.rentalDuration)||!Number.isInteger(x.maxOccupants)||x.maxOccupants<1||x.maxOccupants>2147483647||!['ARS','USD'].includes(x.currency));}
 app.post('/listings',async c=>{
