@@ -5,14 +5,14 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03: GitHub availability routing and concurrent inbox arrival findings fixed locally; exact-head publication gates pending.",
-  "last_completed_head": "Resolve exact candidate from the live PR #19 head; prior observed published checkpoint was 7f7de6c74e5bf7c1be3353bfa414dc1e3e473f85.",
+  "last_completed_task": "CF-AU-I03: GitHub public contact retry-idempotency, availability-routing, pagination-race and parity findings fixed locally; exact-head gates pending.",
+  "last_completed_head": "Prior observed PR #19 head was 6ae7131f755c842e439f49186d236781ed9a95af; resolve the consolidated follow-up from the live PR head.",
   "work_branch": "work/contact-availability-journeys",
   "next_action": "Resolve the live PR #19 head and verify exact-head worker/web checks and GitHub automatic review; resolve only threads whose fixes are present. Then run a narrowly scoped Controller follow-up on inbox retention. If all gates pass, use protected merge and update only the authorized existing private Preview; run authenticated OWNER and anonymous Access-denial smoke.",
   "stop_reason": null,
   "event": {
-    "seq": 121,
-    "id": "CF_AU_I03_AVAILABILITY_ROUTE_AND_INBOX_RACE_REWORK",
+    "seq": 122,
+    "id": "CF_AU_I03_CONTACT_IDEMPOTENCY_PARITY_REWORK",
     "type": "AUTOMATED_REVIEW_REWORK"
   },
   "external_review": {
@@ -62,11 +62,12 @@
     "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
     "executable_commit": "Resolve exact candidate SHA from current PR #19 head; see branch history.",
     "local_checks": {
-      "worker_focused": "contact-workflow + preview-auth; 2 files / 10 tests PASS after routing/guard fix",
+    "worker_focused": "contact-workflow + preview-auth; 2 files / 10 tests PASS, including public idempotency replay and changed-payload conflict",
       "worker_typecheck": "PASS",
       "web_typecheck": "PASS",
       "web_build": "PASS on consolidated candidate",
       "python_config_tests": "12/12 PASS",
+      "local_contact_idempotency": "PASS: local migration 0012 applied; same-key retry returned identical 201 result/ID; changed payload returned 409",
       "playwright_pagination": "PASS: synthetic contact arrived after loading page 2; page-two state changed and page-one row retained; screenshot output/playwright/owner-contact-concurrent-arrival-local.png",
       "git_diff_check": "PASS"
     },
@@ -76,19 +77,21 @@
     "scope_limits": "USD 0; no R2, Service Tokens, Access-policy change, new resources, production, real data, or source writes.",
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
-    "checkpoint_sha": "7f7de6c74e5bf7c1be3353bfa414dc1e3e473f85",
+    "checkpoint_sha": "6ae7131f755c842e439f49186d236781ed9a95af",
     "github_checks": "PASS on 18f2143 before later changes; exact consolidated candidate checks pending.",
-    "github_automatic_review": "Review on prior checkpoint found owner routing/guard, availability dispatch, concurrent-page-boundary and stale-next-action issues; local fixes pending exact-head review.",
+    "github_automatic_review": "Latest review found public contact retry idempotency, availability dispatch, concurrent-page-boundary and stale parity/next-action issues; local repairs pending exact-head re-review.",
     "status": "AUTOMATED_REVIEW_REWORK_FIXED_LOCALLY",
     "controller": "REWORK on e0f87ae for inbox page retention; fix covered in 2060a26. Narrow follow-up pending; later GitHub findings also fixed locally.",
     "findings_resolved": [
       "ADMIN-assisted creation requires idempotency key; replays original result and rejects changed payload.",
       "OWNER inbox is cursor-paginated with max 30 events and SQL unread count.",
-      "ContactEvent parity ledger and third source index reconciled."
+      "ContactEvent parity ledger and third source index reconciled.",
+      "Public contact retry replays original D1 event by key and rejects changed-payload reuse.",
+      "Listing parity ledger includes owner availability/reconfirmation journeys."
     ],
-    "executable_sha": "Resolve from live PR candidate after publication; never infer from old checkpoint.",
-    "rework_commit": "Pending publication of current local code/evidence.",
-    "checkpoint_note": "Live PR head remains authoritative; exact consolidated candidate is not yet published.",
+    "executable_sha": "Resolve the current consolidated candidate SHA from live PR #19 head; do not infer from prior checkpoints.",
+    "rework_commit": "Current local candidate includes contact idempotency migration and client retry fix; exact SHA follows live PR head.",
+    "checkpoint_note": "Live PR head remains authoritative; current code/evidence candidate is being prepared for exact-head checks.",
     "controller_reviewed_sha": "e0f87ae398078ff04ce7774738dac90f03ae1296",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
     "local_playwright_pagination": "PASS: a new synthetic event arrived while older pages were loaded; page-two state changed and page-one row remained. See output/playwright/owner-contact-concurrent-arrival-local.png.",
@@ -98,7 +101,9 @@
       "GitHub P2: include /owner routes in fail-closed Preview auth-config guard.",
       "GitHub P2: dispatch availability and reconfirm routes to Worker in all three relevant configs.",
       "GitHub P2: avoid stale cursor pagination when new contact events arrive during a state change.",
-      "GitHub P2: update canonical next action after each published checkpoint."
+      "GitHub P2: update canonical next action after each published checkpoint.",
+      "GitHub P2: replay public contact submissions by stable key and reject key/payload mismatch.",
+      "GitHub P2: update Listing parity disposition for owner availability/reconfirmation."
     ]
   },
   "human_acceptance": {

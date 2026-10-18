@@ -24,8 +24,12 @@ describe('public contact and owner availability journey',()=>{
     expect((await request('/public/listings/contact-listing/contact','POST',{...payload,ownerId:'attacker'})).status).toBe(400);
     expect((await request('/public/listings/contact-listing/contact','POST',{...payload,visitorEmail:'no-es-correo'})).status).toBe(400);
     expect((await request('/public/listings/contact-listing/contact','POST',{...payload,message:'x'.repeat(12_001)})).status).toBe(400);
-    const accepted=await request('/public/listings/contact-listing/contact','POST',payload);
-    expect(accepted.status).toBe(201);expect(await accepted.json()).toEqual({status:'RECEIVED'});
+    expect((await request('/public/listings/contact-listing/contact','POST',payload)).status).toBe(400);
+    const key={'Idempotency-Key':'public-contact-same-result'},accepted=await request('/public/listings/contact-listing/contact','POST',payload,undefined,true,key);
+    expect(accepted.status).toBe(201);const result=await accepted.json();expect(result).toMatchObject({status:'RECEIVED',id:expect.any(String)});
+    const replay=await request('/public/listings/contact-listing/contact','POST',payload,undefined,true,key);
+    expect(replay.status).toBe(201);expect(await replay.json()).toEqual(result);
+    expect((await request('/public/listings/contact-listing/contact','POST',{...payload,message:'Consulta diferente'},undefined,true,key)).status).toBe(409);
     expect((await request('/owner/contact-events')).status).toBe(401);
     const cookie=await ownerSession(),inbox=await request('/owner/contact-events','GET',undefined,cookie);
     expect(inbox.status).toBe(200);

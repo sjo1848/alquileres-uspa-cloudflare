@@ -41,6 +41,7 @@ const error = ref('');
 const failedImages = ref(new Set<string>());
 const contact = ref({ visitorName: '', visitorEmail: '', message: '' });
 const contactBusy = ref(false), contactError = ref(''), contactNotice = ref('');
+let pendingContact:{identity:string;key:string}|undefined;
 function resetState() {
   loading.value = true;
   error.value = '';
@@ -71,7 +72,10 @@ async function sendContact() {
   if (!listing.value || contactBusy.value) return;
   contactBusy.value = true; contactError.value = ''; contactNotice.value = '';
   try {
-    await request(`/public/listings/${encodeURIComponent(listing.value.id)}/contact`, { method: 'POST', body: JSON.stringify(contact.value) });
+    const body = JSON.stringify(contact.value), identity = `${listing.value.id}|${body}`;
+    if (pendingContact?.identity !== identity) pendingContact = { identity, key: crypto.randomUUID() };
+    await request(`/public/listings/${encodeURIComponent(listing.value.id)}/contact`, { method: 'POST', body, headers: { 'Idempotency-Key': pendingContact.key } });
+    pendingContact = undefined;
     contact.value = { visitorName: '', visitorEmail: '', message: '' };
     contactNotice.value = 'Tu consulta fue enviada. El propietario podrá contactarte.';
   } catch (error) {
