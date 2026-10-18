@@ -10,3 +10,4 @@ CREATE TABLE contact_events (
 );
 CREATE INDEX contact_events_listing_id_created_at_idx ON contact_events(listing_id,created_at DESC,id DESC);
 CREATE INDEX contact_events_owner_id_created_at_idx ON contact_events(owner_id,created_at DESC,id DESC);
+CREATE INDEX contact_events_owner_state_created_at_idx ON contact_events(owner_id,state,created_at DESC);

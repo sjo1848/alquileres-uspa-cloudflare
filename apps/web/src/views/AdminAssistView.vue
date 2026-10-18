@@ -6,9 +6,10 @@ import { currencyOptions, pricePeriodOptions, rentalDurationOptions, type Curren
 type Owner = { id:string; email:string };
 type CreatedListing = { id:string; title:string; status:string; owner:{email:string} };
 const session=useSession(), owners=ref<Owner[]>([]), loading=ref(true), busy=ref(false), error=ref(''), notice=ref(''), created=ref<CreatedListing|null>(null);
+let pendingCreate:{fingerprint:string;key:string}|null=null;
 const form=reactive({ownerId:'',title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS' as Currency,pricePeriod:'MONTH' as PricePeriod,rentalDuration:'FLEXIBLE' as RentalDuration,maxOccupants:1});
 onMounted(async()=>{try{owners.value=await session.apiRequest<Owner[]>('/admin/owners');form.ownerId=owners.value[0]?.id??'';}catch{error.value='No pudimos cargar las cuentas OWNER.';}finally{loading.value=false;}});
-async function create(){if(busy.value||!form.ownerId)return;busy.value=true;error.value='';notice.value='';created.value=null;try{created.value=await session.apiRequest<CreatedListing>('/admin/listings/assisted',{method:'POST',body:JSON.stringify({...form})});notice.value='Borrador asistido creado y registrado en auditoría.';}catch(e){error.value=e instanceof Error?e.message:'No se pudo crear el borrador asistido.';}finally{busy.value=false;}}
+async function create(){if(busy.value||!form.ownerId)return;busy.value=true;error.value='';notice.value='';created.value=null;const body=JSON.stringify({...form}),fingerprint=body;if(pendingCreate?.fingerprint!==fingerprint)pendingCreate={fingerprint,key:crypto.randomUUID()};try{created.value=await session.apiRequest<CreatedListing>('/admin/listings/assisted',{method:'POST',body,headers:{'Idempotency-Key':pendingCreate.key}});pendingCreate=null;notice.value='Borrador asistido creado y registrado en auditoría.';}catch(e){error.value=e instanceof Error?e.message:'No se pudo crear el borrador asistido.';}finally{busy.value=false;}}
 </script>
 
 <template>

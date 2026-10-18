@@ -5,7 +5,7 @@ import { app } from '../src/index';
 const secret='synthetic-contact-workflow-secret-at-least-32-bytes';
 const bindings={...env,DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'STATIC_ASSETS'};
 const origin='http://localhost';
-function request(path:string,method='GET',body?:unknown,cookie?:string,withOrigin=true){return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined},bindings);}
+function request(path:string,method='GET',body?:unknown,cookie?:string,withOrigin=true,extraHeaders:Record<string,string>={}){return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(body?{'Content-Type':'application/json'}:{}),...extraHeaders},body:body?JSON.stringify(body):undefined},bindings);}
 async function ownerSession(){const response=await request('/auth/login','POST',{email:'contact-owner@example.test',password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
 async function adminSession(){const response=await request('/auth/login','POST',{email:'contact-admin@example.test',password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
 
@@ -40,6 +40,19 @@ describe('public contact and owner availability journey',()=>{
     expect((await (await request('/owner/contact-events','GET',undefined,cookie)).json() as any).unreadCount).toBe(0);
   });
 
+  it('bounds owner inbox pages and counts unread rows in the database',async()=>{
+    const at=new Date().toISOString();
+    for(let i=0;i<31;i++)await env.DB.prepare("INSERT INTO contact_events(id,listing_id,owner_id,visitor_name,visitor_email,message,state,created_at) VALUES(?,? ,?,'Visita','v@example.test','Mensaje sintético','UNREAD',?)").bind(`page-contact-${i}`,'contact-listing','contact-owner',new Date(Date.now()+i).toISOString()).run();
+    const cookie=await ownerSession(),first=await request('/owner/contact-events','GET',undefined,cookie),page1=await first.json() as any;
+    expect(page1.items).toHaveLength(30);expect(page1.nextCursor).toMatchObject({createdAt:expect.any(String),id:expect.any(String)});
+    const unread=await env.DB.prepare("SELECT COUNT(*) AS n FROM contact_events WHERE owner_id='contact-owner' AND state='UNREAD'").first<{n:number}>();expect(page1.unreadCount).toBe(unread?.n);
+    const cursor=page1.nextCursor,query=new URLSearchParams({afterCreatedAt:cursor.createdAt,afterId:cursor.id});
+    const second=await request(`/owner/contact-events?${query}`,'GET',undefined,cookie),page2=await second.json() as any;
+    expect(page2.items.length).toBeGreaterThan(0);expect(page2.items.length).toBeLessThanOrEqual(30);expect(page2.nextCursor).toBeNull();
+    expect(new Set([...page1.items,...page2.items].map((item:any)=>item.id)).size).toBe(page1.items.length+page2.items.length);
+    expect((await request('/owner/contact-events?afterCreatedAt=invalid&afterId=x','GET',undefined,cookie)).status).toBe(400);
+  });
+
   it('lets the authenticated owner change and reconfirm listing availability',async()=>{
     const cookie=await ownerSession();
     expect((await request('/listings/contact-listing/availability','PATCH',{availabilityStatus:'UNAVAILABLE',ownerId:'attacker'},cookie)).status).toBe(400);
@@ -57,11 +70,15 @@ describe('public contact and owner availability journey',()=>{
     const adminCookie=await adminSession(),owners=await request('/admin/owners','GET',undefined,adminCookie);
     expect(await owners.json()).toEqual([{id:'contact-owner',email:'contact-owner@example.test'}]);
     const fields={ownerId:'contact-owner',title:'Borrador creado con asistencia',description:'Datos sintéticos para el recorrido asistido.',location:'Uspallata',priceAmount:50000,pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:2,currency:'ARS'};
-    expect((await request('/admin/listings/assisted','POST',{...fields,ownerId:'missing-owner'},adminCookie)).status).toBe(404);
+    expect((await request('/admin/listings/assisted','POST',fields,adminCookie)).status).toBe(400);
+    expect((await request('/admin/listings/assisted','POST',{...fields,ownerId:'missing-owner'},adminCookie,true,{'Idempotency-Key':'assist-missing'})).status).toBe(404);
     expect((await request('/admin/listings/assisted','POST',{...fields,ownerId:'contact-owner',status:'APPROVED'},adminCookie)).status).toBe(400);
-    const created=await request('/admin/listings/assisted','POST',fields,adminCookie);
+    const key={'Idempotency-Key':'assist-same-result'},created=await request('/admin/listings/assisted','POST',fields,adminCookie,true,key);
     expect(created.status).toBe(201);const listing=await created.json() as any;
     expect(listing).toMatchObject({status:'DRAFT',publicationStatus:'UNPUBLISHED',owner:{id:'contact-owner',role:'OWNER'}});
+    const replay=await request('/admin/listings/assisted','POST',fields,adminCookie,true,key);expect(replay.status).toBe(201);expect(await replay.json()).toEqual(listing);
+    expect((await request('/admin/listings/assisted','POST',{...fields,title:'Payload distinto'},adminCookie,true,key)).status).toBe(409);
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM listings WHERE title=?").bind(fields.title).first()).toMatchObject({n:1});
     const audit=await request(`/admin/listings/audit?listingId=${encodeURIComponent(listing.id)}`,'GET',undefined,adminCookie);
     expect(await audit.json()).toEqual([expect.objectContaining({action:'ADMIN_ASSISTED_LISTING_CREATED',actor:{id:'contact-admin',email:'contact-admin@example.test',role:'ADMIN'},targetOwner:{id:'contact-owner',email:'contact-owner@example.test',role:'OWNER'}})]);
     const submitted=await request(`/listings/${listing.id}/submit`,'POST',undefined,ownerCookie);

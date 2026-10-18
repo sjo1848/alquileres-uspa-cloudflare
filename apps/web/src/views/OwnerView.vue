@@ -160,8 +160,10 @@ async function moveImage(image:Image,delta:number){
   catch(e){error.value=imageMessage(e);}
   finally{busy.value=false;imageBusy.value=null;}
 }
-async function loadContacts(){contactsLoading.value=true;try{const result=await session.apiRequest<{items:ContactEvent[];unreadCount:number}>('/owner/contact-events');contacts.value=result.items;unreadContacts.value=result.unreadCount;}catch{error.value='No pudimos cargar tus consultas.';}finally{contactsLoading.value=false;}}
-async function setContactState(event:ContactEvent,state:'UNREAD'|'READ'){if(contactBusy.value)return;contactBusy.value=event.id;error.value='';try{await session.apiRequest(`/owner/contact-events/${encodeURIComponent(event.id)}/state`,{method:'PATCH',body:JSON.stringify({state})});await loadContacts();}catch{error.value='No pudimos actualizar el estado de la consulta.';}finally{contactBusy.value='';}}
+type ContactCursor={createdAt:string;id:string};let contactCursor:ContactCursor|null=null;const nextContactCursor=ref<ContactCursor|null>(null);
+async function loadContacts(cursor:ContactCursor|null=null,append=false){contactsLoading.value=true;try{const params=new URLSearchParams();if(cursor){params.set('afterCreatedAt',cursor.createdAt);params.set('afterId',cursor.id);}const result=await session.apiRequest<{items:ContactEvent[];unreadCount:number;nextCursor:ContactCursor|null}>(`/owner/contact-events${params.size?`?${params}`:''}`);contacts.value=append?[...contacts.value,...result.items]:result.items;unreadContacts.value=result.unreadCount;contactCursor=cursor;nextContactCursor.value=result.nextCursor;}catch{error.value='No pudimos cargar tus consultas.';}finally{contactsLoading.value=false;}}
+async function setContactState(event:ContactEvent,state:'UNREAD'|'READ'){if(contactBusy.value)return;contactBusy.value=event.id;error.value='';try{await session.apiRequest(`/owner/contact-events/${encodeURIComponent(event.id)}/state`,{method:'PATCH',body:JSON.stringify({state})});await loadContacts(contactCursor);}catch{error.value='No pudimos actualizar el estado de la consulta.';}finally{contactBusy.value='';}}
+async function loadMoreContacts(){if(nextContactCursor.value)await loadContacts(nextContactCursor.value,true);}
 async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/availability`,{method:'PATCH',body:JSON.stringify({availabilityStatus:status})});Object.assign(item,updated);notice.value='Disponibilidad actualizada.';}catch{error.value='No pudimos actualizar la disponibilidad.';}finally{contactBusy.value='';}}
 async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
 onMounted(()=>{void load();void loadContacts();});
@@ -254,6 +256,7 @@ onMounted(()=>{void load();void loadContacts();});
           <button type="button" class="secondary" :disabled="contactBusy===event.id" @click="setContactState(event,event.state==='UNREAD'?'READ':'UNREAD')">{{ event.state==='UNREAD'?'Marcar leída':'Marcar sin leer' }}</button>
         </li>
       </ul>
+      <button v-if="nextContactCursor" type="button" class="secondary" :disabled="contactsLoading" @click="loadMoreContacts">Ver consultas anteriores</button>
     </section>
   </section>
 </template>
