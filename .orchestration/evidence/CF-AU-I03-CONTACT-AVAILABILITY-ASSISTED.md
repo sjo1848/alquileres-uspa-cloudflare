@@ -34,3 +34,7 @@ No Service Token, R2, paid service, Access-policy change, new Cloudflare resourc
 ## Controller rework: pagination state retention
 
 A consolidated Controller review found that changing a state on page two replaced the inbox with only that page. The OWNER view now retains the cursors of loaded pages and refreshes them all after a state update. Local browser QA seeded 31 additional synthetic messages on the local Worker, opened page two, marked its oldest event as read, and confirmed that `Pagina 30` on the first page remained present while `Pagina 00` showed `Leída`. Screenshot: `output/playwright/owner-contact-pagination-local.png`. The fix's web typecheck/build and whitespace check pass. Exact SHA and final CI/review are pending publication.
+
+## GitHub routing/auth rework
+
+GitHub's next pass flagged direct `/owner/*` asset routing and missing Preview fail-closed coverage for owner APIs. The Worker guard now includes the owner route family; the three local/Preview/runtime `run_worker_first` configs dispatch `/owner/*` to Hono. Regression checks verify all three route configs and that an owner request under missing Preview auth configuration returns 503. After these corrections: Worker typecheck PASS; focused `contact-workflow.test.ts` + `preview-auth.test.ts` PASS (2 files / 10 tests); web typecheck PASS; Python config tests PASS (11/11); `git diff --check` PASS. Web build PASS on unchanged web tree after the inbox pagination fix. Final exact-head GitHub quick checks and automatic review remain pending.

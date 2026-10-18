@@ -960,3 +960,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 
 - Code and Controller finding evidence are published on PR #19 at `2060a26`; canonical status now points at that executable repair provenance and records that GitHub controls must be observed again on the live final PR checkpoint.
 - No additional code changed after the local Playwright pagination-state proof. **READY_TO_RESUME:** resolve the live head, checks and review; then run only a scoped Controller follow-up on the `OwnerView.vue` change, not a broad repository/history audit. Continue to protected integration and the authorized existing Preview update only if the gates pass.
+
+## Event 120 — owner route/Preview guard findings fixed locally
+
+- GitHub auto review of previous checkpoint `18f2143c2bf011e48cf1022543a669b70579e8fa` found two P2 findings: direct owner routes were omitted from all relevant Static Assets `run_worker_first` lists, and the global Preview fail-closed auth-config guard omitted `/owner/*`. Both are fixed locally: added `/owner/*` to lab, Preview-template and OWNER-E2E configs, and included `/owner` in the missing-Preview-auth guard.
+- Regression verification: Worker contact + Preview-auth tests 2 files / 10 tests PASS; Worker typecheck PASS; web typecheck PASS; Python config checks 11/11 PASS; diff check PASS. Web build is PASS for the unchanged web tree after the prior pagination fix. The page-retention P2 is reproduced PASS in Playwright as in Event 118.
+- Final current route/guard patch is not yet committed. Previous exact-head CI/review do not cover this latest patch; rerun required after push. No remote Preview/resource/policy changes or spending occurred.
+- **READY_TO_RESUME:** commit/push this repair, resolve fixed threads after confirming current code, process exact-head checks and review, then a narrow Controller follow-up on page retention. If all gates pass, protected-merge and update only the existing protected Preview; run authenticated E2E in the user's Access browser and anonymous denial smoke.

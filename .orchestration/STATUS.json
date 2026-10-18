@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "Controller P2 pagination-state finding fixed locally and reproduced as closed by local Playwright; exact-head publication gates pending.",
-  "last_completed_head": "2060a26",
+  "last_completed_task": "CF-AU-I03: Controller inbox-page defect and GitHub owner-routing/fail-closed findings fixed locally; exact-head publication gates pending.",
+  "last_completed_head": "Pending commit for owner route guard/config changes; previous observed PR head 18f2143c2bf011e48cf1022543a669b70579e8fa.",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Commit/push the OwnerView pagination-state fix and evidence to PR #19. Verify worker/web CI and GitHub automatic review on the exact final checkpoint, then perform a narrowly scoped read-only Controller follow-up on the changed UI behavior only. If clean, preserve protected merge controls, update the existing private Preview and run authenticated smoke with the already-authorized browser session plus anonymous Access denial.",
+  "next_action": "Commit/push owner route and Preview fail-closed fixes plus current evidence to PR #19. Resolve fixed review threads after confirming the fixes on the pushed head. Verify exact-head worker/web checks and final GitHub automatic review. Run a narrowly scoped Controller follow-up on the inbox page-retention change only; then retain protected merge controls and proceed with the authorized existing private Preview update and remote smoke.",
   "stop_reason": null,
   "event": {
-    "seq": 118,
-    "id": "CF_AU_I03_CONTROLLER_REWORK_OWNER_PAGE_RETENTION",
-    "type": "REWORK"
+    "seq": 120,
+    "id": "CF_AU_I03_OWNER_ROUTE_AND_GUARD_REWORK",
+    "type": "AUTOMATED_REVIEW_REWORK"
   },
   "external_review": {
     "required": false,
@@ -29,7 +29,7 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "2060a26",
+    "last_observed_head": "18f2143c2bf011e48cf1022543a669b70579e8fa",
     "merge_commit": null,
     "head_source": "Executable Controller-rework commit 2060a26; resolve current docs checkpoint from live PR #19 before further action."
   },
@@ -60,13 +60,14 @@
   "candidate_review": {
     "scope": "CF-AU-I03 contact, OWNER availability/inbox, ADMIN-assisted draft",
     "base_sha": "a1626e3a375a33bb76561e8666d6bdb070b77de5",
-    "executable_commit": "2060a26",
+    "executable_commit": "PENDING_COMMIT_OF_OWNER_ROUTING_FIX",
     "local_checks": {
+      "worker_focused": "contact-workflow + preview-auth; 2 files / 10 tests PASS after routing/guard fix",
       "worker_typecheck": "PASS",
       "web_typecheck": "PASS",
-      "focused_worker_tests": "2 files / 10 tests PASS",
-      "web_build": "PASS",
-      "local_playwright": "PASS contact, owner inbox/state/availability/reconfirm, ADMIN-assisted draft and audit",
+      "web_build": "PASS on unchanged web tree after pagination fix",
+      "python_config_tests": "11/11 PASS",
+      "playwright_pagination": "PASS page 1 retained after page 2 event changed; screenshot output/playwright/owner-contact-pagination-local.png",
       "git_diff_check": "PASS"
     },
     "evidence": ".orchestration/evidence/CF-AU-I03-CONTACT-AVAILABILITY-ASSISTED.md",
@@ -76,10 +77,10 @@
     "pr": 19,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "checkpoint_sha": "7f34358088b3ef0b938a4f8dbf4b15cd776e51f0",
-    "github_checks": "Pending exact final checkpoint after 2060a26.",
-    "github_automatic_review": "Pending exact final checkpoint after 2060a26.",
-    "status": "CONTROLLER_REWORK_FIXED_LOCALLY",
-    "controller": "REWORK on e0f87ae fixed in 2060a26; one narrow Controller follow-up remains pending.",
+    "github_checks": "PASS on 18f2143 before current local route/guard fixes; final CI required after push.",
+    "github_automatic_review": "Review on 18f2143 reported owner routing/guard; final review required after push.",
+    "status": "GITHUB_REWORK_FIXED_LOCALLY",
+    "controller": "REWORK on e0f87ae for inbox page retention; fix covered in 2060a26. Narrow follow-up pending; later GitHub findings also fixed locally.",
     "findings_resolved": [
       "ADMIN-assisted creation requires idempotency key; replays original result and rejects changed payload.",
       "OWNER inbox is cursor-paginated with max 30 events and SQL unread count.",
@@ -90,7 +91,12 @@
     "checkpoint_note": "Live PR head remains authoritative; current commit is the executable fix plus its committed evidence.",
     "controller_reviewed_sha": "e0f87ae398078ff04ce7774738dac90f03ae1296",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
-    "local_playwright_pagination": "PASS: with 31 additional local synthetic events, state changed on second page; first-page row retained and changed event showed Leída. See evidence screenshot."
+    "local_playwright_pagination": "PASS: with 31 additional local synthetic events, state changed on second page; first-page row retained and changed event showed Leída. See evidence screenshot.",
+    "github_findings_resolved_locally": [
+      "Controller P2: preserve previously loaded inbox pages after state change; fixed at 2060a26 and Playwright verified.",
+      "GitHub P2: dispatch direct /owner/* to Worker in all three relevant configs.",
+      "GitHub P2: include /owner routes in fail-closed Preview auth-config guard."
+    ]
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",

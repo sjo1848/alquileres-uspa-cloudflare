@@ -23,6 +23,7 @@
       "/api/*",
       "/public/*",
       "/auth/*",
+      "/owner/*",
       "/admin/*",
       "/health",
       "/listings",

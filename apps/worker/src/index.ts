@@ -31,7 +31,7 @@ function setCookie(token:string,env:Env,clear=false) { const same=['strict','non
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
 app.use('*',async(c,next)=>{
   const strategy=c.env.AUTH_STRATEGY;
-  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path)||/^\/admin(?:\/|$)/.test(c.req.path))
+  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path)||/^\/owner(?:\/|$)/.test(c.req.path)||/^\/admin(?:\/|$)/.test(c.req.path))
     && !previewAuthConfigured(c.env,new URL(c.req.url).origin))return c.json({error:'Preview authentication unavailable'},503);
   await next();
 });

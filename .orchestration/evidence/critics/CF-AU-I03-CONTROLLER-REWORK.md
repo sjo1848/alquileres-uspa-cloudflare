@@ -9,3 +9,7 @@
 - Parent verification after fix: web TypeScript check and production build PASS; `git diff --check` PASS. Worker code is unchanged from the 11/11 focused-test candidate. Fresh PR checks and final automated review are required after the fix is pushed.
 - Full final reviewer output: `CF-AU-I03-CONTROLLER-REWORK.txt`. The process reported 714,388 input tokens (642,432 cached), 10,386 output tokens. Avoid broad repeat; any follow-up must be restricted to the one corrected UI behavior and exact changed files.
 - The report text claimed no separate CLI invocation was available, although the parent did launch this exact `codex exec` process with the flags above. Therefore this verdict is recorded as a delegated REWORK finding, not an operational PASS/approval. No model backend attestation is claimed.
+
+## Subsequent automated-review findings (fixed locally)
+
+After the Controller's page-retention REWORK, GitHub reported two more P2 findings: worker-first routing omitted `/owner/*` in the local, Preview template and OWNER E2E configs; and the Preview configuration fail-closed guard omitted owner routes. Fixed by adding `/owner/*` to all three `run_worker_first` lists and including `/owner` in the global missing-Preview-auth guard. Focused Worker contact + preview-auth tests (2 files / 10 tests), Worker typecheck, web typecheck, Python config tests (11/11), and whitespace check pass. Latest exact-head CI and GitHub auto review remain pending.
