@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "Issue #7 product roadmap; CF-AU-I02 local OWNER/ADMIN increment closed",
+  "active_task": "CF-AU-I02 — Preview OWNER/ADMIN synthetic identity switch and moderation/publication journey",
   "last_completed_task": "CF-AU-I02 local synthetic OWNER D1 BLOB photos and ADMIN moderation/publication integrated via protected PR #15 merge commit aff1d44; Artifact A2 has delegated Controller PASS.",
   "last_completed_head": "aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e",
-  "work_branch": "work/admin-moderation",
-  "next_action": "Reconstruct the latest authorized functional priority from Issue #7 before the next increment. Preserve the strict USD 0 and Preview protection constraints; remote ADMIN E2E remains BLOCKED_AUTH.",
+  "work_branch": "work/preview-admin-role-switch",
+  "next_action": "Push executable candidate e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3 with the evidence checkpoint; verify required worker/web checks and exact-head GitHub review; run one delegated read-only GPT-6 Luna High Controller on the exact final PR candidate; integrate only via protected PR; then migrate/seed only the existing synthetic Preview D1 and update the existing Access-protected Preview.",
   "stop_reason": null,
   "event": {
-    "seq": 103,
-    "id": "CF_AU_I02_INTEGRATED_CLOSED",
-    "type": "INTEGRATION_CLOSEOUT"
+    "seq": 104,
+    "id": "CF_AU_I02_PREVIEW_ADMIN_IDENTITY_IMPLEMENTED_LOCAL",
+    "type": "IMPLEMENTATION_CHECKPOINT"
   },
   "external_review": {
     "required": true,
@@ -28,12 +28,7 @@
     ]
   },
   "human_gate": null,
-  "blocker": {
-    "scope": "REMOTE_E2E_ONLY",
-    "classification": "BLOCKED_AUTH",
-    "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md",
-    "detail": "No legitimate Cloudflare Access session is available in this executor context; Preview remains protected and unchanged. Remote ADMIN also has no authorized role identity mapping."
-  },
+  "blocker": null,
   "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15 (MERGED)",
   "integration_commit": "aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e2",
   "issue_4": "CLOSED",
@@ -195,5 +190,27 @@
     "precritic": "PASS to delegated Controller review only; not technical PASS or merge approval",
     "evidence": ".orchestration/evidence/CF-AU-I02-OWNER-PHOTOS-ADMIN-LOCAL-E2E.md"
   },
-  "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14"
+  "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
+  "preview_admin_identity": {
+    "contract": ".orchestration/contracts/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
+    "code_sha": "e12dbdcd8a1704a86a5ace65a23f0e2d1d59d1e3",
+    "tree": "9145e36e2d6aebb39b13c9dae8e5197724dd4b64",
+    "base_sha": "42bef5c53abea65720082bbd86da9a082a51ed51",
+    "local_checks": {
+      "worker_preview_auth": "6/6 PASS",
+      "worker_typecheck": "PASS",
+      "web_typecheck": "PASS",
+      "web_build": "PASS",
+      "playwright_role_switch_cycle": "6/6 PASS",
+      "git_diff_check": "PASS"
+    },
+    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
+    "controller": "PENDING_EXACT_PR_CANDIDATE",
+    "github_checks": "PENDING",
+    "github_automatic_review": "PENDING",
+    "preview_update": "PENDING_PROTECTED_INTEGRATION",
+    "preview_access_policy": "unchanged; operator-only",
+    "remote_admin_e2e": "PENDING_REAL_OPERATOR_ACCESS_SESSION",
+    "no_remote_mutation": "true"
+  }
 }
