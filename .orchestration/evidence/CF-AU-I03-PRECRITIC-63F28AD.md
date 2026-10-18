@@ -10,3 +10,9 @@
 - Remote authenticated Preview smoke is not included in this local gate. The operator has completed Access login; after protected integration, update only the existing private Preview and use that session without exporting credentials.
 
 **Pre-Critic Gate: PASS for protected integration and the authorized existing private Preview update. This does not claim remote browser behavior until that smoke is actually performed.**
+
+## CI coverage rework (2026-10-18)
+
+- GitHub found the required worker job omitted the existing `contact-workflow.test.ts`. Added `npm run test:contact-workflow` and an explicit Quick checks step. Focused local run: 1 file / 5 tests PASS in 7.26s. Worker/web CI must pass on the new PR head before integration.
+- This changes only test-selection/workflow configuration; application implementation and Controller-reviewed source tree `63f28ad` are unchanged. The final Controller evidence pointer in STATUS now points to the PASS; the earlier REWORK report remains archived under `controller_rework_evidence`.
+- The I03 Controller PASS remains applicable to unchanged application behavior; do not repeat it for this CI-only correction. Exact-head automatic review is pending.

@@ -58,3 +58,7 @@ The next GitHub pass found an in-flight response race: if a contact request for 
 - GitHub worker/web quick checks pass on exact candidate (run `39123528540`); automatic review completed with no new findings; unresolved review threads 0.
 - Delegated Controller PASS on exact candidate: `.orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md`. Pre-Critic PASS: `.orchestration/evidence/CF-AU-I03-PRECRITIC-63F28AD.md`.
 - Remote authenticated Playwright against the updated Preview remains pending. The operator confirmed the normal Access login is complete; no auth state is exported.
+
+## Required CI coverage follow-up — 2026-10-18
+
+GitHub found that the new contact workflow suite was not included by the required `worker` job. Added `test:contact-workflow` to the Worker package and Quick checks workflow. Focused command passed 1 file / 5 tests in 7.26s. This changes validation selection only; the reviewed application source is unchanged.

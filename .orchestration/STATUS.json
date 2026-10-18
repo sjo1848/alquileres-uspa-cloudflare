@@ -5,15 +5,15 @@
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
-  "last_completed_task": "CF-AU-I03 implementation, GitHub review, delegated Controller PASS and Pre-Critic evidence are published in PR #19; final exact-head GitHub gates remain.",
+  "last_completed_task": "CF-AU-I03 code and Controller/Pre-Critic passed on executable candidate 63f28ad; GitHub P2 CI coverage and active evidence pointer are fixed locally with contact-workflow 5/5.",
   "last_completed_head": "63f28ade483c57c7b9aed3f0e9852a405d760e0d (reviewed executable candidate); evidence checkpoint e8e6fe212bd459055d43f1cf6c12a590ff5af3d7.",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Resolve the live PR #19 head and verify exact-head worker/web required checks and the latest automatic review. Executable files have not changed since Controller PASS on 63f28ad; do not repeat local suites or Controller. If exact-head protected controls are green and all review threads are resolved, protected-merge PR #19 preserving history. Then apply only pending migrations 0011/0012 to the existing synthetic Preview D1, update only the existing private Worker with wrangler preview, and run remote authenticated Playwright using the existing Access session plus anonymous Access-denial checks. Never export credentials.",
+  "next_action": "Commit/push the focused CI coverage and status-pointer rework to PR #19; verify worker/web required checks and latest automatic review on the new exact head, with all fixed threads resolved. No functional code changed, so do not repeat Controller or prior local suites. If protected controls are green, merge preserving history, then update the existing private Preview and run remote authenticated Playwright plus anonymous Access-denial checks.",
   "stop_reason": null,
   "event": {
-    "seq": 127,
-    "id": "CF_AU_I03_EVIDENCE_PUBLISHED",
-    "type": "CANONICAL_CHECKPOINT"
+    "seq": 128,
+    "id": "CF_AU_I03_CONTACT_TEST_CI_COVERAGE",
+    "type": "AUTOMATED_REVIEW_REWORK"
   },
   "external_review": {
     "required": false,
@@ -29,9 +29,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
+    "last_observed_head": "f2e578aa02bd4174cacbde54ae602d2eba7da3da",
     "merge_commit": null,
-    "head_source": "Live GitHub PR #19 head observed after evidence publication; current checks/review are still pending."
+    "head_source": "Last live PR #19 head before the focused CI coverage/evidence-pointer correction; resolve the new exact head after pushing."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -88,8 +88,8 @@
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "checkpoint_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
     "github_checks": "PASS worker/web on exact executable candidate 63f28ad in run 39123528540; evidence-only closeout checkpoint e8e6fe2 has its own required checks pending and they must be verified before integration.",
-    "github_automatic_review": "No new findings on executable candidate 63f28ad. Evidence-only checkpoint e8e6fe2 automatic review is running; verify its completion before integration.",
-    "status": "CONTROLLER_AND_PRECRITIC_PASS; EVIDENCE_PUBLISHED; EXACT_HEAD_GITHUB_GATES_PENDING",
+    "github_automatic_review": "f2e578a auto review found two P2: required worker CI omitted contact-workflow.test.ts and candidate_review.controller_evidence pointed to the historical REWORK. Both corrected locally; exact-head review pending.",
+    "status": "CONTROLLER_PREVIOUS_CODE_PASS; GITHUB_P2_CI_COVERAGE_FIXED_LOCALLY",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
@@ -114,13 +114,14 @@
       "ContactEvent parity ledger and third source index reconciled.",
       "Public contact retry replays original D1 event by key and rejects changed-payload reuse.",
       "Listing parity ledger includes owner availability/reconfirmation journeys.",
-      "GitHub P2: update Worker README route inventory and explicitly account for the ContactEvent three-index parity in migration 0011."
+      "GitHub P2: update Worker README route inventory and explicitly account for the ContactEvent three-index parity in migration 0011.",
+      "GitHub P2: add contact-workflow.test.ts to the required quick worker check; focused command passes 5/5."
     ],
     "executable_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
     "rework_commit": "Current local candidate includes contact idempotency, searchable assisted OWNERs, route reset and stale-response guards; exact SHA follows live PR head.",
     "checkpoint_note": "Live PR head remains authoritative; current code/evidence candidate is being prepared for exact-head checks.",
     "controller_reviewed_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
-    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
+    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md",
     "local_playwright_pagination": "PASS: a new synthetic event arrived while older pages were loaded; page-two state changed and page-one row remained. See output/playwright/owner-contact-concurrent-arrival-local.png.",
     "github_findings_resolved_locally": [
       "Controller P2: preserve previously loaded inbox pages after state change; fixed at 2060a26 and Playwright verified.",
@@ -136,12 +137,15 @@
       "GitHub P2: ignore responses from contact requests started on a different listing route.",
       "GitHub P2: retain chronological canonical event ordering without duplicate Event 122.",
       "GitHub P2: remove trailing whitespace from Controller evidence and rerun diff check.",
-      "GitHub P2: README still denied ContactEvent/AdminAuditLog and omitted public contact, OWNER inbox/availability, and ADMIN-assisted routes; route inventory corrected. Migration 0011 does create all three source indexes, and the parity ledger now names each explicitly."
+      "GitHub P2: README still denied ContactEvent/AdminAuditLog and omitted public contact, OWNER inbox/availability, and ADMIN-assisted routes; route inventory corrected. Migration 0011 does create all three source indexes, and the parity ledger now names each explicitly.",
+      "GitHub P2: required worker job omitted contact-workflow.test.ts; added an explicit package script and workflow step, verified locally 5/5."
     ],
     "precritic_gate": "PASS; .orchestration/evidence/CF-AU-I03-PRECRITIC-63F28AD.md",
     "github_review_threads_unresolved": 0,
     "evidence_checkpoint_sha": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
-    "evidence_commit": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7"
+    "evidence_commit": "e8e6fe212bd459055d43f1cf6c12a590ff5af3d7",
+    "controller_rework_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-REWORK.md",
+    "ci_contact_workflow": "Added npm run test:contact-workflow to required worker job; local execution 1 file / 5 tests PASS in 7.26s. Exact-head GitHub checks pending after push."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
