@@ -35,3 +35,7 @@ GitHub's review of the initial checkpoint `09575923ee4f61945d686dec9864bf129e41a
 ## Canonical resume-field correction
 
 A focused Controller inspection found the top-level STATUS event sequence and resume action remained stale after Event 105. Corrected in Event 106: the next runner must resolve the live PR #17 HEAD and verify ancestry; `e12dbd...` is executable provenance only and must not be used as a checkout/push target. The nested Preview ADMIN record keeps `20c80c6...` as the last observed (not perpetually current) PR checkpoint, with live GitHub ref required at resume. No executable files changed; exact new-head checks/review and final Controller PASS remain pending.
+
+## Top-level active-state correction
+
+GitHub review of checkpoint `64120b7...` found stale top-level `pull_request` and `external_review` fields still pointing at completed PR #15 and historical CF-AU-I01-P2 A4. Event 107 updates current STATUS to CF-AU-I02 / PR #17 and archives those previous values under `historical_status.pr15_completed` without deleting or rewriting their evidence. The active candidate/checkpoint/executable provenance are distinct, current integration is pending, and the resume action resolves the live GitHub PR head. This is documentation-only; worker/web checks remain the latest verified evidence on the prior state checkpoint and will be refreshed for this checkpoint.
