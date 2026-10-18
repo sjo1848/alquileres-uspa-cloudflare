@@ -8,12 +8,12 @@
   "last_completed_task": "ADMIN Artifact A1 code candidate passed GitHub review/checks; delegated Controller attempt was BLOCKED and one stale E2E evidence sentence was corrected.",
   "last_completed_head": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
   "work_branch": "work/admin-moderation",
-  "next_action": "Commit and push the evidence-only correction; verify exact-head checks; prepare immutable Artifact A2 with synchronized Pre-Critic evidence; run one tightly scoped, valid GPT-6 Luna High read-only Controller review. Integrate only after PASS and protected controls.",
+  "next_action": "Commit and push synchronized Pre-Critic checkpoint; verify current PR head and required checks; tag immutable Artifact A2; run one tightly scoped GPT-6 Luna High read-only Controller process that does not spawn another Codex process; integrate only after valid PASS and protected controls.",
   "stop_reason": null,
   "event": {
-    "seq": 100,
-    "id": "ADMIN_CONTROLLER_A1_BLOCKED_EVIDENCE_DRIFT",
-    "type": "CONTROLLER_REVIEW"
+    "seq": 101,
+    "id": "ADMIN_A2_PRECRITIC_PASS",
+    "type": "PRECRITIC_CHECKPOINT"
   },
   "external_review": {
     "required": true,
@@ -72,15 +72,16 @@
       "github_web": "PASS exact checkpoint aa56460ff01d9df558feff49b0309d39438f7df4 in run 39071184086",
       "github_automatic_review": "PASS/no major issues on exact code SHA e9e9e0b; review receipt 6241370515",
       "github_review_thread": "P2 comment 4304562542 fixed and thread resolved; no unresolved threads",
-      "remote_admin_e2e": "BLOCKED_AUTH; Preview remains protected and unchanged"
+      "remote_admin_e2e": "BLOCKED_AUTH; Preview remains protected and unchanged",
+      "github_worker_web": "PASS exact docs/evidence checkpoint 7d68fda1c6f23c7a7272ef16b6a1cd449cc879bc, run 39089177994; executable/test SHA e9e9e0b4808e26980087c5b87f133974477c2e9c unchanged"
     },
     "scope": "LOCAL_SYNTHETIC_ONLY; strict USD 0; no R2/billing/remote mutation/production/real data/source writes",
-    "precritic": "PASS_TO_DELEGATED_CONTROLLER: contract scope intact; applicable invariants 1-3,6-9,11,13-16,20,22-23 pass with current evidence; exact code SHA e9e9e0b; tag target will be the commit containing this checkpoint; no product/cost/deployment expansion. This is not technical PASS or merge authorization.",
+    "precritic": "PASS to publish corrected immutable Artifact A2 and submit for delegated Controller review only; no code change; A1 retained; not technical PASS/merge authorization.",
     "github_evidence": ".orchestration/evidence/CF-AU-I02-GITHUB-9A23517-LEGACY-DTO-FINDING.json",
-    "next_action": "Publish immutable CF-AU-I02-ADMIN-Artifact-A1 at the synchronized checkpoint commit; verify its tag/SHA and exact live PR checks; run project_controller GPT-6 Luna High read-only on that artifact; complete protected integration only after Controller PASS and all merge controls.",
+    "next_action": "Publish Artifact A2 at synchronized checkpoint after verifying exact current PR checks; run one scoped separate Luna High read-only Controller process without nested Codex invocation.",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/15",
     "github_worker_web": "PASS exact checkpoint aa56460ff01d9df558feff49b0309d39438f7df4, run 39071184086; executable/test SHA e9e9e0b4808e26980087c5b87f133974477c2e9c",
-    "github_automatic_review": "PASS/no major issues exact executable SHA e9e9e0b (issuecomment 6241370515); P2 fixed and thread resolved",
+    "github_automatic_review": "PASS/no major issues exact executable SHA e9e9e0b (issuecomment 6241370515); finding fixed, thread resolved; executable tree unchanged by A2 evidence correction",
     "controller": "BLOCKED: attempted separate process reported read-only filesystem startup failure; no valid PASS.",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I02-ADMIN-CONTROLLER-A1-BLOCKED.md",
     "pr_head_resolution": {
@@ -93,8 +94,8 @@
     "checkpoint_head": "aa56460ff01d9df558feff49b0309d39438f7df4 (latest checkpoint with exact required checks); executable/test candidate e9e9e0b4808e26980087c5b87f133974477c2e9c",
     "checkpoint_tree": "b597a2ca90fb883f057714682e2e9905583e0f1b",
     "artifact": {
-      "tag": "CF-AU-I02-ADMIN-Artifact-A1",
-      "target": "commit containing this synchronized Pre-Critic checkpoint (resolve immutable annotated tag after push)",
+      "tag": "CF-AU-I02-ADMIN-Artifact-A2",
+      "target": "synchronized checkpoint commit after corrected Pre-Critic (verify annotated remote tag resolves exact commit)",
       "code_sha": "e9e9e0b4808e26980087c5b87f133974477c2e9c",
       "code_tree": "0775136cc16240b4e2ace2a2972b6834500722dc",
       "review_boundary": "delegated read-only project_controller; not merged or deployed"
@@ -105,7 +106,8 @@
       "sha": "254917fbff8495a32f0113da8b0851036b7c1c64",
       "immutable": true,
       "controller_verdict": "BLOCKED"
-    }
+    },
+    "precritic_evidence": ".orchestration/STATE.md Event 101; corrected local E2E evidence and blocked A1 review preserved"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
