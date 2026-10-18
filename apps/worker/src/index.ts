@@ -98,7 +98,7 @@ app.get('/admin/listings/review',async c=>{
   const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
   return c.json({items:rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
 });
-app.get('/admin/owners',async c=>{const owners=(await c.env.DB.prepare("SELECT id,email FROM users WHERE role='OWNER' ORDER BY email,id LIMIT 200").all<{id:string;email:string}>()).results;return c.json(owners);});
+app.get('/admin/owners',async c=>{const search=(c.req.query('search')??'').trim();if(search.length>254)return c.json({error:'search is too long'},400);const statement=search?"SELECT id,email FROM users WHERE role='OWNER' AND instr(lower(email),lower(?))>0 ORDER BY email,id LIMIT 50":"SELECT id,email FROM users WHERE role='OWNER' ORDER BY email,id LIMIT 50";const result=await c.env.DB.prepare(statement).bind(...(search?[search]:[])).all<{id:string;email:string}>();return c.json(result.results);});
 app.post('/admin/listings/assisted',async c=>{
   const input=await boundedJson(c.req.raw,12_000) as any;
   const allowed=['ownerId','title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'];

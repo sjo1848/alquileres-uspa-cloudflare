@@ -47,6 +47,10 @@ function resetState() {
   error.value = '';
   listing.value = undefined;
   failedImages.value = new Set();
+  contact.value = { visitorName: '', visitorEmail: '', message: '' };
+  contactError.value = '';
+  contactNotice.value = '';
+  pendingContact = undefined;
 }
 async function load(id: string) {
   resetState();

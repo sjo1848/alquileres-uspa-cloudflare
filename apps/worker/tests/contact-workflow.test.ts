@@ -90,4 +90,15 @@ describe('public contact and owner availability journey',()=>{
     const queue=await request('/admin/listings/review','GET',undefined,adminCookie);
     expect(JSON.stringify(await queue.json())).toContain('Borrador creado con asistencia');
   });
+
+  it('searches OWNER accounts beyond the initial assisted-management result page',async()=>{
+    const at=new Date().toISOString();
+    for(let i=0;i<60;i++)await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,\'OWNER\',?,?)').bind(`late-owner-${i}`,`zz-late-owner-${i}@example.test`,'synthetic-only',at,at).run();
+    const cookie=await adminSession(),first=await request('/admin/owners','GET',undefined,cookie),firstPage=await first.json() as any;
+    expect(firstPage).toHaveLength(50);
+    expect(firstPage.some((owner:any)=>owner.id==='late-owner-59')).toBe(false);
+    const match=await request('/admin/owners?search=zz-late-owner-59','GET',undefined,cookie);
+    expect(match.status).toBe(200);expect(await match.json()).toEqual([{id:'late-owner-59',email:'zz-late-owner-59@example.test'}]);
+    expect((await request(`/admin/owners?search=${'x'.repeat(255)}`,'GET',undefined,cookie)).status).toBe(400);
+  });
 });
