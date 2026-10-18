@@ -4,16 +4,16 @@
   "phase": "FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I02 — Preview OWNER/ADMIN synthetic identity switch and moderation/publication journey",
-  "last_completed_task": "CF-AU-I02 local synthetic OWNER D1 BLOB photos and ADMIN moderation/publication integrated via protected PR #15 merge commit aff1d44; Artifact A2 has delegated Controller PASS.",
-  "last_completed_head": "aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e",
-  "work_branch": "work/preview-admin-role-switch",
-  "next_action": "Protected-merge PR #17 after exact-head worker/web checks, automatic review and protection remain green; preserve history. Then inspect existing synthetic Preview D1 migration/admin-row state, apply only missing migration/seed if needed, update only the same private Preview with wrangler preview (never wrangler deploy), and verify anonymous Access denial. Remote authenticated UI remains BLOCKED_AUTH absent a legitimate operator browser session.",
+  "active_task": "CF-AU-I02 — ADMIN Preview human validation, then contact/availability journey",
+  "last_completed_task": "CF-AU-I02 Preview OWNER/ADMIN role switch integrated via protected PR #17 and published to the existing private synthetic Preview.",
+  "last_completed_head": "fccdb43397988e5fd4c467452d80a036b9eea69a",
+  "work_branch": "work/preview-admin-publish",
+  "next_action": "Human may validate the new ADMIN path at https://private-alquileres-uspa-lab.sjo1848.workers.dev/admin using the existing Access identity: choose administrator demo, approve the submitted synthetic listing, publish separately, confirm catalog visibility. Remote authenticated E2E remains BLOCKED_AUTH for this executor. Then continue the authorized contact/availability journey; do not repeat already-accepted OWNER tests.",
   "stop_reason": null,
   "event": {
-    "seq": 112,
-    "id": "CF_AU_I02_CONTROLLER_STATUS_RECONCILED",
-    "type": "GITHUB_REVIEW_DOC_FINDING_FIXED"
+    "seq": 113,
+    "id": "CF_AU_I02_ADMIN_PREVIEW_PUBLISHED",
+    "type": "PROTECTED_INTEGRATION_AND_PREVIEW_PUBLICATION"
   },
   "external_review": {
     "required": false,
@@ -27,14 +27,15 @@
   "blocker": null,
   "pull_request": {
     "number": 17,
-    "state": "OPEN",
+    "state": "MERGED",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/17",
     "branch": "work/preview-admin-role-switch",
-    "last_observed_head": "f4d86b4300f584b8ea95f80f1f4ac69703673c72",
-    "head_source": "Resolve the live GitHub PR #17 headRefOid before every action; the immutable Artifact A1 target is separately identified by tag.",
-    "merge_policy": "protected merge commit only; preserve history; no bypass"
+    "last_observed_head": "cf1f2cc2be41266143ede17ff3c5e50e9ce299d6",
+    "merge_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
+    "head_source": "Protected merge commit; A1 code candidate preserved as ancestor.",
+    "merge_policy": "protected merge commit; history preserved; worker/web exact-head checks passed."
   },
-  "integration_commit": null,
+  "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
   "review_authority": {
     "reviewer_kind": "delegated_codex_separate_process",
@@ -45,7 +46,7 @@
     "runtime_verified_for_current_artifact": true,
     "actual_backend_model_identity": "UNVERIFIED",
     "operational_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
-    "next_review": "Completed: PASS on immutable A1; no repeat required unless executable changes. Proceed to final protected-merge checks.",
+    "next_review": "No additional Controller required for this publication-only closeout; A1 PASS remains scoped to immutable code artifact. Re-review only if executable/security changes occur.",
     "review_report": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-PASS.md",
     "review_raw_output": ".orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-RAW.txt",
     "cli_configuration_accepted": true,
@@ -78,7 +79,7 @@
     "github_checks": "PASS exact executable/artifact commit; worker/web Actions run 39095728852",
     "github_automatic_review": "PASS/no findings exact SHA 67b3585, completed 2026-10-18 04:05:14 UTC; zero unresolved threads",
     "controller": "PASS_BOUNDED_LOCAL_SYNTHETIC on immutable A1 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; delegated_codex_separate_process; GPT-6 Luna/High/read-only requested and CLI sandbox accepted; backend identity UNVERIFIED; exit 0.",
-    "remote_admin_e2e": "BLOCKED_AUTH; local E2E is not represented as remote Access login",
+    "remote_admin_e2e": "BLOCKED_AUTH; authorized Access browser session unavailable to executor",
     "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
     "executable_tree": "89e9b4d52089121b5b0abfced437b808e29aa4ed",
     "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1 -> 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
@@ -91,7 +92,9 @@
     "github_current_head_checks": "PASS worker/web on f4d86b4300f584b8ea95f80f1f4ac69703673c72, run 39095982852",
     "github_current_head_review": "completed; has_any_findings=false; has_unresolved_findings=false; unresolved threads 0",
     "controller_scope": "PASS local/synthetic Preview OWNER/ADMIN role-switch only; remote authenticated E2E BLOCKED_AUTH; no Access change/deploy authorized by this verdict",
-    "controller_followup": "None required for documentation-only reconciliation; PASS remains on immutable A1 and executable tree unchanged."
+    "controller_followup": "No repeat; docs/publication only after PASS on A1.",
+    "integration": "PR #17 merged protected by fccdb43397988e5fd4c467452d80a036b9eea69a",
+    "preview_publication": "Existing private Preview updated via wrangler preview; see .orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -116,27 +119,37 @@
   },
   "auth_decision": ".orchestration/decisions/ACCESS_PREVIEW_OWNER_AUTH.md",
   "preview_delivery": {
-    "application_sha": "72ffac8e66bcdd27d3a8cdb3e50d5142d4239d39",
-    "deployment_id": "6c368527-60e1-4fa8-9232-b8d354301bb2",
+    "application_sha": "fccdb43397988e5fd4c467452d80a036b9eea69a",
+    "deployment_id": null,
     "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
     "strategy": "ACCESS_PREVIEW",
-    "anonymous_denials": "12/12 PASS",
-    "production": "disabled; provider deployed_on null; hostname404",
+    "anonymous_denials": "8/8 across stable+immutable URL routes /, /login, /admin, /health",
+    "production": "disabled; only wrangler preview used",
     "operator_policy": "unchanged, operator-only",
-    "owner_journey": "UNVERIFIED_PERSONAL_ACCESS_SESSION_REQUIRED",
-    "evidence": ".orchestration/evidence/CF-AU-OWNER-PREVIEW-PUBLICATION.json"
+    "owner_journey": "Human accepted OWNER remote journey on 2026-10-16; not repeated after this role-switch update; local integrated OWNER/ADMIN E2E remains 8/8 PASS.",
+    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md",
+    "previous_deployment_id": "6c368527-60e1-4fa8-9232-b8d354301bb2",
+    "preview_name": "private",
+    "deployment_url": "https://f5c694bb-alquileres-uspa-lab.sjo1848.workers.dev",
+    "media_strategy": "D1_BLOB",
+    "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
+    "migrations_applied": "0001–0010; no pending migrations",
+    "admin_seed": "synthetic-catalog-admin / preview.admin@example.test / ADMIN",
+    "owner_preserved": "1 OWNER row, 3 synthetic listings, 2 D1 BLOB images / 21,015 bytes verified after migrations",
+    "remote_admin_e2e": "BLOCKED_AUTH; human browser validation pending",
+    "deployed_at_utc": "2026-10-18T04:20:09Z"
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
     "scope": "CF-AU-I02 Preview-only operator OWNER/ADMIN synthetic identity switch and full moderation/publication path",
     "pr": "#17",
     "code_sha": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
-    "checkpoint_sha": "d571f4c805072ca6244e343810e3be06f88b94e8",
-    "status": "CONTROLLER_PASS; DOCUMENTATION_RECONCILIATION; PROTECTED_INTEGRATION_PENDING",
-    "preview": "Existing private Access-protected Preview only; no update yet",
-    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "next_action": "Protected-merge PR #17 after exact-head worker/web checks, automatic review and protection remain green; preserve history. Then inspect existing synthetic Preview D1 migration/admin-row state, apply only missing migration/seed if needed, update only the same private Preview with wrangler preview (never wrangler deploy), and verify anonymous Access denial. Remote authenticated UI remains BLOCKED_AUTH absent a legitimate operator browser session.",
-    "code_status": "Controller PASS on immutable A1; current code tree unchanged after A1; exact-head quick checks/review/protection must be reconfirmed before merge.",
+    "checkpoint_sha": "fccdb43397988e5fd4c467452d80a036b9eea69a",
+    "status": "ADMIN_PRIVATE_PREVIEW_PUBLISHED; HUMAN_REMOTE_VALIDATION_PENDING",
+    "preview": "Same private Preview updated at fccdb43397988e5fd4c467452d80a036b9eea69a",
+    "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md",
+    "next_action": "Human may validate the new ADMIN path at https://private-alquileres-uspa-lab.sjo1848.workers.dev/admin using the existing Access identity: choose administrator demo, approve the submitted synthetic listing, publish separately, confirm catalog visibility. Remote authenticated E2E remains BLOCKED_AUTH for this executor. Then continue the authorized contact/availability journey; do not repeat already-accepted OWNER tests.",
+    "code_status": "Artifact A1 Controller PASS; integrated as protected merge fccdb43397988e5fd4c467452d80a036b9eea69a; same private Preview updated and Access denial verified. Only human-authenticated remote UI journey remains pending.",
     "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1 -> 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
@@ -154,22 +167,27 @@
       "git_diff_check": "PASS"
     },
     "evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-IDENTITY.md",
-    "controller": "PASS_BOUNDED_LOCAL_SYNTHETIC on immutable Artifact A1 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; report .orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-PASS.md; delegated separate process, model requested GPT-6 Luna/High, read-only accepted, backend identity UNVERIFIED.",
+    "controller": "PASS_BOUNDED_LOCAL_SYNTHETIC on immutable A1 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; delegated separate process; report .orchestration/evidence/critics/CF-AU-I02-PREVIEW-ADMIN-A1-CONTROLLER-PASS.md; actual backend model identity UNVERIFIED.",
     "github_checks": "PASS worker/web on current checkpoint d571f4c805072ca6244e343810e3be06f88b94e8; run 39096252855",
     "github_automatic_review": "Artifact executable SHA 67b3585 has no findings. Latest docs-only checkpoint d571f4c805072ca6244e343810e3be06f88b94e8 had one P2 stale active Controller status, fixed by this documentation-only reconciliation; latest re-review required.",
-    "preview_update": "PENDING_PROTECTED_INTEGRATION",
-    "preview_access_policy": "unchanged; operator-only",
-    "remote_admin_e2e": "BLOCKED_AUTH until legitimate current Access session is available to executor",
-    "no_remote_mutation": "true",
+    "preview_update": "PUBLISHED on existing Preview `private` from merged main; wrangler preview only",
+    "preview_access_policy": "unchanged; operator-only; anonymous probes 8/8 denied by Access",
+    "remote_admin_e2e": "BLOCKED_AUTH in executor; human validation now available",
+    "no_remote_mutation": false,
     "pr": "#17",
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/17",
     "last_observed_pr_head": "d571f4c805072ca6244e343810e3be06f88b94e8",
     "last_observed_pr_head_tree": "1f98a507883460d03b3e877bc4a9b45e91778480",
     "executable_provenance_sha": "67b3585235f3af7ef6fa9c13b6b2693d92cbeac8",
     "executable_provenance_tree": "89e9b4d52089121b5b0abfced437b808e29aa4ed",
-    "next_action": "Protected-merge PR #17 after exact-head worker/web checks, automatic review and protection remain green; preserve history. Then inspect existing synthetic Preview D1 migration/admin-row state, apply only missing migration/seed if needed, update only the same private Preview with wrangler preview (never wrangler deploy), and verify anonymous Access denial. Remote authenticated UI remains BLOCKED_AUTH absent a legitimate operator browser session.",
+    "next_action": "Human may validate the new ADMIN path at https://private-alquileres-uspa-lab.sjo1848.workers.dev/admin using the existing Access identity: choose administrator demo, approve the submitted synthetic listing, publish separately, confirm catalog visibility. Remote authenticated E2E remains BLOCKED_AUTH for this executor. Then continue the authorized contact/availability journey; do not repeat already-accepted OWNER tests.",
     "head_observation_note": "Current exact PR checkpoint recorded here; immutable executable candidate remains Artifact A1. Resolve live GitHub head again before any integration.",
-    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1"
+    "artifact": "CF-AU-I02-PREVIEW-ADMIN-Artifact-A1",
+    "pr_state": "PR #17 protected-merged as fccdb43397988e5fd4c467452d80a036b9eea69a",
+    "preview_stable_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/admin",
+    "preview_immutable_deployment_url": "https://f5c694bb-alquileres-uspa-lab.sjo1848.workers.dev",
+    "synthetic_d1": "migrations 0008-0010 applied; ADMIN fixture seeded idempotently; no pending migrations",
+    "remote_mutation_scope": "Only the existing synthetic D1 received migrations 0008–0010 and the fixed ADMIN demo seed; only the existing private Preview was updated via wrangler preview. No new resources, Access-policy changes, R2, billing, production, real data or source-repository writes."
   },
   "historical_status": {
     "pr15_completed": {
@@ -310,6 +328,8 @@
       "verified_remote": true
     },
     "controller": "PASS_BOUNDED_LOCAL_SYNTHETIC on immutable A1 67b3585235f3af7ef6fa9c13b6b2693d92cbeac8; delegated_codex_separate_process; GPT-6 Luna/High requested; read-only CLI accepted; backend UNVERIFIED.",
-    "review_boundary": "Delegated local Controller PASS; protected merge controls and post-merge same-Preview update remain."
+    "review_boundary": "Delegated local Controller PASS; protected merge controls and post-merge same-Preview update remain.",
+    "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
+    "deployment_evidence": ".orchestration/evidence/CF-AU-I02-PREVIEW-ADMIN-PUBLICATION.md"
   }
 }
