@@ -6,14 +6,14 @@
   "resume_authorized": true,
   "active_task": "CF-AU-I03 — Contact, availability and assisted-management journeys",
   "last_completed_task": "Artifact A1 received delegated Controller REWORK (two P2s); atomicity and configured-media documentation repairs are local and focused contact tests pass 6/6.",
-  "last_completed_head": "CF-AU-I03-Artifact-A1 -> ccd6902357e797a1bc65706074c7daf37301f50d (tree e0afc36eac01ac7b6742a3e2931c667a9b0a4034).",
+  "last_completed_head": "ea42913 (A1 rework: guarded assisted-create idempotency/audit commit; corrected media map; zero-row regression).",
   "work_branch": "work/contact-availability-journeys",
-  "next_action": "Commit and push the bounded A1 rework plus preserved Controller findings. Observe exact-head worker/web checks and GitHub automatic review; repair any material findings. Then run the mandatory Pre-Critic for a new immutable A2, publish it before a fresh read-only Controller review, and stop at that review boundary. Do not merge or update Preview until exact-A2 PASS and GitHub controls are clean.",
+  "next_action": "Verify exact PR #19 head ea42913 worker/web checks and latest automatic review; resolve material findings autonomously. If clean, run the artifact-scoped Pre-Critic against the consolidated candidate, publish a new immutable A2 before its fresh delegated read-only Controller review, and stop at that review boundary. No merge/Preview update without exact-A2 PASS and clean protected GitHub controls.",
   "stop_reason": null,
   "event": {
-    "seq": 131,
-    "id": "CF_AU_I03_ARTIFACT_A1_REWORK",
-    "type": "CONTROLLER_REWORK_AUTONOMOUS_REPAIR"
+    "seq": 132,
+    "id": "CF_AU_I03_REWORK_PUBLISHED",
+    "type": "CODE_REWORK_PUBLISHED_PENDING_EXACT_HEAD_CONTROLS"
   },
   "external_review": {
     "required": true,
@@ -30,9 +30,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/19",
     "branch": "work/contact-availability-journeys",
-    "last_observed_head": "8e6e5edf47559444498b6b1e201db703c245a97b",
+    "last_observed_head": "ea42913",
     "merge_commit": null,
-    "head_source": "Last live PR #19 evidence head observed at A1 Controller REWORK; local A1 repairs are pending publication."
+    "head_source": "Live PR #19 head after the bounded A1 Controller rework; resulting-head GitHub controls are pending."
   },
   "integration_commit": "fccdb43397988e5fd4c467452d80a036b9eea69a",
   "issue_4": "CLOSED",
@@ -90,7 +90,7 @@
     "checkpoint_sha": "ccd6902357e797a1bc65706074c7daf37301f50d",
     "github_checks": "PASS worker/web on exact A1 SHA ccd6902 in run 39144203779.",
     "github_automatic_review": "Review of exact A1 SHA completed with one P1 requiring immutable Artifact A before its Controller verdict. Tag A1 is now published before the fresh Controller review; thread remains open until exact-A1 PASS. Resulting-head review after the gate evidence commit must be checked before merge.",
-    "status": "ARTIFACT_A1_REWORK_TWO_P2_REPAIRED_LOCALLY_FOCUSED_TESTS_PASS_6_OF_6_NEW_A2_PENDING",
+    "status": "A1_REWORK_PUSHED_EA42913; EXACT_HEAD_CHECKS_AND_AUTOREVIEW_PENDING; NEW_A2_NOT_FROZEN",
     "controller": {
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
@@ -121,7 +121,7 @@
       "Controller A1 P2: ListingImage map implied active R2; documented Static Assets local and D1 BLOB Preview with no R2 binding/use."
     ],
     "executable_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
-    "rework_commit": "Current local candidate includes contact idempotency, searchable assisted OWNERs, route reset and stale-response guards; exact SHA follows live PR head.",
+    "rework_commit": "ea42913: final assisted-create batch state is guarded by listing+audit existence; zero-row regression added; parity map now records no configured R2.",
     "checkpoint_note": "Live PR head remains authoritative; current code/evidence candidate is being prepared for exact-head checks.",
     "controller_reviewed_sha": "63f28ade483c57c7b9aed3f0e9852a405d760e0d",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I03-CONTROLLER-63F28AD-PASS.md",

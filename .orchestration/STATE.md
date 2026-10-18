@@ -1051,3 +1051,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Focused validation after repair: contact workflow 1 file / 6 tests PASS; Worker typecheck PASS; parity JSON parses; `git diff --check` PASS. No full suite or remote mutation.
 - Reviewer run requested `gpt-6-luna` / High / read-only in separate Codex CLI 0.163.0, thread `01a14fd2-5460-79b0-8610-359cc2456281`; output reports REWORK and notes a nested app-server initialization failure. No PASS is claimed; backend identity remains UNVERIFIED. The captured exact report records the uncertainty.
 - **READY_TO_RESUME:** publish the bounded repair/evidence to PR #19; verify exact-head required checks and automatic review. Then pass Pre-Critic for a new immutable A2, publish A2 before a fresh Controller review, and stop at that boundary. No merge/Preview update until exact-A2 PASS and GitHub controls are clean.
+
+## Event 132 — A1 Controller rework published
+
+- Published the atomicity guard, zero-row regression, corrected Static Assets/D1 BLOB media map, and preserved A1 REWORK report in commit `ea42913` on PR #19. The immutable A1 tag remains unchanged and records its REWORK history.
+- Local focused result on the executable repair: contact-workflow 1 file / 6 tests PASS; Worker typecheck, JSON parse and diff check PASS. No application tests were repeated beyond the affected focused suite.
+- **READY_TO_RESUME:** resolve live PR head, required worker/web checks and automatic review on `ea42913` (or the resulting latest documentation checkpoint). Repair material findings. Then complete Pre-Critic for a new exact candidate, publish Artifact A2 before a fresh Controller review, and stop for that review. Do not merge or update Preview until exact-A2 PASS and required GitHub controls are clean.
