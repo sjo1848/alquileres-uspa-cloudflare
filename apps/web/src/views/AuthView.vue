@@ -64,7 +64,7 @@ async function submit() {
 </script>
 <template>
   <section class="card">
-    <p class="eyebrow">Acceso de propietarios</p><h2>{{ page==='register'?'Crear cuenta':page==='verify'?'Verificar correo':page==='recover'?'Recuperar contraseña':page==='reset'?'Restablecer contraseña':'Iniciar sesión' }}</h2>
+    <p class="eyebrow">Acceso de propietarios</p><h1>{{ page==='register'?'Crear cuenta':page==='verify'?'Verificar correo':page==='recover'?'Recuperar contraseña':page==='reset'?'Restablecer contraseña':'Iniciar sesión' }}</h1>
     <p v-if="route.query.reset" role="status">La contraseña fue actualizada. Iniciá sesión con la nueva contraseña.</p>
     <p v-if="route.query.expired" class="error" role="alert">La sesión expiró. Ingresá nuevamente.</p>
     <p v-if="route.query.unavailable" class="error" role="alert">No pudimos verificar la sesión. Podés reintentar el ingreso.</p>

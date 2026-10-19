@@ -118,7 +118,7 @@ watch(
     ><p><RouterLink to="/">← Volver al buscador</RouterLink></p>
     <article class="detail card">
       <p class="eyebrow">{{ listing.location }}</p>
-      <h2>{{ listing.title }}</h2>
+      <h1>{{ listing.title }}</h1>
       <div v-if="listing.images.length" class="gallery">
         <template v-for="image in listing.images" :key="image.id">
           <img

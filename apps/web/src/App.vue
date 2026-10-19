@@ -18,6 +18,15 @@ function closeMenu(restoreFocus = false) {
   if (restoreFocus) void nextTick(() => menuButton.value?.focus());
 }
 
+function focusMain() {
+  void nextTick(() => document.getElementById('main-content')?.focus({ preventScroll: true }));
+}
+
+function navigate() {
+  closeMenu();
+  focusMain();
+}
+
 function onEscape(event: KeyboardEvent) {
   if (event.key === 'Escape' && menuOpen.value) {
     event.preventDefault();
@@ -25,7 +34,10 @@ function onEscape(event: KeyboardEvent) {
   }
 }
 
-watch(() => route.fullPath, () => closeMenu());
+watch(() => route.fullPath, () => {
+  closeMenu();
+  focusMain();
+});
 onMounted(() => document.addEventListener('keydown', onEscape));
 onBeforeUnmount(() => document.removeEventListener('keydown', onEscape));
 
@@ -63,7 +75,7 @@ async function switchDemoIdentity() {
 <template>
   <a class="skip-link" href="#main-content">Saltar al contenido</a>
   <header class="app-header app-shell">
-    <RouterLink class="brand" to="/" aria-label="Alquileres Uspallata, inicio" @click="closeMenu()">
+    <RouterLink class="brand" to="/" aria-label="Alquileres Uspallata, inicio" @click="navigate()">
       <span class="brand-mark" aria-hidden="true"></span>
       <span class="brand-copy"><span class="brand-name">Uspallata</span><span class="brand-caption">Alojamientos en el valle</span></span>
     </RouterLink>
@@ -82,11 +94,11 @@ async function switchDemoIdentity() {
 
     <div id="primary-navigation" class="navigation-panel" :class="{ 'is-open': menuOpen }">
       <nav class="primary-nav" aria-label="Navegación principal">
-        <RouterLink to="/" @click="closeMenu()">Descubrir</RouterLink>
-        <RouterLink v-if="session.role.value === 'OWNER'" to="/owner" @click="closeMenu()">Mis publicaciones</RouterLink>
-        <RouterLink v-if="session.role.value === 'ADMIN'" to="/admin" @click="closeMenu()">Revisión</RouterLink>
-        <RouterLink v-if="session.role.value === 'ADMIN'" to="/admin-assist" @click="closeMenu()">Gestión asistida</RouterLink>
-        <RouterLink v-if="!session.isAuthenticated.value" class="nav-cta" to="/login" @click="closeMenu()">Ingresar</RouterLink>
+        <RouterLink to="/" @click="navigate()">Descubrir</RouterLink>
+        <RouterLink v-if="session.role.value === 'OWNER'" to="/owner" @click="navigate()">Mis publicaciones</RouterLink>
+        <RouterLink v-if="session.role.value === 'ADMIN'" to="/admin" @click="navigate()">Revisión</RouterLink>
+        <RouterLink v-if="session.role.value === 'ADMIN'" to="/admin-assist" @click="navigate()">Gestión asistida</RouterLink>
+        <RouterLink v-if="!session.isAuthenticated.value" class="nav-cta" to="/login" @click="navigate()">Ingresar</RouterLink>
       </nav>
       <div class="nav-actions">
         <button

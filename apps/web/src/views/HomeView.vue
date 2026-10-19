@@ -118,7 +118,7 @@ void search();
 <template>
   <section class="hero">
     <p class="eyebrow">BUSCADOR</p>
-    <h2>Encontrá tu próximo alquiler</h2>
+    <h1>Encontrá tu próximo alquiler</h1>
     <p>Publicaciones en Uspallata, con información de disponibilidad.</p>
   </section>
   <form class="filters card" @submit.prevent="search()">

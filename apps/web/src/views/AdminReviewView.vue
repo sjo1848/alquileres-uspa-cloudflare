@@ -75,7 +75,7 @@ onMounted(load);
 
 <template>
   <section class="admin-review">
-    <p class="eyebrow">Administración</p><h2>Revisión de publicaciones</h2>
+    <p class="eyebrow">Administración</p><h1>Revisión de publicaciones</h1>
     <p>Revisá el contenido enviado por propietarios. Solo las publicaciones aprobadas aparecen en el catálogo.</p>
     <p v-if="error" role="alert" class="error">{{ error }}</p><p v-if="notice" role="status">{{ notice }}</p>
     <button class="secondary" :disabled="loading || busy" @click="() => load(false)">Actualizar cola</button>

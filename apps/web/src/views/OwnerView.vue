@@ -191,7 +191,7 @@ onMounted(()=>{void load();void loadContacts();});
 </script>
 <template>
   <section>
-    <p class="eyebrow">Área de propietarios</p><h2>Mis publicaciones</h2>
+    <p class="eyebrow">Área de propietarios</p><h1>Mis publicaciones</h1>
     <p v-if="error" class="error" role="alert">{{ error }}</p><p v-if="notice" class="success" role="status">{{ notice }}</p>
     <button class="secondary" :disabled="busy||loading" @click="load()">Recargar publicaciones</button>
     <div v-if="confirmReload" class="notice" role="status">

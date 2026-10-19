@@ -87,7 +87,7 @@ async function remove(){
 <template>
   <section class="admin-review">
     <p class="eyebrow">Área ADMIN</p>
-    <h2>Gestión asistida</h2>
+    <h1>Gestión asistida</h1>
     <p>Administrá borradores para una cuenta OWNER. La persona propietaria conserva el control de la publicación y el envío a revisión.</p>
     <p v-if="error" class="error" role="alert">{{ error }}</p>
     <p v-if="notice" class="success" role="status">{{ notice }}</p>
