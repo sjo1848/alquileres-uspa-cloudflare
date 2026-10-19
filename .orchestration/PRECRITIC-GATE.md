@@ -118,3 +118,11 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Scope and invariants remain OWNER isolation, ADMIN role, atomic audit, status/idempotency correctness, repository-source read-only, synthetic data only, USD 0, no R2, production, real auth, Access changes or new remote resources.
 - `python3 scripts/check_orchestration_state.py` and final whitespace check must pass on the canonical checkpoint before push; result is recorded in Event 141.
 - **Pre-Critic: PASS to publish immutable `CF-AU-I04-OWNER-ADMIN-Artifact-A1` at executable SHA `1122de39f497e0635b8405210c6efb48e77916ba`, then run exact-SHA GitHub checks/automatic review and delegated read-only Controller. This is not their PASS or permission to merge/update Preview.**
+
+## CF-AU-I04 Artifact A2 — consolidated GitHub P2 rework (2026-10-19)
+
+- Exact executable candidate `be68f314aaa77b8597c0ab6a5c3d16daaab62e5a`, tree `9c3caaa04cae3e0b54e803e79b3d1bc3b47697f7`, base `774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor.
+- GitHub P2 dirty OWNER refresh is fixed by preventing refresh while form fields differ from persisted state. GitHub P2 ADMIN first-50 draft cap is fixed with owner-scoped stable cursor pagination and a “Cargar más borradores” UI action. The Controller P1 status guard and unexpected-storage HTTP error semantics remain fixed.
+- Focused evidence: Worker management 9/9 + typecheck; Web typecheck, build, Preview build; Python 25/25; Playwright local synthetic OWNER/ADMIN lifecycle PASS including dirty refresh and draft 51; E2E syntax and whitespace pass. Exact results: `evidence/CF-AU-I04-PRECRITIC-A2.md`.
+- Artifact A1 remains immutable at `1122de39f497e0635b8405210c6efb48e77916ba`; its Controller did not issue PASS and two GitHub P2s were repaired in A2. A1's full result is preserved in `evidence/critics/CF-AU-I04-ARTIFACT-A1-CONTROLLER-BLOCKED.md`.
+- **Pre-Critic: PASS to publish immutable `CF-AU-I04-OWNER-ADMIN-Artifact-A2` at exact executable SHA `be68f314aaa77b8597c0ab6a5c3d16daaab62e5a`, then submit that exact SHA for fresh GitHub checks/review and delegated read-only Controller. No merge/Preview change until those controls pass.**

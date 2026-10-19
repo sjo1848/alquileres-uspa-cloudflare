@@ -8,20 +8,20 @@
   "last_completed_task": "CF-AU-I03 Artifact A2 integrado en main y publicado en el Preview privado existente; local ADMIN UI/API smoke PASS. El smoke remoto autenticado queda BLOCKED_AUTH por falta de sesión en el contexto de ejecución.",
   "last_completed_head": "Artifact A2 exacto 76fbdfd2b711f4f765be122ba9f539f0ca101963; merge protegido PR #19 0db6c0c79aaeae2204c0fe704c66d4faccdb3c05; diff ejecutable posterior al Artifact A2: ninguno.",
   "work_branch": "work/owner-admin-lifecycle",
-  "next_action": "Publish immutable Artifact A1 and push branch/tag to PR #22; complete exact-head checks/automatic review and fresh delegated read-only Controller review; then protected-merge, update the existing private Preview, verify anonymous Access denial, and post results to Issue #7.",
+  "next_action": "Run consistency/whitespace preflight, publish immutable Artifact A2 and push to PR #22. Resolve repaired GitHub findings; pass exact-head checks/automatic review and obtain delegated read-only Controller PASS; then protected-merge, update the existing private Preview, verify anonymous Access denial and post results to Issue #7.",
   "stop_reason": null,
   "event": {
-    "seq": 141,
-    "id": "CF_AU_I04_FINAL_CONSOLIDATED_PRECRITIC",
+    "seq": 142,
+    "id": "CF_AU_I04_ARTIFACT_A2_PRECRITIC",
     "type": "LOCAL_SYNTHETIC_FUNCTIONAL_REWORK"
   },
   "external_review": {
     "required": true,
     "status": "AWAITING_GITHUB_AND_DELEGATED_CONTROLLER",
-    "artifact_tag": "CF-AU-I04-OWNER-ADMIN-Artifact-A1",
-    "artifact_sha": "1122de39f497e0635b8405210c6efb48e77916ba",
+    "artifact_tag": "CF-AU-I04-OWNER-ADMIN-Artifact-A2",
+    "artifact_sha": "be68f314aaa77b8597c0ab6a5c3d16daaab62e5a",
     "controller_report": null,
-    "note": "Local Pre-Critic passed; exact-SHA GitHub review/checks and Controller verdict are pending. No merge or Preview update."
+    "note": "A1 is superseded; A2 local Pre-Critic passed. Exact-SHA GitHub review/checks and Controller verdict are pending."
   },
   "human_gate": null,
   "blocker": null,
@@ -30,15 +30,15 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/22",
     "branch": "work/owner-admin-lifecycle",
-    "last_observed_head": "284086f4d539d00c9d6685a9f40cc37bae7a6702",
+    "last_observed_head": "85e5c5fa1bebeca14be3546e868ca23a7f7dd105",
     "merge_commit": null,
-    "head_source": "Live remote PR #22 head verified as 284086f before local final candidate 1122de39; branch and tag not yet published."
+    "head_source": "A1 branch head 85e5c5f was live before A2 code commit be68f31; A2 and its canonical checkpoint are not yet pushed."
   },
   "integration_commit": "0db6c0c79aaeae2204c0fe704c66d4faccdb3c05",
   "issue_4": "CLOSED",
   "review_authority": {
-    "scope": "CF-AU-I04 Artifact A1 exact executable SHA 1122de39f497e0635b8405210c6efb48e77916ba",
-    "reviewer_kind": "delegated_codex_subagent",
+    "scope": "CF-AU-I04 Artifact A2 exact executable SHA be68f314aaa77b8597c0ab6a5c3d16daaab62e5a",
+    "reviewer_kind": "delegated_codex_separate_process",
     "reviewer_role": "project_controller",
     "model_requested": "gpt-6-luna",
     "reasoning_effort_requested": "high",
@@ -46,43 +46,53 @@
     "runtime_verified_for_current_artifact": false,
     "actual_backend_model_identity": "UNVERIFIED",
     "operational_policy": ".orchestration/decisions/DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2.md",
-    "artifact_tag": "CF-AU-I04-OWNER-ADMIN-Artifact-A1",
-    "artifact_sha": "1122de39f497e0635b8405210c6efb48e77916ba",
-    "artifact_tree": "f5c1ce104875e8a5b948e06512460c72b61e89de",
+    "artifact_tag": "CF-AU-I04-OWNER-ADMIN-Artifact-A2",
+    "artifact_sha": "be68f314aaa77b8597c0ab6a5c3d16daaab62e5a",
+    "artifact_tree": "9c3caaa04cae3e0b54e803e79b3d1bc3b47697f7",
     "canonical_base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
     "verdict": "PENDING",
     "report": null,
-    "next_action": "Run a fresh read-only Controller on exact Artifact A1 after publication; do not merge until PASS and GitHub controls are clean."
+    "next_action": "After publishing A2 and completing exact-head GitHub checks/review, run a new read-only Controller on exact A2; do not merge before PASS."
   },
   "candidate_review": {
     "scope": "CF-AU-I04 OWNER individual GET/DELETE UI and ADMIN-assisted edit, availability, reconfirmation, submit and draft deletion",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
-    "executable_commit": "1122de39f497e0635b8405210c6efb48e77916ba",
-    "executable_tree": "f5c1ce104875e8a5b948e06512460c72b61e89de",
-    "status": "FINAL_LOCAL_PRECRITIC_PASS; PUBLISH_AND_EXACT_HEAD_REVIEWS_PENDING",
+    "executable_commit": "be68f314aaa77b8597c0ab6a5c3d16daaab62e5a",
+    "executable_tree": "9c3caaa04cae3e0b54e803e79b3d1bc3b47697f7",
+    "status": "A2_LOCAL_PRECRITIC_PASS; PUBLISH_AND_EXACT_HEAD_REVIEWS_PENDING",
     "local_checks": {
       "worker_typecheck": "PASS",
-      "worker_management": "PASS: 1 file / 8 tests, including SUBMITTED/APPROVED status guards, single submit audit, and unexpected D1 error mapping",
+      "worker_management": "PASS: 1 file / 9 tests, including cursor pages >50, status guard, no audit on rejected mutation, and HTTP 500 for unexpected D1 failure",
       "web_typecheck": "PASS",
       "web_build": "PASS",
       "web_preview_build": "PASS",
       "python_regressions": "PASS: 25/25",
-      "playwright_local": "PASS: 17 checks on fresh isolated Workerd + synthetic D1, 1440px OWNER / 390px ADMIN",
-      "consistency_validator": "PASS: python3 scripts/check_orchestration_state.py --base origin/main",
-      "whitespace": "PASS: git diff --check on full pending state/evidence diff",
-      "precritic": "PASS to publish exact candidate for GitHub review and delegated read-only Controller only"
+      "playwright_local": "PASS: fresh local Workerd+D1 OWNER/ADMIN journey; includes dirty OWNER refresh guard and ADMIN pagination beyond 50",
+      "e2e_syntax": "PASS: node --check",
+      "consistency_validator": "PENDING final Event 142 gate",
+      "whitespace": "PASS on code commit; rerun on full checkpoint",
+      "precritic": "PASS to publish Artifact A2 for exact-SHA GitHub and delegated Controller only"
     },
-    "evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-FINAL-1122DE3.md",
-    "precritic_gate": "PASS to publish Artifact A1 and submit for exact-SHA reviews; not integration or Preview approval",
-    "planned_artifact_tag": "CF-AU-I04-OWNER-ADMIN-Artifact-A1",
+    "evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-A2.md",
+    "precritic_gate": "PASS to publish Artifact A2 and submit for exact-SHA GitHub/Controller review only",
+    "planned_artifact_tag": "CF-AU-I04-OWNER-ADMIN-Artifact-A2",
+    "prior_artifact_a1": {
+      "tag": "CF-AU-I04-OWNER-ADMIN-Artifact-A1",
+      "sha": "1122de39f497e0635b8405210c6efb48e77916ba",
+      "controller_verdict": "BLOCKED",
+      "report": ".orchestration/evidence/critics/CF-AU-I04-ARTIFACT-A1-CONTROLLER-BLOCKED.md",
+      "github_findings_repaired": [
+        "4310028753",
+        "4310028757"
+      ]
+    },
     "remote_preview_update": "PENDING_PROTECTED_MERGE",
     "scope_limits": "USD 0; no R2, billing, production, real data, real authentication, source writes, new Cloudflare resources or Access changes",
     "controller_rework": ".orchestration/evidence/critics/CF-AU-I04-CONTROLLER-284086F-REWORK.md",
-    "previous_precritic_evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-B2EA713.md",
-    "published_candidate_head": "a47b045cf78d056f816e393331281fac84ec8f7a",
-    "github_review_status": "Fresh review and required checks on executable SHA 1122de39 are pending push; earlier material findings have repairs and regressions.",
-    "controller_runtime_note": ".orchestration/evidence/critics/CF-AU-I04-CONTROLLER-8981F7E-BLOCKED.md",
-    "next_action": "Publish immutable Artifact A1 and push branch/tag to PR #22; complete exact-head checks/automatic review and fresh delegated read-only Controller review."
+    "precritic_evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-A2.md",
+    "github_review_status": "A1 findings 4310028753 and 4310028757 repaired locally; replies and resolution pending push. Fresh A2 review/checks not yet requested.",
+    "controller_runtime_note": ".orchestration/evidence/critics/CF-AU-I04-ARTIFACT-A1-CONTROLLER-BLOCKED.md",
+    "next_action": "Run consistency/whitespace preflight, publish Artifact A2 and push to PR #22 for exact-head checks, GitHub review and fresh delegated Controller."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
