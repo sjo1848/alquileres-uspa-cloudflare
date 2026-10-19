@@ -191,7 +191,7 @@ onMounted(()=>{void load();void loadContacts();});
 </script>
 <template>
   <section>
-    <p class="eyebrow">Área de propietarios</p><h2>Mis publicaciones</h2>
+    <p class="eyebrow">Área de propietarios</p><h1>Mis publicaciones</h1>
     <p v-if="error" class="error" role="alert">{{ error }}</p><p v-if="notice" class="success" role="status">{{ notice }}</p>
     <button class="secondary" :disabled="busy||loading" @click="load()">Recargar publicaciones</button>
     <div v-if="confirmReload" class="notice" role="status">
@@ -214,7 +214,7 @@ onMounted(()=>{void load();void loadContacts();});
         </button>
       </aside>
       <article class="card editor">
-        <h3>{{ selected ? 'Tu publicación' : 'Nuevo borrador' }}</h3>
+        <h2>{{ selected ? 'Tu publicación' : 'Nuevo borrador' }}</h2>
         <p v-if="selected" class="status">{{ label(selected.status) }}</p>
         <div v-if="selected" class="session-actions">
           <button type="button" class="secondary" :disabled="busy||loading||dirty" @click="refreshSelected">Actualizar publicación</button>
@@ -270,12 +270,12 @@ onMounted(()=>{void load();void loadContacts();});
       </article>
     </div>
     <section class="card contacts-section" aria-labelledby="owner-contacts-title">
-      <h3 id="owner-contacts-title">Consultas recibidas <span v-if="unreadContacts">({{ unreadContacts }} sin leer)</span></h3>
+      <h2 id="owner-contacts-title">Consultas recibidas <span v-if="unreadContacts">({{ unreadContacts }} sin leer)</span></h2>
       <p v-if="contactsLoading" role="status">Cargando consultas…</p>
       <p v-else-if="!contacts.length">Todavía no recibiste consultas.</p>
       <ul v-else class="contact-list">
         <li v-for="event in contacts" :key="event.id" class="contact-card" :class="{unread:event.state==='UNREAD'}">
-          <div class="contact-card-heading"><h4>{{ event.visitorName }}</h4><span>{{ event.state==='UNREAD'?'Sin leer':'Leída' }}</span></div>
+          <div class="contact-card-heading"><h3>{{ event.visitorName }}</h3><span>{{ event.state==='UNREAD'?'Sin leer':'Leída' }}</span></div>
           <p class="contact-meta"><a :href="`mailto:${event.visitorEmail}`">{{ event.visitorEmail }}</a> · {{ event.listing.title }} · {{ new Date(event.createdAt).toLocaleString('es-AR') }}</p>
           <p class="contact-message">{{ event.message }}</p>
           <button type="button" class="secondary" :disabled="contactBusy===event.id" @click="setContactState(event,event.state==='UNREAD'?'READ':'UNREAD')">{{ event.state==='UNREAD'?'Marcar leída':'Marcar sin leer' }}</button>

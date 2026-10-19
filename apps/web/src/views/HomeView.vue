@@ -118,11 +118,11 @@ void search();
 <template>
   <section class="hero">
     <p class="eyebrow">BUSCADOR</p>
-    <h2>Encontrá tu próximo alquiler</h2>
+    <h1>Encontrá tu próximo alquiler</h1>
     <p>Publicaciones en Uspallata, con información de disponibilidad.</p>
   </section>
   <form class="filters card" @submit.prevent="search()">
-    <h3>Filtrar publicaciones</h3>
+    <h2>Filtrar publicaciones</h2>
     <label
       >Ubicación
       <input
@@ -248,7 +248,7 @@ void search();
           🏔️
         </div>
         <p class="eyebrow">{{ listing.location }}</p>
-        <h3>{{ listing.title }}</h3>
+        <h2>{{ listing.title }}</h2>
         <p>{{ listing.description }}</p>
         <p class="rental-summary">{{ formatRentalPrice(listing) }}</p>
         <p v-if="listing.domainDataStatus === 'COMPLETE'">

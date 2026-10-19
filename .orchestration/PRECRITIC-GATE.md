@@ -197,3 +197,10 @@ Codex cannot use this gate to self-declare substantive PASS.
 - GitHub P2 `4313686597`: local auth startup failed on a clean checkout because Worker dependencies were not installed. Candidate `b1fecbfcb291c7394299782a511b784e465c91eb` installs Worker and Web dependencies before build/migration/start.
 - Real clean-worktree smoke: install/audit Worker (92 packages, 0 vulns), install/audit Web (81 packages, 0 vulns), SPA build, local D1 migrations, Wrangler loopback; `/health` and `/auth/config` both HTTP 200. Details: `evidence/CF-AU-I05-CLEAN-START-REWORK.md`.
 - **Pre-Critic status: PENDING.** Publish to PR #24; exact-head CI and consolidated GitHub review/thread closure remain outstanding. Controller review must cover the exact post-fix SHA before final I05 closeout. No Preview/production update.
+
+## CF-AU-I05 — cierre final después de rework de arranque limpio (2026-10-19)
+
+- I05 auth core PR #23 merge `eecafd894c5fc57c1a5c362ae490566d3f006db2`; startup repair PR #24 merge `489fa0885f28dfa789535dda47f81035422c137e`. Executable rework `b1fecbfcb291c7394299782a511b784e465c91eb` / tree `ce2fedd39c05c056ab7c878acfb8ac65d90126f0`; only package script/README changed.
+- GitHub review exact PR head `d742712b7a05ee6d7fd1954ca3b70377c6de9ab1`: PASS/no findings/unresolved; all P2 threads resolved. Worker/Web PR run `39274582580` and merge run `39275106227` PASS.
+- Controller PASS exact startup candidate `b1fecbf`; prior auth/logout Controller PASS `8ae6186`; both requested GPT-6 Luna/High/read-only separate processes, backend identity UNVERIFIED. Clean-checkout smoke PASS, local-only.
+- **Pre-Critic: PASS; I05 closed.** No Preview deployment, no production, no I06 implementation in this increment.

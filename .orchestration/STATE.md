@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `OWNER_AUTH_CLEAN_START_REWORK`
-Active task: `CF-AU-I05 — repair clean local OWNER auth startup`
+Phase: `CF_AU_I06_3_PRECRITIC`
+Active task: `CF-AU-I06.3 — Pre-Critic pass and protected integration`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1309,3 +1309,71 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - La review de GitHub de PR #24 reportó P2 `4313748102`: `STATUS.json.work_branch` retenía la rama I05 ya integrada. Se corrigió para apuntar a `work/i05-clean-owner-auth-startup`, que coincide con el PR activo.
 - Es un cambio de estado únicamente; el código ejecutable continúa en `b1fecbfcb291c7394299782a511b784e465c91eb` y Controller PASS exacto continúa aplicando. Estado actual: review final del commit de corrección pendiente; Pre-Critic/merge permanecen pendientes.
 - **READY_TO_RESUME:** publicar el checkpoint de estado, esperar checks/review, resolver el hilo `4313748102` y completar Pre-Critic. No modificar Preview ni iniciar I06/producción.
+
+
+## Event 165 — I05 cerrado tras rework y merge protegido
+
+- PR #23 integró la autenticación OWNER local sintética en `main@eecafd894c5fc57c1a5c362ae490566d3f006db2`; PR #24 cerró el hallazgo de arranque limpio y se integró mediante merge protegido en `main@489fa0885f28dfa789535dda47f81035422c137e`. SHA ejecutable final revisado para el rework: `b1fecbfcb291c7394299782a511b784e465c91eb`, tree `ce2fedd39c05c056ab7c878acfb8ac65d90126f0`; cambios `apps/` después del Controller: ninguno.
+- GitHub review final del HEAD `d742712b7a05ee6d7fd1954ca3b70377c6de9ab1`: sin hallazgos ni conversaciones abiertas; P2 `4313686597` (instalación Worker limpia) y `4313748102` (`work_branch` obsoleto) contestados/resueltos. Checks `worker`/`web` PASS en PR run `39274582580` y merge run `39275106227`.
+- Controller PASS del arranque limpio exacto `b1fecbf` y PASS del auth/logout exacto `8ae6186`. Procesos separados solicitados GPT-6 Luna/High/read-only; backend UNVERIFIED. Evidencias bajo `.orchestration/evidence/critics/CF-AU-I05-CONTROLLER-*`. Clean-worktree smoke: Worker/Web deps y build, D1 local y Wrangler loopback; `/health` y `/auth/config` HTTP 200.
+- El I04 permanece cerrado según Event 149. I05 está cerrado. Sin Preview deployment/migración, proveedor, pago, R2, producción, datos reales o cambios al repo fuente. Cierre en Issue #7 comment `6270498165`.
+- **READY_TO_RESUME:** I06, rediseño integral UI/UX, es el siguiente bloque y aún no comenzó. No iniciar preparación de producción.
+
+## Event 166 — I06.2 dirección C aprobada; I06.3 iniciado
+
+- Producto seleccionó C: arquitectura de búsqueda/navegación/tarjetas de B con identidad cordillerana, fotografía y tipografía editorial de A. Referencia navegable única publicada en Issue #29 y fijada a Gist revision `ffa166c79e9ba8e2a05aa42766459a20c48c70b2`; decisión Human registrada en comment `6277147318`.
+- I06.3 autorizado por Issue #30: tokens/foundations visuales y shell de navegación responsive. El alcance excluye rediseñar recorridos públicos, OWNER/ADMIN y autenticación; #35–#37 mantienen sus regresiones para incrementos correspondientes.
+- Base de trabajo `main@489fa0885f28dfa789535dda47f81035422c137e`. Se comparó `988bc4d` contra la base y se confirmó que contiene únicamente la reconciliación final de I05 en STATE/STATUS/PRECRITIC; reproducida como commit `314f33a` conservando historia.
+- **READY_TO_RESUME:** consolidar pruebas focalizadas, QA desktop/mobile/teclado, preflight y PR funcional I06.3. Sin Preview, Cloudflare, producción, datos reales o cambio de auth.
+
+## Event 167 — candidato funcional I06.3 publicado en PR #38
+
+- Rama `work/i06-design-system-responsive-nav`; código candidato `7a8d31ba3feda2300b1b0de0a8527abdf02b6382`, árbol `534dfe96f8207d3e93055f8c07bc209ab4f40f5d`, base `main@489fa0885f28dfa789535dda47f81035422c137e`. PR funcional https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38, vinculado a Issue #30.
+- Alcance: foundations visuales híbridas C, shell responsive, navegación de teclado/foco, baseline de filtros mobile y reconciliación de I05. No se modificaron rutas, lógica de sesión/autorización, API, Preview o Cloudflare.
+- Typecheck, build Worker/client, consistencia canónica y QA Playwright local PASS. QA/capturas: `output/playwright/i06.3/`. El runtime Vite genérico devuelve 503 en endpoints auth al no estar habilitada PASSWORD sintética; reportado sin cambiar I05/auth.
+- **READY_TO_RESUME:** verificar CI y review GitHub exactos de PR #38, ejecutar Controller read-only sobre el SHA definitivo, procesar hallazgos materiales y completar Pre-Critic antes de merge protegido.
+
+## Event 168 — I06.3 rework consolidado publicado
+
+- Se corrigieron los dos P2 identificados por GitHub en el primer candidato: controles claros conservan texto oscuro al hover (`.secondary`, `.listing-choice`), y cada vista tiene título visible `h1`. También se movió el foco al landmark `main` al cambiar de ruta para evitar dejarlo dentro del menú mobile oculto.
+- Candidato funcional: `9f287d9a02a304cc986f2ddcecf654374e53f870`, tree `6d49ba1edfd4906ce78ca6b23ffdc12f8b00249d`; base `489fa0885f28dfa789535dda47f81035422c137e`; PR #38. Los cambios son solo UI shell/foundations, semántica y evidencia; auth, permisos, API y workflows no cambiaron.
+- Typecheck, build Worker/client, consistencia y diff check PASS. Playwright local confirmó menú GUEST/OWNER/ADMIN sintético, Escape/restauración, navegación con foco en main, título `h1` en rutas y cero overflow a 320/390 px. La interceptación `/api/auth/me` prueba renderizado/navegación cliente solamente, no auth o autorización backend.
+- Capturas y comandos: `output/playwright/i06.3/QA.md`. CI `worker`/`web` PASS en run `39326440815`. La revisión automática solicitada sobre `9f287d9` seguía `running` al último sondeo; los dos P2 anteriores requieren respuesta/resolución explícita.
+- **READY_TO_RESUME:** completar review automática exacta de `9f287d9`, resolver los P2 con evidencia, publicar este checkpoint, revisar el HEAD final de PR #38 con `project_controller` GPT-6 Luna/High/read-only en proceso separado según v2, y completar Pre-Critic antes del merge protegido.
+
+## Event 169 — Controller REWORK P2 reparado; revisión final pendiente
+
+- Controller reanudado en el hilo `01a155fc-4493-7ff0-bb1f-ca67eb4be0c2` revisó HEAD `e2e25be5957a07433a9689b25dded7661bf8afc8`, árbol `550263ef8c5e9c408c16b93c80f637b3da129310`, base `489fa0885f28dfa789535dda47f81035422c137e`. Confirmó las correcciones de los dos P2 de GitHub, la anterior transferencia de foco por ruta, el alcance de referencia C y los títulos `h1`; encontró P2: logout desde `/` podía ocultar el botón enfocado sin cambio de ruta y perder foco. Se corrigió de forma acotada con `focusMain()` después de `router.push('/')` y se verificó con Playwright sintético en URL `/` sin cambio de ruta.
+- Este resultado fue **REWORK, no PASS**. El proceso reanudado había pedido GPT-6 Luna/High y el hilo original fue creado con `--sandbox read-only`, pero el runtime del revisor reportó `danger-full-access`; por fidelidad no se registra como revisión read-only válida ni como PASS. No realizó escrituras. Informe bruto temporal en `/tmp/i063-controller-final.jsonl`, resultado en `/tmp/i063-controller-final.stderr` / transcript; se solicitará un proceso nuevo explícito `codex exec --sandbox read-only` para el candidato final.
+- Nuevo candidato funcional `87ca9c2e5a51410fee931fc1d90f7fba2f3fce9b`, árbol `ce7ad32e94cd3cffea3b6257379fe6a52497c3df`. Typecheck y build Worker/client PASS; Playwright focalizado de logout PASS. Sin cambios a auth, API, roles, Preview o producción.
+- **READY_TO_RESUME:** publicar checkpoint canónico, esperar worker/web y review automática del nuevo candidato, ejecutar Controller nuevo en proceso GPT-6 Luna/High explícitamente read-only, cerrar únicamente defectos materiales y completar Pre-Critic.
+
+## Event 170 — contraste y jerarquía accesible consolidados
+
+- La review automática de GitHub en `01c6b815ae911fcd3379cc4fa62df102ee4f45e3` encontró dos defectos P2 relacionados: token muted a 4.34:1 sobre canvas y saltos h1→h3. En el candidato `7e7efbef01e580fa1726549276ecb091c77a95ae` se oscureció el token a `#5d6b61`, medido en navegador a 4.89:1; se corrigieron títulos de sección y tarjetas para usar h2/h3 sin saltos. Los títulos de las cards mantienen su tamaño visual.
+- Playwright verificó headings h1→h2 en catálogo y ADMIN, muted 4.89:1 y hover de `.secondary` a 9.99:1; typecheck y build Worker/client PASS. QA/capturas actuales: `output/playwright/i06.3/QA.md` y `output/playwright/i06.3/`.
+- Controller separado solicitó GPT-6 Luna/High y `--sandbox read-only`, exit 0, thread `01a1560e-24a7-7dc1-9985-c0addd8ee7ab`; dio PASS sobre checkpoint `01c6b815ae911fcd3379cc4fa62df102ee4f45e3`, tree `e040d50afddf3ca90e288b6f133a260484cd1bda`, base `489fa0885f28dfa789535dda47f81035422c137e`. Reportó entorno read-only, backend model identity UNVERIFIED. Ese PASS queda histórico y no cubre el rework nuevo; se ejecutará un Controller nuevo.
+- El canonical `candidate_sha` identifica el commit funcional ejecutable (`7e7efbe`); los commits posteriores etiquetados como checkpoint cambian solo estado/evidencia. El review/controller debe registrar por separado su SHA/tree exactos. No se almacenará un SHA autorreferencial dentro de su propio commit.
+- **READY_TO_RESUME:** procesar review GitHub y checks exactos de `7e7efbe`, responder/cerrar las observaciones ya corregidas y explicar el checkpoint de estado sin código, después Controller nuevo read-only exacto, Pre-Critic y merge protegido.
+
+## Event 171 — bordes de formularios y estilo de consultas OWNER reparados
+
+- Review de GitHub en `23a12eb7dfedd1f3b1e296df4d8f4688731f1a9d` agregó P2 para el borde de text/select/textarea (2.11:1) y para la regla visual de nombres de consultas OWNER tras migrar h4→h3. En el candidato `26fd63822fbac5c1c47f853984c609f58d8f4097`, el borde ahora es `#857b6b`; Playwright midió 4.09:1 sobre papel (3.63:1 frente a canvas). Selectores de estilo quedaron `.contacts-section h2` (25.6px) y `.contact-card h3` (16.8px), medidos con CSS real en el runtime local.
+- Typecheck, build Worker/client y `git diff --check` PASS tras el fix; QA y capturas actualizadas en `output/playwright/i06.3/` y `output/playwright/i06.3/QA.md`.
+- Los dos hilos P2 nuevos (`4319108034`, `4319108044`) recibieron respuesta con mediciones y quedaron resueltos. Los hilos anteriores también permanecen resueltos.
+- **READY_TO_RESUME:** ejecutar preflight tras el checkpoint, esperar los checks `worker`/`web` y la nueva review automática en el HEAD consolidado, correr Controller GPT-6 Luna/High/read-only exacto y luego Pre-Critic.
+
+## Event 172 — I06.3 Pre-Critic PASS; integración protegida pendiente
+
+- Código ejecutable final: `26fd63822fbac5c1c47f853984c609f58d8f4097`, tree `55570c89208845ea8a8a99bd93defd76ee9bdc79`; base `main@489fa0885f28dfa789535dda47f81035422c137e`. Checkpoint exacto revisado: PR HEAD `6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b`, tree `4a59c5d809a3403e5eaec3ed94351e69267bbcf3`; sus archivos de app son idénticos al candidato ejecutable.
+- `npm run typecheck` y `npm run build` Worker/client PASS. Playwright local: desktop/mobile 1440/390, 320 sin overflow, OWNER/ADMIN sintéticos solo en UI, keyboard/Escape/foco, logout en `/`, h1→h2/h3; contraste caption/footer 4.89:1, control border 4.09:1 contra papel, hover secundaria 9.99:1; style de heading en contacto OWNER 25.6px/16.8px. Evidencia `output/playwright/i06.3/QA.md` y capturas.
+- Checks GitHub `worker`/`web` PASS en run `39328915717`. Review automática exacta en `6cb22f9` completó; hubo hallazgos históricos pero 0 sin resolver. Hilos P2 corregidos/resueltos con respuestas y evidencia. No se modificaron auth, permisos, API, Preview, Cloudflare ni producción.
+- Controller delegado separado PASS exacto sobre `6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b` / tree `4a59c5d809a3403e5eaec3ed94351e69267bbcf3`, base `489fa08`. Proceso `codex exec` con GPT-6 Luna / High solicitados y `--sandbox read-only`, exit 0, thread `01a15619-4d35-76c3-9dfb-791ff5ca4581`; runtime informó filesystem read-only. Backend model identity UNVERIFIED; no es review externa de ChatGPT. Reporte `evidence/critics/CF-AU-I06.3-CONTROLLER-6CB22F9-PASS.md`.
+- Deterministic preflight `python3 scripts/check_orchestration_state.py --base origin/main` y `git diff --check`: PASS. **Pre-Critic: PASS para integrar PR #38 únicamente mediante merge protegido y preservando commits.** Falta revalidar protecciones, HEAD y mergeabilidad justo antes del merge.
+- **READY_TO_RESUME:** confirmar main protection `worker`/`web` strict, PR exact head `6cb22f9`, cero conversaciones y mergeable; merge protegido con merge commit; después registrar SHA integrado en Issue #30.
+
+## Event 173 — review state reconciliado para merge
+
+- P2 `4319177226` señaló `current_functional_increment.github_review` desactualizado como PENDING a pesar del review exacto `6cb22f9` y Pre-Critic PASS. Se actualizó a COMPLETE, con SHA, unresolved=false y cero conversaciones abiertas; `next_action` permanece en merge protegido.
+- HEAD observado al crear este checkpoint: `aafe0d9e8b28b38b7ba668bee9e69819ff50f485`, solo estado/evidencia posterior al candidato ejecutable `26fd638`. El Controller y review siguen referenciados por SHA exacto `6cb22f9`.
+- **READY_TO_RESUME:** validar protección/checks/review del nuevo checkpoint de solo estado y, con todo verde, merge protegido PR #38 preservando historia.

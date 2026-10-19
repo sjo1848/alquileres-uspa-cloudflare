@@ -118,7 +118,7 @@ watch(
     ><p><RouterLink to="/">← Volver al buscador</RouterLink></p>
     <article class="detail card">
       <p class="eyebrow">{{ listing.location }}</p>
-      <h2>{{ listing.title }}</h2>
+      <h1>{{ listing.title }}</h1>
       <div v-if="listing.images.length" class="gallery">
         <template v-for="image in listing.images" :key="image.id">
           <img
@@ -181,7 +181,7 @@ watch(
       </p>
     </article>
     <section class="card contact" aria-labelledby="contact-title">
-      <h3 id="contact-title">Consultar por esta propiedad</h3>
+      <h2 id="contact-title">Consultar por esta propiedad</h2>
       <p>Tu mensaje llegará al propietario de la publicación.</p>
       <p v-if="contactError" class="error" role="alert">{{ contactError }}</p>
       <p v-if="contactNotice" class="success" role="status">{{ contactNotice }}</p>
