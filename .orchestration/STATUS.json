@@ -7,13 +7,13 @@
   "active_task": "CF-AU-I05 — repair clean local OWNER auth startup",
   "last_completed_task": "CF-AU-I04 closed; I05 auth core integrated, one post-merge P2 remains under bounded local-startup rework.",
   "last_completed_head": "I05 auth merge eecafd894c5fc57c1a5c362ae490566d3f006db2; startup fix candidate b1fecbfcb291c7394299782a511b784e465c91eb.",
-  "work_branch": "work/i05-owner-auth",
-  "next_action": "Wait for the final GitHub automatic review on PR #24, reply/resolve finding 4313686597 with clean-checkout smoke evidence, verify no unresolved threads and protected-merge eligibility, then complete final Pre-Critic and protected integration. No Preview, I06 or production yet.",
+  "work_branch": "work/i05-clean-owner-auth-startup",
+  "next_action": "Publish the work_branch metadata correction in PR #24; await exact-head worker/web checks and one consolidated review, resolve P2 4313748102. Controller PASS on executable b1fecbf remains applicable because no runtime/test code changes. Then finish Pre-Critic and protected integration.",
   "stop_reason": null,
   "event": {
-    "seq": 163,
-    "id": "CF_AU_I05_CLEAN_START_CONTROLLER_PASS",
-    "type": "CONTROLLER_PASS_GITHUB_PENDING"
+    "seq": 164,
+    "id": "CF_AU_I05_WORK_BRANCH_STATE_REPAIR",
+    "type": "CANONICAL_STATE_REWORK"
   },
   "external_review": null,
   "human_gate": null,
@@ -23,7 +23,7 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/24",
     "branch": "work/i05-clean-owner-auth-startup",
-    "last_observed_head": "aabafc997f23fbeb607e0411a83a3feca33982e2",
+    "last_observed_head": "333063280f528b4c0a6d03a39414b30a866aa743",
     "merge_commit": null,
     "head_source": "I05 post-merge clean local startup rework; executable candidate plus local evidence checkpoint.",
     "candidate_sha": "b1fecbfcb291c7394299782a511b784e465c91eb"
@@ -85,7 +85,7 @@
     "preview_delivery": "No Preview code/migration/deployment or Access change; existing Access-protected Preview remains unchanged.",
     "remote_authenticated_e2e": "BLOCKED_AUTH; no executor Access session available.",
     "cost_and_scope": "USD 0; no R2, paid/email provider, public registration, real identities/data, production, source writes, or new remote resources.",
-    "next_action": "Wait for the final GitHub automatic review on PR #24, reply/resolve finding 4313686597 with clean-checkout smoke evidence, verify no unresolved threads and protected-merge eligibility, then complete final Pre-Critic and protected integration. No Preview, I06 or production yet.",
+    "next_action": "Publish the work_branch metadata correction in PR #24; await exact-head worker/web checks and one consolidated review, resolve P2 4313748102. Controller PASS on executable b1fecbf remains applicable because no runtime/test code changes. Then finish Pre-Critic and protected integration.",
     "local_checks": {
       "worker_typecheck": "PASS on logout repair SHA 8ae6186a310fa665da1cc199ef3aef575b538843",
       "worker_auth_owner": "PASS: 5/5, includes OWNER and ADMIN Bearer-only logout revoking bearer and cookie sessions",
@@ -106,7 +106,7 @@
     "worker_media": "PASS: 15/15 after marking the two synthetic D1 media fixture accounts verified; the login setup predates the new verification field.",
     "worker_admin": "PASS: 12/12 after direct-seeded OWNER/ADMIN fixtures were set verified; all direct-auth test fixtures audited.",
     "worker_management_tests": "PASS: 13/13 after the three persistent OWNER/ADMIN management fixture users were seeded as verified.",
-    "github_review": "P2 4313686597 fixed; consolidated review status running as of last observation; final result pending.",
+    "github_review": "PR #24 review fixed P2 4313686597, but found canonical work_branch mismatch P2 4313748102; repair is state-only and pending publication/review.",
     "local_startup": "PASS: npm run local:up starts on 127.0.0.1 with wrangler.local.jsonc, D1-only/D1_BLOB, explicit PASSWORD/MOCK; health and seeded synthetic OWNER login return 200.",
     "local_owner_auth_start": "PASS: clean-start script installed web dependencies, built SPA, applied local synthetic D1 migrations, bound Worker to 127.0.0.1, and returned health 200 plus PASSWORD registration config. No Preview or R2 binding.",
     "github_checks": "PASS worker/web on PR #24 HEAD aabafc997f23fbeb607e0411a83a3feca33982e2; run 39251307746.",
@@ -125,7 +125,7 @@
       "report": ".orchestration/evidence/critics/CF-AU-I05-CONTROLLER-B1FECBF-PASS.md",
       "material_findings": 0
     },
-    "precritic": "PENDING_FINAL_GITHUB_REVIEW_AND_THREAD_RESOLUTION; Controller exact SHA PASS, clean-checkout smoke PASS.",
+    "precritic": "PENDING final GitHub review/thread closure for state-only repair; Controller PASS on executable b1fecbf remains exact and applicable.",
     "post_merge_auth_sha": "8ae6186a310fa665da1cc199ef3aef575b538843",
     "clean_checkout_startup": "PASS: worker npm ci, web npm ci/build, local D1 migrations and Wrangler loopback; /health and /auth/config HTTP 200; 0 npm audit vulnerabilities in each package.",
     "evidence": ".orchestration/evidence/CF-AU-I05-CLEAN-START-REWORK.md"

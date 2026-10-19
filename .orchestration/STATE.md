@@ -1303,3 +1303,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Controller PASS sobre SHA ejecutable `b1fecbfcb291c7394299782a511b784e465c91eb` / tree `ce2fedd39c05c056ab7c878acfb8ac65d90126f0`, base `eecafd894c5fc57c1a5c362ae490566d3f006db2`: el fix instala Worker/Web en checkout limpio; runtime auth y migraciones no cambiaron. Proceso separado `codex exec`, configuración solicitada GPT-6 Luna / High / read-only aceptada, CLI 0.163.0, exit 0; backend identity UNVERIFIED. Informe/prompt/metadata `evidence/critics/CF-AU-I05-CONTROLLER-B1FECBF-*`.
 - PR #24: checks Worker/Web PASS en HEAD `aabafc997f23fbeb607e0411a83a3feca33982e2` (run `39251307746`). Review automática consolidada todavía `running` en la última observación; P2 `4313686597` continúa abierto hasta el resultado final.
 - **READY_TO_RESUME:** esperar review final de PR #24, cerrar conversación con evidencia y revalidar protección/mergeabilidad. Pre-Critic/merge todavía no autorizados por el gate hasta obtener review definitiva. No Preview/I06/producción.
+
+## Event 164 — canonical work branch corregida para PR #24
+
+- La review de GitHub de PR #24 reportó P2 `4313748102`: `STATUS.json.work_branch` retenía la rama I05 ya integrada. Se corrigió para apuntar a `work/i05-clean-owner-auth-startup`, que coincide con el PR activo.
+- Es un cambio de estado únicamente; el código ejecutable continúa en `b1fecbfcb291c7394299782a511b784e465c91eb` y Controller PASS exacto continúa aplicando. Estado actual: review final del commit de corrección pendiente; Pre-Critic/merge permanecen pendientes.
+- **READY_TO_RESUME:** publicar el checkpoint de estado, esperar checks/review, resolver el hilo `4313748102` y completar Pre-Critic. No modificar Preview ni iniciar I06/producción.
