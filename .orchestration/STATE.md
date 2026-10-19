@@ -1142,3 +1142,13 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - A1 tag `CF-AU-I04-OWNER-ADMIN-Artifact-A1` remains immutable and is not a release approval. Its Controller returned BLOCKED (no test execution because Vitest's temp config write was denied); full invocation/output is preserved in `evidence/critics/CF-AU-I04-ARTIFACT-A1-CONTROLLER-BLOCKED.md`. The two P2 repairs are included in A2.
 - Consistency preflight on the Event 142 checkpoint: `python3 scripts/check_orchestration_state.py --base origin/main` PASS; `git diff --check origin/main...HEAD` PASS.
 - **READY_TO_RESUME:** publish Artifact A2 and push to PR #22. Resolve the two repaired GitHub findings with evidence; wait for exact-head `worker`/`web` and automatic review, process any material observation, then obtain a fresh exact-A2 delegated read-only Controller verdict. Only after Controller PASS and protected branch checks: merge, update the existing private Preview only, verify anonymous Access denial and record Issue #7.
+
+
+## Event 143 — CF-AU-I04 Artifact A3 candidate after stale ADMIN response repair
+
+- Controller review of immutable A2 `be68f314aaa77b8597c0ab6a5c3d16daaab62e5a` returned REWORK P2: a late page response from a previous OWNER selection could be applied to the current ADMIN view. GitHub automatic review identified the same issue as comment `4310143034`.
+- Fixed in exact executable candidate `08184396c652087c6159513dc049eefc163adb8e` (tree `8fe95ecc08a3362010e5218b1cefe412bfcf6b0a`): request generations bind each draft result/error/loading state to its initiating OWNER; owner changes invalidate old generations. Playwright forces the delayed OWNER A response after switching to B and verifies no leakage; all 20 named E2E checks pass.
+- Worker management 9/9 and typecheck, Web typecheck/build/build:preview, Python 25/25, E2E syntax and whitespace pass. See `.orchestration/evidence/CF-AU-I04-PRECRITIC-A3.md`.
+- A2 tag remains immutable with its REWORK; no A3 remote tag or branch push yet. Preview is unchanged.
+- Consistency preflight on the Event 143 checkpoint: `python3 scripts/check_orchestration_state.py --base origin/main` PASS; `git diff --check` PASS.
+- **READY_TO_RESUME:** publish immutable Artifact A3, push to PR #22, reply/resolve GitHub comment `4310143034`, await exact-head worker/web and automatic review, and run fresh delegated read-only Controller on A3. On PASS and protected checks, merge, update only the existing Access-protected Preview, verify anonymous Access denial, and post the verified result to Issue #7.

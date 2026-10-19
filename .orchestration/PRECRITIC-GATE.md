@@ -126,3 +126,11 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Focused evidence: Worker management 9/9 + typecheck; Web typecheck, build, Preview build; Python 25/25; Playwright local synthetic OWNER/ADMIN lifecycle PASS including dirty refresh and draft 51; E2E syntax and whitespace pass. Exact results: `evidence/CF-AU-I04-PRECRITIC-A2.md`.
 - Artifact A1 remains immutable at `1122de39f497e0635b8405210c6efb48e77916ba`; its Controller did not issue PASS and two GitHub P2s were repaired in A2. A1's full result is preserved in `evidence/critics/CF-AU-I04-ARTIFACT-A1-CONTROLLER-BLOCKED.md`.
 - **Pre-Critic: PASS to publish immutable `CF-AU-I04-OWNER-ADMIN-Artifact-A2` at exact executable SHA `be68f314aaa77b8597c0ab6a5c3d16daaab62e5a`, then submit that exact SHA for fresh GitHub checks/review and delegated read-only Controller. No merge/Preview change until those controls pass.**
+
+## CF-AU-I04 Artifact A3 — discard stale ADMIN draft pages (2026-10-19)
+
+- Exact executable candidate `08184396c652087c6159513dc049eefc163adb8e`, tree `8fe95ecc08a3362010e5218b1cefe412bfcf6b0a`; A2 code commit `be68f314aaa77b8597c0ab6a5c3d16daaab62e5` and approved main base `774d0c747e8ecbbdb97776641becbd9e49875875` are ancestors.
+- Controller/GitHub P2 stale draft-page responses are repaired with request-generation/OWNER checks and a forced delayed-response Playwright regression. The full focused OWNER/ADMIN suite passes 20 named Playwright checks; Worker management 9/9, typecheck/builds, and Python 25/25 also pass.
+- A2 is immutable and retains its Controller REWORK; A3 is the repaired candidate. Exact evidence: `evidence/CF-AU-I04-PRECRITIC-A3.md` and `critics/CF-AU-I04-ARTIFACT-A2-CONTROLLER-REWORK.md`.
+- Final state consistency and whitespace preflight must pass before tag/push; exact result is recorded in Event 143.
+- **Pre-Critic: PASS to publish immutable `CF-AU-I04-OWNER-ADMIN-Artifact-A3` at exact executable SHA `08184396c652087c6159513dc049eefc163adb8e`, then run fresh exact-head GitHub checks/review and delegated read-only Controller. No merge/Preview change until both pass.**
