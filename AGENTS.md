@@ -19,6 +19,13 @@ Latest GH review of PR #10 HEAD 5dce70a found raw client Idempotency-Key in reco
 
 # Runtime Instructions — Alquileres Uspallata Cloudflare Lab
 
+## GitHub issue delivery method (I06 onward)
+
+- GitHub Issues are the canonical plan: each increment records scope, dependencies, acceptance criteria and state there before implementation. Keep the Task Contract and `.orchestration/STATE.md` / `STATUS.json` aligned with the active Issue and real branch/HEAD.
+- Deliver functional work in a linked PR with relevant regression tests and inspectable evidence. Do not create a PR only for prose, screenshots or state bookkeeping; include needed reconciliation in the next functional PR.
+- Run deterministic local preflight before publishing. Consolidate fixes before requesting one exact-head review; use Controller based on risk/substantive delta, not on each small edit. Re-run only affected checks after a repair.
+- Close the Issue only after its acceptance criteria are evidenced. Preserve prior milestone evidence and product/security gates.
+
 You are the Runtime Orchestrator for this repository. Reconstruct state from persisted repository evidence; do not rely on conversational history.
 
 ## Durable authority roles

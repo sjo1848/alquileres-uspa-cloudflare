@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
-Phase: `CF_AU_I05_CLOSED_AWAITING_I06`
-Active task: `CF-AU-I05 closed; I06 comprehensive UI/UX redesign is next and not started`
+State: `IN_PROGRESS`
+Phase: `CF_AU_I06_3_DESIGN_SYSTEM_RESPONSIVE_NAV`
+Active task: `CF-AU-I06.3 — design system and responsive navigation`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1318,3 +1318,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Controller PASS del arranque limpio exacto `b1fecbf` y PASS del auth/logout exacto `8ae6186`. Procesos separados solicitados GPT-6 Luna/High/read-only; backend UNVERIFIED. Evidencias bajo `.orchestration/evidence/critics/CF-AU-I05-CONTROLLER-*`. Clean-worktree smoke: Worker/Web deps y build, D1 local y Wrangler loopback; `/health` y `/auth/config` HTTP 200.
 - El I04 permanece cerrado según Event 149. I05 está cerrado. Sin Preview deployment/migración, proveedor, pago, R2, producción, datos reales o cambios al repo fuente. Cierre en Issue #7 comment `6270498165`.
 - **READY_TO_RESUME:** I06, rediseño integral UI/UX, es el siguiente bloque y aún no comenzó. No iniciar preparación de producción.
+
+## Event 166 — I06.2 dirección C aprobada; I06.3 iniciado
+
+- Producto seleccionó C: arquitectura de búsqueda/navegación/tarjetas de B con identidad cordillerana, fotografía y tipografía editorial de A. Referencia navegable única publicada en Issue #29 y fijada a Gist revision `ffa166c79e9ba8e2a05aa42766459a20c48c70b2`; decisión Human registrada en comment `6277147318`.
+- I06.3 autorizado por Issue #30: tokens/foundations visuales y shell de navegación responsive. El alcance excluye rediseñar recorridos públicos, OWNER/ADMIN y autenticación; #35–#37 mantienen sus regresiones para incrementos correspondientes.
+- Base de trabajo `main@489fa0885f28dfa789535dda47f81035422c137e`. Se comparó `988bc4d` contra la base y se confirmó que contiene únicamente la reconciliación final de I05 en STATE/STATUS/PRECRITIC; reproducida como commit `314f33a` conservando historia.
+- **READY_TO_RESUME:** consolidar pruebas focalizadas, QA desktop/mobile/teclado, preflight y PR funcional I06.3. Sin Preview, Cloudflare, producción, datos reales o cambio de auth.
