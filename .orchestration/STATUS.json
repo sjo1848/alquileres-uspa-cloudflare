@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "CF_AU_I06_3_PR_REVIEW",
+  "phase": "CF_AU_I06_3_REWORK_REVIEW",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I06.3 — design system and responsive navigation, exact-head PR review",
+  "active_task": "CF-AU-I06.3 — consolidated GitHub review and delegated Controller on final candidate",
   "last_completed_task": "CF-AU-I05 synthetic OWNER authentication and clean local startup; PR #23 and PR #24 protected-merged.",
   "last_completed_head": "main@489fa0885f28dfa789535dda47f81035422c137e; executable startup fix b1fecbfcb291c7394299782a511b784e465c91eb, auth fix 8ae6186a310fa665da1cc199ef3aef575b538843.",
   "work_branch": "work/i06-design-system-responsive-nav",
-  "next_action": "On PR #38, confirm worker/web checks and consolidated GitHub review; execute read-only Controller on the exact final SHA; repair only material findings, then satisfy Pre-Critic and protected merge.",
+  "next_action": "Finish the exact-head GitHub automatic review on candidate 9f287d9a02a304cc986f2ddcecf654374e53f870; reconcile the two fixed P2 threads; publish canonical checkpoint; review its final PR HEAD with separate GPT-6 Luna/High/read-only Controller; complete Pre-Critic and protected merge only after PASS.",
   "stop_reason": null,
   "event": {
-    "seq": 167,
-    "id": "CF_AU_I06_3_CANDIDATE_PUBLISHED",
-    "type": "FUNCTIONAL_PR_PUBLISHED"
+    "seq": 168,
+    "id": "CF_AU_I06_3_REWORK_CONSOLIDATED",
+    "type": "REWORK_CONSOLIDATED"
   },
   "external_review": null,
   "human_gate": {
@@ -28,8 +28,8 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38",
     "branch": "work/i06-design-system-responsive-nav",
-    "last_observed_head": "7a8d31ba3feda2300b1b0de0a8527abdf02b6382",
-    "head_source": "I06.3 hybrid foundations + responsive nav, linked to Issue #30",
+    "last_observed_head": "9f287d9a02a304cc986f2ddcecf654374e53f870",
+    "head_source": "I06.3 hybrid foundations and responsive navigation; consolidated P2 rework published.",
     "base": "489fa0885f28dfa789535dda47f81035422c137e"
   },
   "issue_4": "CLOSED",
@@ -81,23 +81,23 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/30",
     "contract": ".orchestration/contracts/CF-AU-I06.3-DESIGN-SYSTEM-RESPONSIVE-NAV.md",
-    "status": "PR_REVIEW_PENDING",
+    "status": "REWORK_CONSOLIDATED_REVIEW_PENDING",
     "base_sha": "489fa0885f28dfa789535dda47f81035422c137e",
     "branch": "work/i06-design-system-responsive-nav",
-    "scope": "Hybrid C design tokens and responsive navigation shell only; no route/auth/business behavior changes",
-    "next": "Focused checks, browser QA, deterministic preflight and functional PR",
+    "scope": "Hybrid C design tokens and responsive navigation shell, route-level page headings, accessible focus handoff, light-control hover contrast; no auth/API/business behavior changes.",
+    "next": "Complete exact-head GitHub review/checks on 9f287d9, reply/resolve fixed P2 threads, update canonical evidence, then run the separate read-only Controller on final PR HEAD.",
     "pr_number": 38,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38",
-    "candidate_sha": "7a8d31ba3feda2300b1b0de0a8527abdf02b6382",
-    "candidate_tree": "534dfe96f8207d3e93055f8c07bc209ab4f40f5d",
+    "candidate_sha": "9f287d9a02a304cc986f2ddcecf654374e53f870",
+    "candidate_tree": "6d49ba1edfd4906ce78ca6b23ffdc12f8b00249d",
     "local_checks": {
-      "typecheck": "PASS",
-      "build": "PASS",
-      "state_preflight": "PASS",
-      "playwright": "PASS at 1440x1000, 390x844, 320px; keyboard and route-close; auth endpoints unavailable under generic local Vite configuration"
+      "typecheck": "PASS: npm run typecheck, apps/web",
+      "build": "PASS: npm run build, Worker and client, apps/web",
+      "state_preflight": "PASS: python3 scripts/check_orchestration_state.py; git diff --check",
+      "playwright": "PASS: local synthetic 1440x1000 desktop; 390x844 owner/admin/guest menus, Escape, navigation focus transfer, h1 presence, no overflow at 320/390. Synthetic auth/me interception verifies client menu only, not authentication/backend authorization."
     },
-    "controller": "PENDING exact PR HEAD",
-    "github_review": "PENDING consolidated exact-head review",
+    "controller": "PENDING exact final PR HEAD; previous review REWORK findings repaired in candidate 9f287d9.",
+    "github_review": "PENDING consolidated exact-head review for 9f287d9; worker/web checks PASS in run 39326440815; original P2 threads fixed, replies/resolution pending.",
     "evidence": "output/playwright/i06.3/QA.md"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",

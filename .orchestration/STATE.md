@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_3_PR_REVIEW`
-Active task: `CF-AU-I06.3 — design system and responsive navigation, exact-head PR review`
+Phase: `CF_AU_I06_3_REWORK_REVIEW`
+Active task: `CF-AU-I06.3 — consolidated GitHub review and delegated Controller on final candidate`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1332,3 +1332,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Alcance: foundations visuales híbridas C, shell responsive, navegación de teclado/foco, baseline de filtros mobile y reconciliación de I05. No se modificaron rutas, lógica de sesión/autorización, API, Preview o Cloudflare.
 - Typecheck, build Worker/client, consistencia canónica y QA Playwright local PASS. QA/capturas: `output/playwright/i06.3/`. El runtime Vite genérico devuelve 503 en endpoints auth al no estar habilitada PASSWORD sintética; reportado sin cambiar I05/auth.
 - **READY_TO_RESUME:** verificar CI y review GitHub exactos de PR #38, ejecutar Controller read-only sobre el SHA definitivo, procesar hallazgos materiales y completar Pre-Critic antes de merge protegido.
+
+## Event 168 — I06.3 rework consolidado publicado
+
+- Se corrigieron los dos P2 identificados por GitHub en el primer candidato: controles claros conservan texto oscuro al hover (`.secondary`, `.listing-choice`), y cada vista tiene título visible `h1`. También se movió el foco al landmark `main` al cambiar de ruta para evitar dejarlo dentro del menú mobile oculto.
+- Candidato funcional: `9f287d9a02a304cc986f2ddcecf654374e53f870`, tree `6d49ba1edfd4906ce78ca6b23ffdc12f8b00249d`; base `489fa0885f28dfa789535dda47f81035422c137e`; PR #38. Los cambios son solo UI shell/foundations, semántica y evidencia; auth, permisos, API y workflows no cambiaron.
+- Typecheck, build Worker/client, consistencia y diff check PASS. Playwright local confirmó menú GUEST/OWNER/ADMIN sintético, Escape/restauración, navegación con foco en main, título `h1` en rutas y cero overflow a 320/390 px. La interceptación `/api/auth/me` prueba renderizado/navegación cliente solamente, no auth o autorización backend.
+- Capturas y comandos: `output/playwright/i06.3/QA.md`. CI `worker`/`web` PASS en run `39326440815`. La revisión automática solicitada sobre `9f287d9` seguía `running` al último sondeo; los dos P2 anteriores requieren respuesta/resolución explícita.
+- **READY_TO_RESUME:** completar review automática exacta de `9f287d9`, resolver los P2 con evidencia, publicar este checkpoint, revisar el HEAD final de PR #38 con `project_controller` GPT-6 Luna/High/read-only en proceso separado según v2, y completar Pre-Critic antes del merge protegido.
