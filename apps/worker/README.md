@@ -19,7 +19,7 @@ Preview: `npm run build:preview` compila la plantilla sin desplegar. La D1 de la
 
 ## Autenticación OWNER local sintética
 
-Desde `apps/worker`, ejecutá `npm run local:owner-auth`. El comando instala dependencias web, construye el SPA y levanta Wrangler con D1 local en `127.0.0.1`; crea una cuenta desde la pantalla de registro y usa el buzón mock solo local para verificarla. No envía correo real ni configura Preview.
+Desde `apps/worker`, ejecutá `npm run local:owner-auth`. En un checkout limpio instala dependencias del Worker y de web, construye el SPA, aplica migraciones solo en D1 local y levanta Wrangler en `127.0.0.1`; crea una cuenta desde la pantalla de registro y usa el buzón mock solo local para verificarla. No envía correo real ni configura Preview.
 
 ## Laboratorio histórico OWNER de P2
 
