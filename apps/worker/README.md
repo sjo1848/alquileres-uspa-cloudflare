@@ -49,7 +49,9 @@ Seed owners use `synthetic-owner-password-1`; password hashes are bcrypt cost 12
 | `POST` | `/auth/login` | Source-shaped `{user}` and `alquileres_session` HttpOnly/SameSite cookie, 200 |
 | `POST` | `/auth/logout` | Clears the cookie; does not revoke an already issued bearer token, matching source behavior |
 | `GET` | `/listings` | Current OWNER's listings |
+| `GET` | `/listings/:id` | One listing owned by the authenticated OWNER |
 | `POST` | `/listings` | Source-required listing fields; creates a DRAFT with source camelCase fields, 201 |
+| `DELETE` | `/listings/:id` | Idempotently delete only an owned DRAFT/REJECTED listing and cascade its D1/static image metadata |
 | `GET/POST` | `/listings/:id/images` | List source-shaped image metadata or multipart-add field `image` |
 | `GET` | `/listings/:id/images/:imageId` | Private image bytes for an owned DRAFT/REJECTED listing |
 | `PATCH/DELETE` | `/listings/:id/images/:imageId` | Reorder by `{position}` / delete and compact |
@@ -63,6 +65,10 @@ Seed owners use `synthetic-owner-password-1`; password hashes are bcrypt cost 12
 | `POST` | `/listings/:id/reconfirm` | OWNER-scoped availability reconfirmation |
 | `GET` | `/admin/owners?search=` | ADMIN-only bounded OWNER search for assisted management |
 | `POST` | `/admin/listings/assisted` | ADMIN-only idempotent draft creation for an existing OWNER, with audit event |
+| `GET` | `/admin/listings/assisted?ownerId=...` | ADMIN-only bounded list of that OWNER's editable assisted drafts |
+| `PATCH` | `/admin/listings/assisted/:id` | ADMIN-only edit of a DRAFT/REJECTED listing; OWNER target is loaded from D1 and the action is audited |
+| `PATCH` | `/admin/listings/assisted/:id/availability`, `POST /admin/listings/assisted/:id/reconfirm` | ADMIN-assisted availability and confirmation updates with audit events |
+| `POST` | `/admin/listings/assisted/:id/submit`, `DELETE /admin/listings/assisted/:id` | ADMIN-assisted submission or editable-draft deletion with audit events |
 | `GET` | `/admin/listings/review`, `/admin/listings/audit` | ADMIN review queue and audit history |
 | `GET` | `/admin/listings/:id` | ADMIN listing detail |
 | `POST` | `/admin/listings/:id/review`, `/approve`, `/reject`, `/publish` | ADMIN moderation and publication actions with audit history |

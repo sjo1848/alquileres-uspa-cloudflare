@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `Issue #7 — deterministic quality preflight before new workflows`
+Active task: `Issue #7 — OWNER lifecycle and ADMIN-assisted listing management`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1087,3 +1087,110 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Access anónimo denegó 8/8 probes en URL estable e inmutable. Playwright local pasó el recorrido sintético OWNER→ADMIN→aprobar→publicar→ver catálogo; evidencia `output/playwright/preview-admin-role-switch.png`. `npm run test:admin`: 1 archivo / 12 pruebas PASS.
 - El E2E remoto autenticado no se ejecutó: el contexto Playwright disponible quedó en inicio de sesión Access y el navegador integrado no pudo inicializar. Se registra `BLOCKED_AUTH`; no se exportaron credenciales ni se debilitó Access.
 - **READY_TO_RESUME:** publicar este cierre documental/evidencia mediante PR protegido y checks rápidos; luego continuar el siguiente recorrido funcional autorizado de Issue #7 con QA local. Reintentar smoke remoto solo si el contexto executor dispone de una sesión normal de Access.
+
+## Event 137 — CF-AU-I04 OWNER lifecycle y ADMIN asistencia consolidada localmente
+
+- Autoridad: decisión del Human en [Issue #7, comentario 6257931179](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6257931179). Base verificada `main@774d0c747e8ecbbdb97776641becbd9e49875875`; repo fuente `sjo1848/alquileres-uspa` solo lectura.
+- Alcance: OWNER `GET /listings/:id`, borrado idempotente de DRAFT/REJECTED y UI con confirmación; ADMIN asistido para redescubrir, editar, cambiar/reconfirmar disponibilidad, enviar a revisión y borrar borradores, con auditoría atómica. No se inicia autenticación real ni moderación paralela.
+- Verificación local sintética: Worker typecheck; `test:management` 7/7; Python regressions 25/25; web typecheck, `build` y `build:preview`; Playwright integrado Workerd/D1 en desktop 1440 px y móvil 390 px, incluidos IDOR, cancelación/confirmación de borrado, D1 BLOB, mutaciones asistidas, auditoría y roles. Evidencias de pantalla: `output/playwright/owner-admin-lifecycle-desktop.png` y `output/playwright/owner-admin-lifecycle-mobile.png`.
+- Configuración `run_worker_first` del Worker, plantilla Preview y E2E dispone las rutas directas `/listings/*` en un único patrón no redundante; la regresión se valida por Python y el build Preview.
+- Estado: implementación local consolidada; no publicada aún. Checks, revisión automática de GitHub y Controller del SHA final pendientes. Sin cambio remoto de Preview.
+- Límites: USD 0, D1 sintética, sin R2, billing, producción, datos reales, autenticación real, repo fuente ni cambios en Access.
+- **READY_TO_RESUME:** ejecutar el preflight con todo el candidato staged, publicar el PR funcional, atender findings materiales en conjunto, obtener los checks requeridos y el Controller read-only para el SHA final, luego merge protegido y actualizar el Preview privado existente mediante `wrangler preview`; verificar denegación anónima y anotar el resultado en este Issue.
+
+## Event 138 — CF-AU-I04 consolidated rework passed local Pre-Critic
+
+- Exact executable rework: `87f077ed3a64de36c89a6d4caf985bbd05405c29`, tree `b77fe337a62dbb61bdf4f0163ae40d83bdc532a2`; base `774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor. The earlier PR #22 head remains `7c5b5f71a2920123fbf219ba0c57de88b2cc8299` until this rework is pushed.
+- Controller REWORK P1 on direct public `/listings/:id` dispatch was repaired: only `/api/*` and explicit availability/reconfirm/image paths are Worker-first; public detail paths serve SPA HTML. Playwright verifies both identities see the public shell while owner API remains scoped.
+- GitHub P2 findings 4309937209 (refreshing a submitted OWNER listing attempted editable-only image load) and 4309937211 (fresh-key re-submit created duplicate audit) were consolidated: refresh loads images only for DRAFT/REJECTED; new submit requires DRAFT/REJECTED, with same-key replay retained and fresh-key repeat rejected without another audit row.
+- Verification on executable SHA 87f077e: Worker typecheck; Worker management tests 7/7; Web typecheck; normal and Preview builds; Python regressions 25/25; fresh synthetic Workerd+D1 Playwright 15 checks; `git diff --cached --check`; consistency validator. Screenshots refreshed at `output/playwright/owner-admin-lifecycle-desktop.png` and `...-mobile.png`.
+- Pre-Critic PASS to publish a single consolidated PR candidate for fresh exact-head GitHub checks/review and delegated read-only Controller review only. Evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-87F077E.md`. This is not integration approval.
+- **READY_TO_RESUME:** push executable commit 87f077e and this canonical checkpoint to PR #22; verify worker/web checks, process fresh GitHub automatic review findings, then request delegated Controller PASS on the exact final PR SHA. Only then protected merge, update the existing private Preview via `wrangler preview`, check anonymous Access denial and record the result in Issue #7. No Preview or Access changes yet.
+
+## Event 139 — consolidated rework pushed to PR #22
+
+- PR #22 now contains executable repair `87f077ed3a64de36c89a6d4caf985bbd05405c29` and canonical Pre-Critic checkpoint head `a47b045cf78d056f816e393331281fac84ec8f7a`; base `main@774d0c747e8ecbbdb97776641becbd9e49875875` remains an ancestor. Only orchestration/evidence files differ between the executable SHA and current head.
+- GitHub inline findings 4309937209 and 4309937211 have concrete replies and both review threads are resolved. A fresh automatic review was explicitly requested at PR comment 6258712730. Worker/web checks on the then-current head were observed running; do not treat them as passed.
+- The prior Controller run on 7c5b5f7 returned REWORK and is preserved. Its repair is ready; a fresh Controller review must inspect the eventual exact current PR head after checks/review settle.
+- Protected `main` settings were rechecked: PR required, strict checks `worker` and `web`, enforce admins true, force push/delete disabled, required approvals 0. No merge has occurred.
+- **READY_TO_RESUME:** finish checks and fresh GitHub review on exact head; repair any material issue; then obtain read-only Controller PASS on that exact SHA. If all controls pass, protected merge and update only the existing Access-protected Preview using `wrangler preview`, with synthetic D1; verify anonymous Access denial and record Issue #7. No remote Preview action yet.
+
+## Event 140 — final local CF-AU-I04 candidate after GitHub P2 repair
+
+- Latest automatic review of PR head `8981f7e4194b6c0cc89d6d5e7ec95dd0e3c12f72` found P2: ADMIN could submit an assisted draft while the edit form was dirty and lose the visible edits. In executable commit `b2ea7130e6f25e5f60df0bb7d41c482908c4961c`, all state-changing/switching actions are now disabled while edits are unsaved; Playwright proves persisted D1 remains unchanged before Save and submit becomes available after Save.
+- Earlier material findings remain repaired: Controller P1 public-detail route collision; GitHub P2 submitted OWNER refresh; fresh-key repeated ADMIN submit audit. The latest Controller's P2 recommendation is guarded by a test asserting exactly one submit audit row.
+- Fresh local validation after the UI change: Worker test management 7/7 and typecheck PASS; Web typecheck, normal and Preview builds PASS; Python regressions 25/25 PASS; fresh local Workerd+D1 Playwright PASS with 16 checks; preflight/diff whitespace PASS. The latest screenshots were refreshed.
+- `project_controller` subagent report on 8981f7e: technically no P0/P1 reported but `BLOCKED_MODEL_CONFIG` due model/read-only runtime unverified. Do not claim PASS; follow the documented separate-process CLI procedure after publishing the final SHA. Report: `.orchestration/evidence/critics/CF-AU-I04-CONTROLLER-8981F7E-BLOCKED.md`.
+- Pre-Critic for executable SHA b2ea713: PASS to publish once for exact-head GitHub and separate-process Controller review; `.orchestration/evidence/CF-AU-I04-PRECRITIC-B2EA713.md`.
+- **READY_TO_RESUME:** publish b2ea713 and this checkpoint to PR #22, reply/resolve the new unsaved-edit thread, then verify exact-head worker/web checks and automatic review. Run separate `codex exec` requested as GPT-6 Luna / High / `--sandbox read-only` on the settled exact SHA. Repair any material findings, then protected-merge and update only the existing private Preview with `wrangler preview`; verify anonymous Access denial and report to Issue #7. No remote Preview change yet.
+
+
+## Event 141 — CF-AU-I04 final consolidated candidate passed local Pre-Critic
+
+- The Controller REWORK-2 finding on availability/reconfirmation is repaired in executable commit `1122de39f497e0635b8405210c6efb48e77916ba` (tree `f5c1ce104875e8a5b948e06512460c72b61e89de`). DRAFT/REJECTED is required in handler checks, D1 update predicates, audit predicates, and UI controls. Unexpected storage errors remain HTTP 500; a regression covers this.
+- Local verification on the executable candidate: Worker management 8/8 and Worker typecheck PASS; Web typecheck/build/build:preview PASS; Python 25/25 PASS; fresh isolated Workerd+D1 Playwright 17/17 PASS. The first E2E attempt used catalog-only seed data and timed out because the OWNER/ADMIN identities were absent; a new isolated D1 with the intended synthetic identity and catalog seeds then passed. Screenshots refreshed. Exact evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-FINAL-1122DE3.md`.
+- Controller's exact `284086f` REWORK and full requested-model/read-only run provenance are preserved under `.orchestration/evidence/critics/CF-AU-I04-CONTROLLER-284086F-*`; the repaired code has not yet received a fresh Controller verdict. GitHub's fresh checks and automatic review on this SHA are pending publication.
+- `python3 scripts/check_orchestration_state.py --base origin/main`: PASS (`canonical active state and final diff are consistent`); `git diff --check`: PASS. Preview remains unchanged.
+- Scope limits: no real authentication, no R2, billing, production, real data, Access changes, source writes, or new Cloudflare resources.
+- **READY_TO_RESUME:** tag this exact executable SHA as Artifact A1, push branch and tag to PR #22, process required checks/review and fresh exact-SHA Controller. Repair material findings; then protected-merge, update only the existing Access-protected Preview using `wrangler preview`, verify anonymous Access denial, and record results in Issue #7.
+
+
+## Event 142 — GitHub P2 findings consolidated into CF-AU-I04 Artifact A2 candidate
+
+- GitHub automatic review of A1 identified two P2 issues: OWNER's per-listing refresh could overwrite unsaved form edits; ADMIN discovery stopped after the first 50 editable drafts. Both are repaired in candidate `be68f314aaa77b8597c0ab6a5c3d16daaab62e5a` (tree `9c3caaa04cae3e0b54e803e79b3d1bc3b47697f7`): OWNER refresh is guarded while dirty; ADMIN draft discovery uses stable owner-scoped cursor pagination and an append UI.
+- The previous Controller status-boundary P1 and unexpected-storage error-classification repair remain intact. Worker tests now pass 9/9; Worker/Web typechecks, Web standard/Preview builds, Python 25/25 and fresh local Workerd+D1 Playwright PASS. Playwright covers the dirty OWNER refresh guard and loading the 51st ADMIN draft; details in `.orchestration/evidence/CF-AU-I04-PRECRITIC-A2.md`.
+- A1 tag `CF-AU-I04-OWNER-ADMIN-Artifact-A1` remains immutable and is not a release approval. Its Controller returned BLOCKED (no test execution because Vitest's temp config write was denied); full invocation/output is preserved in `evidence/critics/CF-AU-I04-ARTIFACT-A1-CONTROLLER-BLOCKED.md`. The two P2 repairs are included in A2.
+- Consistency preflight on the Event 142 checkpoint: `python3 scripts/check_orchestration_state.py --base origin/main` PASS; `git diff --check origin/main...HEAD` PASS.
+- **READY_TO_RESUME:** publish Artifact A2 and push to PR #22. Resolve the two repaired GitHub findings with evidence; wait for exact-head `worker`/`web` and automatic review, process any material observation, then obtain a fresh exact-A2 delegated read-only Controller verdict. Only after Controller PASS and protected branch checks: merge, update the existing private Preview only, verify anonymous Access denial and record Issue #7.
+
+
+## Event 143 — CF-AU-I04 Artifact A3 candidate after stale ADMIN response repair
+
+- Controller review of immutable A2 `be68f314aaa77b8597c0ab6a5c3d16daaab62e5a` returned REWORK P2: a late page response from a previous OWNER selection could be applied to the current ADMIN view. GitHub automatic review identified the same issue as comment `4310143034`.
+- Fixed in exact executable candidate `08184396c652087c6159513dc049eefc163adb8e` (tree `8fe95ecc08a3362010e5218b1cefe412bfcf6b0a`): request generations bind each draft result/error/loading state to its initiating OWNER; owner changes invalidate old generations. Playwright forces the delayed OWNER A response after switching to B and verifies no leakage; all 20 named E2E checks pass.
+- Worker management 9/9 and typecheck, Web typecheck/build/build:preview, Python 25/25, E2E syntax and whitespace pass. See `.orchestration/evidence/CF-AU-I04-PRECRITIC-A3.md`.
+- A2 tag remains immutable with its REWORK; no A3 remote tag or branch push yet. Preview is unchanged.
+- Consistency preflight on the Event 143 checkpoint: `python3 scripts/check_orchestration_state.py --base origin/main` PASS; `git diff --check` PASS.
+- **READY_TO_RESUME:** publish immutable Artifact A3, push to PR #22, reply/resolve GitHub comment `4310143034`, await exact-head worker/web and automatic review, and run fresh delegated read-only Controller on A3. On PASS and protected checks, merge, update only the existing Access-protected Preview, verify anonymous Access denial, and post the verified result to Issue #7.
+
+## Event 144 — CF-AU-I04 A4 candidate after two P2 repairs
+
+- GitHub P2 `4310175148` is repaired for OWNER and ADMIN-assisted deletion: rows without D1 BLOB bytes cause an explicit HTTP 409 before deletion; a regression exercises the actual unset `MEDIA_STRATEGY` mode and confirms D1 listing/image, audit and idempotency state are unchanged.
+- GitHub P2 `4310175152` is repaired with the same per-listing lease for OWNER availability/reconfirmation and ADMIN-assisted writes. Conditional updates plus monotonic `updated_at` keep the saved response/idempotency snapshot equal to committed D1. A controlled interleaving test checks both OWNER operations conflict during an ADMIN commit, then verifies exact replay and one audit row.
+- Executable candidate `0678f39437d9f3796d0c3338520abe59e9e99e5e`; authorized `main@774d0c747e8ecbbdb97776641becbd9e49875875` remains an ancestor. A1–A3 histories are preserved.
+- Focused checks: Worker management 11/11, contact/availability 6/6, OWNER lifecycle 4/4, Worker typecheck and whitespace check PASS. Existing A3 Web builds/typechecks and 20-check UI Playwright remain applicable because the frontend did not change; A4 backend paths are covered by focused D1/Worker tests.
+- Pre-Critic evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-A4.md`; gate is PASS to publish A4 and request final exact-head GitHub review/checks and the required Controller only. The A3 Controller process failed while trying to start Vitest under its read-only sandbox. It remains BLOCKED; do not relax sandbox. A4 Controller is explicitly static review only and must not run tests or write files.
+- **READY_TO_RESUME:** run `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`, publish `CF-AU-I04-OWNER-ADMIN-Artifact-A4` at exact executable SHA `0678f39437d9f3796d0c3338520abe59e9e99e5e`, push the consolidated branch/tag, resolve both findings with evidence and wait for required worker/web checks plus one final automatic review. Then run one separate-process GPT-6 Luna/High/read-only Controller without test execution. Merge and Preview update only after all controls pass.
+
+## Event 145 — CF-AU-I04 A5 candidate after stale ADMIN edit finding
+
+- The single final GitHub review of A4 found P2 `4310303875`: an ADMIN draft form could overwrite an OWNER edit completed after the ADMIN loaded its snapshot. A5 requires and carries `expectedUpdatedAt`, validates it against the snapshot under the shared lease and predicates the D1 update on that exact version. Stale edits return 409 without audit/idempotency receipt. The UI preserves the unsaved ADMIN form and offers an explicit current-version reload.
+- Regression coverage simulates an intervening OWNER update and confirms stale ADMIN edits cannot overwrite it; a fresh ADMIN read/update succeeds. Local Playwright covers the conflict, preserved form, explicit reload and subsequent save.
+- Exact executable candidate: `e592422e2e485aedf622d169a1e04652940bf814`; canonical base `774d0c747e8ecbbdb97776641becbd9e49875875` remains an ancestor. A1–A4 tags/history remain preserved.
+- A4 Controller PASS on exact SHA `0678f39437d9f3796d0c3338520abe59e9e99e5e` is preserved in `.orchestration/evidence/critics/CF-AU-I04-ARTIFACT-A4-CONTROLLER-PASS.md` and sanitized raw output. It is not transferable to A5. The latest A5 code needs one new exact-SHA read-only Controller.
+- Focused evidence on A5: Worker management 12/12, Worker typecheck, Web typecheck/build/Preview build, E2E syntax and 21-check local Workerd+D1 Playwright PASS. Contact/availability 6/6 and OWNER lifecycle 4/4 are unchanged paths. No R2, remote Preview, production or real data used.
+- **READY_TO_RESUME:** run `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`; publish immutable `CF-AU-I04-OWNER-ADMIN-Artifact-A5` at `e592422e2e485aedf622d169a1e04652940bf814`; push branch/tag, wait for required worker/web checks and one final automatic review, then run a fresh separate-process GPT-6 Luna/High/read-only Controller on exact A5 without tests or writes. Merge/update Preview only after every control passes.
+
+
+## Event 146 — CF-AU-I04 A6 candidate closes pending external-media deletion finding
+
+- GitHub A5 P2 `4310358340` identified recovery metadata and external objects that can remain after `listing_images` has no row. Exact repair is in executable candidate `549baf37952129d1cacfc46565e8ee1fb5581887` (tree `3887b1056b08d139367e94119c476bc05fcaf9c5`), based on approved `main@774d0c747e8ecbbdb97776641becbd9e49875875`.
+- Both OWNER and ADMIN deletion now fail closed before lock/audit/receipt/cascade for external or unknown/unset media modes. STATIC_ASSETS separately denies deletion only when dynamic image/recovery records need cleanup; repository assets are not deleted. D1_BLOB behavior and same-key committed replays are preserved. Regression cases cover unset strategy/no rows, pending ADD without image row, pending DELETE backup, and STATIC_ASSETS NEEDS_REPAIR; each proves 409 and unchanged listing/recovery/audit/idempotency state.
+- Focused management suite passed 13/13 on isolated retry after one earlier auth-hook timeout; Worker typecheck and diff whitespace passed. No UI code changed, so existing A5 local Playwright/build evidence applies. No R2 objects, remote tests, or full suite used.
+- Evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-A6.md`. Deterministic consistency/whitespace preflight passed: `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`. Pre-Critic passes to publish immutable A6 and request exact-head GitHub/Controller reviews only. GitHub checks/review and fresh Controller exact-A6 review remain required.
+- **READY_TO_RESUME:** finish canonical preflight, freeze/push A6 and one checkpoint, obtain required `worker`/`web` checks and one consolidated GitHub review, then run a separate requested GPT-6 Luna/High/read-only Controller process on exact executable SHA `549baf37952129d1cacfc46565e8ee1fb5581887` without tests or writes. Only after all controls pass, merge protected, update the existing Preview and record it in Issue #7.
+
+
+## Event 147 — A6 Controller evidence REWORK repaired in A7
+
+- The exact A6 review by the separate requested GPT-6 Luna/High/read-only CLI process returned bounded P2 REWORK: add absence-of-audit/receipt assertions to STATIC_ASSETS denial, cover a dynamic image row as well as recovery metadata, and test an arbitrary unknown strategy. No material deletion-code defect was reported. The A6 verdict and runtime provenance are preserved in `.orchestration/evidence/critics/CF-AU-I04-ARTIFACT-A6-CONTROLLER-REWORK.md`, with exact prompt/raw output beside it; A6 remains immutable.
+- The regression suite now covers those cases and Worker management 13/13 plus Worker typecheck pass. No production source or UI changed from A6. A7 is being prepared as a new exact artifact because the test tree changed.
+- **READY_TO_RESUME:** complete A7 Pre-Critic/preflight, tag/push one A7 candidate and checkpoint, obtain one exact-head GitHub review and required checks, then run one new read-only Controller on A7. Do not reuse A6 REWORK as A7 verdict or update Preview before all controls pass.
+
+## Event 148 — CF-AU-I04 A7 candidate after Controller evidence rework
+
+- Exact executable candidate `d2bab1e0af35d6ce9ad39bde520facd5903efdaf`, tree `2af2509da979e19be27c4f26ad7b8762d61e39ac`; approved `main@774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor. A7 changes the regression test file only relative to immutable A6 `549baf37952129d1cacfc46565e8ee1fb5581887`.
+- The Controller A6 P2 evidence gaps are repaired: STATIC_ASSETS tests now assert no audit/idempotency mutations for both roles and cover both a dynamic image row and NEEDS_REPAIR metadata; unknown `OBJECT_STORAGE` strategy has its own no-row case. A6's bounded REWORK remains historical and unaltered.
+- Exact A7 focused results: Worker management 13/13 and Worker typecheck PASS. Existing A5 Playwright/UI/build results remain applicable because no UI or application source changed. No R2, remote resources, or full suite used.
+- A7 Pre-Critic evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-A7.md`; deterministic orchestration/whitespace preflight is now required on the complete checkpoint.
+- **READY_TO_RESUME:** run `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`; if PASS, publish immutable A7 and one canonical checkpoint, request one exact-head GitHub review/check run, and run one fresh GPT-6 Luna/High/read-only Controller on A7. Protected merge and private Preview update only after clean reviews and Controller PASS.

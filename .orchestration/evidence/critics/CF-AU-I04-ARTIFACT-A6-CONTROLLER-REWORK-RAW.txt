@@ -1,0 +1,11 @@
+## Verdict: REWORK — bounded P2 evidence gap
+
+No P0 or P1 issue found in the reviewed deletion code. A6’s external and unknown strategy guard is shared by OWNER and ADMIN deletion, runs before lock acquisition, and returns fail closed. Both routes return a matching committed replay before checking storage policy. The STATIC_ASSETS guard blocks when dynamic image rows or incomplete recovery operations exist; it does not treat repository-managed asset paths as external objects. The D1_BLOB deletion and accounting path is unchanged.
+
+The remaining gap is in regression evidence: the STATIC_ASSETS test exercises both roles and preserves the listing and NEEDS_REPAIR operation, but does not assert absence of audit or idempotency mutations. It also tests recovery metadata, not a dynamic `listing_images` row. The external-strategy cases do assert no listing, operation, audit, or idempotency mutation for both roles, but use R2 and unset strategy rather than a separate arbitrary unknown value. Please add focused assertions/cases for these boundaries before treating the evidence as complete.
+
+**Reviewed provenance:** executable SHA `549baf37952129d1cacfc46565e8ee1fb5581887`, tree `3887b1056b08d139367e94119c476bc05fcaf9c5`; approved base `774d0c747e8ecbbdb97776641becbd9e49875875`. PR #22 head `739fc900e337943b17be8f414bc79afcada7acda` adds only orchestration state and evidence files to A6; I did not inspect live GitHub checks or independently verify the supplied automatic-review result.
+
+**Files inspected:** A5→A6 diff for `apps/worker/src/index.ts` and `apps/worker/tests/listing-management.test.ts`; `.orchestration/evidence/CF-AU-I04-PRECRITIC-A6.md`; active contract; invariants; state and pre-critic records.
+
+**Limits and metadata:** Static review only; I did not execute tests or other tooling prohibited by the request. `reviewer_kind=delegated_codex_separate_process`; `requested_model=gpt-6-luna`; `requested_effort=high`; `requested_sandbox=read-only`. The invocation’s CLI parameters are not independently exposed here, and backend model identity remains **UNVERIFIED**. This is a bounded local technical review, not external authenticated authority.

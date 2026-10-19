@@ -14,7 +14,8 @@
     "test:media": "vitest run --config vitest.config.ts tests/media-blob-spike.test.ts tests/owner-d1-blob-media.test.ts",
     "test:owner": "vitest run --config vitest.config.ts tests/owner-lifecycle.test.ts",
     "test:preview-auth": "vitest run --config vitest.config.ts tests/preview-auth.test.ts",
-    "test:contact-workflow": "vitest run --config vitest.config.ts tests/contact-workflow.test.ts"
+    "test:contact-workflow": "vitest run --config vitest.config.ts tests/contact-workflow.test.ts",
+    "test:management": "vitest run --config vitest.config.ts tests/listing-management.test.ts"
   },
   "dependencies": {
     "@jsquash/jpeg": "1.6.0",

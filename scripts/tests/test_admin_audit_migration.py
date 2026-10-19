@@ -20,12 +20,14 @@ class AdminAuditMigrationTests(unittest.TestCase):
             config = json.loads((ROOT / 'apps/worker' / name).read_text())
             self.assertIn('/owner/*', config['assets']['run_worker_first'], name)
 
-    def test_owner_availability_api_paths_are_dispatched_to_the_worker_before_spa_fallback(self):
+    def test_owner_api_and_direct_worker_first_routes_do_not_capture_public_detail_pages(self):
         for name in ('wrangler.jsonc', 'wrangler.preview.example.jsonc', 'wrangler.owner-e2e.runtime.jsonc'):
             config = json.loads((ROOT / 'apps/worker' / name).read_text())
             patterns = config['assets']['run_worker_first']
-            self.assertIn('/listings/*/availability', patterns, name)
-            self.assertIn('/listings/*/reconfirm', patterns, name)
+            self.assertIn('/api/*', patterns, name)
+            for route in ('/listings/*/availability', '/listings/*/reconfirm', '/listings/*/images', '/listings/*/images/*'):
+                self.assertIn(route, patterns, name)
+            self.assertNotIn('/listings/*', patterns, name)
 
     def test_preserves_existing_events_and_accepts_source_shaped_generic_events(self):
         db = sqlite3.connect(':memory:')

@@ -25,6 +25,7 @@ const unsaved=computed(()=>{
   return Object.keys(blank()).some(key=>form[key as keyof Fields]!==baseline[key as keyof Fields]);
 });
 let pendingCreate:{body:string;key:string}|undefined;
+let pendingListingDelete:{id:string;key:string}|undefined;
 let pendingUpload:{identity:string;key:string}|undefined;
 const imageKeys=new Map<string,string>();let imageLoadVersion=0;
 function imageMutationKey(operation:string){let key=imageKeys.get(operation);if(!key){key=crypto.randomUUID();imageKeys.set(operation,key);}return key;}
@@ -96,6 +97,25 @@ async function load(discardChanges=false){
   }
   catch(e){error.value=message(e);}
   finally{loading.value=false;}
+}
+async function refreshSelected(){
+  const item=selected.value;if(!item||busy.value||dirty.value)return;
+  busy.value=true;error.value='';notice.value='';
+  try{const current=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(item.id)}`);remember(current);if(['DRAFT','REJECTED'].includes(current.status))await loadImages(current);else{images.value=[];imageLoadVersion++;}notice.value='Publicación actualizada.';}
+  catch(e){error.value=message(e);}
+  finally{busy.value=false;}
+}
+async function removeListing(){
+  const item=selected.value;if(!item||busy.value||!canEdit.value)return;
+  const label=item.status==='REJECTED'?'la publicación rechazada':'el borrador';
+  if(!window.confirm(`¿Eliminar ${label} “${item.title}” y sus imágenes? Esta acción no se puede deshacer.`))return;
+  if(pendingListingDelete?.id!==item.id)pendingListingDelete={id:item.id,key:crypto.randomUUID()};
+  busy.value=true;error.value='';notice.value='';
+  try{
+    await session.apiRequest<{id:string;deleted:true}>(`/listings/${encodeURIComponent(item.id)}`,{method:'DELETE',headers:{'Idempotency-Key':pendingListingDelete.key}});
+    listings.value=listings.value.filter(row=>row.id!==item.id);selectedId.value=null;Object.assign(form,blank());images.value=[];pendingListingDelete=undefined;notice.value='Publicación eliminada.';
+  }catch(e){error.value=message(e);}
+  finally{busy.value=false;}
 }
 function remember(item:Listing){
   const index=listings.value.findIndex(x=>x.id===item.id);
@@ -196,6 +216,10 @@ onMounted(()=>{void load();void loadContacts();});
       <article class="card editor">
         <h3>{{ selected ? 'Tu publicación' : 'Nuevo borrador' }}</h3>
         <p v-if="selected" class="status">{{ label(selected.status) }}</p>
+        <div v-if="selected" class="session-actions">
+          <button type="button" class="secondary" :disabled="busy||loading||dirty" @click="refreshSelected">Actualizar publicación</button>
+          <button v-if="canEdit" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing">Eliminar {{ selected.status==='REJECTED'?'publicación rechazada':'borrador' }}</button>
+        </div>
         <section v-if="selected" class="subsection" aria-labelledby="owner-availability-title">
           <h3 id="owner-availability-title">Disponibilidad</h3>
           <p>{{ selected.availabilityStatus === 'AVAILABLE' ? 'Disponible' : 'No disponible' }}</p>
@@ -238,7 +262,7 @@ onMounted(()=>{void load();void loadContacts();});
               </li>
             </ul>
           </section>
-          <p v-if="canEdit&&dirty" class="notice">Guardá los cambios antes de enviar a revisión.</p>
+          <p v-if="canEdit&&dirty" class="notice">Guardá los cambios antes de actualizar la publicación o enviarla a revisión.</p>
           <button v-if="canEdit" :disabled="busy||dirty||imagesLoading" @click="submit">Enviar a revisión</button>
           <p v-else-if="selected.status==='SUBMITTED'">Tu publicación está en revisión.</p>
           <RouterLink v-if="selected.status==='APPROVED'&&selected.publicationStatus==='PUBLISHED'" :to="`/listings/${selected.id}`">Ver ficha publicada</RouterLink>
