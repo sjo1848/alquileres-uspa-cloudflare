@@ -31,3 +31,10 @@ Authority: Issue #7 Human decision comment `6265554947`. Base: `main@093bd912865
 ## Review boundary
 
 This evidence is for the consolidated local synthetic candidate only. It does not claim successful external email delivery, Free-tier production CPU compatibility, or remote/production authentication. Exact executable SHA, GitHub checks/review, Controller provenance/verdict and final Pre-Critic result are to be appended only after those controls run.
+
+## Consolidated GitHub review corrections (candidate `6c344ce710a9e9636afd3c546ca4a6a2519d3d01`)
+
+- Added `sv:0` to the preserved HTTP harness's signed positive-control JWT; its seeded session version is zero. `node --check apps/worker/tests/http.mjs` passes. The preserved full HTTP/R2 harness was not run for this correction.
+- `local:up` now uses isolated `wrangler.local.jsonc`: PASSWORD + MOCK, D1_BLOB, no R2 binding; local Worker binds to `127.0.0.1`. Smoke verified `/health` and seeded synthetic OWNER login return 200 and set a session cookie. No remote binding/resource was involved.
+- Focused Worker checks after fixture updates: catalog 7/7, media 15/15, ADMIN moderation 12/12, OWNER management 13/13, local auth 4/4, Preview auth 6/6, Worker typecheck PASS. GitHub full `worker`/`web` quick-check run `39245540349` passed the previous checkpoint `ccd2f5695e4c29379c892c8eacbf1b51f2dafb65`; final exact-head run remains pending for the harness/startup edits.
+- Review findings fixed: `4313265555`, `4313360409`, `4313360419`. The final GitHub review and exact-SHA Controller must still complete before closeout.
