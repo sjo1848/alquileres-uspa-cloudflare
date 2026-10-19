@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I04 OWNER/ADMIN lifecycle closed; PR #22 protected-merged and existing private Preview updated.",
   "last_completed_head": "Artifact A7 d2bab1e0af35d6ce9ad39bde520facd5903efdaf; protected merge 093bd9128653281b79599caf61bb6fa979b8fb49; no executable changes after A7.",
   "work_branch": "work/i05-owner-auth",
-  "next_action": "Push the fixture-only CI correction and canonical checkpoint; wait for worker/web checks and consolidated GitHub review on the resulting PR head. If clean, request one exact-tree GPT-6 Luna High read-only Controller review of candidate code/test SHA 559b28cdc72b69c9491ddb80e851234593b576d9. Do not update Preview or start I06/I08.",
+  "next_action": "Push consolidated fixture corrections and checkpoint to PR #23; wait for the complete required worker/web CI and final consolidated GitHub review on the new PR head. If clean, request one exact-tree GPT-6 Luna High read-only Controller review of candidate code/test SHA bc476be4d24cbe743b3b6b94a13f53858e751388. No Preview update and no I06/I08.",
   "stop_reason": null,
   "event": {
-    "seq": 152,
-    "id": "CF_AU_I05_CI_FIX",
+    "seq": 153,
+    "id": "CF_AU_I05_MEDIA_FIXTURES_VERIFIED",
     "type": "CONSOLIDATED_REVIEW_CONTINUATION"
   },
   "external_review": null,
@@ -25,8 +25,8 @@
     "branch": "work/i05-owner-auth",
     "last_observed_head": "de3d2e0fb075b45a0bd8c0c8dd27333eb6956150",
     "merge_commit": null,
-    "head_source": "I05 auth candidate plus fixture-only regression correction; current remote observation predates the local correction commit.",
-    "candidate_sha": "559b28cdc72b69c9491ddb80e851234593b576d9"
+    "head_source": "I05 local auth candidate with all discovered legacy synthetic-user fixtures aligned to session verification/version requirements; implementation unchanged.",
+    "candidate_sha": "bc476be4d24cbe743b3b6b94a13f53858e751388"
   },
   "integration_commit": "093bd9128653281b79599caf61bb6fa979b8fb49",
   "issue_4": "CLOSED",
@@ -80,12 +80,12 @@
     "authority": "Issue #7 comment 6265554947 (Human decision, 2026-10-19)",
     "base_sha": "093bd9128653281b79599caf61bb6fa979b8fb49",
     "base_tree": "40489a802ab1af6e51cb9eff20761a847fe1c074",
-    "status": "CI_FIX_COMMITTED_AWAITING_FINAL_PR_CHECKS_REVIEW_AND_CONTROLLER",
+    "status": "FIXTURES_CONSOLIDATED_AWAITING_FINAL_CI_AND_GITHUB_REVIEW",
     "code_status": "Worker/D1 registration, verification, password login, logout/session revocation, and reset are implemented behind loopback plus explicit MOCK configuration. Vue forms support the same local flows. No public/Preview auth or external email is enabled.",
     "preview_delivery": "No Preview code/migration/deployment or Access change; existing Access-protected Preview remains unchanged.",
     "remote_authenticated_e2e": "BLOCKED_AUTH; no executor Access session available.",
     "cost_and_scope": "USD 0; no R2, paid/email provider, public registration, real identities/data, production, source writes, or new remote resources.",
-    "next_action": "Push the fixture-only CI correction and canonical checkpoint; wait for worker/web checks and consolidated GitHub review on the resulting PR head. If clean, request one exact-tree GPT-6 Luna High read-only Controller review of candidate code/test SHA 559b28cdc72b69c9491ddb80e851234593b576d9. Do not update Preview or start I06/I08.",
+    "next_action": "Push consolidated fixture corrections and checkpoint to PR #23; wait for the complete required worker/web CI and final consolidated GitHub review on the new PR head. If clean, request one exact-tree GPT-6 Luna High read-only Controller review of candidate code/test SHA bc476be4d24cbe743b3b6b94a13f53858e751388. No Preview update and no I06/I08.",
     "local_checks": {
       "worker_typecheck": "PASS",
       "worker_auth_owner": "PASS: 4/4 local lifecycle and abuse/guard tests",
@@ -99,10 +99,11 @@
       "worker_catalog": "PASS: 7/7 after correcting JWT session-version and explicit local-auth bindings in the synthetic media fixture; application implementation unchanged."
     },
     "email_delivery": "MOCK_ONLY_EPHEMERAL; no message delivered externally and no production verification claim",
-    "executable_sha": "559b28cdc72b69c9491ddb80e851234593b576d9",
-    "executable_tree": "2cc8da956d42bf2f3fe7acbeb315a35592805fb8",
+    "executable_sha": "bc476be4d24cbe743b3b6b94a13f53858e751388",
+    "executable_tree": "510b1e38f6b2364d9f0e22a6d77bae142bc25642",
     "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/23",
-    "github_worker": "First run 39244644284 failed at test:catalog due to a synthetic fixture missing sv:0 and explicit local auth bindings; fixture-only correction committed as 559b28c, targeted catalog 7/7 PASS; final PR checks pending."
+    "github_worker": "Run 39244937118 reached test:media after test:catalog passed, then failed because legacy synthetic media users were inserted without email_verified_at. Both fixture accounts now set the verified timestamp; targeted test:media passes 15/15. Rerun full worker/web CI on consolidated candidate.",
+    "worker_media": "PASS: 15/15 after marking the two synthetic D1 media fixture accounts verified; the login setup predates the new verification field."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
