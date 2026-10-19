@@ -1179,3 +1179,18 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Focused management suite passed 13/13 on isolated retry after one earlier auth-hook timeout; Worker typecheck and diff whitespace passed. No UI code changed, so existing A5 local Playwright/build evidence applies. No R2 objects, remote tests, or full suite used.
 - Evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-A6.md`. Deterministic consistency/whitespace preflight passed: `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`. Pre-Critic passes to publish immutable A6 and request exact-head GitHub/Controller reviews only. GitHub checks/review and fresh Controller exact-A6 review remain required.
 - **READY_TO_RESUME:** finish canonical preflight, freeze/push A6 and one checkpoint, obtain required `worker`/`web` checks and one consolidated GitHub review, then run a separate requested GPT-6 Luna/High/read-only Controller process on exact executable SHA `549baf37952129d1cacfc46565e8ee1fb5581887` without tests or writes. Only after all controls pass, merge protected, update the existing Preview and record it in Issue #7.
+
+
+## Event 147 — A6 Controller evidence REWORK repaired in A7
+
+- The exact A6 review by the separate requested GPT-6 Luna/High/read-only CLI process returned bounded P2 REWORK: add absence-of-audit/receipt assertions to STATIC_ASSETS denial, cover a dynamic image row as well as recovery metadata, and test an arbitrary unknown strategy. No material deletion-code defect was reported. The A6 verdict and runtime provenance are preserved in `.orchestration/evidence/critics/CF-AU-I04-ARTIFACT-A6-CONTROLLER-REWORK.md`, with exact prompt/raw output beside it; A6 remains immutable.
+- The regression suite now covers those cases and Worker management 13/13 plus Worker typecheck pass. No production source or UI changed from A6. A7 is being prepared as a new exact artifact because the test tree changed.
+- **READY_TO_RESUME:** complete A7 Pre-Critic/preflight, tag/push one A7 candidate and checkpoint, obtain one exact-head GitHub review and required checks, then run one new read-only Controller on A7. Do not reuse A6 REWORK as A7 verdict or update Preview before all controls pass.
+
+## Event 148 — CF-AU-I04 A7 candidate after Controller evidence rework
+
+- Exact executable candidate `d2bab1e0af35d6ce9ad39bde520facd5903efdaf`, tree `2af2509da979e19be27c4f26ad7b8762d61e39ac`; approved `main@774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor. A7 changes the regression test file only relative to immutable A6 `549baf37952129d1cacfc46565e8ee1fb5581887`.
+- The Controller A6 P2 evidence gaps are repaired: STATIC_ASSETS tests now assert no audit/idempotency mutations for both roles and cover both a dynamic image row and NEEDS_REPAIR metadata; unknown `OBJECT_STORAGE` strategy has its own no-row case. A6's bounded REWORK remains historical and unaltered.
+- Exact A7 focused results: Worker management 13/13 and Worker typecheck PASS. Existing A5 Playwright/UI/build results remain applicable because no UI or application source changed. No R2, remote resources, or full suite used.
+- A7 Pre-Critic evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-A7.md`; deterministic orchestration/whitespace preflight is now required on the complete checkpoint.
+- **READY_TO_RESUME:** run `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`; if PASS, publish immutable A7 and one canonical checkpoint, request one exact-head GitHub review/check run, and run one fresh GPT-6 Luna/High/read-only Controller on A7. Protected merge and private Preview update only after clean reviews and Controller PASS.

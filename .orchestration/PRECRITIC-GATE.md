@@ -161,3 +161,12 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Worker management 13/13 and Worker typecheck pass on exact candidate. One initial concurrent run timed out in the existing auth hook; isolated rerun passed. No UI changed; existing A5 Playwright/build evidence remains applicable. No R2 objects/remote service were used.
 - Deterministic preflight passed on the full canonical checkpoint: `python3 scripts/check_orchestration_state.py --base origin/main` => PASS; `git diff --check` => PASS.
 - **Pre-Critic: PASS to publish immutable A6 and request exact-head GitHub review/checks plus one GPT-6 Luna/High/read-only Controller review only. This does not authorize merge or Preview update.**
+
+
+## CF-AU-I04 Artifact A7 — close Controller regression evidence gaps (2026-10-19)
+
+- Exact executable candidate `d2bab1e0af35d6ce9ad39bde520facd5903efdaf`, tree `2af2509da979e19be27c4f26ad7b8762d61e39ac`; approved base `774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor. A7 changes tests only from A6 `549baf37952129d1cacfc46565e8ee1fb5581887`; A6 remains immutable with its Controller REWORK preserved.
+- Controller's bounded A6 P2 evidence request is addressed: STATIC_ASSETS tests assert no audit/receipt, cover both recovery-operation and dynamic image-row cases for OWNER and ADMIN, and external/unknown strategy coverage includes `OBJECT_STORAGE`. D1_BLOB and same-key replay code did not change.
+- Worker management 13/13 and Worker typecheck PASS on A7. No frontend/UI or production-code delta, so existing Playwright/build evidence remains applicable. No R2 or remote service was used.
+- Deterministic preflight passed: `python3 scripts/check_orchestration_state.py --base origin/main` => PASS; `git diff --check` => PASS.
+- **Pre-Critic: PASS to publish immutable A7 and request one exact-head GitHub review/check run plus fresh separate-process GPT-6 Luna/High/read-only Controller. No merge/Preview until both are clean and Controller returns PASS.
