@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `OWNER_AUTH_CLEAN_START_REWORK`
-Active task: `CF-AU-I05 — repair clean local OWNER auth startup`
+Phase: `CF_AU_I05_CLOSED_AWAITING_I06`
+Active task: `CF-AU-I05 closed; I06 comprehensive UI/UX redesign is next and not started`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1309,3 +1309,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - La review de GitHub de PR #24 reportó P2 `4313748102`: `STATUS.json.work_branch` retenía la rama I05 ya integrada. Se corrigió para apuntar a `work/i05-clean-owner-auth-startup`, que coincide con el PR activo.
 - Es un cambio de estado únicamente; el código ejecutable continúa en `b1fecbfcb291c7394299782a511b784e465c91eb` y Controller PASS exacto continúa aplicando. Estado actual: review final del commit de corrección pendiente; Pre-Critic/merge permanecen pendientes.
 - **READY_TO_RESUME:** publicar el checkpoint de estado, esperar checks/review, resolver el hilo `4313748102` y completar Pre-Critic. No modificar Preview ni iniciar I06/producción.
+
+
+## Event 165 — I05 cerrado tras rework y merge protegido
+
+- PR #23 integró la autenticación OWNER local sintética en `main@eecafd894c5fc57c1a5c362ae490566d3f006db2`; PR #24 cerró el hallazgo de arranque limpio y se integró mediante merge protegido en `main@489fa0885f28dfa789535dda47f81035422c137e`. SHA ejecutable final revisado para el rework: `b1fecbfcb291c7394299782a511b784e465c91eb`, tree `ce2fedd39c05c056ab7c878acfb8ac65d90126f0`; cambios `apps/` después del Controller: ninguno.
+- GitHub review final del HEAD `d742712b7a05ee6d7fd1954ca3b70377c6de9ab1`: sin hallazgos ni conversaciones abiertas; P2 `4313686597` (instalación Worker limpia) y `4313748102` (`work_branch` obsoleto) contestados/resueltos. Checks `worker`/`web` PASS en PR run `39274582580` y merge run `39275106227`.
+- Controller PASS del arranque limpio exacto `b1fecbf` y PASS del auth/logout exacto `8ae6186`. Procesos separados solicitados GPT-6 Luna/High/read-only; backend UNVERIFIED. Evidencias bajo `.orchestration/evidence/critics/CF-AU-I05-CONTROLLER-*`. Clean-worktree smoke: Worker/Web deps y build, D1 local y Wrangler loopback; `/health` y `/auth/config` HTTP 200.
+- El I04 permanece cerrado según Event 149. I05 está cerrado. Sin Preview deployment/migración, proveedor, pago, R2, producción, datos reales o cambios al repo fuente. Cierre en Issue #7 comment `6270498165`.
+- **READY_TO_RESUME:** I06, rediseño integral UI/UX, es el siguiente bloque y aún no comenzó. No iniciar preparación de producción.
