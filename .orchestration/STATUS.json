@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I03 Artifact A2 integrado en main y publicado en el Preview privado existente; local ADMIN UI/API smoke PASS. El smoke remoto autenticado queda BLOCKED_AUTH por falta de sesión en el contexto de ejecución.",
   "last_completed_head": "Artifact A2 exacto 76fbdfd2b711f4f765be122ba9f539f0ca101963; merge protegido PR #19 0db6c0c79aaeae2204c0fe704c66d4faccdb3c05; diff ejecutable posterior al Artifact A2: ninguno.",
   "work_branch": "work/owner-admin-lifecycle",
-  "next_action": "Push executable rework 87f077ed3a64de36c89a6d4caf985bbd05405c29 and canonical Pre-Critic checkpoint to PR #22; verify exact-head worker/web checks and fresh GitHub review, then obtain delegated read-only Controller PASS on the exact PR head before protected merge and same-Preview update.",
+  "next_action": "Finish exact-head worker/web checks and automatic GitHub review for PR #22 head a47b045cf78d056f816e393331281fac84ec8f7a; findings 4309937209 and 4309937211 are replied to and resolved. Then obtain delegated read-only Controller PASS on the exact final PR head before protected merge and same-Preview update.",
   "stop_reason": null,
   "event": {
-    "seq": 138,
-    "id": "CF_AU_I04_CONSOLIDATED_REWORK_PRECRITIC_PASS",
-    "type": "LOCAL_SYNTHETIC_FUNCTIONAL_REWORK"
+    "seq": 139,
+    "id": "CF_AU_I04_REWORK_PUBLISHED_GITHUB_REVIEW_PENDING",
+    "type": "FUNCTIONAL_PR_UPDATE"
   },
   "external_review": {
     "required": false,
@@ -30,9 +30,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/22",
     "branch": "work/owner-admin-lifecycle",
-    "last_observed_head": "7c5b5f71a2920123fbf219ba0c57de88b2cc8299",
+    "last_observed_head": "a47b045cf78d056f816e393331281fac84ec8f7a",
     "merge_commit": null,
-    "head_source": "PR #22 live state before publishing consolidated REWORK commit 87f077e; previous exact-head GitHub review and Controller findings are recorded and repaired locally."
+    "head_source": "PR #22 updated with executable rework 87f077e and Pre-Critic/canonical checkpoint a47b045; required checks running; fresh automatic review requested."
   },
   "integration_commit": "0db6c0c79aaeae2204c0fe704c66d4faccdb3c05",
   "issue_4": "CLOSED",
@@ -70,7 +70,7 @@
     "scope": "CF-AU-I04 OWNER individual listing read/delete UI and ADMIN-assisted edit, availability, reconfirmation, submit and draft deletion",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
     "executable_commit": "87f077ed3a64de36c89a6d4caf985bbd05405c29",
-    "status": "PRECRITIC_PASS; PR_UPDATE_AND_EXACT_HEAD_REVIEWS_PENDING",
+    "status": "PUBLISHED; REQUIRED_CHECKS_AND_FRESH_GITHUB_REVIEW_PENDING",
     "local_checks": {
       "worker_typecheck": "PASS",
       "worker_management": "PASS: 1 file / 7 tests, including fresh-key duplicate submission rejection without audit duplication",
@@ -82,11 +82,13 @@
       "precritic": "PASS to publish for exact-head GitHub and delegated Controller review only"
     },
     "evidence": ".orchestration/evidence/CF-AU-I04-OWNER-ADMIN-LIFECYCLE.md",
-    "precritic_gate": "PENDING_EXACT_SHA_AND_REQUIRED_GITHUB_CONTROLS",
+    "precritic_gate": "PASS to submit for exact-head GitHub and Controller review; not integration PASS",
     "remote_preview_update": "PENDING_PROTECTED_MERGE",
     "scope_limits": "USD 0; no R2, billing, production, real data, real authentication, source writes, new Cloudflare resources or Access changes",
     "controller_rework": ".orchestration/evidence/critics/CF-AU-I04-CONTROLLER-7C5B5F7-REWORK.md",
-    "precritic_evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-87F077E.md"
+    "precritic_evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-87F077E.md",
+    "published_candidate_head": "a47b045cf78d056f816e393331281fac84ec8f7a",
+    "github_review_status": "Prior findings 4309937209 and 4309937211 replied to and resolved; fresh @codex review requested in comment 6258712730."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -138,7 +140,7 @@
     "scope": "CF-AU-I04 OWNER lifecycle and ADMIN-assisted listing management",
     "authority": "Issue #7 comment 6257931179; explicit Human approval 2026-10-19",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
-    "status": "CONSOLIDATED_REWORK_LOCALLY_VALIDATED; PR_UPDATE_PENDING",
+    "status": "PR_UPDATED; EXACT_HEAD_CHECKS_AND_REVIEW_PENDING",
     "code_status": "OWNER GET/DELETE/UI and ADMIN-assisted edit/availability/reconfirm/submit/delete implemented; Controller P1 and both GitHub P2 findings fixed; no real authentication.",
     "worker_typecheck": "PASS",
     "worker_management_tests": "PASS: 7/7; fresh-key duplicate submit returns 409 without an extra audit row; same-key replay stable",
@@ -152,12 +154,12 @@
       "output/playwright/owner-admin-lifecycle-mobile.png"
     ],
     "routing": "All direct /listings/* API paths dispatch to Worker in local, Preview and E2E configurations; redundancy regression is tested and Preview build passes.",
-    "github_review": "Previous review of 7c5b5f7 completed with two P2 findings; repaired in 87f077e. Fresh exact-head GitHub review pending.",
-    "controller": "Controller REWORK P1 on 7c5b5f7 repaired in 87f077e; fresh exact-head read-only review pending.",
+    "github_review": "Previous review findings 4309937209 and 4309937211 fixed, replies posted and threads resolved. Fresh @codex review requested at https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/22#issuecomment-6258712730.",
+    "controller": "Rework repair pushed. Previous delegated review interrupted because canonical checkpoint advanced after push; fresh exact-head review pending after latest PR head settles.",
     "preview_update": "PENDING_PROTECTED_MERGE",
     "remote_authenticated_e2e": "NOT_RUN; remote Preview remains unchanged",
     "cost_and_scope": "USD 0; no R2, billing, production, real data, new resources, Access changes or source-repository writes",
-    "next_action": "Push the consolidated rework and checkpoint to PR #22; wait for exact-head required checks/GitHub review and obtain Controller review on that exact SHA.",
+    "next_action": "Wait for exact-head worker/web checks and automatic review of PR head a47b045, process any material comments, then request delegated Controller PASS on the exact final head.",
     "code_sha": "87f077ed3a64de36c89a6d4caf985bbd05405c29",
     "precritic": "PASS to publish one consolidated candidate for GitHub and Controller exact-head review only."
   },
