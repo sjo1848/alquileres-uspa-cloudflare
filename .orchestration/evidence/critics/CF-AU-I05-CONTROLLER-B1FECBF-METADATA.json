@@ -1,0 +1,24 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "thread_id": "01a1541c-6b92-7260-bdba-7a10f5849fc2",
+  "cli_version": "codex-cli 0.163.0",
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "high",
+  "sandbox": "read-only",
+  "cli_configuration_accepted": true,
+  "actual_backend_model_identity": "UNVERIFIED",
+  "exit_status": 0,
+  "verdict": "PASS",
+  "exact_sha": "b1fecbfcb291c7394299782a511b784e465c91eb",
+  "exact_tree": "ce2fedd39c05c056ab7c878acfb8ac65d90126f0",
+  "canonical_base": "eecafd894c5fc57c1a5c362ae490566d3f006db2",
+  "tests_run_by_controller": false,
+  "files_changed_by_controller": false,
+  "raw_cli_json_sha256": "bfa815efe0f04a2efb5b4be5430f2647d48d20b5e6bc5b6437e220f585422d3d",
+  "usage": {
+    "input_tokens": 40471,
+    "cached_input_tokens": 23296,
+    "output_tokens": 989,
+    "reasoning_output_tokens": 496
+  }
+}

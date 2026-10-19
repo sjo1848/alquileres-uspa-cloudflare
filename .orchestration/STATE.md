@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `OWNER_AUTH_LOCAL_SYNTHETIC_DEVELOPMENT`
-Active task: `CF-AU-I05 — real OWNER authentication in local synthetic environment`
+Phase: `OWNER_AUTH_CLEAN_START_REWORK`
+Active task: `CF-AU-I05 — repair clean local OWNER auth startup`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1289,3 +1289,23 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - GitHub review consolidada del checkpoint `82d9d0bb9511ee550afd04f4b3514a984db0b110` completó sin hallazgos ni unresolved. Checks `worker` y `web` PASS en run `39249255619`. Hallazgo `4313547498` se contestó con la regresión en reply `4313633558` y quedó resuelto; conversaciones abiertas: 0.
 - Pruebas focalizadas exactas: Worker typecheck PASS, `test:owner-auth` 5/5, `test:preview-auth` 6/6. El validador y `git diff --check` pasaron en el checkpoint de rework; se repetirán en el checkpoint final.
 - **Pre-Critic PASS para integración protegida de I05 únicamente.** No desplegar Preview ni iniciar I06/I08. Próximo: repetir validador final, comprobar protecciones/checks de `main`, integrar PR #23 preservando historia si continúa elegible; después reconciliar SHA de main y cerrar I05.
+
+## Event 162 — rework local de arranque limpio I05
+
+- Tras el merge protegido de I05, la review automática final del checkpoint documental halló P2 `4313686597`: el comando `local:owner-auth` no instalaba dependencias `apps/worker` en un checkout sin `node_modules`.
+- Reparación mínima `b1fecbfcb291c7394299782a511b784e465c91eb`, tree `ce2fedd39c05c056ab7c878acfb8ac65d90126f0`: ejecuta `npm ci` del Worker antes del `npm ci` de web, build SPA, D1 local y Wrangler loopback. README actualizado. La autenticación, migración y comportamiento Preview no cambian.
+- Smoke desde worktree limpio: ambas instalaciones cierran con 0 vulnerabilidades; build web PASS; 13 migraciones aplicadas en D1 local; Wrangler expone PASSWORD/MOCK+D1_BLOB en `127.0.0.1`; `/health` 200 y `/auth/config` 200. Evidencia `.orchestration/evidence/CF-AU-I05-CLEAN-START-REWORK.md`.
+- El PR #23 está integrado en `eecafd894c5fc57c1a5c362ae490566d3f006db2`, pero el hallazgo exige cerrar esta reparación técnica en PR #24 antes de marcar I05 como definitivamente cerrado. El P2 no se resuelve aún.
+- **READY_TO_RESUME:** publicar candidato de rework en PR #24, esperar checks `worker`/`web` y review consolidada; resolver hallazgo con evidencia. Después, una revisión estática Controller concisa puede confirmar el cambio acotado al script y la preservación de auth. No desplegar Preview ni iniciar I06/producción durante este rework.
+
+## Event 163 — Controller PASS del fix de arranque; review GitHub pendiente
+
+- Controller PASS sobre SHA ejecutable `b1fecbfcb291c7394299782a511b784e465c91eb` / tree `ce2fedd39c05c056ab7c878acfb8ac65d90126f0`, base `eecafd894c5fc57c1a5c362ae490566d3f006db2`: el fix instala Worker/Web en checkout limpio; runtime auth y migraciones no cambiaron. Proceso separado `codex exec`, configuración solicitada GPT-6 Luna / High / read-only aceptada, CLI 0.163.0, exit 0; backend identity UNVERIFIED. Informe/prompt/metadata `evidence/critics/CF-AU-I05-CONTROLLER-B1FECBF-*`.
+- PR #24: checks Worker/Web PASS en HEAD `aabafc997f23fbeb607e0411a83a3feca33982e2` (run `39251307746`). Review automática consolidada todavía `running` en la última observación; P2 `4313686597` continúa abierto hasta el resultado final.
+- **READY_TO_RESUME:** esperar review final de PR #24, cerrar conversación con evidencia y revalidar protección/mergeabilidad. Pre-Critic/merge todavía no autorizados por el gate hasta obtener review definitiva. No Preview/I06/producción.
+
+## Event 164 — canonical work branch corregida para PR #24
+
+- La review de GitHub de PR #24 reportó P2 `4313748102`: `STATUS.json.work_branch` retenía la rama I05 ya integrada. Se corrigió para apuntar a `work/i05-clean-owner-auth-startup`, que coincide con el PR activo.
+- Es un cambio de estado únicamente; el código ejecutable continúa en `b1fecbfcb291c7394299782a511b784e465c91eb` y Controller PASS exacto continúa aplicando. Estado actual: review final del commit de corrección pendiente; Pre-Critic/merge permanecen pendientes.
+- **READY_TO_RESUME:** publicar el checkpoint de estado, esperar checks/review, resolver el hilo `4313748102` y completar Pre-Critic. No modificar Preview ni iniciar I06/producción.

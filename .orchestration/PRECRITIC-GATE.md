@@ -191,3 +191,9 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Exact PR checkpoint `82d9d0bb9511ee550afd04f4b3514a984db0b110`: worker/web checks PASS (run `39249255619`); consolidated GitHub review completed with no findings/unresolved; finding `4313547498` resolved via reply `4313633558`; 0 unresolved conversations.
 - Controller PASS on exact executable SHA, separate `codex exec`, requested GPT-6 Luna / High / read-only, CLI accepted configuration and exit 0; backend identity UNVERIFIED. Evidence: `evidence/critics/CF-AU-I05-CONTROLLER-8AE6186-PASS.md` and metadata.
 - **Pre-Critic: PASS for protected integration of I05 only.** Final canonical validator still required before merge. No Preview update, production preparation, I06 or I08.
+
+## CF-AU-I05 — clean checkout startup P2 rework
+
+- GitHub P2 `4313686597`: local auth startup failed on a clean checkout because Worker dependencies were not installed. Candidate `b1fecbfcb291c7394299782a511b784e465c91eb` installs Worker and Web dependencies before build/migration/start.
+- Real clean-worktree smoke: install/audit Worker (92 packages, 0 vulns), install/audit Web (81 packages, 0 vulns), SPA build, local D1 migrations, Wrangler loopback; `/health` and `/auth/config` both HTTP 200. Details: `evidence/CF-AU-I05-CLEAN-START-REWORK.md`.
+- **Pre-Critic status: PENDING.** Publish to PR #24; exact-head CI and consolidated GitHub review/thread closure remain outstanding. Controller review must cover the exact post-fix SHA before final I05 closeout. No Preview/production update.
