@@ -64,11 +64,11 @@ describe('public catalog and property details', () => {
   it('keeps legacy OWNER media mutations disabled without an R2 binding', async () => {
     const secret='synthetic-static-media-test-secret-32-bytes';
     const encode=(s:string)=>btoa(s).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-    const input=encode(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+encode(JSON.stringify({id:'synthetic-owner',email:'owner@example.test',exp:Math.floor(Date.now()/1000)+60}));
+    const input=encode(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+encode(JSON.stringify({id:'synthetic-owner',email:'owner@example.test',sv:0,exp:Math.floor(Date.now()/1000)+60}));
     const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
     const signature=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(input)));
     const token=input+'.'+encode(String.fromCharCode(...signature));
-    const bindings={DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'STATIC_ASSETS'};
+    const bindings={DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'STATIC_ASSETS',AUTH_STRATEGY:'PASSWORD',LOCAL_OWNER_AUTH_ENABLED:'true',LOCAL_EMAIL_ADAPTER:'MOCK'};
     for(const [method,path] of [['POST','/listings/draft-hidden/images'],['PATCH','/listings/draft-hidden/images/x'],['DELETE','/listings/draft-hidden/images/x']]) {
       const response=await app.request('http://localhost'+path,{method,headers:{Authorization:'Bearer '+token}},bindings);
       expect(response.status).toBe(503);
