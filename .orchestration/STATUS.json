@@ -8,7 +8,7 @@
   "last_completed_task": "CF-AU-I03 Artifact A2 integrado en main y publicado en el Preview privado existente; local ADMIN UI/API smoke PASS. El smoke remoto autenticado queda BLOCKED_AUTH por falta de sesión en el contexto de ejecución.",
   "last_completed_head": "Artifact A2 exacto 76fbdfd2b711f4f765be122ba9f539f0ca101963; merge protegido PR #19 0db6c0c79aaeae2204c0fe704c66d4faccdb3c05; diff ejecutable posterior al Artifact A2: ninguno.",
   "work_branch": "work/owner-admin-lifecycle",
-  "next_action": "Run consistency/whitespace preflight, publish immutable Artifact A2 and push to PR #22. Resolve repaired GitHub findings; pass exact-head checks/automatic review and obtain delegated read-only Controller PASS; then protected-merge, update the existing private Preview, verify anonymous Access denial and post results to Issue #7.",
+  "next_action": "Publish immutable Artifact A2 and push branch/tag to PR #22; complete exact-head checks/automatic review and fresh delegated read-only Controller review; then protected-merge, update the existing private Preview, verify anonymous Access denial, and post results to Issue #7.",
   "stop_reason": null,
   "event": {
     "seq": 142,
@@ -32,7 +32,7 @@
     "branch": "work/owner-admin-lifecycle",
     "last_observed_head": "85e5c5fa1bebeca14be3546e868ca23a7f7dd105",
     "merge_commit": null,
-    "head_source": "A1 branch head 85e5c5f was live before A2 code commit be68f31; A2 and its canonical checkpoint are not yet pushed."
+    "head_source": "Live remote A1 head 85e5c5f; local A2 code commit be68f31 and final canonical checkpoint are validated but not yet pushed."
   },
   "integration_commit": "0db6c0c79aaeae2204c0fe704c66d4faccdb3c05",
   "issue_4": "CLOSED",
@@ -69,8 +69,8 @@
       "python_regressions": "PASS: 25/25",
       "playwright_local": "PASS: fresh local Workerd+D1 OWNER/ADMIN journey; includes dirty OWNER refresh guard and ADMIN pagination beyond 50",
       "e2e_syntax": "PASS: node --check",
-      "consistency_validator": "PENDING final Event 142 gate",
-      "whitespace": "PASS on code commit; rerun on full checkpoint",
+      "consistency_validator": "PASS: python3 scripts/check_orchestration_state.py --base origin/main on Event 142 checkpoint",
+      "whitespace": "PASS: git diff --check origin/main...HEAD",
       "precritic": "PASS to publish Artifact A2 for exact-SHA GitHub and delegated Controller only"
     },
     "evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-A2.md",
@@ -92,7 +92,7 @@
     "precritic_evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-A2.md",
     "github_review_status": "A1 findings 4310028753 and 4310028757 repaired locally; replies and resolution pending push. Fresh A2 review/checks not yet requested.",
     "controller_runtime_note": ".orchestration/evidence/critics/CF-AU-I04-ARTIFACT-A1-CONTROLLER-BLOCKED.md",
-    "next_action": "Run consistency/whitespace preflight, publish Artifact A2 and push to PR #22 for exact-head checks, GitHub review and fresh delegated Controller."
+    "next_action": "Publish immutable Artifact A2 and push branch/tag to PR #22; complete exact-head checks/automatic review and fresh delegated read-only Controller review."
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
