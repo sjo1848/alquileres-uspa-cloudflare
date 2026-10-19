@@ -100,6 +100,7 @@ describe('ADMIN-assisted lifecycle',()=>{
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',patch,adminCookie,'edit-after-submit')).status).toBe(409);
     const rows=await (await request(`/admin/listings/audit?listingId=${created.id}`,'GET',undefined,adminCookie)).json() as any[];
     expect(rows.filter(item=>item.action==='ADMIN_ASSISTED_LISTING_UPDATED')).toHaveLength(1);
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_SUBMITTED'").bind(created.id).first('n')).toBe(1);
     expect(rows).toEqual(expect.arrayContaining([
       expect.objectContaining({action:'ADMIN_ASSISTED_LISTING_UPDATED',actor:{id:adminId,email:'listing.mgmt.admin@example.test',role:'ADMIN'},targetOwner:{id:ownerId,email:'listing.mgmt.owner@example.test',role:'OWNER'}}),
       expect.objectContaining({action:'ADMIN_ASSISTED_AVAILABILITY_UPDATED',metadata:{availabilityStatus:'UNAVAILABLE'}}),
