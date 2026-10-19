@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_3_FINAL_REVIEW`
-Active task: `CF-AU-I06.3 — form boundary and OWNER contact style rework`
+Phase: `CF_AU_I06_3_PRECRITIC`
+Active task: `CF-AU-I06.3 — Pre-Critic pass and protected integration`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1362,3 +1362,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Typecheck, build Worker/client y `git diff --check` PASS tras el fix; QA y capturas actualizadas en `output/playwright/i06.3/` y `output/playwright/i06.3/QA.md`.
 - Los dos hilos P2 nuevos (`4319108034`, `4319108044`) recibieron respuesta con mediciones y quedaron resueltos. Los hilos anteriores también permanecen resueltos.
 - **READY_TO_RESUME:** ejecutar preflight tras el checkpoint, esperar los checks `worker`/`web` y la nueva review automática en el HEAD consolidado, correr Controller GPT-6 Luna/High/read-only exacto y luego Pre-Critic.
+
+## Event 172 — I06.3 Pre-Critic PASS; integración protegida pendiente
+
+- Código ejecutable final: `26fd63822fbac5c1c47f853984c609f58d8f4097`, tree `55570c89208845ea8a8a99bd93defd76ee9bdc79`; base `main@489fa0885f28dfa789535dda47f81035422c137e`. Checkpoint exacto revisado: PR HEAD `6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b`, tree `4a59c5d809a3403e5eaec3ed94351e69267bbcf3`; sus archivos de app son idénticos al candidato ejecutable.
+- `npm run typecheck` y `npm run build` Worker/client PASS. Playwright local: desktop/mobile 1440/390, 320 sin overflow, OWNER/ADMIN sintéticos solo en UI, keyboard/Escape/foco, logout en `/`, h1→h2/h3; contraste caption/footer 4.89:1, control border 4.09:1 contra papel, hover secundaria 9.99:1; style de heading en contacto OWNER 25.6px/16.8px. Evidencia `output/playwright/i06.3/QA.md` y capturas.
+- Checks GitHub `worker`/`web` PASS en run `39328915717`. Review automática exacta en `6cb22f9` completó; hubo hallazgos históricos pero 0 sin resolver. Hilos P2 corregidos/resueltos con respuestas y evidencia. No se modificaron auth, permisos, API, Preview, Cloudflare ni producción.
+- Controller delegado separado PASS exacto sobre `6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b` / tree `4a59c5d809a3403e5eaec3ed94351e69267bbcf3`, base `489fa08`. Proceso `codex exec` con GPT-6 Luna / High solicitados y `--sandbox read-only`, exit 0, thread `01a15619-4d35-76c3-9dfb-791ff5ca4581`; runtime informó filesystem read-only. Backend model identity UNVERIFIED; no es review externa de ChatGPT. Reporte `evidence/critics/CF-AU-I06.3-CONTROLLER-6CB22F9-PASS.md`.
+- Deterministic preflight `python3 scripts/check_orchestration_state.py --base origin/main` y `git diff --check`: PASS. **Pre-Critic: PASS para integrar PR #38 únicamente mediante merge protegido y preservando commits.** Falta revalidar protecciones, HEAD y mergeabilidad justo antes del merge.
+- **READY_TO_RESUME:** confirmar main protection `worker`/`web` strict, PR exact head `6cb22f9`, cero conversaciones y mergeable; merge protegido con merge commit; después registrar SHA integrado en Issue #30.

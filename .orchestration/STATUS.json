@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "CF_AU_I06_3_FINAL_REVIEW",
+  "phase": "CF_AU_I06_3_PRECRITIC",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I06.3 — form boundary and OWNER contact style rework",
+  "active_task": "CF-AU-I06.3 — Pre-Critic pass and protected integration",
   "last_completed_task": "CF-AU-I05 synthetic OWNER authentication and clean local startup; PR #23 and PR #24 protected-merged.",
   "last_completed_head": "main@489fa0885f28dfa789535dda47f81035422c137e; executable startup fix b1fecbfcb291c7394299782a511b784e465c91eb, auth fix 8ae6186a310fa665da1cc199ef3aef575b538843.",
   "work_branch": "work/i06-design-system-responsive-nav",
-  "next_action": "Complete the consolidated exact-head GitHub review/checks after form-boundary and OWNER contact-style rework, then run fresh GPT-6 Luna/High/read-only Controller on final checkpoint, complete Pre-Critic and protected merge only when all controls pass.",
+  "next_action": "Recheck main protection and mergeability, then merge PR #38 using protected merge commit preserving history. After merge, record the exact main SHA in Issue #30 and continue only with the next authorized I06 issue.",
   "stop_reason": null,
   "event": {
-    "seq": 171,
-    "id": "CF_AU_I06_3_FORM_CONTROL_REWORK",
-    "type": "FORM_CONTROL_REWORK"
+    "seq": 172,
+    "id": "CF_AU_I06_3_PRECRITIC_PASS",
+    "type": "PRECITIC_PASS"
   },
   "external_review": null,
   "human_gate": {
@@ -28,8 +28,8 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38",
     "branch": "work/i06-design-system-responsive-nav",
-    "last_observed_head": "26fd63822fbac5c1c47f853984c609f58d8f4097",
-    "head_source": "I06.3 consolidated accessibility rework: control boundaries and OWNER contact heading style.",
+    "last_observed_head": "6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b",
+    "head_source": "I06.3 consolidated hybrid design system/navigation and accessibility rework; state-only evidence checkpoint follows executable candidate.",
     "base": "489fa0885f28dfa789535dda47f81035422c137e"
   },
   "issue_4": "CLOSED",
@@ -81,22 +81,40 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/30",
     "contract": ".orchestration/contracts/CF-AU-I06.3-DESIGN-SYSTEM-RESPONSIVE-NAV.md",
-    "status": "ACCESSIBILITY_REWORK_PUBLISHED_REVIEW_PENDING",
+    "status": "PRECRITIC_PASS_PROTECTED_MERGE_PENDING",
     "base_sha": "489fa0885f28dfa789535dda47f81035422c137e",
     "branch": "work/i06-design-system-responsive-nav",
-    "scope": "Hybrid C design tokens and responsive navigation shell, route-level heading hierarchy, accessible focus handoff, readable form/control boundaries and OWNER contact heading scale; no auth/API/business behavior changes.",
-    "next": "Complete exact-head GitHub review/checks on candidate 26fd638; resolve any material findings; then fresh delegated read-only Controller and Pre-Critic.",
+    "scope": "Hybrid C design tokens and responsive navigation shell, accessible route heading hierarchy/focus, legible form/control boundaries and OWNER contact heading scale; no auth/API/business behavior changes.",
+    "next": "Reverify branch protection/HEAD/mergeability and required checks; protected merge PR #38 with full history.",
     "pr_number": 38,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38",
     "candidate_sha": "26fd63822fbac5c1c47f853984c609f58d8f4097",
     "candidate_tree": "55570c89208845ea8a8a99bd93defd76ee9bdc79",
     "local_checks": {
-      "typecheck": "PASS: npm run typecheck after control-border/contact-heading fixes, apps/web",
-      "build": "PASS: npm run build, Worker and client, apps/web, after fixes",
-      "state_preflight": "PASS on prior checkpoint; rerun after this status update",
-      "playwright": "PASS: existing navigation/focus/heading QA; actual text/select border 4.09:1 on paper and 3.63:1 against canvas; muted 4.89:1; hover secondary 9.99:1; owner contact h2/h3 computed 25.6px/16.8px."
+      "typecheck": "PASS: npm run typecheck after latest source fixes, apps/web",
+      "build": "PASS: npm run build, Worker and client after latest source fixes, apps/web",
+      "state_preflight": "PASS: python3 scripts/check_orchestration_state.py --base origin/main; git diff --check",
+      "playwright": "PASS: desktop 1440x1000/mobile 390x844 screenshots; 320px no overflow; guest/OWNER/ADMIN synthetic nav, Escape, route and same-route logout focus; h1→h2/h3; muted 4.89:1 canvas, field borders 4.09:1 paper, secondary hover 9.99:1, OWNER contact section/card CSS 25.6px/16.8px.",
+      "github_checks": "PASS: worker/web run 39328915717 on 6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b",
+      "github_review": "COMPLETE on 6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b; historical findings present, unresolved=false; 0 unresolved threads. Findings 4318872243, 4318872256, 4318996560, 4318996565, 4319014984, 4319014991, 4319108034, 4319108044 were answered and fixed/resolved."
     },
-    "controller": "PENDING fresh exact-head review after 26fd638 changes. Historical PASS on 23a12eb does not cover these fixes.",
+    "controller": {
+      "verdict": "PASS",
+      "reviewer_kind": "delegated_codex_separate_process",
+      "artifact_sha": "6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b",
+      "artifact_tree": "4a59c5d809a3403e5eaec3ed94351e69267bbcf3",
+      "executable_sha": "26fd63822fbac5c1c47f853984c609f58d8f4097",
+      "executable_tree": "55570c89208845ea8a8a99bd93defd76ee9bdc79",
+      "canonical_base_sha": "489fa0885f28dfa789535dda47f81035422c137e",
+      "model_requested": "gpt-6-luna",
+      "reasoning_effort_requested": "high",
+      "sandbox_requested": "read-only",
+      "actual_filesystem_report": "read-only",
+      "backend_model_identity": "UNVERIFIED",
+      "thread_id": "01a15619-4d35-76c3-9dfb-791ff5ca4581",
+      "exit_code": 0,
+      "report": ".orchestration/evidence/critics/CF-AU-I06.3-CONTROLLER-6CB22F9-PASS.md"
+    },
     "github_review": "PENDING consolidated review/checks on latest candidate 26fd638. Previous P2 form-boundary and contact-card style findings are fixed and replied/resolved.",
     "evidence": "output/playwright/i06.3/QA.md",
     "pr_reviewed_code_sha": "26fd63822fbac5c1c47f853984c609f58d8f4097",
@@ -113,7 +131,11 @@
       "exit_code": 0,
       "filesystem": "read-only per runtime report",
       "backend_model_identity": "UNVERIFIED"
-    }
+    },
+    "review_checkpoint_sha": "6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b",
+    "review_checkpoint_tree": "4a59c5d809a3403e5eaec3ed94351e69267bbcf3",
+    "review_checkpoint_kind": "metadata-only checkpoint after executable candidate; exact review/controller SHA recorded separately to avoid a self-referential SHA",
+    "precritic": "PASS: exact controller PASS; GitHub review on same exact checkpoint completed with 0 unresolved findings; required worker/web PASS; executable candidate and local evidence align; state consistency validator and diff check PASS. Protected merge pending final protection/mergeability recheck."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
