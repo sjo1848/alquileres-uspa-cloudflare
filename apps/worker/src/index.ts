@@ -91,7 +91,23 @@ app.get('/auth/me',async c=>{
   if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);
   return c.json({id:user.id,email:user.email,role:user.role});
 });
-app.post('/auth/logout',async c=>{if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);if(localOwnerAuthEnabled(c.req.raw,c.env)){const raw=cookie(c.req.header('Cookie')??null);if(raw){try{const claims:any=await verify(decodeURIComponent(raw),c.env);await c.env.DB.prepare('UPDATE users SET session_version=session_version+1,updated_at=? WHERE id=? AND email=? AND session_version=?').bind(now(),claims.id,claims.email,claims.sv??0).run();}catch{}}}return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});});
+app.post('/auth/logout',async c=>{
+  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  if(localOwnerAuthEnabled(c.req.raw,c.env)){
+    const authorization=c.req.header('Authorization')??'';
+    const bearer=authorization.startsWith('Bearer ')?authorization.slice(7):null;
+    const sessionCookie=cookie(c.req.header('Cookie')??null);
+    for(const token of new Set([bearer,sessionCookie].filter((value):value is string=>Boolean(value)))){
+      let claims:{id:string;email:string;sessionVersion:number}|undefined;
+      try{claims=await verify(decodeURIComponent(token),c.env);}catch{}
+      if(!claims)continue;
+      try{
+        await c.env.DB.prepare('UPDATE users SET session_version=session_version+1,updated_at=? WHERE id=? AND email=? AND session_version=?').bind(now(),claims.id,claims.email,claims.sessionVersion??0).run();
+      }catch{return c.json({error:'Session revocation unavailable'},503);}
+    }
+  }
+  return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});
+});
 app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string;sessionVersion:number};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email||u.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
 app.use('/owner/*',async(c,next)=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);if(!raw)return c.json({error:'Invalid or expired token'},401);if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string;sessionVersion:number};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);if(user.role!=='OWNER')return c.json({error:'Insufficient role'},403);c.set('user',user);await next();});
 app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image upload is not available with repository-managed media'},503);await next();});
