@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `CF_AU_I06_3_REWORK_REVIEW`
-Active task: `CF-AU-I06.3 — consolidated GitHub review and delegated Controller on final candidate`
+Active task: `CF-AU-I06.3 — final consolidated review after logout focus regression`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1340,3 +1340,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Typecheck, build Worker/client, consistencia y diff check PASS. Playwright local confirmó menú GUEST/OWNER/ADMIN sintético, Escape/restauración, navegación con foco en main, título `h1` en rutas y cero overflow a 320/390 px. La interceptación `/api/auth/me` prueba renderizado/navegación cliente solamente, no auth o autorización backend.
 - Capturas y comandos: `output/playwright/i06.3/QA.md`. CI `worker`/`web` PASS en run `39326440815`. La revisión automática solicitada sobre `9f287d9` seguía `running` al último sondeo; los dos P2 anteriores requieren respuesta/resolución explícita.
 - **READY_TO_RESUME:** completar review automática exacta de `9f287d9`, resolver los P2 con evidencia, publicar este checkpoint, revisar el HEAD final de PR #38 con `project_controller` GPT-6 Luna/High/read-only en proceso separado según v2, y completar Pre-Critic antes del merge protegido.
+
+## Event 169 — Controller REWORK P2 reparado; revisión final pendiente
+
+- Controller reanudado en el hilo `01a155fc-4493-7ff0-bb1f-ca67eb4be0c2` revisó HEAD `e2e25be5957a07433a9689b25dded7661bf8afc8`, árbol `550263ef8c5e9c408c16b93c80f637b3da129310`, base `489fa0885f28dfa789535dda47f81035422c137e`. Confirmó las correcciones de los dos P2 de GitHub, la anterior transferencia de foco por ruta, el alcance de referencia C y los títulos `h1`; encontró P2: logout desde `/` podía ocultar el botón enfocado sin cambio de ruta y perder foco. Se corrigió de forma acotada con `focusMain()` después de `router.push('/')` y se verificó con Playwright sintético en URL `/` sin cambio de ruta.
+- Este resultado fue **REWORK, no PASS**. El proceso reanudado había pedido GPT-6 Luna/High y el hilo original fue creado con `--sandbox read-only`, pero el runtime del revisor reportó `danger-full-access`; por fidelidad no se registra como revisión read-only válida ni como PASS. No realizó escrituras. Informe bruto temporal en `/tmp/i063-controller-final.jsonl`, resultado en `/tmp/i063-controller-final.stderr` / transcript; se solicitará un proceso nuevo explícito `codex exec --sandbox read-only` para el candidato final.
+- Nuevo candidato funcional `87ca9c2e5a51410fee931fc1d90f7fba2f3fce9b`, árbol `ce7ad32e94cd3cffea3b6257379fe6a52497c3df`. Typecheck y build Worker/client PASS; Playwright focalizado de logout PASS. Sin cambios a auth, API, roles, Preview o producción.
+- **READY_TO_RESUME:** publicar checkpoint canónico, esperar worker/web y review automática del nuevo candidato, ejecutar Controller nuevo en proceso GPT-6 Luna/High explícitamente read-only, cerrar únicamente defectos materiales y completar Pre-Critic.
