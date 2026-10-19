@@ -1,0 +1,22 @@
+{
+  "name": "cf-au-i05-local-owner-auth",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-12",
+  "vars": {
+    "JWT_EXPIRES_IN": "15m",
+    "COOKIE_SECURE": "false",
+    "COOKIE_SAME_SITE": "lax",
+    "MEDIA_STRATEGY": "D1_BLOB",
+    "AUTH_STRATEGY": "PASSWORD",
+    "LOCAL_OWNER_AUTH_ENABLED": "true",
+    "LOCAL_EMAIL_ADAPTER": "MOCK"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cf-au-i05-local-owner-auth",
+      "database_id": "00000000-0000-0000-0000-000000000072",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

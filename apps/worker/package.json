@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "wrangler dev --local",
     "local:owner-auth": "wrangler d1 migrations apply DB --local --config wrangler.owner-e2e.runtime.jsonc && wrangler dev --local --config wrangler.owner-e2e.runtime.jsonc --ip 127.0.0.1 --var JWT_SECRET:local-only-synthetic-secret-never-use-remotely-0000000000",
-    "local:up": "wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --file tests/seed.sql && wrangler dev --local",
+    "local:up": "wrangler d1 migrations apply DB --local --config wrangler.local.jsonc && wrangler d1 execute DB --local --config wrangler.local.jsonc --file tests/seed.sql && wrangler dev --local --config wrangler.local.jsonc --ip 127.0.0.1",
     "seed:catalog": "wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --file tests/seed-catalog.sql",
     "test": "node tests/retry-idempotency.mjs && node tests/http.mjs",
     "test:retry": "node tests/retry-idempotency.mjs",
