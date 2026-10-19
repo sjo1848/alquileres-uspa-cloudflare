@@ -12,9 +12,9 @@ beforeAll(async () => {
   const db = env.DB;
   await db
     .prepare(
-      'INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,?,?,?)',
+      'INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?)',
     )
-    .bind('synthetic-owner', 'owner@example.test', 'not-used', 'OWNER', created, created)
+    .bind('synthetic-owner', 'owner@example.test', 'not-used', 'OWNER', created, created, created)
     .run();
   const insertListing = db.prepare(
     'INSERT INTO listings(id,owner_id,status,title,description,location,price_amount,price_period,rental_duration,max_occupants,currency,publication_status,availability_status,last_confirmed_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',

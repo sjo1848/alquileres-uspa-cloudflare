@@ -11,13 +11,16 @@ export default defineConfig({
       wrangler: { configPath: path.join(root, 'wrangler.jsonc') },
       miniflare: {
         bindings: {
+          AUTH_STRATEGY: 'PASSWORD',
+          LOCAL_OWNER_AUTH_ENABLED: 'true',
+          LOCAL_EMAIL_ADAPTER: 'MOCK',
           TEST_MIGRATIONS: await readD1Migrations(path.join(root, 'migrations')),
         },
       },
     })),
   ],
   test: {
-    include: ['tests/public-listings.test.ts', 'tests/contact-workflow.test.ts', 'tests/listing-management.test.ts', 'tests/media-blob-spike.test.ts', 'tests/owner-d1-blob-media.test.ts', 'tests/owner-lifecycle.test.ts', 'tests/admin-moderation.test.ts', 'tests/preview-auth.test.ts'],
+    include: ['tests/public-listings.test.ts', 'tests/contact-workflow.test.ts', 'tests/listing-management.test.ts', 'tests/media-blob-spike.test.ts', 'tests/owner-d1-blob-media.test.ts', 'tests/owner-lifecycle.test.ts', 'tests/admin-moderation.test.ts', 'tests/preview-auth.test.ts', 'tests/local-owner-auth.test.ts'],
     setupFiles: ['./tests/apply-migrations.ts'],
   },
 });

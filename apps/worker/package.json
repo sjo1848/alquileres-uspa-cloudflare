@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --local",
+    "local:owner-auth": "wrangler d1 migrations apply DB --local --config wrangler.owner-e2e.runtime.jsonc && wrangler dev --local --config wrangler.owner-e2e.runtime.jsonc --ip 127.0.0.1 --var JWT_SECRET:local-only-synthetic-secret-never-use-remotely-0000000000",
     "local:up": "wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --file tests/seed.sql && wrangler dev --local",
     "seed:catalog": "wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --file tests/seed-catalog.sql",
     "test": "node tests/retry-idempotency.mjs && node tests/http.mjs",
@@ -13,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "test:media": "vitest run --config vitest.config.ts tests/media-blob-spike.test.ts tests/owner-d1-blob-media.test.ts",
     "test:owner": "vitest run --config vitest.config.ts tests/owner-lifecycle.test.ts",
+    "test:owner-auth": "vitest run --config vitest.config.ts tests/local-owner-auth.test.ts",
     "test:preview-auth": "vitest run --config vitest.config.ts tests/preview-auth.test.ts",
     "test:contact-workflow": "vitest run --config vitest.config.ts tests/contact-workflow.test.ts",
     "test:management": "vitest run --config vitest.config.ts tests/listing-management.test.ts"

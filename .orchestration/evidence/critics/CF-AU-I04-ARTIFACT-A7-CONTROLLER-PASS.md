@@ -1,0 +1,10 @@
+# CF-AU-I04 Artifact A7 — delegated Controller PASS
+
+- **Verdict:** PASS.
+- **Exact artifact:** `CF-AU-I04-OWNER-ADMIN-Artifact-A7`, commit `d2bab1e0af35d6ce9ad39bde520facd5903efdaf`, tree `2af2509da979e19be27c4f26ad7b8762d61e39ac`; base `774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor.
+- **Review provenance:** `reviewer_kind=delegated_codex_separate_process`; role `project_controller`; CLI `codex-cli 0.163.0`; requested `--model gpt-6-luna`, `model_reasoning_effort="high"`, `--sandbox read-only`; separate `codex exec --worktree` process; CLI exit 0; thread `01a153b8-938d-74b1-8011-d38304666d80`. Backend identity is **UNVERIFIED**. This is delegated technical review, not ChatGPT/external authenticated authority.
+- **Scope inspected:** A6→A7 test delta, Worker delete paths, management tests, A7 Pre-Critic, invariants, contract, A6 Controller REWORK, canonical state. Controller did not execute tests/builds or write files.
+- **Findings closed:** STATIC_ASSETS rejection cases now cover recovery operations and dynamic image rows for OWNER and ADMIN, asserting no listing/media/audit/idempotency mutation. Unknown `OBJECT_STORAGE` has explicit coverage. Unset strategy, pending R2 ADD, DELETE cleanup backup, D1_BLOB supported deletion and same-key replay ordering remain covered. A6→A7 changes tests only; Worker production source is unchanged.
+- **Supplied test evidence (not executed by Controller):** `npm run test:management` 13/13 PASS; `npm run typecheck` PASS. The existing local OWNER/ADMIN Playwright and frontend/build results are applicable because the UI did not change.
+- **GitHub gate:** exact PR HEAD `ec3bd29c4547890c79acbc28be3b4e8ee2519503` had a completed favorable automatic-review receipt (`6264729998`); `worker` and `web` checks passed. No unresolved review threads remained.
+- **Limitations:** static review only; no runtime, deployment or production assertions. Requested model/effort/sandbox were operationally recorded; backend model attestation unavailable.

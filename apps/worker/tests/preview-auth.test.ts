@@ -31,8 +31,8 @@ beforeAll(async()=>{
     return Response.json({keys:[jwk]});
   });
   const n=new Date().toISOString();
-  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,\'OWNER\',?,?)').bind(PREVIEW_OWNER_ID,PREVIEW_OWNER_EMAIL,'not-used',n,n).run();
-  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,\'ADMIN\',?,?)').bind(PREVIEW_ADMIN_ID,PREVIEW_ADMIN_EMAIL,'not-used',n,n).run();
+  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,\'OWNER\',?,?,?)').bind(PREVIEW_OWNER_ID,PREVIEW_OWNER_EMAIL,'not-used',n,n,n).run();
+  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,\'ADMIN\',?,?,?)').bind(PREVIEW_ADMIN_ID,PREVIEW_ADMIN_EMAIL,'not-used',n,n,n).run();
 });
 afterAll(()=>vi.restoreAllMocks());
 
@@ -118,7 +118,8 @@ describe('Access identity → fixed synthetic role session, Preview only',()=>{
     }
     expect(passwordCompare).not.toHaveBeenCalled();
     expect(await (await app.request(PREVIEW_ORIGIN+'/auth/config',{},bindings)).json()).toEqual({strategy:'ACCESS_PREVIEW'});
-    expect(await (await app.request('http://localhost/auth/config',{}, {...bindings,AUTH_STRATEGY:undefined})).json()).toEqual({strategy:'PASSWORD'});
+    expect((await app.request('http://localhost/auth/config',{}, {...bindings,AUTH_STRATEGY:undefined})).status).toBe(503);
+    expect(await (await app.request('http://localhost/auth/config',{}, {...bindings,AUTH_STRATEGY:'PASSWORD',LOCAL_OWNER_AUTH_ENABLED:'true',LOCAL_EMAIL_ADAPTER:'MOCK'})).json()).toEqual({strategy:'PASSWORD',registration:true,recovery:true});
   });
   it('requires the synthetic user to exist with its expected OWNER role and email',async()=>{
     await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id=?").bind(PREVIEW_OWNER_ID).run();

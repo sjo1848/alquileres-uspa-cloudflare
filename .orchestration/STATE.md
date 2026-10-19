@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `Issue #7 — OWNER lifecycle and ADMIN-assisted listing management`
+Phase: `OWNER_AUTH_LOCAL_SYNTHETIC_DEVELOPMENT`
+Active task: `CF-AU-I05 — real OWNER authentication in local synthetic environment`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1194,3 +1194,23 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Exact A7 focused results: Worker management 13/13 and Worker typecheck PASS. Existing A5 Playwright/UI/build results remain applicable because no UI or application source changed. No R2, remote resources, or full suite used.
 - A7 Pre-Critic evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-A7.md`; deterministic orchestration/whitespace preflight is now required on the complete checkpoint.
 - **READY_TO_RESUME:** run `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`; if PASS, publish immutable A7 and one canonical checkpoint, request one exact-head GitHub review/check run, and run one fresh GPT-6 Luna/High/read-only Controller on A7. Protected merge and private Preview update only after clean reviews and Controller PASS.
+
+## Event 149 — CF-AU-I04 cerrado e integrado; inicio autorizado de I05
+
+- PR #22 se integró mediante merge protegido en `main@093bd9128653281b79599caf61bb6fa979b8fb49`. Artifact A7 conserva SHA ejecutable `d2bab1e0af35d6ce9ad39bde520facd5903efdaf`, tree `2af2509da979e19be27c4f26ad7b8762d61e39ac`; es ancestro de main y `apps/` no cambia después. Tag A7 permanece inmutable.
+- GitHub emitió recibo favorable para HEAD exacto `ec3bd29c4547890c79acbc28be3b4e8ee2519503`; `worker`/`web` pasaron en ese HEAD y en el merge; conversaciones sin resolver: 0. Main requería PR y checks estrictos; `enforce_admins=true`, sin force-push ni borrado.
+- Controller A7: PASS con revisión estática del SHA/tree/base exactos. Proceso `codex exec` separado, modelo solicitado `gpt-6-luna`, esfuerzo `high`, `--sandbox read-only`; provenance `delegated_codex_separate_process`; identidad interna de backend UNVERIFIED. El informe se conserva en `evidence/critics/CF-AU-I04-ARTIFACT-A7-CONTROLLER-PASS.md`.
+- Actualizado únicamente el Preview privado existente con Wrangler `preview`, deployment #6 `c652ceb4-01aa-408c-8a3f-4abbb91b4ca7`. La D1 sintética existente no tenía migraciones pendientes. Access anónimo devolvió 302 en 10/10 rutas/URLs; el executor no tuvo sesión autenticada y E2E remoto queda `BLOCKED_AUTH`. QA local OWNER/ADMIN continúa PASS 21/21; no se repitieron suites largas. No R2, costo, recursos nuevos, producción, datos reales, cambios de Access ni fuente.
+- Cierre publicado en Issue #7 comment `6265298884`.
+- La decisión aprobada para I05 está en Issue #7 comment `6265554947`: desarrollar autenticación OWNER local sintética, sin registro real/público en Preview, sin proveedor/costo ni tareas de producción. I06 se reserva para rediseño integral UI/UX; I07 validación de producto; I08 producción requerirá una autorización Human Gate futura.
+- **READY_TO_RESUME:** revisar la arquitectura actual de auth y el contrato del repositorio fuente en solo lectura; registrar la decisión compacta I05 y ejecutar únicamente los flujos seguros viables con Worker/D1 local sintética y email simulado. No habilitar registro en Preview ni usar identidades/datos reales.
+
+## Event 150 — CF-AU-I05 autenticación OWNER local sintética implementada
+
+- Se confirmó por GitHub REST que la directiva vigente sigue siendo Issue #7 comment `6265554947`: I05 primero, alta/verificación/reset solo local sintético con adaptador mock; no registro público en Preview, proveedor/email externo, producción ni preparación de I08. `origin/main` permanece en `093bd9128653281b79599caf61bb6fa979b8fb49`.
+- Evaluación y decisión técnica compacta: `.orchestration/contracts/CF-AU-I05-OWNER-AUTH.md`. Se conserva bcrypt cost 12 para fidelidad del repo fuente, pero la evidencia Free disponible no garantiza compatibilidad CPU; no se reduce el costo. Cloudflare Free no da un canal autorizado de envío arbitrario de email. La solución es exclusivamente local/mock; cualquier proveedor/entrega real queda fuera.
+- Implementados localmente Worker/D1 y Vue: alta OWNER cerrada a otros roles, verificación/reset con tokens aleatorios de un solo uso y hashes en D1, vencimiento, antienumeración, rate limits, Origin, sesión HttpOnly, expiración y revocación por `session_version`. La bandeja mock es efímera, acotada y solo loopback. Modo PASSWORD requiere host loopback + `LOCAL_OWNER_AUTH_ENABLED=true` + `LOCAL_EMAIL_ADAPTER=MOCK`; el middleware bloquea rutas autenticadas fuera de esa configuración. Access Preview se conserva y no expone alta/reset.
+- Migración local `0013_owner_auth_local.sql`; cuenta existentes previas conservan acceso local y cuentas nuevas nacen sin verificación. No aplicada a la D1 remota. No hubo cambios en el repo original, Preview, Access, facturación, R2 ni proveedores.
+- Verificaciones sobre el árbol local consolidado: Worker typecheck PASS; prueba local auth 4/4; Access Preview auth 6/6; suites combinadas local auth/Preview/OWNER/contacto 20/20 tras el endurecimiento final del middleware; Worker regression suite de orquestación 25/25; Web typecheck, build normal y build Preview PASS. Playwright en Workerd/D1 local recorrió registro → enlace mock/verificación → login → reset → nuevo login → dashboard OWNER → logout; tras el último cambio fail-closed, login/dashboard/logout volvió a pasar en navegador. E2E remoto sigue BLOCKED_AUTH; no se intentó.
+- Próxima acción autorizada: preflight determinista en staging y diff; publicar un único PR funcional I05 para CI `worker`/`web` y revisión automática consolidada; luego una revisión exacta del Controller Luna High read-only. No actualizar Preview ni comenzar I06/I08.
+- **READY_TO_RESUME:** ejecutar el preflight sobre el staging final, confirmar la evidencia de QA y congelar el candidato antes del primer push. Corregir todo hallazgo material consolidado antes de pedir las revisiones.
