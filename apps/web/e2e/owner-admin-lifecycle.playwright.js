@@ -110,6 +110,7 @@ async (page) => {
   await page.getByText('Disponibilidad reconfirmada y auditada.', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Enviar a revisión' }).click();
   await page.getByText('Publicación enviada a revisión y auditada.', { exact: true }).waitFor();
+  assert(await page.getByRole('button', { name: 'Marcar no disponible' }).count() === 0 && await page.getByRole('button', { name: 'Reconfirmar disponibilidad' }).count() === 0, 'submitted assisted listings must not expose availability actions');
   const submitted = await page.request.get(`${baseUrl}/api/admin/listings/audit?listingId=${encodeURIComponent(creation.listingId)}`);
   assert(submitted.status() === 200, 'ADMIN must read audit events for this listing');
   const audit = await submitted.json();
@@ -131,5 +132,5 @@ async (page) => {
   await page.getByText('Borrador eliminado y auditado.', { exact: true }).waitFor();
   const deleteAudit = await page.request.get(`${baseUrl}/api/admin/listings/audit`);
   assert((await deleteAudit.json()).some(row => row.action === 'ADMIN_ASSISTED_LISTING_DELETED' && row.actor?.id === 'admin-a' && row.targetOwner?.id === 'owner-a'), 'assisted delete audit must preserve ADMIN actor and OWNER target');
-  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
+  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submitted ADMIN listing hides availability controls', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
 }

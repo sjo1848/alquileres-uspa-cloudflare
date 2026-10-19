@@ -177,6 +177,11 @@ async function runAssistedMutation(c:any,action:string,payload:unknown,prepare:(
     return c.json(prepared.snapshot,200);
   }finally{await unlock(c.env.DB,listingId,lease);}
 }
+function assistedMutationError(c:any,error:any,message:(error:any)=>string){
+  const status=error?.status;
+  if(!Number.isInteger(status)||status<400||status>=600)throw error;
+  return c.json({error:message(error)},status);
+}
 app.patch('/admin/listings/assisted/:id',async c=>{
   const input=await boundedJson(c.req.raw,12_000) as any,allowed=['title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'];
   if(!input||Object.keys(input).some(key=>!allowed.includes(key))||['priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'].some(key=>input[key]===undefined))return c.json({error:'rental fields are required'},400);
@@ -186,22 +191,24 @@ app.patch('/admin/listings/assisted/:id',async c=>{
     const snapshot={...listing.snapshot,...input,updatedAt:at};
     const update=c.env.DB.prepare("UPDATE listings SET title=?,description=?,location=?,location_search=?,price_amount=?,price_period=?,rental_duration=?,max_occupants=?,currency=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(current.title,current.description,current.location,current.location.normalize('NFC').toLowerCase(),current.priceAmount,current.pricePeriod,current.rentalDuration,current.maxOccupants,current.currency,at,listing.id,listing.ownerId,listing.id,lease);
     return {update,auditAction:'ADMIN_ASSISTED_LISTING_UPDATED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.status IN ('DRAFT','REJECTED')",auditArgs:[listing.id,at]};
-  }).catch((error:any)=>c.json({error:error?.message==='validation failed'?'validation failed':'listing is not editable'},error?.status??409));
+  }).catch((error:any)=>assistedMutationError(c,error,error=>error?.message==='validation failed'?'validation failed':'listing is not editable'));
 });
 app.patch('/admin/listings/assisted/:id/availability',async c=>{
   const input=await boundedJson(c.req.raw,1024) as any;
   if(!input||Object.keys(input).length!==1||!['AVAILABLE','UNAVAILABLE'].includes(input.availabilityStatus))return c.json({error:'availabilityStatus must be AVAILABLE or UNAVAILABLE'},400);
   return runAssistedMutation(c,'AVAILABILITY',input,(listing,lease,at)=>{
+    if(!['DRAFT','REJECTED'].includes(listing.status))throw Object.assign(new Error('listing is not editable'),{status:409});
     const snapshot={...listing.snapshot,availabilityStatus:input.availabilityStatus,lastConfirmedAt:at,updatedAt:at};
-    const update=c.env.DB.prepare("UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(input.availabilityStatus,at,at,listing.id,listing.ownerId,listing.id,lease);
-    return {update,auditAction:'ADMIN_ASSISTED_AVAILABILITY_UPDATED',metadata:{availabilityStatus:input.availabilityStatus},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.availability_status=? AND l.last_confirmed_at=?",auditArgs:[listing.id,at,input.availabilityStatus,at]};
-  });
+    const update=c.env.DB.prepare("UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(input.availabilityStatus,at,at,listing.id,listing.ownerId,listing.id,lease);
+    return {update,auditAction:'ADMIN_ASSISTED_AVAILABILITY_UPDATED',metadata:{availabilityStatus:input.availabilityStatus},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.status IN ('DRAFT','REJECTED') AND l.availability_status=? AND l.last_confirmed_at=?",auditArgs:[listing.id,at,input.availabilityStatus,at]};
+  }).catch((error:any)=>assistedMutationError(c,error,()=> 'listing is not editable'));
 });
 app.post('/admin/listings/assisted/:id/reconfirm',async c=>runAssistedMutation(c,'RECONFIRM',{},(listing,lease,at)=>{
+  if(!['DRAFT','REJECTED'].includes(listing.status))throw Object.assign(new Error('listing is not editable'),{status:409});
   const snapshot={...listing.snapshot,lastConfirmedAt:at,updatedAt:at};
-  const update=c.env.DB.prepare("UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,at,listing.id,listing.ownerId,listing.id,lease);
-  return {update,auditAction:'ADMIN_ASSISTED_LISTING_RECONFIRMED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.last_confirmed_at=?",auditArgs:[listing.id,at,at]};
-}));
+  const update=c.env.DB.prepare("UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,at,listing.id,listing.ownerId,listing.id,lease);
+  return {update,auditAction:'ADMIN_ASSISTED_LISTING_RECONFIRMED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.last_confirmed_at=? AND l.status IN ('DRAFT','REJECTED')",auditArgs:[listing.id,at,at]};
+}).catch((error:any)=>assistedMutationError(c,error,()=> 'listing is not editable')));
 app.post('/admin/listings/assisted/:id/submit',async c=>{
   const listingId=c.req.param('id');
   return runAssistedMutation(c,'SUBMIT',{},async(listing,lease,at)=>{
@@ -215,7 +222,7 @@ app.post('/admin/listings/assisted/:id/submit',async c=>{
       return {update,auditAction:'ADMIN_ASSISTED_LISTING_SUBMITTED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.status='SUBMITTED' AND l.updated_at=?",auditArgs:[listing.id,at]};
     }
     throw Object.assign(new Error('listing cannot be submitted in its current status'),{status:409});
-  }).catch((error:any)=>c.json({error:error?.message==='complete all required listing fields before submission'?'complete all required listing fields before submission':error?.message==='legacy media migration required'?'legacy media migration required':error?.message==='image operation requires recovery'?'image operation requires recovery':'listing cannot be submitted in its current status'},error?.status??409));
+  }).catch((error:any)=>assistedMutationError(c,error,error=>error?.message==='complete all required listing fields before submission'?'complete all required listing fields before submission':error?.message==='legacy media migration required'?'legacy media migration required':error?.message==='image operation requires recovery'?'image operation requires recovery':'listing cannot be submitted in its current status'));
 });
 app.delete('/admin/listings/assisted/:id',async c=>deleteAssistedListing(c));
 async function deleteAssistedListing(c:any){

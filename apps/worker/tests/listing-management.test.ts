@@ -98,9 +98,15 @@ describe('ADMIN-assisted lifecycle',()=>{
     expect(await (await request(`/admin/listings/assisted/${created.id}/submit`,'POST',undefined,adminCookie,'assisted-submit-mgmt')).json()).toEqual(submittedBody);
     expect((await request(`/admin/listings/assisted/${created.id}/submit`,'POST',undefined,adminCookie,'assisted-submit-new-key')).status).toBe(409);
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',patch,adminCookie,'edit-after-submit')).status).toBe(409);
+    expect((await request(`/admin/listings/assisted/${created.id}/availability`,'PATCH',{availabilityStatus:'AVAILABLE'},adminCookie,'assisted-availability-after-submit')).status).toBe(409);
+    expect((await request(`/admin/listings/assisted/${created.id}/reconfirm`,'POST',undefined,adminCookie,'assisted-reconfirm-after-submit')).status).toBe(409);
+    await env.DB.prepare("UPDATE listings SET status='APPROVED' WHERE id=?").bind(created.id).run();
+    expect((await request(`/admin/listings/assisted/${created.id}/availability`,'PATCH',{availabilityStatus:'AVAILABLE'},adminCookie,'assisted-availability-after-approval')).status).toBe(409);
+    expect((await request(`/admin/listings/assisted/${created.id}/reconfirm`,'POST',undefined,adminCookie,'assisted-reconfirm-after-approval')).status).toBe(409);
     const rows=await (await request(`/admin/listings/audit?listingId=${created.id}`,'GET',undefined,adminCookie)).json() as any[];
     expect(rows.filter(item=>item.action==='ADMIN_ASSISTED_LISTING_UPDATED')).toHaveLength(1);
     expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_SUBMITTED'").bind(created.id).first('n')).toBe(1);
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action IN ('ADMIN_ASSISTED_AVAILABILITY_UPDATED','ADMIN_ASSISTED_LISTING_RECONFIRMED')").bind(created.id).first('n')).toBe(2);
     expect(rows).toEqual(expect.arrayContaining([
       expect.objectContaining({action:'ADMIN_ASSISTED_LISTING_UPDATED',actor:{id:adminId,email:'listing.mgmt.admin@example.test',role:'ADMIN'},targetOwner:{id:ownerId,email:'listing.mgmt.owner@example.test',role:'OWNER'}}),
       expect.objectContaining({action:'ADMIN_ASSISTED_AVAILABILITY_UPDATED',metadata:{availabilityStatus:'UNAVAILABLE'}}),
@@ -158,5 +164,16 @@ describe('ADMIN-assisted lifecycle',()=>{
     }finally{await env.DB.exec('DROP TRIGGER reject_assisted_delete_audit');}
     const retry=await request(`/admin/listings/assisted/${created.id}`,'DELETE',undefined,adminCookie,'atomic-assisted-delete-mgmt');
     expect(retry.status).toBe(200);expect(await retry.json()).toMatchObject({id:created.id,status:'DRAFT'});
+  });
+
+  it('surfaces unexpected storage failures as server errors instead of editable-state conflicts',async()=>{
+    const createdResponse=await request('/admin/listings/assisted','POST',{ownerId,...fields,title:'Error interno sintético'},adminCookie,'create-assisted-storage-error-mgmt');
+    expect(createdResponse.status).toBe(201);const created=await createdResponse.json() as any;listingIds.push(created.id);
+    await env.DB.exec('ALTER TABLE listing_images RENAME TO listing_images_disabled');
+    let response:Response;
+    try{response=await request(`/admin/listings/assisted/${created.id}/reconfirm`,'POST',undefined,adminCookie,'assisted-storage-error-mgmt');}
+    finally{await env.DB.exec('ALTER TABLE listing_images_disabled RENAME TO listing_images');}
+    expect(response!.status).toBe(500);
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_RECONFIRMED'").bind(created.id).first('n')).toBe(0);
   });
 });
