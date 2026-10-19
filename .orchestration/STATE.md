@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `IN_PROGRESS`
-Phase: `CF_AU_I06_3_DESIGN_SYSTEM_RESPONSIVE_NAV`
-Active task: `CF-AU-I06.3 — design system and responsive navigation`
+State: `READY_TO_RESUME`
+Phase: `CF_AU_I06_3_PR_REVIEW`
+Active task: `CF-AU-I06.3 — design system and responsive navigation, exact-head PR review`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1325,3 +1325,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - I06.3 autorizado por Issue #30: tokens/foundations visuales y shell de navegación responsive. El alcance excluye rediseñar recorridos públicos, OWNER/ADMIN y autenticación; #35–#37 mantienen sus regresiones para incrementos correspondientes.
 - Base de trabajo `main@489fa0885f28dfa789535dda47f81035422c137e`. Se comparó `988bc4d` contra la base y se confirmó que contiene únicamente la reconciliación final de I05 en STATE/STATUS/PRECRITIC; reproducida como commit `314f33a` conservando historia.
 - **READY_TO_RESUME:** consolidar pruebas focalizadas, QA desktop/mobile/teclado, preflight y PR funcional I06.3. Sin Preview, Cloudflare, producción, datos reales o cambio de auth.
+
+## Event 167 — candidato funcional I06.3 publicado en PR #38
+
+- Rama `work/i06-design-system-responsive-nav`; código candidato `7a8d31ba3feda2300b1b0de0a8527abdf02b6382`, árbol `534dfe96f8207d3e93055f8c07bc209ab4f40f5d`, base `main@489fa0885f28dfa789535dda47f81035422c137e`. PR funcional https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38, vinculado a Issue #30.
+- Alcance: foundations visuales híbridas C, shell responsive, navegación de teclado/foco, baseline de filtros mobile y reconciliación de I05. No se modificaron rutas, lógica de sesión/autorización, API, Preview o Cloudflare.
+- Typecheck, build Worker/client, consistencia canónica y QA Playwright local PASS. QA/capturas: `output/playwright/i06.3/`. El runtime Vite genérico devuelve 503 en endpoints auth al no estar habilitada PASSWORD sintética; reportado sin cambiar I05/auth.
+- **READY_TO_RESUME:** verificar CI y review GitHub exactos de PR #38, ejecutar Controller read-only sobre el SHA definitivo, procesar hallazgos materiales y completar Pre-Critic antes de merge protegido.
