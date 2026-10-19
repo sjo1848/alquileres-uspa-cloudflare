@@ -49,6 +49,7 @@ async function logout() {
     await session.clear();
     closeMenu();
     await router.push('/');
+    focusMain();
   } catch {
     logoutError.value = 'No pudimos cerrar la sesión. Reintentá.';
   } finally {

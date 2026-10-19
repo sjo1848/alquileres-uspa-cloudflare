@@ -13,6 +13,7 @@ Local synthetic runtime, Vite + Cloudflare dev plugin, Chromium via Playwright C
 - 320px viewport: document width 320px; no horizontal overflow. All text filters render labels before their full-width controls.
 - Keyboard: first Tab reveals the skip link; mobile menu opens with its button; Escape closes it, sets `aria-expanded=false`, and returns focus to the menu button.
 - Navigation: selecting “Ingresar” from the open mobile menu reached `/login`, closed the menu and moved focus to the `main` landmark. Route links to OWNER and ADMIN do the same. Existing route records and role conditions were not changed.
+- Logout focus: with a synthetic ADMIN response on `/`, opening the mobile menu and signing out against a synthetic HTTP 200 logout response removed role links and placed focus on `main` even though the URL did not change.
 - OWNER/ADMIN shell smoke used Playwright-only synthetic `/api/auth/me` responses (no real credentials): OWNER saw “Mis publicaciones” only, reached `/owner`, and focus moved to `main`; ADMIN saw “Revisión” and “Gestión asistida” without OWNER links, reached `/admin`, and focus moved to `main`. This verifies client navigation/conditional rendering, not backend authentication.
 - The catalog, detail, login, owner, admin review and assisted-admin route views expose a level-one page title.
 - Light `.secondary` and `.listing-choice` hover states retain dark text on a light sage background.
