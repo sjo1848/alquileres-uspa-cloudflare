@@ -134,3 +134,12 @@ Codex cannot use this gate to self-declare substantive PASS.
 - A2 is immutable and retains its Controller REWORK; A3 is the repaired candidate. Exact evidence: `evidence/CF-AU-I04-PRECRITIC-A3.md` and `critics/CF-AU-I04-ARTIFACT-A2-CONTROLLER-REWORK.md`.
 - Final state consistency and whitespace preflight must pass before tag/push; exact result is recorded in Event 143.
 - **Pre-Critic: PASS to publish immutable `CF-AU-I04-OWNER-ADMIN-Artifact-A3` at exact executable SHA `08184396c652087c6159513dc049eefc163adb8e`, then run fresh exact-head GitHub checks/review and delegated read-only Controller. No merge/Preview change until both pass.**
+
+## CF-AU-I04 Artifact A4 — external-media deletion and OWNER/ADMIN serialization (2026-10-19)
+
+- GitHub P2 `4310175148` is repaired for both OWNER and ADMIN-assisted listing deletion: if a listing has image rows without D1 BLOB bytes and the runtime cannot safely clean an external object, deletion returns HTTP 409 before D1 mutation. The regression uses an unset `MEDIA_STRATEGY` and confirms no listing, image, audit or idempotency mutation.
+- GitHub P2 `4310175152` is repaired across OWNER availability/reconfirmation and ADMIN-assisted mutations with a common listing lease, conditional D1 writes, and monotonic mutation timestamps. The regression interleaves both OWNER routes while an ADMIN batch holds the lease and verifies conflict, committed snapshot, exact replay and one audit row.
+- Exact executable commit: `0678f39437d9f3796d0c3338520abe59e9e99e5e`; authorized base `774d0c747e8ecbbdb97776641becbd9e49875875` remains an ancestor. Existing A1–A3 tags/history are preserved.
+- Focused evidence: management 11/11, contact/availability 6/6, OWNER 4/4, Worker typecheck and whitespace check PASS. No Web code changed; A3 UI/build/Playwright results remain applicable to the unchanged frontend.
+- Detailed evidence: `evidence/CF-AU-I04-PRECRITIC-A4.md`. A3 Controller startup failure was due to attempted Vitest temp writes in the read-only process; no sandbox relaxation is authorized. A4 Controller must perform adversarial static review only and must not run tests or write files.
+- **Pre-Critic: PASS to publish one immutable A4 candidate and run the final exact-head GitHub review/checks plus separate-process GPT-6 Luna/High/read-only Controller. No merge or Preview update until those controls pass.**
