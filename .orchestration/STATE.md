@@ -1371,3 +1371,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Controller delegado separado PASS exacto sobre `6cb22f961ab3e2e9b0daeb27c414a8c12dbba07b` / tree `4a59c5d809a3403e5eaec3ed94351e69267bbcf3`, base `489fa08`. Proceso `codex exec` con GPT-6 Luna / High solicitados y `--sandbox read-only`, exit 0, thread `01a15619-4d35-76c3-9dfb-791ff5ca4581`; runtime informó filesystem read-only. Backend model identity UNVERIFIED; no es review externa de ChatGPT. Reporte `evidence/critics/CF-AU-I06.3-CONTROLLER-6CB22F9-PASS.md`.
 - Deterministic preflight `python3 scripts/check_orchestration_state.py --base origin/main` y `git diff --check`: PASS. **Pre-Critic: PASS para integrar PR #38 únicamente mediante merge protegido y preservando commits.** Falta revalidar protecciones, HEAD y mergeabilidad justo antes del merge.
 - **READY_TO_RESUME:** confirmar main protection `worker`/`web` strict, PR exact head `6cb22f9`, cero conversaciones y mergeable; merge protegido con merge commit; después registrar SHA integrado en Issue #30.
+
+## Event 173 — review state reconciliado para merge
+
+- P2 `4319177226` señaló `current_functional_increment.github_review` desactualizado como PENDING a pesar del review exacto `6cb22f9` y Pre-Critic PASS. Se actualizó a COMPLETE, con SHA, unresolved=false y cero conversaciones abiertas; `next_action` permanece en merge protegido.
+- HEAD observado al crear este checkpoint: `aafe0d9e8b28b38b7ba668bee9e69819ff50f485`, solo estado/evidencia posterior al candidato ejecutable `26fd638`. El Controller y review siguen referenciados por SHA exacto `6cb22f9`.
+- **READY_TO_RESUME:** validar protección/checks/review del nuevo checkpoint de solo estado y, con todo verde, merge protegido PR #38 preservando historia.
