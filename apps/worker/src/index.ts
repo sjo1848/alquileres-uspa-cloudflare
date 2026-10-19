@@ -241,12 +241,12 @@ async function deleteAssistedListing(c:any){
   if(replay)return c.json(replay.result,200);
   const exists=await c.env.DB.prepare("SELECT l.status FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first() as any;
   if(!exists||!['DRAFT','REJECTED'].includes(exists.status))return c.json({message:'Listing not found'},404);
-  if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
+  if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable because this media configuration cannot guarantee safe cleanup'},409);
   const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
   try{
     const listing=await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first() as any;
     if(!listing||!['DRAFT','REJECTED'].includes(listing.status))return c.json({message:'Listing not found'},404);
-    if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
+    if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable because this media configuration cannot guarantee safe cleanup'},409);
     if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
     const snapshot=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);if(!snapshot)return c.json({message:'Listing not found'},404);
     const at=now(),eventId=id(),resultJson=JSON.stringify(snapshot);
@@ -411,12 +411,12 @@ app.delete('/listings/:id',async c=>{
   if(replay)return c.json(replay.result,200);
   const initial=await c.env.DB.prepare("SELECT id,status FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();
   if(!initial||!['DRAFT','REJECTED'].includes(initial.status))return c.json({error:'not found'},404);
-  if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
+  if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable because this media configuration cannot guarantee safe cleanup'},409);
   const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
   try{
     const current=await c.env.DB.prepare("SELECT id,status FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();
     if(!current||!['DRAFT','REJECTED'].includes(current.status))return c.json({error:'not found'},404);
-    if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
+    if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable because this media configuration cannot guarantee safe cleanup'},409);
     if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
     const at=now(),snapshot={id:listingId,deleted:true},resultJson=JSON.stringify(snapshot);
     const remove=c.env.DB.prepare("DELETE FROM listings WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(listingId,owner,listingId,lease);
@@ -482,7 +482,22 @@ function imageResponse(bytes:Uint8Array,type:string,privateImage=true){return ne
 function d1ImageStatus(c:any){return c.env.MEDIA_STRATEGY==='D1_BLOB';}
 async function hasUnsupportedExternalMedia(db:D1Database,listingId:string,mediaStrategy?:string){
   if(mediaStrategy==='D1_BLOB')return false;
-  return !!await db.prepare('SELECT 1 FROM listing_images WHERE listing_id=? AND blob_data IS NULL LIMIT 1').bind(listingId).first();
+  // Unknown/unset strategies retain the legacy external-object contract. There is
+  // no R2 cleanup path in this lab, so refuse whole-listing deletion before any
+  // lock, audit, receipt, or cascade can erase recovery provenance.
+  if(mediaStrategy!=='STATIC_ASSETS')return true;
+  try{
+    // STATIC_ASSETS files are repository-managed and are not deleted here. Rows
+    // or incomplete operation records from a dynamic/external media workflow are
+    // different: this endpoint cannot safely clean or recover those objects.
+    const image=await db.prepare('SELECT 1 FROM listing_images WHERE listing_id=? LIMIT 1').bind(listingId).first();
+    if(image)return true;
+    return !!await db.prepare("SELECT 1 FROM image_operations WHERE listing_id=? AND (cleanup_complete=0 OR state IN ('PENDING','COMMITTED','NEEDS_REPAIR','CLEANUP_PENDING')) LIMIT 1").bind(listingId).first();
+  }catch{
+    // Media provenance is part of the deletion safety check. An unavailable
+    // check must fail closed rather than allow the listing cascade to proceed.
+    return true;
+  }
 }
 function monotonicTimestamp(previous:string){const previousMs=Date.parse(previous);return new Date(Math.max(Date.now(),Number.isFinite(previousMs)?previousMs+1:0)).toISOString();}
 async function uploadD1Image(c:any,lid:string){

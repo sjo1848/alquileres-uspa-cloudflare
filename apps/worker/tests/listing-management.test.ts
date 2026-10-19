@@ -24,6 +24,7 @@ beforeAll(async()=>{
   ownerCookie=await login('listing.mgmt.owner@example.test');otherCookie=await login('listing.mgmt.other@example.test');adminCookie=await login('listing.mgmt.admin@example.test');
 });
 afterAll(async()=>{
+  if(listingIds.length)await env.DB.prepare(`DELETE FROM image_operations WHERE listing_id IN (${listingIds.map(()=>'?').join(',')})`).bind(...listingIds).run();
   await env.DB.prepare('DELETE FROM admin_audit_events WHERE listing_id IN ('+(listingIds.map(()=>'?').join(',')||"''")+')').bind(...listingIds).run();
   await env.DB.prepare('DELETE FROM idempotency_records WHERE (owner_id=? OR owner_id=?) AND (scope LIKE ? OR scope LIKE ?)').bind(ownerId,adminId,'OWNER_LISTING_DELETE:%','ADMIN_ASSISTED_%').run();
   if(listingIds.length)await env.DB.prepare(`DELETE FROM listings WHERE id IN (${listingIds.map(()=>'?').join(',')})`).bind(...listingIds).run();
@@ -72,17 +73,42 @@ describe('OWNER listing lifecycle',()=>{
     await env.DB.prepare('DELETE FROM listing_locks WHERE listing_id=?').bind(locked.id).run();
   });
 
-  it('fails closed for OWNER and ADMIN deletion when image objects need external cleanup',async()=>{
-    const listing=await create(),imageId=`r2-unmanaged-image-${listing.id}`,at=new Date().toISOString();
-    await env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').bind(imageId,listing.id,`synthetic-external:${imageId}`,'external.png','image/png',128,0,at,at).run();
-    const ownerDelete=await request(`/listings/${listing.id}`,'DELETE',undefined,ownerCookie,'owner-r2-delete-denied',true,UNSET_MEDIA_STRATEGY);
-    expect(ownerDelete.status).toBe(409);expect(await ownerDelete.json()).toMatchObject({code:'MEDIA_DELETE_UNSUPPORTED'});
-    const adminDelete=await request(`/admin/listings/assisted/${listing.id}`,'DELETE',undefined,adminCookie,'admin-r2-delete-denied',true,UNSET_MEDIA_STRATEGY);
-    expect(adminDelete.status).toBe(409);expect(await adminDelete.json()).toMatchObject({code:'MEDIA_DELETE_UNSUPPORTED'});
+  it('fails closed for external media strategies before deletion even when operation metadata has no image row',async()=>{
+    const cases=[
+      {name:'unset strategy without media rows',strategy:UNSET_MEDIA_STRATEGY,operation:null},
+      {name:'R2 with pending ADD and no image row',strategy:'R2',operation:{kind:'ADD',state:'PENDING',objectKey:'synthetic-pending-add'}},
+      {name:'R2 with pending DELETE backup and no image row',strategy:'R2',operation:{kind:'DELETE',state:'CLEANUP_PENDING',objectKey:'synthetic-delete-object',backupKey:'synthetic-delete-backup'}},
+    ] as const;
+    for(const [index,scenario] of cases.entries()){
+      const listing=await create(ownerCookie,`External media deletion guard ${index}`),operationId=`external-op-${listing.id}`;
+      if(scenario.operation){
+        const op=scenario.operation;
+        await env.DB.prepare('INSERT INTO image_operations(id,listing_id,kind,state,object_key,backup_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)').bind(operationId,listing.id,op.kind,op.state,op.objectKey,'backupKey' in op?op.backupKey:null,new Date().toISOString(),new Date().toISOString()).run();
+      }
+      expect(await env.DB.prepare('SELECT id FROM listing_images WHERE listing_id=?').bind(listing.id).first()).toBeNull();
+      const ownerKey=`external-owner-delete-${index}`,adminKey=`external-admin-delete-${index}`;
+      const ownerDelete=await request(`/listings/${listing.id}`,'DELETE',undefined,ownerCookie,ownerKey,true,scenario.strategy);
+      expect(ownerDelete.status,scenario.name).toBe(409);expect(await ownerDelete.json()).toMatchObject({code:'MEDIA_DELETE_UNSUPPORTED'});
+      const adminDelete=await request(`/admin/listings/assisted/${listing.id}`,'DELETE',undefined,adminCookie,adminKey,true,scenario.strategy);
+      expect(adminDelete.status,scenario.name).toBe(409);expect(await adminDelete.json()).toMatchObject({code:'MEDIA_DELETE_UNSUPPORTED'});
+      expect(await env.DB.prepare('SELECT id FROM listings WHERE id=?').bind(listing.id).first()).not.toBeNull();
+      if(scenario.operation)expect(await env.DB.prepare('SELECT id,kind,state,object_key,backup_key,cleanup_complete FROM image_operations WHERE id=?').bind(operationId).first()).toMatchObject({id:operationId,kind:scenario.operation.kind,state:scenario.operation.state,object_key:scenario.operation.objectKey,backup_key:'backupKey' in scenario.operation?scenario.operation.backupKey:null,cleanup_complete:0});
+      expect(await env.DB.prepare("SELECT request_key FROM idempotency_records WHERE (owner_id=? OR owner_id=?) AND resource_id=? AND request_key IN (?,?)").bind(ownerId,adminId,listing.id,ownerKey,adminKey).first()).toBeNull();
+      expect(await env.DB.prepare("SELECT id FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_DELETED'").bind(listing.id).first()).toBeNull();
+    }
+  });
+
+  it('fails closed for STATIC_ASSETS when legacy dynamic media or recovery metadata exists',async()=>{
+    const listing=await create(ownerCookie,'Static strategy dynamic recovery guard'),at=new Date().toISOString(),operationId=`static-op-${listing.id}`;
+    await env.DB.prepare('INSERT INTO image_operations(id,listing_id,kind,state,object_key,backup_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)').bind(operationId,listing.id,'ADD','NEEDS_REPAIR','synthetic-orphan-object',null,at,at).run();
+    for(const [index,role] of [[0,'OWNER'],[1,'ADMIN']] as const){
+      const response=role==='OWNER'
+        ?await request(`/listings/${listing.id}`,'DELETE',undefined,ownerCookie,`static-owner-delete-${index}`,true,'STATIC_ASSETS')
+        :await request(`/admin/listings/assisted/${listing.id}`,'DELETE',undefined,adminCookie,`static-admin-delete-${index}`,true,'STATIC_ASSETS');
+      expect(response.status).toBe(409);expect(await response.json()).toMatchObject({code:'MEDIA_DELETE_UNSUPPORTED'});
+    }
     expect(await env.DB.prepare('SELECT id FROM listings WHERE id=?').bind(listing.id).first()).not.toBeNull();
-    expect(await env.DB.prepare('SELECT id,object_key FROM listing_images WHERE id=?').bind(imageId).first()).toMatchObject({id:imageId,object_key:`synthetic-external:${imageId}`});
-    expect(await env.DB.prepare("SELECT request_key FROM idempotency_records WHERE (owner_id=? OR owner_id=?) AND resource_id=? AND request_key IN ('owner-r2-delete-denied','admin-r2-delete-denied')").bind(ownerId,adminId,listing.id).first()).toBeNull();
-    expect(await env.DB.prepare("SELECT id FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_DELETED'").bind(listing.id).first()).toBeNull();
+    expect(await env.DB.prepare('SELECT id,state,object_key FROM image_operations WHERE id=?').bind(operationId).first()).toMatchObject({id:operationId,state:'NEEDS_REPAIR',object_key:'synthetic-orphan-object'});
   });
 });
 
