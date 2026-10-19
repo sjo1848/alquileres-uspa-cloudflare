@@ -5,13 +5,15 @@ import { app } from '../src/index';
 const secret='synthetic-owner-admin-management-secret-at-least-32-bytes';
 const bindings={...env,DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'D1_BLOB'};
 const origin='http://localhost';
+const UNSET_MEDIA_STRATEGY=Symbol('unset-media-strategy');
 const fields={title:'Casa sintética',description:'Datos de prueba',location:'Uspallata',priceAmount:25000,pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:2,currency:'ARS'};
 const png=new Uint8Array(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9AAAAAElFTkSuQmCC','base64'));
 const ownerId='listing-mgmt-owner',otherId='listing-mgmt-other',adminId='listing-mgmt-admin';
 let ownerCookie='',otherCookie='',adminCookie='';
 const listingIds:string[]=[];
-function request(path:string,method='GET',body?:unknown,cookie?:string,key?:string,withOrigin=true){
-  return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(key?{'Idempotency-Key':key}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body)},bindings);
+function request(path:string,method='GET',body?:unknown,cookie?:string,key?:string,withOrigin=true,mediaStrategy:string|undefined|typeof UNSET_MEDIA_STRATEGY=bindings.MEDIA_STRATEGY){
+  const testBindings:{[key:string]:unknown}={...bindings};if(mediaStrategy===UNSET_MEDIA_STRATEGY)delete testBindings.MEDIA_STRATEGY;else testBindings.MEDIA_STRATEGY=mediaStrategy;
+  return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(key?{'Idempotency-Key':key}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body)},testBindings as typeof bindings);
 }
 async function login(email:string){const response=await request('/auth/login','POST',{email,password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
 async function create(owner=ownerCookie,title=fields.title){const response=await request('/listings','POST',{...fields,title},owner,crypto.randomUUID());expect(response.status).toBe(201);const result=await response.json() as {id:string};listingIds.push(result.id);return result;}
@@ -68,6 +70,19 @@ describe('OWNER listing lifecycle',()=>{
     expect(await env.DB.prepare('SELECT id FROM listings WHERE id=?').bind(locked.id).first()).not.toBeNull();
     expect(await env.DB.prepare("SELECT request_key FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key='delete-while-busy'").bind(ownerId,`OWNER_LISTING_DELETE:${locked.id}`).first()).toBeNull();
     await env.DB.prepare('DELETE FROM listing_locks WHERE listing_id=?').bind(locked.id).run();
+  });
+
+  it('fails closed for OWNER and ADMIN deletion when image objects need external cleanup',async()=>{
+    const listing=await create(),imageId=`r2-unmanaged-image-${listing.id}`,at=new Date().toISOString();
+    await env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').bind(imageId,listing.id,`synthetic-external:${imageId}`,'external.png','image/png',128,0,at,at).run();
+    const ownerDelete=await request(`/listings/${listing.id}`,'DELETE',undefined,ownerCookie,'owner-r2-delete-denied',true,UNSET_MEDIA_STRATEGY);
+    expect(ownerDelete.status).toBe(409);expect(await ownerDelete.json()).toMatchObject({code:'MEDIA_DELETE_UNSUPPORTED'});
+    const adminDelete=await request(`/admin/listings/assisted/${listing.id}`,'DELETE',undefined,adminCookie,'admin-r2-delete-denied',true,UNSET_MEDIA_STRATEGY);
+    expect(adminDelete.status).toBe(409);expect(await adminDelete.json()).toMatchObject({code:'MEDIA_DELETE_UNSUPPORTED'});
+    expect(await env.DB.prepare('SELECT id FROM listings WHERE id=?').bind(listing.id).first()).not.toBeNull();
+    expect(await env.DB.prepare('SELECT id,object_key FROM listing_images WHERE id=?').bind(imageId).first()).toMatchObject({id:imageId,object_key:`synthetic-external:${imageId}`});
+    expect(await env.DB.prepare("SELECT request_key FROM idempotency_records WHERE (owner_id=? OR owner_id=?) AND resource_id=? AND request_key IN ('owner-r2-delete-denied','admin-r2-delete-denied')").bind(ownerId,adminId,listing.id).first()).toBeNull();
+    expect(await env.DB.prepare("SELECT id FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_DELETED'").bind(listing.id).first()).toBeNull();
   });
 });
 
@@ -144,6 +159,31 @@ describe('ADMIN-assisted lifecycle',()=>{
       expect(await env.DB.prepare('SELECT title FROM listings WHERE id=?').bind(created.id).first('title')).toBe('Atomicidad audit');
       expect(await env.DB.prepare('SELECT request_key FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(adminId,`ADMIN_ASSISTED_UPDATE:${created.id}`,'atomic-assist-update-mgmt').first()).toBeNull();
     }finally{await env.DB.exec('DROP TRIGGER reject_assisted_update_audit');}
+  });
+
+  it('serializes OWNER availability with an assisted snapshot and replays the committed state',async()=>{
+    const listing=await create();
+    let enterBatch!:()=>void,releaseBatch!:()=>void;
+    const batchReached=new Promise<void>(resolve=>{enterBatch=resolve;});
+    const batchGate=new Promise<void>(resolve=>{releaseBatch=resolve;});
+    const db=new Proxy(env.DB,{get(target,property){
+      if(property==='batch')return async(statements:D1PreparedStatement[])=>{enterBatch();await batchGate;return target.batch(statements);};
+      const value=Reflect.get(target,property,target);return typeof value==='function'?value.bind(target):value;
+    }}) as D1Database;
+    const adminWrite=app.request(`${origin}/admin/listings/assisted/${listing.id}/availability`,{method:'PATCH',headers:{Origin:origin,Cookie:adminCookie,'Idempotency-Key':'assisted-availability-race','Content-Type':'application/json'},body:JSON.stringify({availabilityStatus:'UNAVAILABLE'})},{...bindings,DB:db});
+    await batchReached;
+    const ownerWrite=await request(`/listings/${listing.id}/availability`,'PATCH',{availabilityStatus:'AVAILABLE'},ownerCookie);
+    expect(ownerWrite.status).toBe(409);
+    expect((await request(`/listings/${listing.id}/reconfirm`,'POST',undefined,ownerCookie)).status).toBe(409);
+    expect(await env.DB.prepare('SELECT availability_status FROM listings WHERE id=?').bind(listing.id).first('availability_status')).toBe('AVAILABLE');
+    releaseBatch();
+    const committed=await adminWrite;expect(committed.status).toBe(200);const snapshot=await committed.json() as any;
+    expect(snapshot).toMatchObject({id:listing.id,availabilityStatus:'UNAVAILABLE',lastConfirmedAt:snapshot.updatedAt});
+    const row=await env.DB.prepare('SELECT availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,updated_at AS updatedAt FROM listings WHERE id=?').bind(listing.id).first<any>();
+    expect(snapshot).toMatchObject(row);expect(Date.parse(row.updatedAt)).toBeGreaterThanOrEqual(Date.parse(listing.updatedAt));
+    const replay=await request(`/admin/listings/assisted/${listing.id}/availability`,'PATCH',{availabilityStatus:'UNAVAILABLE'},adminCookie,'assisted-availability-race');
+    expect(replay.status).toBe(200);expect(await replay.json()).toEqual(snapshot);
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_AVAILABILITY_UPDATED'").bind(listing.id).first('n')).toBe(1);
   });
 
   it('rolls back assisted deletion, image cleanup and audit receipt when audit insertion fails',async()=>{

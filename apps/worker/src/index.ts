@@ -172,7 +172,7 @@ async function runAssistedMutation(c:any,action:string,payload:unknown,prepare:(
     const currentSnapshot=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);
     if(!currentSnapshot)return c.json({message:'Listing not found'},404);
     listing.snapshot=currentSnapshot;
-    const at=now(),eventId=id(),prepared=await prepare(listing,lease,at,eventId);
+    const at=monotonicTimestamp(listing.updatedAt),eventId=id(),prepared=await prepare(listing,lease,at,eventId);
     const audit=sourceAuditInsert(c,eventId,listingId,prepared.auditAction,null,at,prepared.auditWhere,prepared.auditArgs,prepared.metadata);
     const resultJson=JSON.stringify(prepared.snapshot);
     const receipt=c.env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) SELECT ?,?,?,?,?, 'COMMITTED',?,?,? WHERE EXISTS(SELECT 1 FROM admin_audit_events WHERE id=? AND actor_id=? AND listing_id=? AND target_owner_id=?) AND EXISTS(SELECT 1 FROM listings WHERE id=? AND owner_id=? AND updated_at=?)").bind(actor,scope,key,requestFingerprint,listingId,resultJson,at,at,eventId,actor,listingId,listing.ownerId,listingId,listing.ownerId,prepared.snapshot.updatedAt);
@@ -240,10 +240,12 @@ async function deleteAssistedListing(c:any){
   if(replay)return c.json(replay.result,200);
   const exists=await c.env.DB.prepare("SELECT l.status FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first() as any;
   if(!exists||!['DRAFT','REJECTED'].includes(exists.status))return c.json({message:'Listing not found'},404);
+  if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
   const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
   try{
     const listing=await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first() as any;
     if(!listing||!['DRAFT','REJECTED'].includes(listing.status))return c.json({message:'Listing not found'},404);
+    if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
     if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
     const snapshot=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);if(!snapshot)return c.json({message:'Listing not found'},404);
     const at=now(),eventId=id(),resultJson=JSON.stringify(snapshot);
@@ -343,8 +345,21 @@ app.get('/admin/listings/:listingId/images/:imageId',async c=>{
 });
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
 app.get('/listings/:id',async c=>{const listing=await ownerListing(c.env.DB,c.req.param('id'),ownerId(c));return listing?c.json(listing):c.json({error:'not found'},404);});
-app.patch('/listings/:id/availability',async c=>{const input=await boundedJson(c.req.raw,1024) as any;if(!input||Object.keys(input).some(key=>key!=='availabilityStatus')||!['AVAILABLE','UNAVAILABLE'].includes(input.availabilityStatus))return c.json({error:'availabilityStatus must be AVAILABLE or UNAVAILABLE'},400);const at=now(),result=await c.env.DB.prepare('UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=?').bind(input.availabilityStatus,at,at,c.req.param('id'),ownerId(c)).run();if(result.meta.changes!==1)return c.json({error:'not found'},404);return c.json(await ownerListing(c.env.DB,c.req.param('id'),ownerId(c)));});
-app.post('/listings/:id/reconfirm',async c=>{const at=now(),result=await c.env.DB.prepare('UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=?').bind(at,at,c.req.param('id'),ownerId(c)).run();if(result.meta.changes!==1)return c.json({error:'not found'},404);return c.json(await ownerListing(c.env.DB,c.req.param('id'),ownerId(c)));});
+app.patch('/listings/:id/availability',async c=>{const input=await boundedJson(c.req.raw,1024) as any;if(!input||Object.keys(input).some(key=>key!=='availabilityStatus')||!['AVAILABLE','UNAVAILABLE'].includes(input.availabilityStatus))return c.json({error:'availabilityStatus must be AVAILABLE or UNAVAILABLE'},400);return updateOwnerAvailability(c,c.req.param('id'),input.availabilityStatus);});
+app.post('/listings/:id/reconfirm',async c=>updateOwnerAvailability(c,c.req.param('id')));
+async function updateOwnerAvailability(c:any,listingId:string,availabilityStatus?:'AVAILABLE'|'UNAVAILABLE'){
+  const owner=ownerId(c),existing=await ownerListing(c.env.DB,listingId,owner);if(!existing)return c.json({error:'not found'},404);
+  const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
+  try{
+    const current=await ownerListing(c.env.DB,listingId,owner);if(!current)return c.json({error:'not found'},404);
+    const at=monotonicTimestamp(current.updatedAt);
+    const result=availabilityStatus
+      ?await c.env.DB.prepare("UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(availabilityStatus,at,at,listingId,owner,current.updatedAt,listingId,lease).run()
+      :await c.env.DB.prepare("UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,at,listingId,owner,current.updatedAt,listingId,lease).run();
+    if(result.meta.changes!==1)return c.json({error:'listing changed; retry with the same idempotency key'},409);
+    return c.json(await ownerListing(c.env.DB,listingId,owner));
+  }finally{await unlock(c.env.DB,listingId,lease);}
+}
 app.get('/owner/contact-events',async c=>{
   const owner=ownerId(c),afterCreatedAt=c.req.query('afterCreatedAt'),afterId=c.req.query('afterId'),hasCursor=afterCreatedAt!==undefined||afterId!==undefined;
   if(hasCursor&&(!afterCreatedAt||!afterId||afterCreatedAt.length>40||afterId.length>128||!Number.isFinite(Date.parse(afterCreatedAt))))return c.json({error:'invalid contact cursor'},400);
@@ -395,10 +410,12 @@ app.delete('/listings/:id',async c=>{
   if(replay)return c.json(replay.result,200);
   const initial=await c.env.DB.prepare("SELECT id,status FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();
   if(!initial||!['DRAFT','REJECTED'].includes(initial.status))return c.json({error:'not found'},404);
+  if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
   const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
   try{
     const current=await c.env.DB.prepare("SELECT id,status FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();
     if(!current||!['DRAFT','REJECTED'].includes(current.status))return c.json({error:'not found'},404);
+    if(await hasUnsupportedExternalMedia(c.env.DB,listingId,c.env.MEDIA_STRATEGY))return c.json({code:'MEDIA_DELETE_UNSUPPORTED',error:'listing deletion is unavailable while externally stored images require cleanup'},409);
     if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
     const at=now(),snapshot={id:listingId,deleted:true},resultJson=JSON.stringify(snapshot);
     const remove=c.env.DB.prepare("DELETE FROM listings WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(listingId,owner,listingId,lease);
@@ -462,6 +479,11 @@ async function hasPublicLegacyD1Images(db:D1Database,lids:string[]){if(!lids.len
 function legacyD1Conflict(c:any){return c.json({code:'LEGACY_MEDIA_MIGRATION_REQUIRED',message:'La publicación conserva imágenes de un almacenamiento anterior; necesita migración antes de usar D1 BLOB.'},409);}
 function imageResponse(bytes:Uint8Array,type:string,privateImage=true){return new Response(bytes.slice().buffer as ArrayBuffer,{headers:{'Content-Type':type,'Content-Length':String(bytes.byteLength),'Cache-Control':privateImage?'private, no-store':'no-store','X-Content-Type-Options':'nosniff'}});}
 function d1ImageStatus(c:any){return c.env.MEDIA_STRATEGY==='D1_BLOB';}
+async function hasUnsupportedExternalMedia(db:D1Database,listingId:string,mediaStrategy?:string){
+  if(mediaStrategy==='D1_BLOB')return false;
+  return !!await db.prepare('SELECT 1 FROM listing_images WHERE listing_id=? AND blob_data IS NULL LIMIT 1').bind(listingId).first();
+}
+function monotonicTimestamp(previous:string){const previousMs=Date.parse(previous);return new Date(Math.max(Date.now(),Number.isFinite(previousMs)?previousMs+1:0)).toISOString();}
 async function uploadD1Image(c:any,lid:string){
   if(!await owned(c,lid))return c.json({error:'not found'},404);
   const key=requestKey(c);if(!key)return c.json({error:'Idempotency-Key required for image upload'},400);
