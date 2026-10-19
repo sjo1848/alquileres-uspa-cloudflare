@@ -74,7 +74,7 @@ main {
   gap: 1rem;
   align-items: end;
 }
-.filters h3 {
+.filters h2 {
   grid-column: 1 / -1;
   margin: 0;
 }
@@ -315,7 +315,7 @@ footer {
   display: grid;
   gap: 0.75rem;
 }
-.contacts-section h3 {
+.contacts-section h2 {
   margin: 0;
   font-size: 1.6rem;
 }
@@ -355,7 +355,7 @@ footer {
   border-left: 4px solid #8b4f12;
   background: #fffaf2;
 }
-.contact-card h4 {
+.contact-card h3 {
   margin: 0;
   font-size: 1.05rem;
 }
@@ -613,6 +613,7 @@ button, input, select, textarea {
   border-color: #b9b09f;
   border-radius: var(--radius-control);
 }
+input:not([type="checkbox"]):not([type="radio"]), select, textarea { border-color: #857b6b; }
 button { background: var(--color-forest); color: var(--color-paper); }
 button:hover:not(:disabled) { background: var(--color-forest-soft); }
 button:disabled { cursor: not-allowed; }

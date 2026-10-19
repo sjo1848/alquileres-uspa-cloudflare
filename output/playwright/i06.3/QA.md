@@ -16,7 +16,8 @@ Local synthetic runtime, Vite + Cloudflare dev plugin, Chromium via Playwright C
 - Logout focus: with a synthetic ADMIN response on `/`, opening the mobile menu and signing out against a synthetic HTTP 200 logout response removed role links and placed focus on `main` even though the URL did not change.
 - OWNER/ADMIN shell smoke used Playwright-only synthetic `/api/auth/me` responses (no real credentials): OWNER saw “Mis publicaciones” only, reached `/owner`, and focus moved to `main`; ADMIN saw “Revisión” and “Gestión asistida” without OWNER links, reached `/admin`, and focus moved to `main`. This verifies client navigation/conditional rendering, not backend authentication.
 - The catalog, detail, login, owner, admin review and assisted-admin route views expose a level-one page title. Section/card headings follow h1→h2→h3 without skipping levels; snapshots confirmed the catalog and ADMIN review headings.
-- Playwright computed contrast on the actual shell: muted brand caption/footer 4.89:1 on canvas; hovered `.secondary` control 9.99:1. Light controls retain dark text on sage.
+- Playwright computed contrast on rendered controls: muted brand caption/footer 4.89:1 on canvas, text/select borders 4.09:1 on paper (3.63:1 against canvas), and hovered `.secondary` 9.99:1. Light controls retain dark text on sage.
+- OWNER contact heading selectors were retargeted after the semantic update: section `h2` remains 1.6rem and each visitor-name `h3` remains 1.05rem.
 - Reduced-motion rule is present for all transitions/animations.
 
 ## Environment limitation
