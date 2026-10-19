@@ -40,3 +40,11 @@ This evidence is for the consolidated local synthetic candidate only. It does no
 - Review findings fixed: `4313265555`, `4313360409`, `4313360419`. The final GitHub review and exact-SHA Controller must still complete before closeout.
 - Clean-start repair after GitHub finding `4313445923`: `local:owner-auth` now installs web dependencies/builds the SPA before local D1 migration and loopback Worker start. Full command smoke: `/health` 200 and `/auth/config` confirms PASSWORD registration. `local:up` smoke also confirmed seeded OWNER login 200 with D1 BLOB and no R2 binding.
 - GitHub finding set for final pass: `4313265555`, `4313360409`, `4313360419`, `4313445923`, each repaired in code/test/config and awaiting final exact-head confirmation.
+
+## GitHub P2 4313547498 — bearer-only logout revocation regression
+
+- The final automated review of checkpoint `3be04bc0fc3ccd675b6b6c2528c345f9628e2726` found that local logout cleared only a session cookie; a valid supported Bearer token remained usable after a 200 response.
+- Fix and regression candidate: `8ae6186a310fa665da1cc199ef3aef575b538843`, tree `7f808d0dbe139ab2812f74925cac7105a40ab219`. In explicitly local PASSWORD/MOCK mode, logout now verifies unique bearer and cookie tokens, increments each account's `session_version`, fails with 503 if persistence fails, and clears the cookie on success. Access Preview behavior is unchanged.
+- `npm run typecheck` (Worker): PASS. `npm run test:owner-auth`: 5/5 PASS, including OWNER and ADMIN Bearer-only logout and subsequent rejection of both old bearer and cookie sessions. `npm run test:preview-auth`: 6/6 PASS. These are focused regressions for the changed logout route; no full suite was repeated.
+- GitHub finding thread `4313547498` remains open pending publication and exact-head review. A fresh Controller review on the final exact code SHA is required; prior Controller PASS is historical and not transferable. Pre-Critic remains pending until exact-head GitHub checks/review and Controller complete.
+- No Preview/remote D1/Access, production, provider, R2, paid service, real identity/data or source-repository write was used.

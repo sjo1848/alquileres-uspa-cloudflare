@@ -178,3 +178,9 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Separate Controller PASS: exact functional SHA/tree/base; requested GPT-6 Luna / High / read-only accepted; CLI exit 0, thread `01a15401-c55e-7611-b784-7fb3c4114acf`; backend identity UNVERIFIED. Report and prompt are in `evidence/critics/CF-AU-I05-CONTROLLER-14D79E5-*`. One nonblocking P2 follow-up: add explicit ADMIN logout revocation test; shared middleware currently enforces session version for ADMIN routes.
 - Focused evidence and local synthetic browser journey: `evidence/CF-AU-I05-LOCAL-QA.md`. Final local startup smokes cover `local:up` (D1 BLOB/no R2/loopback) and `local:owner-auth` (build SPA, mock registration, local D1). No Preview, remote migration, production, real identity, paid service or source write.
 - **Pre-Critic: PASS for bounded I05 local/synthetic auth candidate and protected integration readiness.** This does not authorize Preview auth rollout or production authentication; do not start I06 UI redesign inside this increment.
+
+## CF-AU-I05 — bearer-only logout P2 rework (2026-10-19)
+
+- GitHub P2 `4313547498` on checkpoint `3be04bc0fc3ccd675b6b6c2528c345f9628e2726` showed that Bearer-authenticated sessions survived local logout.
+- Repair candidate `8ae6186a310fa665da1cc199ef3aef575b538843`, tree `7f808d0dbe139ab2812f74925cac7105a40ab219`: revokes both unique Bearer and cookie sessions; OWNER/ADMIN regressions assert both credential forms fail afterward. Worker typecheck and focused auth tests PASS (owner-auth 5/5, Preview auth 6/6).
+- **Pre-Critic status: PENDING.** Exact-head checks, consolidated GitHub review/thread resolution, and fresh exact-SHA separate-process GPT-6 Luna/High/read-only Controller are required. Prior PASS does not transfer. No Preview or production auth is authorized.
