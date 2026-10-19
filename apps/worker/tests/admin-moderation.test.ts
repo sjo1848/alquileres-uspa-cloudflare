@@ -11,8 +11,8 @@ async function login(email:string){const response=await request('/auth/login','P
 
 beforeAll(async()=>{
   const hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS',at=new Date().toISOString();
-  await env.DB.prepare("INSERT OR IGNORE INTO users(id,email,password_hash,role,created_at,updated_at) VALUES('moderation-owner','moderation.owner@example.test',?,'OWNER',?,?)").bind(hash,at,at).run();
-  await env.DB.prepare("INSERT OR IGNORE INTO users(id,email,password_hash,role,created_at,updated_at) VALUES('moderation-admin','moderation.admin@example.test',?,'ADMIN',?,?)").bind(hash,at,at).run();
+  await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES('moderation-owner','moderation.owner@example.test',?,'OWNER',?,?,?) ON CONFLICT(id) DO UPDATE SET email_verified_at=excluded.email_verified_at").bind(hash,at,at,at).run();
+  await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES('moderation-admin','moderation.admin@example.test',?,'ADMIN',?,?,?) ON CONFLICT(id) DO UPDATE SET email_verified_at=excluded.email_verified_at").bind(hash,at,at,at).run();
 });
 
 describe('ADMIN moderation and publication',()=>{
@@ -166,7 +166,7 @@ describe('ADMIN moderation and publication',()=>{
 
   it('omits pending listings whose owner no longer has the OWNER role',async()=>{
     const at=new Date().toISOString(),hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS';
-    await env.DB.prepare("INSERT OR IGNORE INTO users(id,email,password_hash,role,created_at,updated_at) VALUES('moderation-control-owner','moderation.control.owner@example.test',?,'OWNER',?,?)").bind(hash,at,at).run();
+    await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES('moderation-control-owner','moderation.control.owner@example.test',?,'OWNER',?,?,?) ON CONFLICT(id) DO UPDATE SET email_verified_at=excluded.email_verified_at").bind(hash,at,at,at).run();
     const controlOwner=await login('moderation.control.owner@example.test'),owner=await login('moderation.owner@example.test'),admin=await login('moderation.admin@example.test');
     const visible=await (await request('/listings','POST',{...fields,title:'Synthetic current OWNER queue control'},controlOwner)).json() as {id:string};
     const demoted=await (await request('/listings','POST',{...fields,title:'Synthetic demoted OWNER queue control'},owner)).json() as {id:string};
