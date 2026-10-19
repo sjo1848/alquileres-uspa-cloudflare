@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
-import { previewAuthConfigured, requiresPreviewAuth, verifyPreviewOperator, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole } from './preview-auth';
+import { localCompletePasswordReset, localMockMailbox, localOwnerAuthEnabled, localRateAllowed, localRegister, localRequestPasswordReset, localVerifyEmail, type LocalOwnerAuthEnv } from './local-owner-auth';
+import { previewAuthConfigured, verifyPreviewOperator, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole } from './preview-auth';
 import { cleanImageName, d1BlobBytes, D1_IMAGE_MAX_BYTES, D1_IMAGE_MAX_COUNT, D1_MEDIA_QUOTA_BYTES, readBoundedBody, validateImageBytes } from './d1-blob-media';
 
-type Env = PreviewAuthEnv & { MEDIA_STRATEGY?:string; DB: D1Database; IMAGES: R2Bucket; JWT_SECRET: string; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
-type User = { id: string; email: string; role: 'OWNER'|'ADMIN' };
+type Env = PreviewAuthEnv & LocalOwnerAuthEnv & { MEDIA_STRATEGY?:string; IMAGES: R2Bucket; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
+type User = { id: string; email: string; role: 'OWNER'|'ADMIN'; session_version?: number };
 type ImageRow = { id:string; listing_id:string; object_key:string; original_name:string; mime_type:string; byte_size:number; position:number; created_at:string; blob_data?:unknown };
 const app = new Hono<{ Bindings: Env; Variables: { user: User } }>();
 const te = new TextEncoder();
@@ -24,18 +25,31 @@ async function boundedJson(request:Request,maxBytes:number){const reader=request
 function lifetime(env:Env) { const m=/^(\d+)(s|m|h|d)$/.exec(env.JWT_EXPIRES_IN??'15m'); if(!m) throw Error('bad jwt expiry'); return Number(m[1])*({s:1,m:60,h:3600,d:86400}[m[2]]!); }
 function jwtSecretBytes(env:Env) { if(typeof env.JWT_SECRET!=='string')throw Error('jwt secret unavailable');const secret=te.encode(env.JWT_SECRET);if(secret.length<32)throw Error('jwt secret too short');return secret; }
 function jwtSecretConfigured(env:Env) { try{jwtSecretBytes(env);return true;}catch{return false;} }
-async function sign(u:User,env:Env,expiresAt=Infinity) { const n=Math.floor(Date.now()/1000), a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify({id:u.id,email:u.email,role:u.role,iat:n,exp:Math.min(n+lifetime(env),expiresAt)}))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return `${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`; }
-async function verify(token:string,env:Env) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||c.exp<=Date.now()/1000) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return c as {id:string;email:string}; }
+async function sign(u:User,env:Env,expiresAt=Infinity) { const n=Math.floor(Date.now()/1000), a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify({id:u.id,email:u.email,role:u.role,sv:u.session_version??0,iat:n,exp:Math.min(n+lifetime(env),expiresAt)}))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return `${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`; }
+async function verify(token:string,env:Env) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||c.exp<=Date.now()/1000) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return {...c,sessionVersion:c.sv} as {id:string;email:string;sessionVersion:number}; }
 function cookie(raw:string|null) { return raw?.split(';').map(x=>x.trim()).find(x=>x.startsWith('alquileres_session='))?.slice('alquileres_session='.length); }
 function setCookie(token:string,env:Env,clear=false) { const same=['strict','none'].includes(env.COOKIE_SAME_SITE??'')?env.COOKIE_SAME_SITE:'lax'; const secure=env.COOKIE_SECURE==='true'||env.NODE_ENV==='production'||same==='none'; return `alquileres_session=${clear?'':encodeURIComponent(token)}; Path=/; ${clear?'Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT':'Max-Age=900'}; HttpOnly; SameSite=${same![0].toUpperCase()+same!.slice(1)}${secure?'; Secure':''}`; }
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
 app.use('*',async(c,next)=>{
   const strategy=c.env.AUTH_STRATEGY;
-  if((requiresPreviewAuth(new URL(c.req.url).origin)||(strategy&&strategy!=='PASSWORD')) && (/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path)||/^\/owner(?:\/|$)/.test(c.req.path)||/^\/admin(?:\/|$)/.test(c.req.path))
-    && !previewAuthConfigured(c.env,new URL(c.req.url).origin))return c.json({error:'Preview authentication unavailable'},503);
+  const protectedPath=/^\/auth(?:\/|$)/.test(c.req.path)||/^\/listings(?:\/|$)/.test(c.req.path)||/^\/owner(?:\/|$)/.test(c.req.path)||/^\/admin(?:\/|$)/.test(c.req.path);
+  const origin=new URL(c.req.url).origin;
+  const localMode=localOwnerAuthEnabled(c.req.raw,c.env);
+  const previewMode=strategy==='ACCESS_PREVIEW'&&previewAuthConfigured(c.env,origin);
+  if(protectedPath&&!localMode&&!previewMode)return c.json({error:'Authentication configuration unavailable'},503);
   await next();
 });
-app.get('/auth/config',c=>c.json({strategy:c.env.AUTH_STRATEGY??'PASSWORD'}));
+app.get('/auth/config',c=>{
+  const origin=new URL(c.req.url).origin;
+  if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'&&previewAuthConfigured(c.env,origin))return c.json({strategy:'ACCESS_PREVIEW'});
+  if(localOwnerAuthEnabled(c.req.raw,c.env))return c.json({strategy:'PASSWORD',registration:true,recovery:true});
+  return c.json({error:'Authentication is unavailable'},503);
+});
+app.post('/auth/register',c=>localRegister(c.req.raw,c.env));
+app.post('/auth/verify-email',c=>localVerifyEmail(c.req.raw,c.env));
+app.post('/auth/password-reset/request',c=>localRequestPasswordReset(c.req.raw,c.env));
+app.post('/auth/password-reset/complete',c=>localCompletePasswordReset(c.req.raw,c.env));
+app.get('/__local/mailbox',c=>localMockMailbox(c.req.raw,c.env));
 app.post('/auth/preview-session',async c=>{
   if(!previewAuthConfigured(c.env,new URL(c.req.url).origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview authentication unavailable'},503);
   if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
@@ -45,34 +59,66 @@ app.post('/auth/preview-session',async c=>{
   const request=await c.req.json().catch(()=>null) as {role?:unknown}|null;
   if(!request||Object.keys(request).some(key=>key!=='role')||!['OWNER','ADMIN'].includes(String(request.role)))return c.json({error:'Choose a demo identity'},400);
   const role=request.role as PreviewDemoRole, expected=PREVIEW_DEMO_USERS[role];
-  const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=? AND email=? AND role=?').bind(expected.id,expected.email,role).first<User>();
+  const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=? AND email=? AND role=?').bind(expected.id,expected.email,role).first<User>();
   if(!user)return c.json({error:'Synthetic demo identity unavailable'},503);
-  return c.json({user},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt),c.env)});
+  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt),c.env)});
 });
 app.get('/health',c=>c.json({ok:true}));
 app.all('/__fixture/*',c=>c.json({error:'not found'},404));
-app.post('/auth/login',async c=>{if(c.env.AUTH_STRATEGY&&c.env.AUTH_STRATEGY!=='PASSWORD')return c.json({error:'Password login is unavailable in this Preview'},403);if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);const x=await c.req.json().catch(()=>null) as any; if(!x||typeof x.email!=='string'||x.email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.email.trim())||typeof x.password!=='string'||x.password.length<8)return c.json({error:'validation failed'},400); const u=await c.env.DB.prepare('SELECT id,email,password_hash,role FROM users WHERE email=?').bind(x.email.trim().toLowerCase()).first<any>(); if(!u||!await bcrypt.compare(x.password,u.password_hash))return c.json({error:'Invalid credentials'},401); const user:User={id:u.id,email:u.email,role:u.role}; return c.json({user},200,{'Set-Cookie':setCookie(await sign(user,c.env),c.env)}); });
+app.post('/auth/login',async c=>{
+  if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW')return c.json({error:'Password login is unavailable in this Preview'},403);
+  if(!localOwnerAuthEnabled(c.req.raw,c.env))return c.json({error:'Local synthetic OWNER authentication is unavailable'},404);
+  if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
+  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  const input=await boundedJson(c.req.raw,4096) as any;
+  if(!input||Object.keys(input).some(k=>!['email','password'].includes(k))||typeof input.email!=='string'||input.email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())||typeof input.password!=='string'||input.password.length<8||te.encode(input.password).byteLength>72)return c.json({error:'validation failed'},400);
+  const normalized=input.email.trim().toLowerCase(),ip=c.req.header('CF-Connecting-IP')??'loopback';
+  const [ipAllowed,emailAllowed]=await Promise.all([localRateAllowed(c.env,`login-ip:${ip}`,200),localRateAllowed(c.env,`login-email:${normalized}`,25)]);
+  const dummyHash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS';
+  if(!ipAllowed||!emailAllowed){await bcrypt.compare(input.password,dummyHash);return c.json({error:'Invalid credentials'},401);}
+  const account=await c.env.DB.prepare('SELECT id,email,password_hash,role,session_version,email_verified_at FROM users WHERE email=?').bind(normalized).first<any>();
+  const matches=account?await bcrypt.compare(input.password,account.password_hash):await bcrypt.compare(input.password,dummyHash);
+  if(!account||!matches||!account.email_verified_at)return c.json({error:'Invalid credentials'},401);
+  const user:User={id:account.id,email:account.email,role:account.role,session_version:account.session_version};
+  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie(await sign(user,c.env),c.env)});
+});
 app.get('/auth/me',async c=>{
   if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
   const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
   if(!raw)return c.json({error:'Invalid or expired token'},401);
-  let claims:{id:string;email:string};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
-  const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();
-  if(!user||user.email!==claims.email)return c.json({error:'Invalid or expired token'},401);
-  return c.json(user);
+  let claims:{id:string;email:string;sessionVersion:number};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();
+  if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);
+  return c.json({id:user.id,email:user.email,role:user.role});
 });
-app.post('/auth/logout',c=>{if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});});
-app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
-app.use('/owner/*',async(c,next)=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);if(!raw)return c.json({error:'Invalid or expired token'},401);if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();if(!user||user.email!==claims.email)return c.json({error:'Invalid or expired token'},401);if(user.role!=='OWNER')return c.json({error:'Insufficient role'},403);c.set('user',user);await next();});
+app.post('/auth/logout',async c=>{
+  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  if(localOwnerAuthEnabled(c.req.raw,c.env)){
+    const authorization=c.req.header('Authorization')??'';
+    const bearer=authorization.startsWith('Bearer ')?authorization.slice(7):null;
+    const sessionCookie=cookie(c.req.header('Cookie')??null);
+    for(const token of new Set([bearer,sessionCookie].filter((value):value is string=>Boolean(value)))){
+      let claims:{id:string;email:string;sessionVersion:number}|undefined;
+      try{claims=await verify(decodeURIComponent(token),c.env);}catch{}
+      if(!claims)continue;
+      try{
+        await c.env.DB.prepare('UPDATE users SET session_version=session_version+1,updated_at=? WHERE id=? AND email=? AND session_version=?').bind(now(),claims.id,claims.email,claims.sessionVersion??0).run();
+      }catch{return c.json({error:'Session revocation unavailable'},503);}
+    }
+  }
+  return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});
+});
+app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string;sessionVersion:number};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email||u.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
+app.use('/owner/*',async(c,next)=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);if(!raw)return c.json({error:'Invalid or expired token'},401);if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string;sessionVersion:number};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);if(user.role!=='OWNER')return c.json({error:'Insufficient role'},403);c.set('user',user);await next();});
 app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image upload is not available with repository-managed media'},503);await next();});
 app.use('/admin/*',async(c,next)=>{
   if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
   const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
   if(!raw)return c.json({error:'Invalid or expired token'},401);
   if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)&&c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
-  let claims:{id:string;email:string};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
-  const user=await c.env.DB.prepare('SELECT id,email,role FROM users WHERE id=?').bind(claims.id).first<User>();
-  if(!user||user.email!==claims.email)return c.json({error:'Invalid or expired token'},401);
+  let claims:{id:string;email:string;sessionVersion:number};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();
+  if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);
   if(user.role!=='ADMIN')return c.json({error:'Invalid or expired token'},401);
   c.set('user',user);await next();
 });

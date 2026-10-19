@@ -170,3 +170,24 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Worker management 13/13 and Worker typecheck PASS on A7. No frontend/UI or production-code delta, so existing Playwright/build evidence remains applicable. No R2 or remote service was used.
 - Deterministic preflight passed: `python3 scripts/check_orchestration_state.py --base origin/main` => PASS; `git diff --check` => PASS.
 - **Pre-Critic: PASS to publish immutable A7 and request one exact-head GitHub review/check run plus fresh separate-process GPT-6 Luna/High/read-only Controller. No merge/Preview until both are clean and Controller returns PASS.
+
+## CF-AU-I05 — local synthetic OWNER auth candidate (2026-10-19)
+
+- Exact functional candidate SHA `14d79e5792298c4f2eba0d53bc2f0b102818ab88`, tree `c8015ee49c29c271e90e8542858ab5fa0fe28997`; base `093bd9128653281b79599caf61bb6fa979b8fb49` is an ancestor. Subsequent PR checkpoint `7f30a8eeb7c2283e377ac3dc5d0ba2f7a5d1d3ff` changes only canonical state/evidence.
+- All four consolidated GitHub findings (4313265555, 4313360409, 4313360419, 4313445923) are repaired and their threads are resolved. Final automated review of exact checkpoint `7f30a8e` completed with `has_any_findings=false` and `has_unresolved_findings=false`. Required checks `worker`/`web` passed in run `39247551993`.
+- Separate Controller PASS: exact functional SHA/tree/base; requested GPT-6 Luna / High / read-only accepted; CLI exit 0, thread `01a15401-c55e-7611-b784-7fb3c4114acf`; backend identity UNVERIFIED. Report and prompt are in `evidence/critics/CF-AU-I05-CONTROLLER-14D79E5-*`. One nonblocking P2 follow-up: add explicit ADMIN logout revocation test; shared middleware currently enforces session version for ADMIN routes.
+- Focused evidence and local synthetic browser journey: `evidence/CF-AU-I05-LOCAL-QA.md`. Final local startup smokes cover `local:up` (D1 BLOB/no R2/loopback) and `local:owner-auth` (build SPA, mock registration, local D1). No Preview, remote migration, production, real identity, paid service or source write.
+- **Pre-Critic: PASS for bounded I05 local/synthetic auth candidate and protected integration readiness.** This does not authorize Preview auth rollout or production authentication; do not start I06 UI redesign inside this increment.
+
+## CF-AU-I05 — bearer-only logout P2 rework (2026-10-19)
+
+- GitHub P2 `4313547498` on checkpoint `3be04bc0fc3ccd675b6b6c2528c345f9628e2726` showed that Bearer-authenticated sessions survived local logout.
+- Repair candidate `8ae6186a310fa665da1cc199ef3aef575b538843`, tree `7f808d0dbe139ab2812f74925cac7105a40ab219`: revokes both unique Bearer and cookie sessions; OWNER/ADMIN regressions assert both credential forms fail afterward. Worker typecheck and focused auth tests PASS (owner-auth 5/5, Preview auth 6/6).
+- **Pre-Critic status: PENDING.** Exact-head checks, consolidated GitHub review/thread resolution, and fresh exact-SHA separate-process GPT-6 Luna/High/read-only Controller are required. Prior PASS does not transfer. No Preview or production auth is authorized.
+
+## CF-AU-I05 — cierre de logout Bearer y Pre-Critic (2026-10-19)
+
+- Exact executable SHA `8ae6186a310fa665da1cc199ef3aef575b538843`, tree `7f808d0dbe139ab2812f74925cac7105a40ab219`: local logout revokes unique Bearer/cookie sessions; Worker owner-auth 5/5, Preview-auth 6/6, Worker typecheck PASS.
+- Exact PR checkpoint `82d9d0bb9511ee550afd04f4b3514a984db0b110`: worker/web checks PASS (run `39249255619`); consolidated GitHub review completed with no findings/unresolved; finding `4313547498` resolved via reply `4313633558`; 0 unresolved conversations.
+- Controller PASS on exact executable SHA, separate `codex exec`, requested GPT-6 Luna / High / read-only, CLI accepted configuration and exit 0; backend identity UNVERIFIED. Evidence: `evidence/critics/CF-AU-I05-CONTROLLER-8AE6186-PASS.md` and metadata.
+- **Pre-Critic: PASS for protected integration of I05 only.** Final canonical validator still required before merge. No Preview update, production preparation, I06 or I08.

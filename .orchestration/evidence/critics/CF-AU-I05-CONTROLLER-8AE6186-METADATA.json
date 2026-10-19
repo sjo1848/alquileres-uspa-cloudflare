@@ -1,0 +1,27 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "thread_id": "01a15410-8f45-7d80-9fe5-d10b5f3ef06d",
+  "cli_version": "codex-cli 0.163.0",
+  "command": "codex exec --ignore-user-config --skip-git-repo-check --ephemeral --model gpt-6-luna -c model_reasoning_effort=high --sandbox read-only --json -C /tmp",
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "high",
+  "sandbox": "read-only",
+  "cli_configuration_accepted": true,
+  "actual_backend_model_identity": "UNVERIFIED",
+  "exit_status": 0,
+  "verdict": "PASS",
+  "exact_sha": "8ae6186a310fa665da1cc199ef3aef575b538843",
+  "exact_tree": "7f808d0dbe139ab2812f74925cac7105a40ab219",
+  "canonical_base": "093bd9128653281b79599caf61bb6fa979b8fb49",
+  "tests_run_by_controller": false,
+  "files_changed_by_controller": false,
+  "raw_cli_json_sha256": "f18ebd0074839a8f69e2af557c91d91410b3820c2a0a835c438366cc6ea32b10",
+  "usage": {
+    "input_tokens": 115309,
+    "cached_input_tokens": 73856,
+    "output_tokens": 3562,
+    "reasoning_output_tokens": 2757
+  },
+  "report": ".orchestration/evidence/critics/CF-AU-I05-CONTROLLER-8AE6186-PASS.md",
+  "prompt": ".orchestration/evidence/critics/CF-AU-I05-CONTROLLER-8AE6186-PROMPT.md"
+}

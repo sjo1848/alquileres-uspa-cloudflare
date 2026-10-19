@@ -16,7 +16,7 @@ async function login(email='owner.a@example.test'){
 beforeAll(async()=>{
   const hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS',now=new Date().toISOString();
   for(const [id,email,role]of [['owner-a','owner.a@example.test','OWNER'],['owner-b','owner.b@example.test','OWNER'],['admin','admin@example.test','ADMIN']]){
-    await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(id,email,hash,role,now,now).run();
+    await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?)').bind(id,email,hash,role,now,now,now).run();
   }
 });
 describe('OWNER cookie session and draft → review journey',()=>{

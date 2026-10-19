@@ -17,6 +17,10 @@ Las imágenes de esta versión son ilustraciones sintéticas bajo `apps/web/publ
 
 Preview: `npm run build:preview` compila la plantilla sin desplegar. La D1 de la plantilla es un UUID inválido de ejemplo; sustituirla por la D1 sintética aislada solo después de verificar Workers/Access Free. `python3 scripts/cloudflare-preview-preflight.py` desde la raíz consulta permisos/planes sin mutaciones; requiere Billing Read, Access Organizations Read y Access Apps/Policies Write en un token local. Mantener un único Preview `private` y proteger todas sus URLs con Access antes de publicarlo.
 
+## Autenticación OWNER local sintética
+
+Desde `apps/worker`, ejecutá `npm run local:owner-auth`. El comando instala dependencias web, construye el SPA y levanta Wrangler con D1 local en `127.0.0.1`; crea una cuenta desde la pantalla de registro y usa el buzón mock solo local para verificarla. No envía correo real ni configura Preview.
+
 ## Laboratorio histórico OWNER de P2
 
 The preserved P2 test harness (`wrangler.test.jsonc`) requires Node 24+, npm, and Wrangler. It uses synthetic accounts and local D1/R2 stores; configuration has no remote binding or production secret. Authentication fails closed unless `JWT_SECRET` is provided with at least 32 UTF-8 bytes. The legacy OWNER HTTP test harness uses `wrangler dev --local` and never calls `--remote`.
@@ -25,7 +29,7 @@ The preserved P2 test harness (`wrangler.test.jsonc`) requires Node 24+, npm, an
 npm ci && npm run local:up -- --var JWT_SECRET:replace-with-a-local-only-secret
 ```
 
-`local:up` applies the D1 migration, seeds synthetic users, and starts the local Worker. The command-line value above is a local-only placeholder; use a different random secret of at least 32 bytes outside test runs, and never commit it. Login and `/listings/*` return 503 when the secret is absent or too short; no empty-key JWT is accepted. Keep this terminal running. Login/logout and cookie-authenticated POST/PATCH/DELETE requests must carry an `Origin` exactly matching the Worker origin; browser same-origin requests do this automatically. This check blocks cross-origin form/fetch and login-CSRF side effects. Bearer-authenticated API mutations do not use cookies and are not subject to the Origin check.
+`local:up` applies migrations, seeds only synthetic users, and starts Wrangler bound to `127.0.0.1` with the dedicated `wrangler.local.jsonc` config (`PASSWORD` + `MOCK`, D1 BLOB, and no R2 binding). Those flags are for local development only; Worker auth also checks the request hostname and rejects PASSWORD mode on non-loopback hosts. The command-line JWT value above is a local-only placeholder; use a different random secret of at least 32 bytes outside test runs, and never commit it. Login and `/listings/*` fail closed when the secret is absent or too short; no empty-key JWT is accepted. Keep this terminal running. Login/logout and cookie-authenticated POST/PATCH/DELETE requests must carry an `Origin` exactly matching the Worker origin; browser same-origin requests do this automatically. This check blocks cross-origin form/fetch and login-CSRF side effects. Bearer-authenticated API mutations do not use cookies and are not subject to the Origin check.
 
 In another terminal, run the one-command integration suite. It first runs the focused idempotency/replay cases, then applies migrations, resets/seeds synthetic users and starts the full local HTTP Worker suite:
 

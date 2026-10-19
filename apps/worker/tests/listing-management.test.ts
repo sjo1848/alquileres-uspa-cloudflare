@@ -20,7 +20,7 @@ async function create(owner=ownerCookie,title=fields.title){const response=await
 beforeAll(async()=>{
   const hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS',at=new Date().toISOString();
   for(const [id,email,role] of [[ownerId,'listing.mgmt.owner@example.test','OWNER'],[otherId,'listing.mgmt.other@example.test','OWNER'],[adminId,'listing.mgmt.admin@example.test','ADMIN']])
-    await env.DB.prepare('INSERT OR IGNORE INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(id,email,hash,role,at,at).run();
+    await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email_verified_at=excluded.email_verified_at').bind(id,email,hash,role,at,at,at).run();
   ownerCookie=await login('listing.mgmt.owner@example.test');otherCookie=await login('listing.mgmt.other@example.test');adminCookie=await login('listing.mgmt.admin@example.test');
 });
 afterAll(async()=>{

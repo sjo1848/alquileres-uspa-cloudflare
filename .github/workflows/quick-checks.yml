@@ -37,6 +37,8 @@ jobs:
         working-directory: apps/worker
       - run: npm run test:owner
         working-directory: apps/worker
+      - run: npm run test:owner-auth
+        working-directory: apps/worker
       - run: npm run test:admin
         working-directory: apps/worker
       - run: npm run test:preview-auth

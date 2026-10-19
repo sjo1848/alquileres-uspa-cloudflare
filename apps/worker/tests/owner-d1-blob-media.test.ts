@@ -28,8 +28,8 @@ async function upload(lid:string,key:string,cookie=ownerCookie,bytes=png,type='i
 }
 beforeAll(async()=>{
   const hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS',t=new Date().toISOString();
-  await env.DB.prepare('INSERT OR REPLACE INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(ownerId,'d1-media-owner@example.test',hash,'OWNER',t,t).run();
-  await env.DB.prepare('INSERT OR REPLACE INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(otherOwnerId,'other-d1-media@example.test',hash,'OWNER',t,t).run();
+  await env.DB.prepare('INSERT OR REPLACE INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?)').bind(ownerId,'d1-media-owner@example.test',hash,'OWNER',t,t,t).run();
+  await env.DB.prepare('INSERT OR REPLACE INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?)').bind(otherOwnerId,'other-d1-media@example.test',hash,'OWNER',t,t,t).run();
   ownerCookie=await login('d1-media-owner@example.test');otherCookie=await login('other-d1-media@example.test');
 });
 

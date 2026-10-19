@@ -11,8 +11,8 @@ async function adminSession(){const response=await request('/auth/login','POST',
 
 beforeAll(async()=>{
   const at=new Date().toISOString(),hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS';
-  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind('contact-owner','contact-owner@example.test',hash,'OWNER',at,at).run();
-  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind('contact-admin','contact-admin@example.test',hash,'ADMIN',at,at).run();
+  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?)').bind('contact-owner','contact-owner@example.test',hash,'OWNER',at,at,at).run();
+  await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?)').bind('contact-admin','contact-admin@example.test',hash,'ADMIN',at,at,at).run();
   await env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,publication_status,availability_status,last_confirmed_at,created_at,updated_at,location_search) VALUES(?,?,'APPROVED',?,?,?,'PUBLISHED','AVAILABLE',?,?,?,?)").bind('contact-listing','contact-owner','Casa sintética','Consulta de prueba','Uspallata',at,at,at,'uspallata').run();
   await env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,publication_status,availability_status,created_at,updated_at,location_search) VALUES(?,?,'APPROVED',?,?,?,'UNPUBLISHED','AVAILABLE',?,?,?)").bind('contact-hidden','contact-owner','No publicada','No debe aceptar consultas','Uspallata',at,at,'uspallata').run();
 });

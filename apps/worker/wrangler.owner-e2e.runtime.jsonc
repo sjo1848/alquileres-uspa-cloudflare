@@ -6,7 +6,10 @@
     "JWT_EXPIRES_IN": "15m",
     "COOKIE_SAME_SITE": "lax",
     "COOKIE_SECURE": "false",
-    "MEDIA_STRATEGY": "D1_BLOB"
+    "MEDIA_STRATEGY": "D1_BLOB",
+    "AUTH_STRATEGY": "PASSWORD",
+    "LOCAL_OWNER_AUTH_ENABLED": "true",
+    "LOCAL_EMAIL_ADAPTER": "MOCK"
   },
   "d1_databases": [
     {

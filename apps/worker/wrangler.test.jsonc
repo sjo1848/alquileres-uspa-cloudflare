@@ -2,7 +2,7 @@
   "name": "cf-au-i01-p2-local-test-harness",
   "main": "tests/fault-worker.ts",
   "compatibility_date": "2026-10-12",
-  "vars": { "JWT_EXPIRES_IN": "2h", "MAX_IMAGE_BYTES": "5242880", "COOKIE_SAME_SITE": "lax" },
+  "vars": { "JWT_EXPIRES_IN": "2h", "MAX_IMAGE_BYTES": "5242880", "COOKIE_SAME_SITE": "lax", "AUTH_STRATEGY": "PASSWORD", "LOCAL_OWNER_AUTH_ENABLED": "true", "LOCAL_EMAIL_ADAPTER": "MOCK" },
   "triggers": { "crons": ["*/5 * * * *"] },
   "d1_databases": [{ "binding": "DB", "database_name": "cf-au-i01-p2-local", "database_id": "00000000-0000-0000-0000-000000000029", "migrations_dir": "migrations" }],
   "r2_buckets": [{ "binding": "IMAGES", "bucket_name": "cf-au-i01-p2-local-images" }]

@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `Issue #7 — OWNER lifecycle and ADMIN-assisted listing management`
+Phase: `OWNER_AUTH_LOCAL_SYNTHETIC_DEVELOPMENT`
+Active task: `CF-AU-I05 — real OWNER authentication in local synthetic environment`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1194,3 +1194,98 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Exact A7 focused results: Worker management 13/13 and Worker typecheck PASS. Existing A5 Playwright/UI/build results remain applicable because no UI or application source changed. No R2, remote resources, or full suite used.
 - A7 Pre-Critic evidence: `.orchestration/evidence/CF-AU-I04-PRECRITIC-A7.md`; deterministic orchestration/whitespace preflight is now required on the complete checkpoint.
 - **READY_TO_RESUME:** run `python3 scripts/check_orchestration_state.py --base origin/main` and `git diff --check`; if PASS, publish immutable A7 and one canonical checkpoint, request one exact-head GitHub review/check run, and run one fresh GPT-6 Luna/High/read-only Controller on A7. Protected merge and private Preview update only after clean reviews and Controller PASS.
+
+## Event 149 — CF-AU-I04 cerrado e integrado; inicio autorizado de I05
+
+- PR #22 se integró mediante merge protegido en `main@093bd9128653281b79599caf61bb6fa979b8fb49`. Artifact A7 conserva SHA ejecutable `d2bab1e0af35d6ce9ad39bde520facd5903efdaf`, tree `2af2509da979e19be27c4f26ad7b8762d61e39ac`; es ancestro de main y `apps/` no cambia después. Tag A7 permanece inmutable.
+- GitHub emitió recibo favorable para HEAD exacto `ec3bd29c4547890c79acbc28be3b4e8ee2519503`; `worker`/`web` pasaron en ese HEAD y en el merge; conversaciones sin resolver: 0. Main requería PR y checks estrictos; `enforce_admins=true`, sin force-push ni borrado.
+- Controller A7: PASS con revisión estática del SHA/tree/base exactos. Proceso `codex exec` separado, modelo solicitado `gpt-6-luna`, esfuerzo `high`, `--sandbox read-only`; provenance `delegated_codex_separate_process`; identidad interna de backend UNVERIFIED. El informe se conserva en `evidence/critics/CF-AU-I04-ARTIFACT-A7-CONTROLLER-PASS.md`.
+- Actualizado únicamente el Preview privado existente con Wrangler `preview`, deployment #6 `c652ceb4-01aa-408c-8a3f-4abbb91b4ca7`. La D1 sintética existente no tenía migraciones pendientes. Access anónimo devolvió 302 en 10/10 rutas/URLs; el executor no tuvo sesión autenticada y E2E remoto queda `BLOCKED_AUTH`. QA local OWNER/ADMIN continúa PASS 21/21; no se repitieron suites largas. No R2, costo, recursos nuevos, producción, datos reales, cambios de Access ni fuente.
+- Cierre publicado en Issue #7 comment `6265298884`.
+- La decisión aprobada para I05 está en Issue #7 comment `6265554947`: desarrollar autenticación OWNER local sintética, sin registro real/público en Preview, sin proveedor/costo ni tareas de producción. I06 se reserva para rediseño integral UI/UX; I07 validación de producto; I08 producción requerirá una autorización Human Gate futura.
+- **READY_TO_RESUME:** revisar la arquitectura actual de auth y el contrato del repositorio fuente en solo lectura; registrar la decisión compacta I05 y ejecutar únicamente los flujos seguros viables con Worker/D1 local sintética y email simulado. No habilitar registro en Preview ni usar identidades/datos reales.
+
+## Event 150 — CF-AU-I05 autenticación OWNER local sintética implementada
+
+- Se confirmó por GitHub REST que la directiva vigente sigue siendo Issue #7 comment `6265554947`: I05 primero, alta/verificación/reset solo local sintético con adaptador mock; no registro público en Preview, proveedor/email externo, producción ni preparación de I08. `origin/main` permanece en `093bd9128653281b79599caf61bb6fa979b8fb49`.
+- Evaluación y decisión técnica compacta: `.orchestration/contracts/CF-AU-I05-OWNER-AUTH.md`. Se conserva bcrypt cost 12 para fidelidad del repo fuente, pero la evidencia Free disponible no garantiza compatibilidad CPU; no se reduce el costo. Cloudflare Free no da un canal autorizado de envío arbitrario de email. La solución es exclusivamente local/mock; cualquier proveedor/entrega real queda fuera.
+- Implementados localmente Worker/D1 y Vue: alta OWNER cerrada a otros roles, verificación/reset con tokens aleatorios de un solo uso y hashes en D1, vencimiento, antienumeración, rate limits, Origin, sesión HttpOnly, expiración y revocación por `session_version`. La bandeja mock es efímera, acotada y solo loopback. Modo PASSWORD requiere host loopback + `LOCAL_OWNER_AUTH_ENABLED=true` + `LOCAL_EMAIL_ADAPTER=MOCK`; el middleware bloquea rutas autenticadas fuera de esa configuración. Access Preview se conserva y no expone alta/reset.
+- Migración local `0013_owner_auth_local.sql`; cuenta existentes previas conservan acceso local y cuentas nuevas nacen sin verificación. No aplicada a la D1 remota. No hubo cambios en el repo original, Preview, Access, facturación, R2 ni proveedores.
+- Verificaciones sobre el árbol local consolidado: Worker typecheck PASS; prueba local auth 4/4; Access Preview auth 6/6; suites combinadas local auth/Preview/OWNER/contacto 20/20 tras el endurecimiento final del middleware; Worker regression suite de orquestación 25/25; Web typecheck, build normal y build Preview PASS. Playwright en Workerd/D1 local recorrió registro → enlace mock/verificación → login → reset → nuevo login → dashboard OWNER → logout; tras el último cambio fail-closed, login/dashboard/logout volvió a pasar en navegador. E2E remoto sigue BLOCKED_AUTH; no se intentó.
+- Próxima acción autorizada: preflight determinista en staging y diff; publicar un único PR funcional I05 para CI `worker`/`web` y revisión automática consolidada; luego una revisión exacta del Controller Luna High read-only. No actualizar Preview ni comenzar I06/I08.
+- **READY_TO_RESUME:** ejecutar el preflight sobre el staging final, confirmar la evidencia de QA y congelar el candidato antes del primer push. Corregir todo hallazgo material consolidado antes de pedir las revisiones.
+
+## Event 151 — PR #23 abierto; candidato I05 en revisión consolidada
+
+- PR funcional #23: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/23. El candidato ejecutable es `b0fbdb702e1764f6c19cba6b0892dada873738d8`, tree `f782b1ed6b5eb0f78372ace5e1c83b2fcd417aaa`, base `093bd9128653281b79599caf61bb6fa979b8fb49`.
+- El SHA de código no ha cambiado desde las verificaciones locales y el smoke final Playwright. No se actualizó el Preview ni se aplicó migración remota.
+- Controles requeridos de `main` observados por API: checks estrictos `worker`/`web`, PR requerido, resolución de conversaciones, `enforce_admins=true`, force-push y borrado deshabilitados. Approval count es 0; checks y review automática siguen pendientes en PR #23.
+- Próximo paso: procesar una revisión GitHub consolidada; luego Controller read-only exacto con la configuración operacional documentada. No merge ni deployment hasta controles limpios; no abrir otro ciclo por observaciones no materiales.
+- **READY_TO_RESUME:** esperar los checks `worker`/`web` y revisión automática de PR #23; después solicitar una revisión Luna High/read-only exacta de `b0fbdb702e1764f6c19cba6b0892dada873738d8`.
+
+## Event 152 — I05 CI fixture correction consolidated
+
+- The initial GitHub `worker` run `39244644284` failed in `test:catalog` because its hand-built JWT lacked the new `sv:0` session-version claim and its inline bindings omitted explicit local PASSWORD/MOCK flags required by the final fail-closed auth middleware. The failure exposed a stale regression fixture, not an application-code failure.
+- Corrected only `apps/worker/tests/public-listings.test.ts` in `559b28cdc72b69c9491ddb80e851234593b576d9`; this is a test-only commit after auth implementation SHA `b0fbdb702e1764f6c19cba6b0892dada873738d8`. Focused `npm run test:catalog` passes 7/7. The existing auth, Access Preview, OWNER/contact, browser, Web build, and Python evidence remains on unchanged implementation paths; no full suite is repeated for this fixture-only correction.
+- The prior GitHub `web` check passed; final worker/web checks and consolidated review must run on the newly pushed PR checkpoint. Controller review is still required for this material authentication increment and must review the exact final code/test tree; no old verdict is reused.
+- Preview, remote D1, Access, production, source repository, cost, and public registration remain untouched.
+- **READY_TO_RESUME:** publish the test-fixture correction and this checkpoint to PR #23; wait for final exact-head `worker`/`web` checks and the consolidated GitHub review. If clean, run one separate-process GPT-6 Luna / High / read-only Controller against executable/test SHA `559b28cdc72b69c9491ddb80e851234593b576d9`, capturing invocation and output. Repair only material findings; do not update Preview or start I06/I08.
+
+## Event 153 — fixtures de usuario sintético verificado consolidados
+
+- El siguiente fallo del run `39244937118` ocurrió en `test:media`: dos cuentas sintéticas insertadas directamente por `owner-d1-blob-media.test.ts` quedaron con `email_verified_at=NULL`, por lo que el login correcto fue rechazado por el nuevo requisito de I05. El caso no provenía de producción ni de la implementación de autenticación.
+- Se corrigieron ambos fixtures para sembrar `email_verified_at` en `bc476be4d24cbe743b3b6b94a13f53858e751388` (tree `510b1e38f6b2364d9f0e22a6d77bae142bc25642`). `npm run test:media` pasa 15/15 y el `test:catalog` anterior pasa 7/7. `apps/worker/src`, Vue y la migración no cambiaron respecto del candidato I05 revisado localmente.
+- Como el workflow Worker terminó temprano en el fixture de medios, el resto de sus checks de PR #23 aún debe correr en una ejecución completa; `web` ya había pasado en run `39244937118` y se repetirá como check requerido del nuevo HEAD.
+- **READY_TO_RESUME:** publicar esta reparación consolidada y el checkpoint, esperar `worker`/`web` completos y conformes más revisión GitHub consolidada del HEAD final. Luego hacer una sola revisión separada `gpt-6-luna` / `high` / `read-only` del candidato exacto `bc476be4d24cbe743b3b6b94a13f53858e751388`. No desplegar Preview ni iniciar I06/I08.
+
+## Event 154 — fixtures sintéticos de moderación consolidados
+
+- CI del HEAD anterior completó catálogo, medios, OWNER y OWNER auth, y falló al iniciar `test:admin`: las cuentas `moderation-owner`, `moderation-admin` y `moderation-control-owner` se insertaban sin `email_verified_at`. El login 401 era el resultado esperado del nuevo contrato, pero impedía probar la suite de moderación.
+- Los tres fixtures ahora siembran/actualizan el timestamp verificado de forma idempotente. `npm run test:admin` pasa 12/12. La auditoría de `INSERT INTO users` en Worker tests deja solo las cuentas de paginación de contacto sin verificación; no se autentican y no la requieren. Cambios solo de test en `d563f5555d1a899a2657f0a03a81f9c46943a18c` (tree `e9e44de5194b0608e45aa17b6e02c60e689ac8c0`); código app/auth sin cambios.
+- **READY_TO_RESUME:** completar el preflight, publicar este bloque y el checkpoint a PR #23, y esperar el workflow Worker/Web completo. Si pasa, procesar una sola revisión GitHub consolidada y ejecutar Controller exacto con Luna High/read-only contra el SHA de código/test. Sin Preview, I06 ni producción.
+
+## Event 155 — fixtures de OWNER/ADMIN en gestión corregidos
+
+- La ejecución `39245304811` pasó catálogo, medios, OWNER, auth OWNER, ADMIN, Preview auth y contacto, y alcanzó `test:management`; su `beforeAll` insertaba tres usuarios sintéticos permanentes sin `email_verified_at`, así que todos los 13 tests se omitieron al fallar el login inicial.
+- El setup de `listing-management.test.ts` ahora actualiza de forma idempotente los tres usuarios con `email_verified_at`, sin modificar sus contraseñas/roles. `npm run test:management` pasa 13/13. La auditoría confirmó que los otros insert de contacto sin ese campo solo crean filas para una consulta de paginación y no inician sesión.
+- SHA de tests/evidencia `00cee374285f10ba382bb7e5ae51462af8967b26`, tree `045e570a96a543f9a685e18e94f0bdc52bcbc86c`. El código Worker de auth y el bundle Vue siguen idénticos al candidato funcional ya probado; el CI integral debe pasar el worker job hasta su validador final antes de Controller.
+- **READY_TO_RESUME:** publicar esta corrección y el checkpoint, esperar checks `worker`/`web` completos, luego una única review automática consolidada y una única revisión exacta Controller Luna High/read-only. Ninguna actualización remota de Preview y no comenzar I06.
+
+## Event 156 — GitHub auth harness/startup findings repaired
+
+- Final review of checkpoint `ccd2f5695e4c29379c892c8eacbf1b51f2dafb65` completed with three bounded findings: catalog JWT missing `sv:0` (4313265555), full HTTP harness positive-control JWT missing `sv:0` (4313360409), and the documented `local:up` startup missing explicit local auth configuration (4313360419). Catalog/worker fixture finding is corrected in prior test-only commits; the latter two are fixed in `6c344ce710a9e9636afd3c546ca4a6a2519d3d01` (tree `e5e860d133dbeeb5435efd46d2c557cbf4e12cb2`).
+- The HTTP harness token now carries `sv:0`, matching the seeded user's migration default. A dedicated `wrangler.local.jsonc` sets PASSWORD/MOCK, D1_BLOB and no R2 binding; `local:up` applies/seeds that isolated local D1 and binds Wrangler only to `127.0.0.1`. README clarifies host guard and local-only scope.
+- Focused checks: `node --check apps/worker/tests/http.mjs` PASS; local startup smoke PASS (health plus seeded synthetic OWNER login HTTP 200 with session cookie); existing candidate tests catalog 7/7, media 15/15, admin 12/12, management 13/13, local auth 4/4 and Preview auth 6/6 PASS. The complete CI `worker`/`web` checks also passed on previous checkpoint `ccd2f56`; final exact-head rerun is required because this candidate changes the test harness and local startup config.
+- First Controller CLI attempt on prior tree `00cee374...` returned an operational BLOCKED result because its prompt recursively attempted another codex process under the read-only sandbox. It is not a PASS and is not transferable to this updated candidate. The next run will make the separate `codex exec` process itself the Controller and explicitly forbid nested invocation, using a minimal `/tmp` working directory to avoid unrelated repository instruction recursion.
+- **READY_TO_RESUME:** deterministic preflight; push the consolidated candidate/checkpoint; wait for final exact-head worker/web CI and consolidated GitHub review. Resolve the three fixed review threads with their evidence. Then perform one fresh direct-process GPT-6 Luna / High / read-only Controller review on exact SHA `6c344ce710a9e9636afd3c546ca4a6a2519d3d01`. No Preview update, R2, production, real data, or I06.
+
+## Event 157 — arranque local reproducible desde checkout limpio
+
+- GitHub review finding `4313445923` mostró que `local:owner-auth` asumía `apps/web/dist/client` existente. El comando ahora instala las dependencias web, compila el SPA, migra únicamente D1 local y arranca Wrangler en loopback con el config local sintético. Reparación en `14d79e5792298c4f2eba0d53bc2f0b102818ab88`, tree `c8015ee49c29c271e90e8542858ab5fa0fe28997`.
+- Smoke del comando completo PASS: `/health` HTTP 200; `/auth/config` reporta PASSWORD + registro local; proceso escucha en `127.0.0.1`. `local:up` también fue probado con OWNER sintético y usa config D1_BLOB sin R2. El harness HTTP preservado tiene `sv:0` y pasa comprobación sintáctica.
+- Los cuatro hallazgos automáticos (`4313265555`, `4313360409`, `4313360419`, `4313445923`) tienen reparaciones en el candidato consolidado; los comentarios del PR se resolverán con referencias al test/arranque validado después de la última revisión.
+- CI worker/web PASS `39246902425` corresponde al checkpoint anterior `e6b3883`; el nuevo commit modifica únicamente scripts, config local y README. Requerimos un rerun exacto del HEAD final antes del Controller.
+- **READY_TO_RESUME:** publicar esta corrección y checkpoint; esperar checks exactos y revisión consolidada de GitHub; resolver conversaciones reparadas; luego una sola revisión directa separada GPT-6 Luna / High / read-only del SHA `14d79e5792298c4f2eba0d53bc2f0b102818ab88`. No Preview, producción, datos reales, gasto ni I06.
+
+## Event 158 — CF-AU-I05 superó Controller y Pre-Critic
+
+- Candidato funcional exacto: `14d79e5792298c4f2eba0d53bc2f0b102818ab88`, tree `c8015ee49c29c271e90e8542858ab5fa0fe28997`; base `main@093bd9128653281b79599caf61bb6fa979b8fb49`. Checkpoint revisado de PR #23: `7f30a8eeb7c2283e377ac3dc5d0ba2f7a5d1d3ff`; los commits posteriores de evidencia no modifican código/test.
+- GitHub automático completó sobre el checkpoint exacto con `has_any_findings=false` y `has_unresolved_findings=false`. `worker` y `web` pasaron en run `39247551993`. Las cuatro conversaciones reparadas se respondieron con evidencia y quedaron resueltas.
+- Controller `project_controller`: **PASS** para el milestone sintético local. Proceso separado `codex exec`, CLI `0.163.0`, modelo solicitado `gpt-6-luna`, esfuerzo `high`, sandbox `read-only`, configuración aceptada, salida 0, thread `01a15401-c55e-7611-b784-7fb3c4114acf`. Identidad real del backend UNVERIFIED. Informe, metadata y prompt: `evidence/critics/CF-AU-I05-CONTROLLER-14D79E5-*`.
+- Único seguimiento no bloqueante P2: agregar regresión explícita de logout/revocación para ADMIN; middleware compartido ya verifica `session_version`. Sin P0/P1.
+- Pre-Critic PASS para integración protegida. I05 continúa local/sintético: mock mailbox, D1 local, configuración de loopback; sin inscripción pública/Preview, proveedores, R2, pagos, producción, datos reales ni cambios fuente.
+- **READY_TO_RESUME:** PR #23 está listo para integración protegida preservando historia. Luego verificar SHA exacto de `main` y actualizar el cierre canónico antes de comenzar I06. No actualizar Preview ni iniciar preparación de producción.
+
+## Event 159 — P2 bearer-only logout fixed; exact-head review pending
+
+- Final GitHub review on `3be04bc0fc3ccd675b6b6c2528c345f9628e2726` identified P2 `4313547498`: local PASSWORD-mode `/auth/logout` cleared the cookie but did not revoke a supported Bearer token. The earlier I05 Controller/Pre-Critic PASS is preserved historically but no longer approves the changed candidate.
+- Consolidated repair is `8ae6186a310fa665da1cc199ef3aef575b538843`, tree `7f808d0dbe139ab2812f74925cac7105a40ab219`. Local logout now revokes both distinct bearer and cookie sessions by incrementing each matching D1 `session_version`; persistence failure returns 503; successful logout clears the cookie. Added OWNER and ADMIN regressions proving both old bearer and cookie credentials are rejected afterward.
+- Focused validation on this exact executable SHA: Worker typecheck PASS; `test:owner-auth` 5/5 PASS; `test:preview-auth` 6/6 PASS. Prior full CI does not cover this changed SHA and is not reused. No Preview, remote database, paid service, production, real data or source writes.
+- **READY_TO_RESUME:** publish the fix to PR #23, await exact-head `worker`/`web` checks and one consolidated GitHub review, resolve finding `4313547498` against the regression, then run a fresh separate-process `gpt-6-luna` / High / read-only Controller on exact executable SHA `8ae6186a310fa665da1cc199ef3aef575b538843`. Re-run the consistency preflight and Pre-Critic after the final review. Do not update Preview or start I06/I08.
+
+## Event 160 — CF-AU-I05 rework pasó Controller, GitHub y Pre-Critic
+
+- La reparación ejecutable exacta `8ae6186a310fa665da1cc199ef3aef575b538843` / tree `7f808d0dbe139ab2812f74925cac7105a40ab219` pasó revisión Controller: PASS, P0/P1/P2 = 0. Proceso separado `codex exec`, solicitado `gpt-6-luna` / High / `--sandbox read-only`, CLI 0.163.0, exit 0, thread `01a15410-8f45-7d80-9fe5-d10b5f3ef06d`; backend identity UNVERIFIED. Revisión estática sin pruebas ni cambios. Informe/prompt/metadata en `evidence/critics/CF-AU-I05-CONTROLLER-8AE6186-*`.
+- GitHub review consolidada del checkpoint `82d9d0bb9511ee550afd04f4b3514a984db0b110` completó sin hallazgos ni unresolved. Checks `worker` y `web` PASS en run `39249255619`. Hallazgo `4313547498` se contestó con la regresión en reply `4313633558` y quedó resuelto; conversaciones abiertas: 0.
+- Pruebas focalizadas exactas: Worker typecheck PASS, `test:owner-auth` 5/5, `test:preview-auth` 6/6. El validador y `git diff --check` pasaron en el checkpoint de rework; se repetirán en el checkpoint final.
+- **Pre-Critic PASS para integración protegida de I05 únicamente.** No desplegar Preview ni iniciar I06/I08. Próximo: repetir validador final, comprobar protecciones/checks de `main`, integrar PR #23 preservando historia si continúa elegible; después reconciliar SHA de main y cerrar I05.
