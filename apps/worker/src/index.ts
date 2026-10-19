@@ -188,13 +188,14 @@ function assistedMutationError(c:any,error:any,message:(error:any)=>string){
   return c.json({error:message(error)},status);
 }
 app.patch('/admin/listings/assisted/:id',async c=>{
-  const input=await boundedJson(c.req.raw,12_000) as any,allowed=['title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'];
-  if(!input||Object.keys(input).some(key=>!allowed.includes(key))||['priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'].some(key=>input[key]===undefined))return c.json({error:'rental fields are required'},400);
+  const input=await boundedJson(c.req.raw,12_000) as any,allowed=['title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency','expectedUpdatedAt'];
+  if(!input||Object.keys(input).some(key=>!allowed.includes(key))||['priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'].some(key=>input[key]===undefined)||typeof input.expectedUpdatedAt!=='string'||input.expectedUpdatedAt.length>40||!Number.isFinite(Date.parse(input.expectedUpdatedAt)))return c.json({error:'rental fields and expectedUpdatedAt are required'},400);
   return runAssistedMutation(c,'UPDATE',input,(listing,lease,at,eventId)=>{
     if(!['DRAFT','REJECTED'].includes(listing.status))throw Object.assign(new Error('listing is not editable'),{status:409});
+    if(listing.snapshot.updatedAt!==input.expectedUpdatedAt)throw Object.assign(new Error('listing changed since it was opened'),{status:409});
     const current={...listing,...input};if(!validListingInput(current))throw Object.assign(new Error('validation failed'),{status:400});
-    const snapshot={...listing.snapshot,...input,updatedAt:at};
-    const update=c.env.DB.prepare("UPDATE listings SET title=?,description=?,location=?,location_search=?,price_amount=?,price_period=?,rental_duration=?,max_occupants=?,currency=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(current.title,current.description,current.location,current.location.normalize('NFC').toLowerCase(),current.priceAmount,current.pricePeriod,current.rentalDuration,current.maxOccupants,current.currency,at,listing.id,listing.ownerId,listing.id,lease);
+    const {expectedUpdatedAt,...fields}=input,snapshot={...listing.snapshot,...fields,updatedAt:at};
+    const update=c.env.DB.prepare("UPDATE listings SET title=?,description=?,location=?,location_search=?,price_amount=?,price_period=?,rental_duration=?,max_occupants=?,currency=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(current.title,current.description,current.location,current.location.normalize('NFC').toLowerCase(),current.priceAmount,current.pricePeriod,current.rentalDuration,current.maxOccupants,current.currency,at,listing.id,listing.ownerId,expectedUpdatedAt,listing.id,lease);
     return {update,auditAction:'ADMIN_ASSISTED_LISTING_UPDATED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.status IN ('DRAFT','REJECTED')",auditArgs:[listing.id,at]};
   }).catch((error:any)=>assistedMutationError(c,error,error=>error?.message==='validation failed'?'validation failed':'listing is not editable'));
 });

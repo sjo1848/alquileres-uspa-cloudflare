@@ -16,7 +16,7 @@ function request(path:string,method='GET',body?:unknown,cookie?:string,key?:stri
   return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(key?{'Idempotency-Key':key}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body)},testBindings as typeof bindings);
 }
 async function login(email:string){const response=await request('/auth/login','POST',{email,password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
-async function create(owner=ownerCookie,title=fields.title){const response=await request('/listings','POST',{...fields,title},owner,crypto.randomUUID());expect(response.status).toBe(201);const result=await response.json() as {id:string};listingIds.push(result.id);return result;}
+async function create(owner=ownerCookie,title=fields.title){const response=await request('/listings','POST',{...fields,title},owner,crypto.randomUUID());expect(response.status).toBe(201);const result=await response.json() as {id:string;updatedAt:string};listingIds.push(result.id);return result;}
 beforeAll(async()=>{
   const hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS',at=new Date().toISOString();
   for(const [id,email,role] of [[ownerId,'listing.mgmt.owner@example.test','OWNER'],[otherId,'listing.mgmt.other@example.test','OWNER'],[adminId,'listing.mgmt.admin@example.test','ADMIN']])
@@ -91,11 +91,12 @@ describe('ADMIN-assisted lifecycle',()=>{
     const response=await request('/admin/listings/assisted','POST',{ownerId,...fields,title:'Asistida sintética'},adminCookie,'create-assisted-mgmt');
     expect(response.status).toBe(201);const created=await response.json() as any;listingIds.push(created.id);
     expect(created).toMatchObject({status:'DRAFT',owner:{id:ownerId,role:'OWNER'}});
+    expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',fields,adminCookie,'assisted-missing-version-mgmt')).status).toBe(400);
     expect((await request(`/admin/listings/assisted?ownerId=${ownerId}`)).status).toBe(401);
     expect((await request(`/admin/listings/assisted?ownerId=${ownerId}`,'GET',undefined,ownerCookie)).status).toBe(401);
     const drafts=await request(`/admin/listings/assisted?ownerId=${ownerId}`,'GET',undefined,adminCookie);
     expect(drafts.status).toBe(200);expect(((await drafts.json() as any).items as any[]).some(item=>item.id===created.id)).toBe(true);
-    const patch={...fields,title:'Asistida editada',location:'Uspallata norte'};
+    const patch={...fields,title:'Asistida editada',location:'Uspallata norte',expectedUpdatedAt:created.updatedAt};
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',{...patch,ownerId:otherId,actorId:otherId},adminCookie,'assisted-reassign-denied')).status).toBe(400);
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',patch,ownerCookie,'admin-edit-denied')).status).toBe(401);
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',patch,adminCookie)).status).toBe(400);
@@ -154,7 +155,7 @@ describe('ADMIN-assisted lifecycle',()=>{
     expect(createdResponse.status).toBe(201);const created=await createdResponse.json() as any;listingIds.push(created.id);
     await env.DB.exec("CREATE TRIGGER reject_assisted_update_audit BEFORE INSERT ON admin_audit_events WHEN NEW.action='ADMIN_ASSISTED_LISTING_UPDATED' BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END;");
     try{
-      const response=await request(`/admin/listings/assisted/${created.id}`,'PATCH',{...fields,title:'No debe persistir'},adminCookie,'atomic-assist-update-mgmt');
+      const response=await request(`/admin/listings/assisted/${created.id}`,'PATCH',{...fields,title:'No debe persistir',expectedUpdatedAt:created.updatedAt},adminCookie,'atomic-assist-update-mgmt');
       expect(response.status).toBe(503);
       expect(await env.DB.prepare('SELECT title FROM listings WHERE id=?').bind(created.id).first('title')).toBe('Atomicidad audit');
       expect(await env.DB.prepare('SELECT request_key FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key=?').bind(adminId,`ADMIN_ASSISTED_UPDATE:${created.id}`,'atomic-assist-update-mgmt').first()).toBeNull();
@@ -184,6 +185,23 @@ describe('ADMIN-assisted lifecycle',()=>{
     const replay=await request(`/admin/listings/assisted/${listing.id}/availability`,'PATCH',{availabilityStatus:'UNAVAILABLE'},adminCookie,'assisted-availability-race');
     expect(replay.status).toBe(200);expect(await replay.json()).toEqual(snapshot);
     expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_AVAILABILITY_UPDATED'").bind(listing.id).first('n')).toBe(1);
+  });
+
+  it('rejects an assisted edit based on an older OWNER version without losing the newer edit',async()=>{
+    const created=await create();
+    const stalePayload={...fields,title:'Edición ADMIN con versión vieja',expectedUpdatedAt:created.updatedAt};
+    const ownerEdit=await request(`/listings/${created.id}`,'PATCH',{...fields,title:'Edición OWNER más nueva'},ownerCookie);
+    expect(ownerEdit.status).toBe(200);
+    const deterministicNewerVersion=new Date(Date.now()+60_000).toISOString();
+    await env.DB.prepare('UPDATE listings SET updated_at=? WHERE id=?').bind(deterministicNewerVersion,created.id).run();
+    const rejected=await request(`/admin/listings/assisted/${created.id}`,'PATCH',stalePayload,adminCookie,'assisted-stale-version-mgmt');
+    expect(rejected.status).toBe(409);
+    expect(await env.DB.prepare('SELECT title,updated_at FROM listings WHERE id=?').bind(created.id).first()).toMatchObject({title:'Edición OWNER más nueva',updated_at:deterministicNewerVersion});
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_UPDATED'").bind(created.id).first('n')).toBe(0);
+    expect(await env.DB.prepare("SELECT request_key FROM idempotency_records WHERE owner_id=? AND scope=? AND request_key='assisted-stale-version-mgmt'").bind(adminId,`ADMIN_ASSISTED_UPDATE:${created.id}`).first()).toBeNull();
+    const latest=await request(`/admin/listings/${created.id}`,'GET',undefined,adminCookie),current=await latest.json() as any;
+    const accepted=await request(`/admin/listings/assisted/${created.id}`,'PATCH',{...fields,title:'Edición ADMIN actualizada',expectedUpdatedAt:current.updatedAt},adminCookie,'assisted-current-version-mgmt');
+    expect(accepted.status).toBe(200);expect(await accepted.json()).toMatchObject({title:'Edición ADMIN actualizada'});
   });
 
   it('rolls back assisted deletion, image cleanup and audit receipt when audit insertion fails',async()=>{

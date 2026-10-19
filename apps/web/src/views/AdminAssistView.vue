@@ -9,7 +9,7 @@ type Listing = { id:string; title:string; description:string; location:string; p
 type DraftSummary = Pick<Listing,'id'|'title'|'status'>;
 type DraftPage = { items:DraftSummary[]; nextCursor:{updatedAt:string;id:string}|null };
 type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number };
-const session=useSession(),owners=ref<Owner[]>([]),drafts=ref<DraftSummary[]>([]),draftsNextCursor=ref<DraftPage['nextCursor']>(null),loading=ref(true),busy=ref(false),error=ref(''),notice=ref(''),created=ref<Listing|null>(null),ownerSearch=ref(''),ownerMatches=ref(0),draftsLoading=ref(false);
+const session=useSession(),owners=ref<Owner[]>([]),drafts=ref<DraftSummary[]>([]),draftsNextCursor=ref<DraftPage['nextCursor']>(null),loading=ref(true),busy=ref(false),error=ref(''),notice=ref(''),created=ref<Listing|null>(null),ownerSearch=ref(''),ownerMatches=ref(0),draftsLoading=ref(false),staleDraft=ref(false);
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive({...blank(),ownerId:''});
 let draftsRequestGeneration=0;
@@ -19,7 +19,7 @@ const editable=()=>!created.value||['DRAFT','REJECTED'].includes(created.value.s
 const listingFields=(value:Fields)=>({title:value.title,description:value.description,location:value.location,priceAmount:value.priceAmount,currency:value.currency,pricePeriod:value.pricePeriod,rentalDuration:value.rentalDuration,maxOccupants:value.maxOccupants});
 const hasUnsavedChanges=computed(()=>!!created.value&&editable()&&JSON.stringify(listingFields(form))!==JSON.stringify(listingFields(created.value)));
 const statusLabel=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
-function assignListing(item:Listing){created.value=item;form.ownerId=item.owner.id;Object.assign(form,{title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,currency:item.currency,pricePeriod:item.pricePeriod,rentalDuration:item.rentalDuration,maxOccupants:item.maxOccupants});}
+function assignListing(item:Listing){created.value=item;staleDraft.value=false;form.ownerId=item.owner.id;Object.assign(form,{title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,currency:item.currency,pricePeriod:item.pricePeriod,rentalDuration:item.rentalDuration,maxOccupants:item.maxOccupants});}
 async function loadDrafts(append=false){
   const ownerId=form.ownerId,cursor=append?draftsNextCursor.value:null;
   if(!ownerId||append&&!cursor){drafts.value=[];draftsNextCursor.value=null;return;}
@@ -45,7 +45,7 @@ async function searchOwners(){
 }
 watch(()=>form.ownerId,()=>{draftsRequestGeneration++;created.value=null;drafts.value=[];draftsNextCursor.value=null;void loadDrafts();});
 onMounted(()=>void searchOwners());
-function newDraft(){created.value=null;Object.assign(form,blank(),{ownerId:form.ownerId});pendingMutation=null;pendingCreate=null;notice.value='';error.value='';}
+function newDraft(){created.value=null;staleDraft.value=false;Object.assign(form,blank(),{ownerId:form.ownerId});pendingMutation=null;pendingCreate=null;notice.value='';error.value='';}
 async function create(){
   if(busy.value||!form.ownerId)return;
   busy.value=true;error.value='';notice.value='';
@@ -69,10 +69,11 @@ async function mutate(action:string,path:string,method:string,body?:unknown){
   if(pendingMutation?.action!==action||pendingMutation.fingerprint!==fingerprint)pendingMutation={action,fingerprint,key:crypto.randomUUID()};
   busy.value=true;error.value='';notice.value='';
   try{const item=await session.apiRequest<Listing>(path,{method,...(body===undefined?{}:{body:JSON.stringify(body)}),headers:{'Idempotency-Key':pendingMutation.key}});pendingMutation=null;if(action==='delete'){created.value=null;Object.assign(form,blank(),{ownerId:form.ownerId});}else assignListing(item);await loadDrafts();notice.value=action==='edit'?'Cambios guardados y auditados.':action==='availability'?'Disponibilidad actualizada y auditada.':action==='reconfirm'?'Disponibilidad reconfirmada y auditada.':action==='submit'?'Publicación enviada a revisión y auditada.':'Borrador eliminado y auditado.';}
-  catch(e){error.value=e instanceof ApiError&&e.status===409?'La publicación cambió o la acción no está permitida. Actualizá los borradores y reintentá.':e instanceof Error?e.message:'No se pudo confirmar la operación.';}
+  catch(e){if(action==='edit'&&e instanceof ApiError&&e.status===409)staleDraft.value=true;error.value=e instanceof ApiError&&e.status===409?'La publicación cambió o la acción no está permitida. Recargá la versión actual antes de continuar.':e instanceof Error?e.message:'No se pudo confirmar la operación.';}
   finally{busy.value=false;}
 }
-async function save(){if(!created.value){await create();return;}await mutate('edit',`/admin/listings/assisted/${encodeURIComponent(created.value.id)}`,'PATCH',{title:form.title,description:form.description,location:form.location,priceAmount:form.priceAmount,currency:form.currency,pricePeriod:form.pricePeriod,rentalDuration:form.rentalDuration,maxOccupants:form.maxOccupants});}
+async function save(){if(staleDraft.value)return;if(!created.value){await create();return;}await mutate('edit',`/admin/listings/assisted/${encodeURIComponent(created.value.id)}`,'PATCH',{title:form.title,description:form.description,location:form.location,priceAmount:form.priceAmount,currency:form.currency,pricePeriod:form.pricePeriod,rentalDuration:form.rentalDuration,maxOccupants:form.maxOccupants,expectedUpdatedAt:created.value.updatedAt});}
+async function refreshCurrent(){const item=created.value;if(!item||busy.value)return;busy.value=true;error.value='';try{assignListing(await session.apiRequest<Listing>(`/admin/listings/${encodeURIComponent(item.id)}`));notice.value='Se recargó la versión actual del borrador.';}catch(e){error.value=e instanceof Error?e.message:'No se pudo recargar el borrador.';}finally{busy.value=false;}}
 async function toggleAvailability(){const item=created.value;if(!item)return;const availabilityStatus=item.availabilityStatus==='AVAILABLE'?'UNAVAILABLE':'AVAILABLE';await mutate('availability',`/admin/listings/assisted/${encodeURIComponent(item.id)}/availability`,'PATCH',{availabilityStatus});}
 async function reconfirm(){const item=created.value;if(item)await mutate('reconfirm',`/admin/listings/assisted/${encodeURIComponent(item.id)}/reconfirm`,'POST');}
 async function submit(){const item=created.value;if(item)await mutate('submit',`/admin/listings/assisted/${encodeURIComponent(item.id)}/submit`,'POST');}
@@ -103,7 +104,7 @@ async function remove(){
       <p v-else-if="form.ownerId&&!drafts.length&&!created">No hay borradores asistidos pendientes para esta cuenta.</p>
       <button v-if="created" type="button" class="secondary" :disabled="busy||hasUnsavedChanges" @click="newDraft">Crear otro borrador asistido</button>
       <form v-if="form.ownerId" @submit.prevent="save" :aria-busy="busy">
-        <fieldset :disabled="busy||!editable()">
+        <fieldset :disabled="busy||!editable()||staleDraft">
           <label>Título<input v-model="form.title" required maxlength="120" /></label>
           <label>Descripción<textarea v-model="form.description" maxlength="5000" rows="4"></textarea></label>
           <label>Ubicación<input v-model="form.location" required maxlength="240" /></label>
@@ -119,6 +120,7 @@ async function remove(){
       </form>
       <article v-if="created" class="subsection" aria-labelledby="assisted-current-title">
         <h3 id="assisted-current-title">{{ created.title }}</h3>
+        <button v-if="staleDraft" type="button" class="secondary" :disabled="busy" @click="refreshCurrent">Recargar versión actual (descarta mis cambios)</button>
         <p>Propietario: {{ created.owner.email }} · Estado: {{ statusLabel(created.status) }}</p>
         <p>Disponibilidad: {{ created.availabilityStatus==='AVAILABLE'?'Disponible':'No disponible' }} · última confirmación: {{ created.lastConfirmedAt?new Date(created.lastConfirmedAt).toLocaleString('es-AR'):'Sin confirmar' }}</p>
         <p v-if="hasUnsavedChanges" class="notice" role="status">Guardá los cambios antes de cambiar disponibilidad, enviar o eliminar este borrador.</p>

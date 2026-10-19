@@ -149,6 +149,29 @@ async (page) => {
   assert(await page.getByRole('button', { name: 'Enviar a revisión' }).isDisabled(), 'ADMIN cannot submit a listing while the assisted editor contains unsaved changes');
   const storedBeforeSave = await page.request.get(`${baseUrl}/api/admin/listings/${encodeURIComponent(assistedListing.id)}`);
   assert((await storedBeforeSave.json()).title === `${title} ADMIN`, 'blocked submit must leave the persisted draft unchanged');
+  const ownerEditContext = await page.context().browser().newContext();
+  const ownerEditPage = await ownerEditContext.newPage();
+  await ownerEditPage.goto(`${baseUrl}/login`);
+  await ownerEditPage.getByRole('textbox', { name: 'Email' }).fill('owner.a@example.test');
+  await ownerEditPage.getByLabel('Contraseña').fill('synthetic-owner-password-1');
+  await ownerEditPage.getByRole('button', { name: 'Ingresar' }).click();
+  await ownerEditPage.waitForURL('**/owner');
+  await ownerEditPage.waitForTimeout(10);
+  const ownerConcurrentEdit = await ownerEditPage.request.patch(`${baseUrl}/api/listings/${encodeURIComponent(assistedListing.id)}`, {
+    data: { title: `${title} OWNER newer`, description: 'Cambio OWNER sintético concurrente.', location: 'Uspallata norte', priceAmount: 30000, currency: 'ARS', pricePeriod: 'MONTH', rentalDuration: 'FLEXIBLE', maxOccupants: 1 },
+    headers: { Origin: baseUrl },
+  });
+  assert(ownerConcurrentEdit.status() === 200, `concurrent OWNER edit failed: ${ownerConcurrentEdit.status()}`);
+  await ownerEditContext.close();
+  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  await page.getByText('Recargá la versión actual antes de continuar.').waitFor();
+  const reloadCurrent = page.getByRole('button', { name: 'Recargar versión actual (descarta mis cambios)' });
+  await reloadCurrent.waitFor();
+  assert((await page.getByRole('textbox', { name: 'Título' }).inputValue()) === `${title} ADMIN editado`, 'stale form retains edits until the operator explicitly reloads');
+  await reloadCurrent.click();
+  await page.getByText('Se recargó la versión actual del borrador.', { exact: true }).waitFor();
+  assert((await page.getByRole('textbox', { name: 'Título' }).inputValue()) === `${title} OWNER newer`, 'explicit reload shows the newer OWNER edit');
+  await titleInput.fill(`${title} ADMIN editado`);
   await page.getByRole('button', { name: 'Guardar cambios' }).click();
   await page.getByText('Cambios guardados y auditados.', { exact: true }).waitFor();
   assert(await page.getByRole('button', { name: 'Enviar a revisión' }).isEnabled(), 'saving assisted edits must re-enable submit');
@@ -180,5 +203,5 @@ async (page) => {
   await page.getByText('Borrador eliminado y auditado.', { exact: true }).waitFor();
   const deleteAudit = await page.request.get(`${baseUrl}/api/admin/listings/audit`);
   assert((await deleteAudit.json()).some(row => row.action === 'ADMIN_ASSISTED_LISTING_DELETED' && row.actor?.id === 'admin-a' && row.targetOwner?.id === 'owner-a'), 'assisted delete audit must preserve ADMIN actor and OWNER target');
-  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'OWNER refresh blocked with unsaved edits', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'ADMIN stale owner-page response discarded after selection change', 'ADMIN discovers drafts beyond the first 50', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submitted ADMIN listing hides availability controls', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
+  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'OWNER refresh blocked with unsaved edits', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'ADMIN stale owner-page response discarded after selection change', 'ADMIN discovers drafts beyond the first 50', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'stale ADMIN edit rejected after a newer OWNER save; explicit reload', 'assisted edit', 'availability update and reconfirmation', 'submitted ADMIN listing hides availability controls', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
 }
