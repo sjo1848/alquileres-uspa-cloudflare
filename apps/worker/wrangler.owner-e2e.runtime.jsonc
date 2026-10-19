@@ -27,7 +27,10 @@
       "/admin/*",
       "/health",
       "/listings",
-      "/listings/*"
+      "/listings/*/availability",
+      "/listings/*/reconfirm",
+      "/listings/*/images",
+      "/listings/*/images/*"
     ]
   }
 }

@@ -94,7 +94,9 @@ describe('ADMIN-assisted lifecycle',()=>{
     const reconfirm=await request(`/admin/listings/assisted/${created.id}/reconfirm`,'POST',undefined,adminCookie,'assisted-reconfirm-mgmt');
     expect(reconfirm.status).toBe(200);expect(await reconfirm.json()).toMatchObject({availabilityStatus:'UNAVAILABLE',lastConfirmedAt:expect.any(String)});
     const submitted=await request(`/admin/listings/assisted/${created.id}/submit`,'POST',undefined,adminCookie,'assisted-submit-mgmt');
-    expect(submitted.status).toBe(200);expect(await submitted.json()).toMatchObject({status:'SUBMITTED',publicationStatus:'UNPUBLISHED'});
+    expect(submitted.status).toBe(200);const submittedBody=await submitted.json();expect(submittedBody).toMatchObject({status:'SUBMITTED',publicationStatus:'UNPUBLISHED'});
+    expect(await (await request(`/admin/listings/assisted/${created.id}/submit`,'POST',undefined,adminCookie,'assisted-submit-mgmt')).json()).toEqual(submittedBody);
+    expect((await request(`/admin/listings/assisted/${created.id}/submit`,'POST',undefined,adminCookie,'assisted-submit-new-key')).status).toBe(409);
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',patch,adminCookie,'edit-after-submit')).status).toBe(409);
     const rows=await (await request(`/admin/listings/audit?listingId=${created.id}`,'GET',undefined,adminCookie)).json() as any[];
     expect(rows.filter(item=>item.action==='ADMIN_ASSISTED_LISTING_UPDATED')).toHaveLength(1);

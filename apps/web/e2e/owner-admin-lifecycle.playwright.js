@@ -33,7 +33,8 @@ async (page) => {
   const ownerListing = ownerRows.find(row => row.title === `${title} OWNER`);
   assert(ownerListing?.id && (!ownerListingId || ownerListingId === ownerListing.id), 'created listing must appear in the authenticated OWNER list');
   assert((await page.request.get(`${baseUrl}/api/listings/${encodeURIComponent(ownerListing.id)}`)).status() === 200, 'OWNER must read their own listing');
-  assert((await page.request.get(`${baseUrl}/listings/${encodeURIComponent(ownerListing.id)}`)).status() === 200, 'direct OWNER listing route must reach Worker before SPA fallback');
+  const publicDetailPage = await page.request.get(`${baseUrl}/listings/${encodeURIComponent(ownerListing.id)}`);
+  assert(publicDetailPage.status() === 200 && publicDetailPage.headers()['content-type']?.includes('text/html') && (await publicDetailPage.text()).includes('id="app"'), 'public property detail URL must serve the SPA shell, not the OWNER API');
   assert((await page.request.get(`${baseUrl}/api/admin/listings/assisted?ownerId=owner-a`)).status() === 401, 'OWNER must not access ADMIN-assisted routes');
 
   const isolated = await page.context().browser().newContext();
@@ -44,18 +45,32 @@ async (page) => {
   await otherOwnerPage.getByRole('button', { name: 'Ingresar' }).click();
   await otherOwnerPage.waitForURL('**/owner');
   assert((await otherOwnerPage.request.get(`${baseUrl}/api/listings/${encodeURIComponent(ownerListing.id)}`)).status() === 404, 'another OWNER must not read this listing');
-  assert((await otherOwnerPage.request.get(`${baseUrl}/listings/${encodeURIComponent(ownerListing.id)}`)).status() === 404, 'direct listing route must preserve cross-owner denial');
+  const publicPageForOtherUser = await otherOwnerPage.request.get(`${baseUrl}/listings/${encodeURIComponent(ownerListing.id)}`);
+  assert(publicPageForOtherUser.status() === 200 && publicPageForOtherUser.headers()['content-type']?.includes('text/html'), 'public property URL remains a page for another identity; listing API remains owner-scoped');
   await isolated.close();
 
   await page.getByRole('button', { name: 'Actualizar publicación' }).click();
   await page.getByText('Publicación actualizada.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '+ Nuevo borrador' }).click();
+  await page.getByRole('textbox', { name: 'Título' }).fill(`${title} OWNER revisión`);
+  await page.getByRole('textbox', { name: 'Descripción' }).fill('Borrador sintético que se enviará a revisión.');
+  await page.getByRole('textbox', { name: 'Ubicación' }).fill('Uspallata, Mendoza');
+  await page.getByRole('spinbutton', { name: 'Importe' }).fill('26000');
+  await page.getByRole('button', { name: 'Crear borrador' }).click();
+  await page.getByText('Borrador creado.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Enviar a revisión' }).click();
+  await page.getByText('Publicación enviada a revisión.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Actualizar publicación' }).click();
+  await page.getByText('Publicación actualizada.', { exact: true }).waitFor();
+  assert(await page.getByText('La publicación ya no está disponible para editar.').count() === 0, 'refreshing a submitted listing must not attempt editable-only image loading');
+  await page.locator('.listing-choice').filter({ hasText: `${title} OWNER` }).filter({ hasText: 'Borrador' }).click();
   await page.locator('input[type="file"]').setInputFiles(imageFile);
   await page.getByText('Imagen guardada en tu publicación.', { exact: true }).waitFor();
   const image = page.locator('.image-list img').first();
   await image.waitFor();
   assert(await image.evaluate(node => node.complete && node.naturalWidth > 0), 'OWNER uploaded D1 BLOB image must render');
   await page.getByRole('button', { name: 'Eliminar borrador' }).click();
-  assert((await page.getByRole('button', { name: new RegExp(`${title} OWNER`) }).count()) === 1, 'canceling delete must preserve the selected draft');
+  assert((await page.locator('.listing-choice').filter({ hasText: `${title} OWNER` }).filter({ hasText: 'Borrador' }).count()) === 1, 'canceling delete must preserve the selected draft');
   await page.getByRole('button', { name: 'Eliminar borrador' }).click();
   await page.getByText('Publicación eliminada.', { exact: true }).waitFor();
   assert((await page.request.get(`${baseUrl}/api/listings/${encodeURIComponent(ownerListing.id)}`)).status() === 404, 'confirmed OWNER delete must remove the listing');
@@ -112,5 +127,5 @@ async (page) => {
   await page.getByText('Borrador eliminado y auditado.', { exact: true }).waitFor();
   const deleteAudit = await page.request.get(`${baseUrl}/api/admin/listings/audit`);
   assert((await deleteAudit.json()).some(row => row.action === 'ADMIN_ASSISTED_LISTING_DELETED' && row.actor?.id === 'admin-a' && row.targetOwner?.id === 'owner-a'), 'assisted delete audit must preserve ADMIN actor and OWNER target');
-  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner IDOR denial', 'OWNER selected-listing refresh', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'persisted owner target and actor audit', 'assisted edit', 'availability update and reconfirmation', 'submit to review', 'audit for each mutation', 'assisted draft deletion and audit'] };
+  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'persisted owner target and actor audit', 'assisted edit', 'availability update and reconfirmation', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
 }

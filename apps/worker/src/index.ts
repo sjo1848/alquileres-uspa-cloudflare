@@ -205,7 +205,7 @@ app.post('/admin/listings/assisted/:id/reconfirm',async c=>runAssistedMutation(c
 app.post('/admin/listings/assisted/:id/submit',async c=>{
   const listingId=c.req.param('id');
   return runAssistedMutation(c,'SUBMIT',{},async(listing,lease,at)=>{
-    if(!['DRAFT','REJECTED','SUBMITTED'].includes(listing.status))throw Object.assign(new Error('listing cannot be submitted in its current status'),{status:409});
+    if(!['DRAFT','REJECTED'].includes(listing.status))throw Object.assign(new Error('listing cannot be submitted in its current status'),{status:409});
     if(!validListingInput(listing))throw Object.assign(new Error('complete all required listing fields before submission'),{status:400});
     if(d1ImageStatus(c)&&listing.hasLegacyMedia)throw Object.assign(new Error('legacy media migration required'),{status:409});
     if(await hasPendingDeleteRecovery(c.env.DB,listingId,listing.ownerId)||await hasPendingReorder(c.env.DB,listing.ownerId,listingId)||await c.env.DB.prepare("SELECT 1 FROM image_operations WHERE listing_id=? AND kind='ADD' AND state IN ('PENDING','NEEDS_REPAIR') LIMIT 1").bind(listingId).first())throw Object.assign(new Error('image operation requires recovery'),{status:503});
@@ -214,8 +214,7 @@ app.post('/admin/listings/assisted/:id/submit',async c=>{
       const snapshot={...listing.snapshot,status:'SUBMITTED',rejectionReason:null,updatedAt:at};
       return {update,auditAction:'ADMIN_ASSISTED_LISTING_SUBMITTED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.status='SUBMITTED' AND l.updated_at=?",auditArgs:[listing.id,at]};
     }
-    const snapshot=listing.snapshot;
-    return {auditAction:'ADMIN_ASSISTED_LISTING_SUBMITTED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND l.status='SUBMITTED'",auditArgs:[listing.id]};
+    throw Object.assign(new Error('listing cannot be submitted in its current status'),{status:409});
   }).catch((error:any)=>c.json({error:error?.message==='complete all required listing fields before submission'?'complete all required listing fields before submission':error?.message==='legacy media migration required'?'legacy media migration required':error?.message==='image operation requires recovery'?'image operation requires recovery':'listing cannot be submitted in its current status'},error?.status??409));
 });
 app.delete('/admin/listings/assisted/:id',async c=>deleteAssistedListing(c));

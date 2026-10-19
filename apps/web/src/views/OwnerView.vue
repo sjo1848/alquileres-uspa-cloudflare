@@ -101,7 +101,7 @@ async function load(discardChanges=false){
 async function refreshSelected(){
   const item=selected.value;if(!item||busy.value)return;
   busy.value=true;error.value='';notice.value='';
-  try{const current=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(item.id)}`);remember(current);await loadImages(current);notice.value='Publicación actualizada.';}
+  try{const current=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(item.id)}`);remember(current);if(['DRAFT','REJECTED'].includes(current.status))await loadImages(current);else{images.value=[];imageLoadVersion++;}notice.value='Publicación actualizada.';}
   catch(e){error.value=message(e);}
   finally{busy.value=false;}
 }
