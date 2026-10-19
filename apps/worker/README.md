@@ -17,6 +17,10 @@ Las imágenes de esta versión son ilustraciones sintéticas bajo `apps/web/publ
 
 Preview: `npm run build:preview` compila la plantilla sin desplegar. La D1 de la plantilla es un UUID inválido de ejemplo; sustituirla por la D1 sintética aislada solo después de verificar Workers/Access Free. `python3 scripts/cloudflare-preview-preflight.py` desde la raíz consulta permisos/planes sin mutaciones; requiere Billing Read, Access Organizations Read y Access Apps/Policies Write en un token local. Mantener un único Preview `private` y proteger todas sus URLs con Access antes de publicarlo.
 
+## Autenticación OWNER local sintética
+
+Desde `apps/worker`, ejecutá `npm run local:owner-auth`. El comando instala dependencias web, construye el SPA y levanta Wrangler con D1 local en `127.0.0.1`; crea una cuenta desde la pantalla de registro y usa el buzón mock solo local para verificarla. No envía correo real ni configura Preview.
+
 ## Laboratorio histórico OWNER de P2
 
 The preserved P2 test harness (`wrangler.test.jsonc`) requires Node 24+, npm, and Wrangler. It uses synthetic accounts and local D1/R2 stores; configuration has no remote binding or production secret. Authentication fails closed unless `JWT_SECRET` is provided with at least 32 UTF-8 bytes. The legacy OWNER HTTP test harness uses `wrangler dev --local` and never calls `--remote`.
