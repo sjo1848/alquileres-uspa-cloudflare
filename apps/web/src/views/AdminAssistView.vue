@@ -12,6 +12,7 @@ type Fields = { title:string; description:string; location:string; priceAmount:n
 const session=useSession(),owners=ref<Owner[]>([]),drafts=ref<DraftSummary[]>([]),draftsNextCursor=ref<DraftPage['nextCursor']>(null),loading=ref(true),busy=ref(false),error=ref(''),notice=ref(''),created=ref<Listing|null>(null),ownerSearch=ref(''),ownerMatches=ref(0),draftsLoading=ref(false);
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive({...blank(),ownerId:''});
+let draftsRequestGeneration=0;
 let pendingCreate:{fingerprint:string;key:string}|null=null;
 let pendingMutation:{action:string;fingerprint:string;key:string}|null=null;
 const editable=()=>!created.value||['DRAFT','REJECTED'].includes(created.value.status);
@@ -20,17 +21,20 @@ const hasUnsavedChanges=computed(()=>!!created.value&&editable()&&JSON.stringify
 const statusLabel=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function assignListing(item:Listing){created.value=item;form.ownerId=item.owner.id;Object.assign(form,{title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,currency:item.currency,pricePeriod:item.pricePeriod,rentalDuration:item.rentalDuration,maxOccupants:item.maxOccupants});}
 async function loadDrafts(append=false){
-  if(!form.ownerId){drafts.value=[];draftsNextCursor.value=null;return;}
+  const ownerId=form.ownerId,cursor=append?draftsNextCursor.value:null;
+  if(!ownerId||append&&!cursor){drafts.value=[];draftsNextCursor.value=null;return;}
+  const generation=++draftsRequestGeneration;
   draftsLoading.value=true;error.value='';
   try{
-    const cursor=append?draftsNextCursor.value:null,query=new URLSearchParams({ownerId:form.ownerId});
+    const query=new URLSearchParams({ownerId});
     if(cursor){query.set('afterUpdatedAt',cursor.updatedAt);query.set('afterId',cursor.id);}
     const page=await session.apiRequest<DraftPage>(`/admin/listings/assisted?${query}`);
+    if(generation!==draftsRequestGeneration||ownerId!==form.ownerId)return;
     drafts.value=append?[...drafts.value,...page.items.filter(item=>!drafts.value.some(existing=>existing.id===item.id))]:page.items;
     draftsNextCursor.value=page.nextCursor;
   }
-  catch(e){error.value=e instanceof Error?e.message:'No pudimos cargar los borradores asistidos.';}
-  finally{draftsLoading.value=false;}
+  catch(e){if(generation===draftsRequestGeneration&&ownerId===form.ownerId)error.value=e instanceof Error?e.message:'No pudimos cargar los borradores asistidos.';}
+  finally{if(generation===draftsRequestGeneration)draftsLoading.value=false;}
 }
 async function searchOwners(){
   loading.value=true;error.value='';
@@ -39,7 +43,7 @@ async function searchOwners(){
   catch{error.value='No pudimos buscar las cuentas OWNER.';}
   finally{loading.value=false;}
 }
-watch(()=>form.ownerId,()=>{created.value=null;drafts.value=[];draftsNextCursor.value=null;void loadDrafts();});
+watch(()=>form.ownerId,()=>{draftsRequestGeneration++;created.value=null;drafts.value=[];draftsNextCursor.value=null;void loadDrafts();});
 onMounted(()=>void searchOwners());
 function newDraft(){created.value=null;Object.assign(form,blank(),{ownerId:form.ownerId});pendingMutation=null;pendingCreate=null;notice.value='';error.value='';}
 async function create(){

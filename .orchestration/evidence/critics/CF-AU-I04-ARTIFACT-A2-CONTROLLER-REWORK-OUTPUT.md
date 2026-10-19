@@ -1,0 +1,13 @@
+## Verdict: REWORK
+
+**Exact artifact:** `be68f314aaa77b8597c0ab6a5c3d16daaab62e5a`
+**Tree:** `9c3caaa04cae3e0b54e803e79b3d1bc3b47697f7`
+The requested base is an ancestor of the artifact.
+
+**Material P2 — stale ADMIN draft pages can cross owner selections.** `loadDrafts()` reads `form.ownerId` when it starts, then writes the response into shared `drafts` and `draftsNextCursor` without checking that the owner selection is still the same ([AdminAssistView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/AdminAssistView.vue:22), [owner watcher](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/AdminAssistView.vue:42)). The owner selector remains enabled while draft loading is in progress ([AdminAssistView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/AdminAssistView.vue:95)). If an old request resolves after switching owners, the previous owner’s drafts can appear under the new selection; an in-flight “load more” can also append old-owner results to the new owner’s list. The API query itself remains owner-scoped ([index.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/src/index.ts:107)), but the UI can misrepresent which owner’s drafts are being managed. Bind each response to the owner and cursor that initiated it, and ignore stale responses.
+
+The other requested checks look sound: the API’s descending `(updated_at,id)` keyset predicate and limit/page handling provide a stable tie-broken cursor for unchanged rows, with the owner predicate retained on every page ([index.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/src/index.ts:105)). The OWNER refresh checks `dirty` in both the handler and button state ([OwnerView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/OwnerView.vue:101)). ADMIN availability and reconfirmation check DRAFT/REJECTED before mutation and again in the SQL update and audit predicates ([index.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/src/index.ts:201)); the UI also hides those actions for other statuses ([AdminAssistView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/AdminAssistView.vue:120)). I found no P0/P1 issue in the reviewed flows.
+
+**Tests:** I did not run tests. The supplied pre-critic evidence reports focused tests and Playwright passing; I read that report but did not independently verify those runs.
+
+**Provenance:** This session had read-only filesystem permissions. The requested GPT-6 Luna / High selection is not exposed or attested in this runtime; provider backend identity is **UNVERIFIED**.

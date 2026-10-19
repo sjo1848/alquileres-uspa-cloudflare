@@ -95,7 +95,25 @@ async (page) => {
   }
   await page.goto(`${baseUrl}/admin-assist`);
   await page.getByRole('heading', { name: 'Gestión asistida' }).waitFor();
-  await page.getByRole('combobox', { name: 'Cuenta OWNER' }).selectOption('owner-a');
+  const ownerPicker = page.getByRole('combobox', { name: 'Cuenta OWNER' });
+  await ownerPicker.selectOption('owner-b');
+  await page.getByText('No hay borradores asistidos pendientes para esta cuenta.', { exact: true }).waitFor();
+  let releaseOwnerAResponse;
+  const ownerAResponseGate = new Promise(resolve => { releaseOwnerAResponse = resolve; });
+  const ownerARequest = /\/api\/admin\/listings\/assisted\?ownerId=owner-a$/;
+  const delayOwnerAResponse = async route => { await ownerAResponseGate; await route.continue(); };
+  await page.route(ownerARequest, delayOwnerAResponse);
+  const staleOwnerAResponsePromise = page.waitForResponse(response => ownerARequest.test(response.url()));
+  await ownerPicker.selectOption('owner-a');
+  await page.getByRole('status').filter({ hasText: 'Cargando borradores' }).waitFor();
+  await ownerPicker.selectOption('owner-b');
+  await page.getByText('No hay borradores asistidos pendientes para esta cuenta.', { exact: true }).waitFor();
+  releaseOwnerAResponse();
+  const staleOwnerAResponse = await staleOwnerAResponsePromise;
+  assert(staleOwnerAResponse.status() === 200 && (await staleOwnerAResponse.json()).items.length === 50, 'delayed OWNER A page must complete successfully for the stale-response regression');
+  assert(await page.getByLabel('Borrador asistido existente').count() === 0, 'stale OWNER A drafts must not appear after switching to OWNER B');
+  await page.unroute(ownerARequest, delayOwnerAResponse);
+  await ownerPicker.selectOption('owner-a');
   await page.getByRole('button', { name: 'Cargar más borradores' }).waitFor();
   const secondDraftPagePromise = page.waitForResponse(response => {
     if (!response.url().includes('/api/admin/listings/assisted?')) return false;
@@ -162,5 +180,5 @@ async (page) => {
   await page.getByText('Borrador eliminado y auditado.', { exact: true }).waitFor();
   const deleteAudit = await page.request.get(`${baseUrl}/api/admin/listings/audit`);
   assert((await deleteAudit.json()).some(row => row.action === 'ADMIN_ASSISTED_LISTING_DELETED' && row.actor?.id === 'admin-a' && row.targetOwner?.id === 'owner-a'), 'assisted delete audit must preserve ADMIN actor and OWNER target');
-  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'OWNER refresh blocked with unsaved edits', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'ADMIN discovers drafts beyond the first 50', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submitted ADMIN listing hides availability controls', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
+  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'OWNER refresh blocked with unsaved edits', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'ADMIN stale owner-page response discarded after selection change', 'ADMIN discovers drafts beyond the first 50', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submitted ADMIN listing hides availability controls', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
 }
