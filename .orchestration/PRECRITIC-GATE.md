@@ -15,6 +15,14 @@
 - The Controller's P2 request for an explicit single-submit-audit count is addressed in test commit `4cc4da4649e9ce75fc8007c4fc9bbffbdd3d9cca`. Focused Worker tests 7/7, Worker typecheck and whitespace check PASS. No application source or E2E files changed in that commit, so the already recorded 15-check local Playwright and UI builds remain applicable to the exact app code SHA 87f077e.
 - **Pre-Critic: PASS to publish the consolidated test hardening and run one fresh exact-head GitHub review plus the documented separate `codex exec` Controller process (`gpt-6-luna`, High, `--sandbox read-only`).** This is not a technical Controller PASS or merge authorization.
 
+## CF-AU-I04 final consolidated candidate after unsaved-edit repair (2026-10-19)
+
+- Exact executable candidate `b2ea7130e6f25e5f60df0bb7d41c482908c4961c` descends from approved base `774d0c747e8ecbbdb97776641becbd9e49875875`.
+- All prior findings are fixed: public detail/static routing, submitted OWNER refresh, duplicate submit audit, and preventing ADMIN actions from discarding unsaved form edits. Evidence and regression mapping: `evidence/CF-AU-I04-PRECRITIC-B2EA713.md`.
+- Current focused/full-relevant evidence: Worker management 7/7, Worker/Web typechecks, Web normal/Preview builds, Python 25/25, local Workerd+D1 Playwright 16 checks, consistency validator and whitespace check PASS.
+- The in-process Controller was `BLOCKED_MODEL_CONFIG`; its report is historical only. The separate-process GPT-6 Luna / High / read-only review is mandatory for this candidate.
+- **Gate: PASS to publish this consolidated candidate for exact-head GitHub review/checks and the required separate-process Controller. Not integration or deployment approval.**
+
 Before publishing a local substantive artifact for `project_controller` delegated review, Codex must prove:
 
 ## Contract

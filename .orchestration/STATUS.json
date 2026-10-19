@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I03 Artifact A2 integrado en main y publicado en el Preview privado existente; local ADMIN UI/API smoke PASS. El smoke remoto autenticado queda BLOCKED_AUTH por falta de sesión en el contexto de ejecución.",
   "last_completed_head": "Artifact A2 exacto 76fbdfd2b711f4f765be122ba9f539f0ca101963; merge protegido PR #19 0db6c0c79aaeae2204c0fe704c66d4faccdb3c05; diff ejecutable posterior al Artifact A2: ninguno.",
   "work_branch": "work/owner-admin-lifecycle",
-  "next_action": "Finish exact-head worker/web checks and automatic GitHub review for PR #22 head a47b045cf78d056f816e393331281fac84ec8f7a; findings 4309937209 and 4309937211 are replied to and resolved. Then obtain delegated read-only Controller PASS on the exact final PR head before protected merge and same-Preview update.",
+  "next_action": "Publish executable candidate b2ea713 and its exact Pre-Critic checkpoint to PR #22. Process the latest GitHub P2 thread (ADMIN unsaved form); run exact-head checks and automatic review. Then perform the documented separate `codex exec` GPT-6 Luna / High / read-only Controller review on the settled exact PR SHA, repair findings, and only then protected-merge and update the existing Preview.",
   "stop_reason": null,
   "event": {
-    "seq": 139,
-    "id": "CF_AU_I04_REWORK_PUBLISHED_GITHUB_REVIEW_PENDING",
-    "type": "FUNCTIONAL_PR_UPDATE"
+    "seq": 140,
+    "id": "CF_AU_I04_FINAL_CONSOLIDATED_CANDIDATE_PRECRITIC",
+    "type": "LOCAL_SYNTHETIC_FUNCTIONAL_REWORK"
   },
   "external_review": {
     "required": false,
@@ -30,9 +30,9 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/22",
     "branch": "work/owner-admin-lifecycle",
-    "last_observed_head": "a47b045cf78d056f816e393331281fac84ec8f7a",
+    "last_observed_head": "8981f7e4194b6c0cc89d6d5e7ec95dd0e3c12f72",
     "merge_commit": null,
-    "head_source": "PR #22 updated with executable rework 87f077e and Pre-Critic/canonical checkpoint a47b045; required checks running; fresh automatic review requested."
+    "head_source": "Last live remote head 8981f7e before pushing final local UI repair b2ea713; it has required checks passed and automated review identified an unsaved ADMIN edit issue now fixed locally."
   },
   "integration_commit": "0db6c0c79aaeae2204c0fe704c66d4faccdb3c05",
   "issue_4": "CLOSED",
@@ -69,8 +69,8 @@
   "candidate_review": {
     "scope": "CF-AU-I04 OWNER individual listing read/delete UI and ADMIN-assisted edit, availability, reconfirmation, submit and draft deletion",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
-    "executable_commit": "87f077ed3a64de36c89a6d4caf985bbd05405c29",
-    "status": "PUBLISHED; REQUIRED_CHECKS_AND_FRESH_GITHUB_REVIEW_PENDING",
+    "executable_commit": "b2ea7130e6f25e5f60df0bb7d41c482908c4961c",
+    "status": "FINAL_LOCAL_CANDIDATE; PUBLISH_AND_EXACT_HEAD_REVIEWS_PENDING",
     "local_checks": {
       "worker_typecheck": "PASS",
       "worker_management": "PASS: 1 file / 7 tests, including fresh-key duplicate submission rejection without audit duplication",
@@ -82,13 +82,14 @@
       "precritic": "PASS to publish for exact-head GitHub and delegated Controller review only"
     },
     "evidence": ".orchestration/evidence/CF-AU-I04-OWNER-ADMIN-LIFECYCLE.md",
-    "precritic_gate": "PASS to submit for exact-head GitHub and Controller review; not integration PASS",
+    "precritic_gate": "PASS to publish candidate for fresh exact-head GitHub review and separate-process Controller only",
     "remote_preview_update": "PENDING_PROTECTED_MERGE",
     "scope_limits": "USD 0; no R2, billing, production, real data, real authentication, source writes, new Cloudflare resources or Access changes",
     "controller_rework": ".orchestration/evidence/critics/CF-AU-I04-CONTROLLER-7C5B5F7-REWORK.md",
-    "precritic_evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-87F077E.md",
+    "precritic_evidence": ".orchestration/evidence/CF-AU-I04-PRECRITIC-B2EA713.md",
     "published_candidate_head": "a47b045cf78d056f816e393331281fac84ec8f7a",
-    "github_review_status": "Prior findings 4309937209 and 4309937211 replied to and resolved; fresh @codex review requested in comment 6258712730."
+    "github_review_status": "Review on 8981f7e identified P2 unsaved assisted form submit; repaired in b2ea713, not yet pushed.",
+    "controller_runtime_note": ".orchestration/evidence/critics/CF-AU-I04-CONTROLLER-8981F7E-BLOCKED.md"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -140,28 +141,28 @@
     "scope": "CF-AU-I04 OWNER lifecycle and ADMIN-assisted listing management",
     "authority": "Issue #7 comment 6257931179; explicit Human approval 2026-10-19",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
-    "status": "PR_UPDATED; EXACT_HEAD_CHECKS_AND_REVIEW_PENDING",
-    "code_status": "OWNER GET/DELETE/UI and ADMIN-assisted edit/availability/reconfirm/submit/delete implemented; Controller P1 and both GitHub P2 findings fixed; no real authentication.",
+    "status": "FINAL_LOCAL_CANDIDATE_PRECRITIC_PASS; PUBLISH_PENDING",
+    "code_status": "OWNER GET/DELETE/UI and ADMIN assisted lifecycle complete; Controller P1 and all 3 GitHub P2 findings fixed; explicit no-duplicate submit audit regression; no real authentication.",
     "worker_typecheck": "PASS",
-    "worker_management_tests": "PASS: 7/7; fresh-key duplicate submit returns 409 without an extra audit row; same-key replay stable",
+    "worker_management_tests": "PASS: 7/7 with exact one-submit-audit row count after fresh-key repeat rejection",
     "web_typecheck": "PASS",
     "web_build": "PASS",
     "web_preview_build": "PASS",
     "python_regression_tests": "PASS: 25/25",
-    "playwright": "PASS: 15 checks on fresh local Workerd + synthetic D1; includes public SPA detail/API authorization, submitted OWNER refresh, cancellation/confirmation, D1 BLOB, ADMIN audit/flows",
+    "playwright": "PASS: 16 local Workerd + synthetic D1 checks including dirty ADMIN form submit blocked until saved",
     "screenshots": [
       "output/playwright/owner-admin-lifecycle-desktop.png",
       "output/playwright/owner-admin-lifecycle-mobile.png"
     ],
     "routing": "All direct /listings/* API paths dispatch to Worker in local, Preview and E2E configurations; redundancy regression is tested and Preview build passes.",
-    "github_review": "Previous review findings 4309937209 and 4309937211 fixed, replies posted and threads resolved. Fresh @codex review requested at https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/22#issuecomment-6258712730.",
-    "controller": "Rework repair pushed. Previous delegated review interrupted because canonical checkpoint advanced after push; fresh exact-head review pending after latest PR head settles.",
+    "github_review": "Review on 8981f7e identified unsaved ADMIN edit loss; fixed in b2ea713 and regression verified, pending push and fresh exact-head review.",
+    "controller": "Native/subagent attempt BLOCKED_MODEL_CONFIG; no PASS. Separate codex exec GPT-6 Luna / High / read-only review required.",
     "preview_update": "PENDING_PROTECTED_MERGE",
     "remote_authenticated_e2e": "NOT_RUN; remote Preview remains unchanged",
     "cost_and_scope": "USD 0; no R2, billing, production, real data, new resources, Access changes or source-repository writes",
-    "next_action": "Wait for exact-head worker/web checks and automatic review of PR head a47b045, process any material comments, then request delegated Controller PASS on the exact final head.",
-    "code_sha": "87f077ed3a64de36c89a6d4caf985bbd05405c29",
-    "precritic": "PASS to publish one consolidated candidate for GitHub and Controller exact-head review only."
+    "next_action": "Push b2ea713 and Pre-Critic checkpoint; wait for exact-head GitHub checks/review, then separate-process Controller review of settled exact SHA.",
+    "code_sha": "b2ea7130e6f25e5f60df0bb7d41c482908c4961c",
+    "precritic": "PASS to publish final consolidated candidate for GitHub and separate-process Controller review only."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
