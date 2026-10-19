@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `OWNER_AUTH_LOCAL_SYNTHETIC_DEVELOPMENT`
-Active task: `CF-AU-I05 — real OWNER authentication in local synthetic environment`
+Phase: `OWNER_AUTH_CLEAN_START_REWORK`
+Active task: `CF-AU-I05 — repair clean local OWNER auth startup`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1289,3 +1289,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - GitHub review consolidada del checkpoint `82d9d0bb9511ee550afd04f4b3514a984db0b110` completó sin hallazgos ni unresolved. Checks `worker` y `web` PASS en run `39249255619`. Hallazgo `4313547498` se contestó con la regresión en reply `4313633558` y quedó resuelto; conversaciones abiertas: 0.
 - Pruebas focalizadas exactas: Worker typecheck PASS, `test:owner-auth` 5/5, `test:preview-auth` 6/6. El validador y `git diff --check` pasaron en el checkpoint de rework; se repetirán en el checkpoint final.
 - **Pre-Critic PASS para integración protegida de I05 únicamente.** No desplegar Preview ni iniciar I06/I08. Próximo: repetir validador final, comprobar protecciones/checks de `main`, integrar PR #23 preservando historia si continúa elegible; después reconciliar SHA de main y cerrar I05.
+
+## Event 162 — rework local de arranque limpio I05
+
+- Tras el merge protegido de I05, la review automática final del checkpoint documental halló P2 `4313686597`: el comando `local:owner-auth` no instalaba dependencias `apps/worker` en un checkout sin `node_modules`.
+- Reparación mínima `b1fecbfcb291c7394299782a511b784e465c91eb`, tree `ce2fedd39c05c056ab7c878acfb8ac65d90126f0`: ejecuta `npm ci` del Worker antes del `npm ci` de web, build SPA, D1 local y Wrangler loopback. README actualizado. La autenticación, migración y comportamiento Preview no cambian.
+- Smoke desde worktree limpio: ambas instalaciones cierran con 0 vulnerabilidades; build web PASS; 13 migraciones aplicadas en D1 local; Wrangler expone PASSWORD/MOCK+D1_BLOB en `127.0.0.1`; `/health` 200 y `/auth/config` 200. Evidencia `.orchestration/evidence/CF-AU-I05-CLEAN-START-REWORK.md`.
+- El PR #23 está integrado en `eecafd894c5fc57c1a5c362ae490566d3f006db2`, pero el hallazgo exige cerrar esta reparación técnica en PR #24 antes de marcar I05 como definitivamente cerrado. El P2 no se resuelve aún.
+- **READY_TO_RESUME:** publicar candidato de rework en PR #24, esperar checks `worker`/`web` y review consolidada; resolver hallazgo con evidencia. Después, una revisión estática Controller concisa puede confirmar el cambio acotado al script y la preservación de auth. No desplegar Preview ni iniciar I06/producción durante este rework.
