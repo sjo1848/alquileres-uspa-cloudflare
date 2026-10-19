@@ -143,3 +143,12 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Focused evidence: management 11/11, contact/availability 6/6, OWNER 4/4, Worker typecheck and whitespace check PASS. No Web code changed; A3 UI/build/Playwright results remain applicable to the unchanged frontend.
 - Detailed evidence: `evidence/CF-AU-I04-PRECRITIC-A4.md`. A3 Controller startup failure was due to attempted Vitest temp writes in the read-only process; no sandbox relaxation is authorized. A4 Controller must perform adversarial static review only and must not run tests or write files.
 - **Pre-Critic: PASS to publish one immutable A4 candidate and run the final exact-head GitHub review/checks plus separate-process GPT-6 Luna/High/read-only Controller. No merge or Preview update until those controls pass.**
+
+## CF-AU-I04 Artifact A5 — optimistic version guard for assisted edits (2026-10-19)
+
+- GitHub P2 `4310303875`: ADMIN could save stale form data after the OWNER updated the same draft. The assisted edit now requires `expectedUpdatedAt`, compares it under the shared lease, and uses a D1 version predicate. Stale versions fail 409 without audit/idempotency mutation. The UI preserves the unsaved ADMIN form and offers an explicit current-version reload before continuing.
+- The new regression simulates a later OWNER edit, verifies the stale ADMIN version cannot overwrite it or emit audit/receipt, then accepts an ADMIN edit using the current version. The local Workerd+D1 Playwright flow covers the 409, preserved form, explicit reload, and successful subsequent edit.
+- Exact executable candidate: `e592422e2e485aedf622d169a1e04652940bf814`; base `774d0c747e8ecbbdb97776641becbd9e49875875` remains an ancestor. A4 tag/Controller PASS and earlier P2 history remain immutable.
+- Focused evidence: management 12/12, Worker typecheck, Web typecheck/build/build:preview, E2E syntax, and local Playwright 21 named checks PASS. Contact 6/6 and OWNER 4/4 remain valid; A5 changes only assisted-edit behavior and the consolidated management suite revalidates the modified Worker tree. Evidence: `evidence/CF-AU-I04-PRECRITIC-A5.md`.
+- A4 delegated Controller PASS is exact to A4; A5 needs a fresh review. The Controller must stay read-only and must not run tests; the parent has already run all required local checks.
+- **Pre-Critic: PASS to publish immutable A5 for one exact-head GitHub review/checks and one separate-process GPT-6 Luna/High/read-only Controller review. No merge or Preview update until those controls pass.**
