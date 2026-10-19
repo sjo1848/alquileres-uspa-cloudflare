@@ -8,7 +8,7 @@
   --color-canvas: #f3efe5;
   --color-sage: #e5eddf;
   --color-border: #ddd6c8;
-  --color-muted: #65736a;
+  --color-muted: #5d6b61;
   --color-danger: #9b3027;
   --color-warning: #74520f;
   --color-focus: #71411f;
@@ -118,10 +118,12 @@ main {
   flex-direction: column;
   gap: 0.5rem;
 }
+.listing-card h2,
 .listing-card h3,
 .listing-card p {
   margin: 0.25rem 0;
 }
+.listing-card h2 { font-size: 1.17em; }
 .rental-summary {
   font-weight: 700;
 }

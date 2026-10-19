@@ -119,7 +119,7 @@ async function remove(){
         </fieldset>
       </form>
       <article v-if="created" class="subsection" aria-labelledby="assisted-current-title">
-        <h3 id="assisted-current-title">{{ created.title }}</h3>
+        <h2 id="assisted-current-title">{{ created.title }}</h2>
         <button v-if="staleDraft" type="button" class="secondary" :disabled="busy" @click="refreshCurrent">Recargar versión actual (descarta mis cambios)</button>
         <p>Propietario: {{ created.owner.email }} · Estado: {{ statusLabel(created.status) }}</p>
         <p>Disponibilidad: {{ created.availabilityStatus==='AVAILABLE'?'Disponible':'No disponible' }} · última confirmación: {{ created.lastConfirmedAt?new Date(created.lastConfirmedAt).toLocaleString('es-AR'):'Sin confirmar' }}</p>

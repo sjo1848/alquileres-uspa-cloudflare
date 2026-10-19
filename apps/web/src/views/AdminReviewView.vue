@@ -88,7 +88,7 @@ onMounted(load);
         </button>
       </nav>
       <article v-if="selected()" class="card">
-        <h3>{{ selected()!.title }}</h3><p>{{ selected()!.description }}</p>
+        <h2>{{ selected()!.title }}</h2><p>{{ selected()!.description }}</p>
         <dl><dt>Propietario</dt><dd>{{ selected()!.owner.email }}</dd><dt>Ubicación</dt><dd>{{ selected()!.location }}</dd>
           <dt>Precio</dt><dd>{{ selected()!.priceAmount }} {{ selected()!.currency }}</dd></dl>
         <div v-if="selected()!.images.length" class="admin-review-images">
@@ -107,7 +107,7 @@ onMounted(load);
       </article>
     </div>
     <button v-if="!loading && nextCursor" class="secondary" :disabled="busy" @click="loadMore">Cargar más publicaciones</button>
-    <section class="card admin-audit"><h3>Actividad reciente</h3><ul><li v-for="entry in audit" :key="entry.id">
+    <section class="card admin-audit"><h2>Actividad reciente</h2><ul><li v-for="entry in audit" :key="entry.id">
       {{ entry.action === 'LISTING_APPROVED' || entry.action === 'ADMIN_LISTING_APPROVED' ? 'Aprobó' : entry.action === 'LISTING_PUBLISHED' || entry.action === 'ADMIN_LISTING_PUBLISHED' ? 'Publicó' : entry.action === 'LISTING_REJECTED' || entry.action === 'ADMIN_LISTING_REJECTED' ? 'Rechazó' : entry.action }} — {{ entry.actor.email }} — {{ entry.targetOwner?.email ?? (entry.entityType + (entry.entityId ? ' ' + entry.entityId : '')) }} — {{ entry.reason ?? (entry.action === 'LISTING_PUBLISHED' || entry.action === 'ADMIN_LISTING_PUBLISHED' ? 'Publicación visible en el catálogo' : entry.action === 'LISTING_APPROVED' || entry.action === 'ADMIN_LISTING_APPROVED' ? 'Publicación aprobada' : 'Evento registrado') }}
     </li></ul><p v-if="!audit.length">Todavía no hay decisiones registradas.</p></section>
   </section>
