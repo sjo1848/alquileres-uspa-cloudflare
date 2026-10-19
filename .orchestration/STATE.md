@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `FULL_CLOUDFLARE_IMPLEMENTATION_LOCAL`
-Active task: `Issue #7 — deterministic quality preflight before new workflows`
+Active task: `Issue #7 — OWNER lifecycle and ADMIN-assisted listing management`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1087,3 +1087,13 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Access anónimo denegó 8/8 probes en URL estable e inmutable. Playwright local pasó el recorrido sintético OWNER→ADMIN→aprobar→publicar→ver catálogo; evidencia `output/playwright/preview-admin-role-switch.png`. `npm run test:admin`: 1 archivo / 12 pruebas PASS.
 - El E2E remoto autenticado no se ejecutó: el contexto Playwright disponible quedó en inicio de sesión Access y el navegador integrado no pudo inicializar. Se registra `BLOCKED_AUTH`; no se exportaron credenciales ni se debilitó Access.
 - **READY_TO_RESUME:** publicar este cierre documental/evidencia mediante PR protegido y checks rápidos; luego continuar el siguiente recorrido funcional autorizado de Issue #7 con QA local. Reintentar smoke remoto solo si el contexto executor dispone de una sesión normal de Access.
+
+## Event 137 — CF-AU-I04 OWNER lifecycle y ADMIN asistencia consolidada localmente
+
+- Autoridad: decisión del Human en [Issue #7, comentario 6257931179](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/7#issuecomment-6257931179). Base verificada `main@774d0c747e8ecbbdb97776641becbd9e49875875`; repo fuente `sjo1848/alquileres-uspa` solo lectura.
+- Alcance: OWNER `GET /listings/:id`, borrado idempotente de DRAFT/REJECTED y UI con confirmación; ADMIN asistido para redescubrir, editar, cambiar/reconfirmar disponibilidad, enviar a revisión y borrar borradores, con auditoría atómica. No se inicia autenticación real ni moderación paralela.
+- Verificación local sintética: Worker typecheck; `test:management` 7/7; Python regressions 25/25; web typecheck, `build` y `build:preview`; Playwright integrado Workerd/D1 en desktop 1440 px y móvil 390 px, incluidos IDOR, cancelación/confirmación de borrado, D1 BLOB, mutaciones asistidas, auditoría y roles. Evidencias de pantalla: `output/playwright/owner-admin-lifecycle-desktop.png` y `output/playwright/owner-admin-lifecycle-mobile.png`.
+- Configuración `run_worker_first` del Worker, plantilla Preview y E2E dispone las rutas directas `/listings/*` en un único patrón no redundante; la regresión se valida por Python y el build Preview.
+- Estado: implementación local consolidada; no publicada aún. Checks, revisión automática de GitHub y Controller del SHA final pendientes. Sin cambio remoto de Preview.
+- Límites: USD 0, D1 sintética, sin R2, billing, producción, datos reales, autenticación real, repo fuente ni cambios en Access.
+- **READY_TO_RESUME:** ejecutar el preflight con todo el candidato staged, publicar el PR funcional, atender findings materiales en conjunto, obtener los checks requeridos y el Controller read-only para el SHA final, luego merge protegido y actualizar el Preview privado existente mediante `wrangler preview`; verificar denegación anónima y anotar el resultado en este Issue.

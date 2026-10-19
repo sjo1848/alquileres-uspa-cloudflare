@@ -18,10 +18,7 @@
       "/admin/*",
       "/health",
       "/listings",
-      "/listings/*/availability",
-      "/listings/*/reconfirm",
-      "/listings/*/images",
-      "/listings/*/images/*"
+      "/listings/*"
     ]
   },
   "d1_databases": [

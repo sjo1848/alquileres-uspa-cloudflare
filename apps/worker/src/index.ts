@@ -99,6 +99,12 @@ app.get('/admin/listings/review',async c=>{
   return c.json({items:rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
 });
 app.get('/admin/owners',async c=>{const search=(c.req.query('search')??'').trim();if(search.length>254)return c.json({error:'search is too long'},400);const statement=search?"SELECT id,email FROM users WHERE role='OWNER' AND instr(lower(email),lower(?))>0 ORDER BY email,id LIMIT 50":"SELECT id,email FROM users WHERE role='OWNER' ORDER BY email,id LIMIT 50";const result=await c.env.DB.prepare(statement).bind(...(search?[search]:[])).all<{id:string;email:string}>();return c.json(result.results);});
+app.get('/admin/listings/assisted',async c=>{
+  const owner=c.req.query('ownerId');
+  if(!owner||owner.length>100)return c.json({error:'a valid ownerId is required'},400);
+  const rows=await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.owner_id=? AND u.role='OWNER' AND l.status IN ('DRAFT','REJECTED') ORDER BY l.updated_at DESC,l.id DESC LIMIT 50").bind(owner).all<any>();
+  return c.json(rows.results.map(row=>{const {ownerId,ownerEmail,...item}=row;return {...item,owner:{id:ownerId,email:ownerEmail,role:'OWNER'}};}));
+});
 app.post('/admin/listings/assisted',async c=>{
   const input=await boundedJson(c.req.raw,12_000) as any;
   const allowed=['ownerId','title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'];
@@ -144,6 +150,100 @@ app.post('/admin/listings/assisted',async c=>{
   }
   return c.json(JSON.parse(snapshot),201);
 });
+async function runAssistedMutation(c:any,action:string,payload:unknown,prepare:(listing:any,lease:string,at:string,eventId:string)=>{update?:D1PreparedStatement;auditAction:string;metadata?:Record<string,unknown>;snapshot:any;auditWhere:string;auditArgs:unknown[]}|Promise<{update?:D1PreparedStatement;auditAction:string;metadata?:Record<string,unknown>;snapshot:any;auditWhere:string;auditArgs:unknown[]}>) {
+  const listingId=c.req.param('id'),actor=ownerId(c),key=requestKey(c);
+  if(!key)return c.json({error:'a valid Idempotency-Key is required'},400);
+  const scope=`ADMIN_ASSISTED_${action}:${listingId}`,requestFingerprint=await fingerprint({action,listingId,payload});
+  let replay:any;try{replay=await mutationReplay(c.env.DB,actor,scope,key,requestFingerprint);}catch{return c.json({error:'assisted mutation outcome unavailable; retry with the same idempotency key'},503);}
+  if(replay?.conflict)return c.json({error:'idempotency key reused with a different assisted mutation'},409);
+  if(replay?.pending)return c.json({error:'assisted mutation requires recovery; retry with the same idempotency key'},503);
+  if(replay)return c.json(replay.result,200);
+  const exists=await c.env.DB.prepare("SELECT l.id FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first();
+  if(!exists)return c.json({message:'Listing not found'},404);
+  const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
+  try{
+    const listing=await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail,EXISTS(SELECT 1 FROM listing_images i WHERE i.listing_id=l.id AND i.blob_data IS NULL) AS hasLegacyMedia FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first() as any;
+    if(!listing)return c.json({message:'Listing not found'},404);
+    const currentSnapshot=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);
+    if(!currentSnapshot)return c.json({message:'Listing not found'},404);
+    listing.snapshot=currentSnapshot;
+    const at=now(),eventId=id(),prepared=await prepare(listing,lease,at,eventId);
+    const audit=sourceAuditInsert(c,eventId,listingId,prepared.auditAction,null,at,prepared.auditWhere,prepared.auditArgs,prepared.metadata);
+    const resultJson=JSON.stringify(prepared.snapshot);
+    const receipt=c.env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) SELECT ?,?,?,?,?, 'COMMITTED',?,?,? WHERE EXISTS(SELECT 1 FROM admin_audit_events WHERE id=? AND actor_id=? AND listing_id=? AND target_owner_id=?) AND EXISTS(SELECT 1 FROM listings WHERE id=? AND owner_id=? AND updated_at=?)").bind(actor,scope,key,requestFingerprint,listingId,resultJson,at,at,eventId,actor,listingId,listing.ownerId,listingId,listing.ownerId,prepared.snapshot.updatedAt);
+    const statements=[...(prepared.update?[prepared.update]:[]),audit,receipt];
+    let results:D1Result[];try{results=await c.env.DB.batch(statements) as D1Result[];}catch{return c.json({error:'assisted mutation outcome unknown; retry with the same idempotency key'},503);}
+    if(results.length!==statements.length||results.some(result=>result.meta?.changes!==1))return c.json({error:'assisted mutation was not committed; reload and retry'},409);
+    return c.json(prepared.snapshot,200);
+  }finally{await unlock(c.env.DB,listingId,lease);}
+}
+app.patch('/admin/listings/assisted/:id',async c=>{
+  const input=await boundedJson(c.req.raw,12_000) as any,allowed=['title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'];
+  if(!input||Object.keys(input).some(key=>!allowed.includes(key))||['priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'].some(key=>input[key]===undefined))return c.json({error:'rental fields are required'},400);
+  return runAssistedMutation(c,'UPDATE',input,(listing,lease,at,eventId)=>{
+    if(!['DRAFT','REJECTED'].includes(listing.status))throw Object.assign(new Error('listing is not editable'),{status:409});
+    const current={...listing,...input};if(!validListingInput(current))throw Object.assign(new Error('validation failed'),{status:400});
+    const snapshot={...listing.snapshot,...input,updatedAt:at};
+    const update=c.env.DB.prepare("UPDATE listings SET title=?,description=?,location=?,location_search=?,price_amount=?,price_period=?,rental_duration=?,max_occupants=?,currency=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(current.title,current.description,current.location,current.location.normalize('NFC').toLowerCase(),current.priceAmount,current.pricePeriod,current.rentalDuration,current.maxOccupants,current.currency,at,listing.id,listing.ownerId,listing.id,lease);
+    return {update,auditAction:'ADMIN_ASSISTED_LISTING_UPDATED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.status IN ('DRAFT','REJECTED')",auditArgs:[listing.id,at]};
+  }).catch((error:any)=>c.json({error:error?.message==='validation failed'?'validation failed':'listing is not editable'},error?.status??409));
+});
+app.patch('/admin/listings/assisted/:id/availability',async c=>{
+  const input=await boundedJson(c.req.raw,1024) as any;
+  if(!input||Object.keys(input).length!==1||!['AVAILABLE','UNAVAILABLE'].includes(input.availabilityStatus))return c.json({error:'availabilityStatus must be AVAILABLE or UNAVAILABLE'},400);
+  return runAssistedMutation(c,'AVAILABILITY',input,(listing,lease,at)=>{
+    const snapshot={...listing.snapshot,availabilityStatus:input.availabilityStatus,lastConfirmedAt:at,updatedAt:at};
+    const update=c.env.DB.prepare("UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(input.availabilityStatus,at,at,listing.id,listing.ownerId,listing.id,lease);
+    return {update,auditAction:'ADMIN_ASSISTED_AVAILABILITY_UPDATED',metadata:{availabilityStatus:input.availabilityStatus},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.availability_status=? AND l.last_confirmed_at=?",auditArgs:[listing.id,at,input.availabilityStatus,at]};
+  });
+});
+app.post('/admin/listings/assisted/:id/reconfirm',async c=>runAssistedMutation(c,'RECONFIRM',{},(listing,lease,at)=>{
+  const snapshot={...listing.snapshot,lastConfirmedAt:at,updatedAt:at};
+  const update=c.env.DB.prepare("UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,at,listing.id,listing.ownerId,listing.id,lease);
+  return {update,auditAction:'ADMIN_ASSISTED_LISTING_RECONFIRMED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.last_confirmed_at=?",auditArgs:[listing.id,at,at]};
+}));
+app.post('/admin/listings/assisted/:id/submit',async c=>{
+  const listingId=c.req.param('id');
+  return runAssistedMutation(c,'SUBMIT',{},async(listing,lease,at)=>{
+    if(!['DRAFT','REJECTED','SUBMITTED'].includes(listing.status))throw Object.assign(new Error('listing cannot be submitted in its current status'),{status:409});
+    if(!validListingInput(listing))throw Object.assign(new Error('complete all required listing fields before submission'),{status:400});
+    if(d1ImageStatus(c)&&listing.hasLegacyMedia)throw Object.assign(new Error('legacy media migration required'),{status:409});
+    if(await hasPendingDeleteRecovery(c.env.DB,listingId,listing.ownerId)||await hasPendingReorder(c.env.DB,listing.ownerId,listingId)||await c.env.DB.prepare("SELECT 1 FROM image_operations WHERE listing_id=? AND kind='ADD' AND state IN ('PENDING','NEEDS_REPAIR') LIMIT 1").bind(listingId).first())throw Object.assign(new Error('image operation requires recovery'),{status:503});
+    if(listing.status!=='SUBMITTED'){
+      const update=c.env.DB.prepare("UPDATE listings SET status='SUBMITTED',rejection_reason=NULL,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,listing.id,listing.ownerId,listing.id,lease);
+      const snapshot={...listing.snapshot,status:'SUBMITTED',rejectionReason:null,updatedAt:at};
+      return {update,auditAction:'ADMIN_ASSISTED_LISTING_SUBMITTED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.status='SUBMITTED' AND l.updated_at=?",auditArgs:[listing.id,at]};
+    }
+    const snapshot=listing.snapshot;
+    return {auditAction:'ADMIN_ASSISTED_LISTING_SUBMITTED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND l.status='SUBMITTED'",auditArgs:[listing.id]};
+  }).catch((error:any)=>c.json({error:error?.message==='complete all required listing fields before submission'?'complete all required listing fields before submission':error?.message==='legacy media migration required'?'legacy media migration required':error?.message==='image operation requires recovery'?'image operation requires recovery':'listing cannot be submitted in its current status'},error?.status??409));
+});
+app.delete('/admin/listings/assisted/:id',async c=>deleteAssistedListing(c));
+async function deleteAssistedListing(c:any){
+  const listingId=c.req.param('id'),actor=ownerId(c),key=requestKey(c);
+  if(!key)return c.json({error:'a valid Idempotency-Key is required'},400);
+  const scope=`ADMIN_ASSISTED_DELETE:${listingId}`,requestFingerprint=await fingerprint({action:'ADMIN_ASSISTED_DELETE',listingId});
+  let replay:any;try{replay=await mutationReplay(c.env.DB,actor,scope,key,requestFingerprint);}catch{return c.json({error:'assisted deletion outcome unavailable; retry with the same idempotency key'},503);}
+  if(replay?.conflict)return c.json({error:'idempotency key reused with a different assisted deletion'},409);
+  if(replay?.pending)return c.json({error:'assisted deletion requires recovery; retry with the same idempotency key'},503);
+  if(replay)return c.json(replay.result,200);
+  const exists=await c.env.DB.prepare("SELECT l.status FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first() as any;
+  if(!exists||!['DRAFT','REJECTED'].includes(exists.status))return c.json({message:'Listing not found'},404);
+  const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
+  try{
+    const listing=await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=? AND u.role='OWNER'").bind(listingId).first() as any;
+    if(!listing||!['DRAFT','REJECTED'].includes(listing.status))return c.json({message:'Listing not found'},404);
+    if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
+    const snapshot=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);if(!snapshot)return c.json({message:'Listing not found'},404);
+    const at=now(),eventId=id(),resultJson=JSON.stringify(snapshot);
+    const remove=c.env.DB.prepare("DELETE FROM listings WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch()) AND EXISTS(SELECT 1 FROM users WHERE id=? AND role='OWNER')").bind(listingId,listing.ownerId,listingId,lease,listing.ownerId);
+    const audit=c.env.DB.prepare("INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',?,?,?,'ADMIN_ASSISTED_LISTING_DELETED','{}',NULL,? WHERE changes()=1 AND EXISTS(SELECT 1 FROM users WHERE id=? AND role='ADMIN') AND EXISTS(SELECT 1 FROM users WHERE id=? AND role='OWNER')").bind(eventId,actor,listingId,listingId,listing.ownerId,at,actor,listing.ownerId);
+    const receipt=c.env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) SELECT ?,?,?,?,?, 'COMMITTED',?,?,? WHERE EXISTS(SELECT 1 FROM admin_audit_events WHERE id=? AND actor_id=? AND action='ADMIN_ASSISTED_LISTING_DELETED' AND listing_id=? AND target_owner_id=?)").bind(actor,scope,key,requestFingerprint,listingId,resultJson,at,at,eventId,actor,listingId,listing.ownerId);
+    let results:D1Result[];try{results=await c.env.DB.batch([remove,audit,receipt]) as D1Result[];}catch{return c.json({error:'assisted deletion outcome unknown; retry with the same idempotency key'},503);}
+    if(results.length!==3||!results[0]?.meta?.changes||results[1]?.meta?.changes!==1||results[2]?.meta?.changes!==1)return c.json({error:'assisted listing changed; reload and retry'},409);
+    return c.json(snapshot,200);
+  }finally{await unlock(c.env.DB,listingId,lease);}
+}
 async function sourceAdminListing(db:D1Database,listingId:string,mediaStrategy?:string){
   const listing=await db.prepare(`SELECT l.id,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.status,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.id AS ownerId,u.email AS ownerEmail,u.role AS ownerRole FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.id=?`).bind(listingId).first<any>();
   if(!listing||listing.ownerRole!=='OWNER')return null;
@@ -155,8 +255,8 @@ async function sourceAdminListing(db:D1Database,listingId:string,mediaStrategy?:
   const {ownerId,ownerEmail,ownerRole,...fields}=listing;
   return {...fields,owner:{id:ownerId,email:ownerEmail,role:ownerRole},images,...(usesD1Blob?{requiresMediaRecovery:!!legacyMedia?.hasLegacy}:{})};
 }
-function sourceAuditInsert(c:any,eventId:string,listingId:string,action:string,reason:string|null,at:string,whereSql:string,whereArgs:unknown[]){
-  const metadata=reason?JSON.stringify({reason}):'{}';
+function sourceAuditInsert(c:any,eventId:string,listingId:string,action:string,reason:string|null,at:string,whereSql:string,whereArgs:unknown[],metadataValue?:Record<string,unknown>){
+  const metadata=JSON.stringify(metadataValue??(reason?{reason}:{}));
   return c.env.DB.prepare(`INSERT INTO admin_audit_events(id,actor_id,entity_type,entity_id,listing_id,target_owner_id,action,metadata,reason,created_at) SELECT ?,?,'LISTING',l.id,l.id,l.owner_id,?,?,?,? FROM listings l JOIN users owner ON owner.id=l.owner_id WHERE ${whereSql}`).bind(eventId,c.get('user').id,action,metadata,reason,at,...whereArgs);
 }
 async function adminReviewSource(c:any,actionValue:'approve'|'reject',providedInput?:any){
@@ -231,6 +331,7 @@ app.get('/admin/listings/:listingId/images/:imageId',async c=>{
   if(!row)return c.json({error:'image not found'},404);const object=await c.env.IMAGES.get(row.objectKey);return object?new Response(object.body,{headers:{'Content-Type':row.mimeType,'Content-Length':String(row.byteSize),'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}}):c.json({error:'image not found'},404);
 });
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
+app.get('/listings/:id',async c=>{const listing=await ownerListing(c.env.DB,c.req.param('id'),ownerId(c));return listing?c.json(listing):c.json({error:'not found'},404);});
 app.patch('/listings/:id/availability',async c=>{const input=await boundedJson(c.req.raw,1024) as any;if(!input||Object.keys(input).some(key=>key!=='availabilityStatus')||!['AVAILABLE','UNAVAILABLE'].includes(input.availabilityStatus))return c.json({error:'availabilityStatus must be AVAILABLE or UNAVAILABLE'},400);const at=now(),result=await c.env.DB.prepare('UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=?').bind(input.availabilityStatus,at,at,c.req.param('id'),ownerId(c)).run();if(result.meta.changes!==1)return c.json({error:'not found'},404);return c.json(await ownerListing(c.env.DB,c.req.param('id'),ownerId(c)));});
 app.post('/listings/:id/reconfirm',async c=>{const at=now(),result=await c.env.DB.prepare('UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=?').bind(at,at,c.req.param('id'),ownerId(c)).run();if(result.meta.changes!==1)return c.json({error:'not found'},404);return c.json(await ownerListing(c.env.DB,c.req.param('id'),ownerId(c)));});
 app.get('/owner/contact-events',async c=>{
@@ -273,6 +374,29 @@ app.post('/listings',async c=>{
 });
 async function owned(c:any,listingId:string) {return c.env.DB.prepare("SELECT id FROM listings WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED')").bind(listingId,c.get('user').id).first();}
 async function ownerListing(db:D1Database,listingId:string,owner:string){return db.prepare("SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();}
+app.delete('/listings/:id',async c=>{
+  const listingId=c.req.param('id'),owner=ownerId(c),key=requestKey(c);
+  if(!key)return c.json({error:'a valid Idempotency-Key is required'},400);
+  const scope=`OWNER_LISTING_DELETE:${listingId}`,requestFingerprint=await fingerprint({action:'DELETE_LISTING',listingId});
+  let replay:any;try{replay=await mutationReplay(c.env.DB,owner,scope,key,requestFingerprint);}catch{return c.json({error:'listing delete outcome unavailable; retry with the same idempotency key'},503);}
+  if(replay?.conflict)return c.json({error:'idempotency key reused with a different delete'},409);
+  if(replay?.pending)return c.json({error:'listing delete requires recovery; retry with the same idempotency key'},503);
+  if(replay)return c.json(replay.result,200);
+  const initial=await c.env.DB.prepare("SELECT id,status FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();
+  if(!initial||!['DRAFT','REJECTED'].includes(initial.status))return c.json({error:'not found'},404);
+  const lease=await lock(c.env.DB,listingId);if(!lease)return c.json({error:'listing is busy; retry with the same idempotency key'},409);
+  try{
+    const current=await c.env.DB.prepare("SELECT id,status FROM listings WHERE id=? AND owner_id=?").bind(listingId,owner).first<any>();
+    if(!current||!['DRAFT','REJECTED'].includes(current.status))return c.json({error:'not found'},404);
+    if(d1ImageStatus(c)&&await hasLegacyD1Images(c.env.DB,listingId))return legacyD1Conflict(c);
+    const at=now(),snapshot={id:listingId,deleted:true},resultJson=JSON.stringify(snapshot);
+    const remove=c.env.DB.prepare("DELETE FROM listings WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM users WHERE users.id=listings.owner_id AND users.role='OWNER') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(listingId,owner,listingId,lease);
+    const receipt=c.env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) SELECT ?,?,?,?,?, 'COMMITTED',?,?,? WHERE changes()=1 AND EXISTS(SELECT 1 FROM users WHERE id=? AND role='OWNER')").bind(owner,scope,key,requestFingerprint,listingId,resultJson,at,at,owner);
+    let results:D1Result[];try{results=await c.env.DB.batch([remove,receipt]) as D1Result[];}catch{return c.json({error:'listing delete outcome unknown; retry with the same idempotency key'},503);}
+    if(results.length!==2||!results[0]?.meta?.changes||results[1]?.meta?.changes!==1)return c.json({error:'listing changed; reload and retry'},409);
+    return c.json(snapshot,200);
+  }finally{await unlock(c.env.DB,listingId,lease);}
+});
 app.patch('/listings/:id',async c=>{
   const lid=c.req.param('id'),owner=ownerId(c),input=await c.req.json().catch(()=>null) as any;
   if(!input||['priceAmount','pricePeriod','rentalDuration','maxOccupants','currency'].some(key=>input[key]===undefined))return c.json({error:'Rental fields are required'},400);
