@@ -98,8 +98,12 @@ async (page) => {
 
   const titleInput = page.getByRole('textbox', { name: 'Título' });
   await titleInput.fill(`${title} ADMIN editado`);
+  assert(await page.getByRole('button', { name: 'Enviar a revisión' }).isDisabled(), 'ADMIN cannot submit a listing while the assisted editor contains unsaved changes');
+  const storedBeforeSave = await page.request.get(`${baseUrl}/api/admin/listings/${encodeURIComponent(assistedListing.id)}`);
+  assert((await storedBeforeSave.json()).title === `${title} ADMIN`, 'blocked submit must leave the persisted draft unchanged');
   await page.getByRole('button', { name: 'Guardar cambios' }).click();
   await page.getByText('Cambios guardados y auditados.', { exact: true }).waitFor();
+  assert(await page.getByRole('button', { name: 'Enviar a revisión' }).isEnabled(), 'saving assisted edits must re-enable submit');
   await page.getByRole('button', { name: 'Marcar no disponible' }).click();
   await page.getByText('Disponibilidad actualizada y auditada.', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Reconfirmar disponibilidad' }).click();
@@ -127,5 +131,5 @@ async (page) => {
   await page.getByText('Borrador eliminado y auditado.', { exact: true }).waitFor();
   const deleteAudit = await page.request.get(`${baseUrl}/api/admin/listings/audit`);
   assert((await deleteAudit.json()).some(row => row.action === 'ADMIN_ASSISTED_LISTING_DELETED' && row.actor?.id === 'admin-a' && row.targetOwner?.id === 'owner-a'), 'assisted delete audit must preserve ADMIN actor and OWNER target');
-  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'persisted owner target and actor audit', 'assisted edit', 'availability update and reconfirmation', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
+  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
 }

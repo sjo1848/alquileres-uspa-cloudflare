@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { ApiError } from '../api';
 import { useSession } from '../session';
 import { currencyOptions, pricePeriodOptions, rentalDurationOptions, type Currency, type PricePeriod, type RentalDuration } from './rental-domain';
@@ -14,6 +14,8 @@ const form=reactive({...blank(),ownerId:''});
 let pendingCreate:{fingerprint:string;key:string}|null=null;
 let pendingMutation:{action:string;fingerprint:string;key:string}|null=null;
 const editable=()=>!created.value||['DRAFT','REJECTED'].includes(created.value.status);
+const listingFields=(value:Fields)=>({title:value.title,description:value.description,location:value.location,priceAmount:value.priceAmount,currency:value.currency,pricePeriod:value.pricePeriod,rentalDuration:value.rentalDuration,maxOccupants:value.maxOccupants});
+const hasUnsavedChanges=computed(()=>!!created.value&&editable()&&JSON.stringify(listingFields(form))!==JSON.stringify(listingFields(created.value)));
 const statusLabel=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function assignListing(item:Listing){created.value=item;form.ownerId=item.owner.id;Object.assign(form,{title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,currency:item.currency,pricePeriod:item.pricePeriod,rentalDuration:item.rentalDuration,maxOccupants:item.maxOccupants});}
 async function loadDrafts(){
@@ -84,10 +86,10 @@ async function remove(){
       <p v-if="ownerSearch.trim()&&ownerMatches===0">No hay coincidencias. Probá con otra parte del correo.</p>
       <p v-else-if="ownerMatches===50">Se muestran hasta 50 coincidencias; refiná la búsqueda si hace falta.</p>
       <label>Cuenta OWNER<select v-model="form.ownerId" :disabled="busy||!!created" required><option value="" disabled>Elegí una cuenta</option><option v-for="owner in owners" :key="owner.id" :value="owner.id">{{ owner.email }}</option></select></label>
-      <label v-if="drafts.length">Borrador asistido existente<select :disabled="busy" @change="openDraftFromEvent"><option value="">Elegí un borrador para administrarlo</option><option v-for="item in drafts" :key="item.id" :value="item.id">{{ item.title }} · {{ statusLabel(item.status) }}</option></select></label>
+      <label v-if="drafts.length">Borrador asistido existente<select :disabled="busy||hasUnsavedChanges" @change="openDraftFromEvent"><option value="">Elegí un borrador para administrarlo</option><option v-for="item in drafts" :key="item.id" :value="item.id">{{ item.title }} · {{ statusLabel(item.status) }}</option></select></label>
       <p v-if="draftsLoading" role="status">Cargando borradores…</p>
       <p v-else-if="form.ownerId&&!drafts.length&&!created">No hay borradores asistidos pendientes para esta cuenta.</p>
-      <button v-if="created" type="button" class="secondary" :disabled="busy" @click="newDraft">Crear otro borrador asistido</button>
+      <button v-if="created" type="button" class="secondary" :disabled="busy||hasUnsavedChanges" @click="newDraft">Crear otro borrador asistido</button>
       <form v-if="form.ownerId" @submit.prevent="save" :aria-busy="busy">
         <fieldset :disabled="busy||!editable()">
           <label>Título<input v-model="form.title" required maxlength="120" /></label>
@@ -107,8 +109,9 @@ async function remove(){
         <h3 id="assisted-current-title">{{ created.title }}</h3>
         <p>Propietario: {{ created.owner.email }} · Estado: {{ statusLabel(created.status) }}</p>
         <p>Disponibilidad: {{ created.availabilityStatus==='AVAILABLE'?'Disponible':'No disponible' }} · última confirmación: {{ created.lastConfirmedAt?new Date(created.lastConfirmedAt).toLocaleString('es-AR'):'Sin confirmar' }}</p>
-        <div class="session-actions"><button type="button" :disabled="busy" @click="toggleAvailability">{{ created.availabilityStatus==='AVAILABLE'?'Marcar no disponible':'Marcar disponible' }}</button><button type="button" class="secondary" :disabled="busy" @click="reconfirm">Reconfirmar disponibilidad</button></div>
-        <div v-if="['DRAFT','REJECTED'].includes(created.status)" class="session-actions"><button type="button" :disabled="busy" @click="submit">Enviar a revisión</button><button type="button" class="secondary" :disabled="busy" @click="remove">Eliminar borrador asistido</button></div>
+        <p v-if="hasUnsavedChanges" class="notice" role="status">Guardá los cambios antes de cambiar disponibilidad, enviar o eliminar este borrador.</p>
+        <div class="session-actions"><button type="button" :disabled="busy||hasUnsavedChanges" @click="toggleAvailability">{{ created.availabilityStatus==='AVAILABLE'?'Marcar no disponible':'Marcar disponible' }}</button><button type="button" class="secondary" :disabled="busy||hasUnsavedChanges" @click="reconfirm">Reconfirmar disponibilidad</button></div>
+        <div v-if="['DRAFT','REJECTED'].includes(created.status)" class="session-actions"><button type="button" :disabled="busy||hasUnsavedChanges" @click="submit">Enviar a revisión</button><button type="button" class="secondary" :disabled="busy||hasUnsavedChanges" @click="remove">Eliminar borrador asistido</button></div>
         <p v-else-if="created.status==='SUBMITTED'">El borrador ya está en revisión. Las decisiones de moderación siguen en la pantalla de ADMIN.</p>
         <RouterLink to="/admin">Abrir revisión y auditoría ADMIN</RouterLink>
       </article>

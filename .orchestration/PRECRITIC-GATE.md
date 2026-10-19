@@ -9,6 +9,12 @@
 - Applicable security, isolation, public detail, audit, image accounting, source-read-only, no-cost/no-remote/no-real-data and review-boundary invariants were rechecked. No P0/P1 remains known open.
 - **Pre-Critic: PASS to publish this one consolidated candidate for fresh exact-head GitHub review/checks and delegated read-only Controller review only.** No merge or Preview update is authorized by this gate alone.
 
+## CF-AU-I04 audit regression and Controller runtime addendum (2026-10-19)
+
+- The project_controller subagent reviewed `8981f7e4194b6c0cc89d6d5e7ec95dd0e3c12f72`, found no P0/P1, but returned `BLOCKED_MODEL_CONFIG` because actual model and read-only enforcement were not verifiable. Its result is preserved at `evidence/critics/CF-AU-I04-CONTROLLER-8981F7E-BLOCKED.md`; no PASS is carried forward.
+- The Controller's P2 request for an explicit single-submit-audit count is addressed in test commit `4cc4da4649e9ce75fc8007c4fc9bbffbdd3d9cca`. Focused Worker tests 7/7, Worker typecheck and whitespace check PASS. No application source or E2E files changed in that commit, so the already recorded 15-check local Playwright and UI builds remain applicable to the exact app code SHA 87f077e.
+- **Pre-Critic: PASS to publish the consolidated test hardening and run one fresh exact-head GitHub review plus the documented separate `codex exec` Controller process (`gpt-6-luna`, High, `--sandbox read-only`).** This is not a technical Controller PASS or merge authorization.
+
 Before publishing a local substantive artifact for `project_controller` delegated review, Codex must prove:
 
 ## Contract

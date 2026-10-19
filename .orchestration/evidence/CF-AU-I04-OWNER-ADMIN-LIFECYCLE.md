@@ -28,6 +28,6 @@ Focused Worker regressions also verify missing keys, wrong roles, IDOR, status r
 
 ## Review and delivery state
 
-The first exact-SHA Controller review found a P1 route collision and GitHub review found two P2 lifecycle defects; all three are repaired and recorded in `.orchestration/evidence/critics/CF-AU-I04-CONTROLLER-7C5B5F7-REWORK.md`. The final commit SHA, fresh GitHub checks/review, delegated Controller review, protected merge, Preview update, and anonymous Access denial remain pending. No Controller PASS, GitHub PASS, remote E2E PASS, or Preview update is claimed here.
+The first exact-SHA Controller review found a P1 route collision and GitHub reviews found three P2 lifecycle defects; the consolidated repairs are recorded in `.orchestration/evidence/critics/CF-AU-I04-CONTROLLER-7C5B5F7-REWORK.md`. A subagent Controller process could not verify model/read-only runtime and returned `BLOCKED_MODEL_CONFIG`; its audit-count test follow-up is included and revalidated in the final candidate. See `.orchestration/evidence/critics/CF-AU-I04-CONTROLLER-8981F7E-BLOCKED.md`. Final exact-head GitHub checks/review, separate-process Controller PASS, protected merge, Preview update and anonymous Access denial remain pending. No Controller PASS, GitHub PASS, remote E2E PASS, or Preview update is claimed here.
 
 Limits observed: USD 0; no R2, billing, new resources, production, real data, source writes, Access-policy changes, or real authentication.

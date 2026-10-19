@@ -10,15 +10,18 @@ The three Wrangler configurations sent generic `/listings/*` requests to the Wor
 
 The completed GitHub review on the same SHA also reported two P2 defects: OWNER refresh attempted editable-only image loading for `SUBMITTED`/`APPROVED` listings, and a new idempotency key could create duplicate `ADMIN_ASSISTED_LISTING_SUBMITTED` audit events when the listing was already submitted. Both were included in this consolidated rework.
 
+The next completed GitHub review on checkpoint `8981f7e` reported one more P2: ADMIN could submit while the assisted form was dirty, causing the persisted stale version to be submitted and visible unsaved edits to be discarded. This was repaired by disabling submit and other state-changing actions while changes are unsaved, with a Playwright regression proving the persisted D1 row is unchanged until Save.
+
 ## Repair and evidence
 
 - Removed generic `/listings/*` from local, Preview-template, and E2E runtime configs. Kept `/api/*` for authenticated APIs and only the explicit `/listings/*/availability`, `/listings/*/reconfirm`, and `/listings/*/images[/*]` Worker-first paths.
 - Strengthened Playwright to require direct `/listings/:id` requests to return the SPA HTML shell for OWNER and a second synthetic identity, while `/api/listings/:id` remains owner-scoped and cross-owner access returns 404.
 - OWNER refresh now loads images only in editable states; Playwright submits a synthetic OWNER listing then refreshes it and checks that no editable-image error appears.
 - ADMIN-assisted submit accepts new operations only from DRAFT/REJECTED; same-key replay remains stable, while a fresh key against an already SUBMITTED item returns 409 without a second audit event.
+- ADMIN-assisted lifecycle controls are disabled while edited fields differ from the saved listing; draft switching/new-draft, availability/reconfirm, submit and delete are blocked until Save. The Playwright flow verifies submit remains disabled, the persisted D1 title is unchanged, and saving then re-enables submit.
 - Fresh Controller follow-up on checkpoint SHA `8981f7e` was technically clear of P0/P1 but returned `BLOCKED_MODEL_CONFIG` because the subagent runtime could not verify the actual model or enforced read-only mode. Its P2 test-hardening request for an explicit post-rejection audit count is addressed in the follow-up test commit; see `.orchestration/evidence/critics/CF-AU-I04-CONTROLLER-8981F7E-BLOCKED.md`.
 - Updated the Python routing regression to assert the same configuration boundary.
-- Focused verification on executable repair SHA `87f077e`: Python regression suite **25/25 PASS**, Worker management suite **7/7 PASS**, Worker and Web typechecks **PASS**, Web build **PASS**, Preview build **PASS**, fresh local Workerd+D1 Playwright lifecycle **15 checks PASS**, including all three findings. Follow-up audit-count assertion was added after the Controller review and its focused Worker suite/typecheck passed 7/7. Earlier E2E retries exposed ambiguous test selectors only; after narrowing them to listing row and state, the full flow passed.
+- Focused verification: Worker management suite **7/7 PASS** including explicit one-submit-audit count; Worker and Web typechecks **PASS**; Web normal and Preview builds **PASS**; Python regression suite **25/25 PASS**; fresh local Workerd+D1 Playwright lifecycle **16 checks PASS**, including all four review findings. Earlier E2E retries exposed ambiguous test selectors only; after narrowing them to listing row and state, the full flow passed.
 - No remote resources, Preview, Access policy, production, real data, or source repository were accessed or changed during this repair.
 
 Fresh exact-SHA review is required after publishing this repair. This REWORK report does not approve the candidate for integration.
