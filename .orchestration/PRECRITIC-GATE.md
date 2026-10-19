@@ -109,3 +109,12 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Separate Controller review: bounded PASS, GPT-6 Luna / High / read-only flags requested and accepted by completed CLI process; process exit 0 and no writes. Backend model identity remains unverified. Full report and raw output are preserved at `evidence/critics/CF-AU-I01-P2-CONTROLLER-C909020.md`.
 - Remaining follow-up: source filename rule discrepancy (`living-room.png` accepted by Worker but rejected by source) is a minor, non-security/non-integrity P2 and is intentionally not expanded under the materiality/scope direction. Remote multi-instance ordering, atomic D1/R2 and production behavior are not asserted.
 - **Pre-Critic: PASS to publish Artifact A4 at the exact reviewed candidate SHA.** Annotated immutable tag `CF-AU-I01-P2-Artifact-A4` was created and pushed to that SHA. PR #10 remains open and unmerged; stop P2 at the external-review boundary.
+
+## CF-AU-I04 consolidated OWNER/ADMIN candidate — final local Pre-Critic (2026-10-19)
+
+- Exact executable candidate `1122de39f497e0635b8405210c6efb48e77916ba`, tree `f5c1ce104875e8a5b948e06512460c72b61e89de`; authorized base `774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor.
+- All identified material findings are repaired, including the latest Controller P1 status guard for availability/reconfirmation. Worker handler and D1/audit predicates enforce DRAFT/REJECTED; UI hides controls for all other statuses. An unexpected storage-failure regression confirms HTTP 500 rather than false HTTP 409.
+- Exact code-tree verification: Worker management 8/8 + typecheck; Web typecheck, standard build and Preview build; Python 25/25; fresh isolated local Workerd+D1 Playwright 17 checks; staged `git diff --check`. Details and the initial wrong-fixture retry are recorded in `evidence/CF-AU-I04-PRECRITIC-FINAL-1122DE3.md`.
+- Scope and invariants remain OWNER isolation, ADMIN role, atomic audit, status/idempotency correctness, repository-source read-only, synthetic data only, USD 0, no R2, production, real auth, Access changes or new remote resources.
+- `python3 scripts/check_orchestration_state.py` and final whitespace check must pass on the canonical checkpoint before push; result is recorded in Event 141.
+- **Pre-Critic: PASS to publish immutable `CF-AU-I04-OWNER-ADMIN-Artifact-A1` at executable SHA `1122de39f497e0635b8405210c6efb48e77916ba`, then run exact-SHA GitHub checks/automatic review and delegated read-only Controller. This is not their PASS or permission to merge/update Preview.**
