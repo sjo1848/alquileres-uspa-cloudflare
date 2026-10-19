@@ -152,3 +152,12 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Focused evidence: management 12/12, Worker typecheck, Web typecheck/build/build:preview, E2E syntax, and local Playwright 21 named checks PASS. Contact 6/6 and OWNER 4/4 remain valid; A5 changes only assisted-edit behavior and the consolidated management suite revalidates the modified Worker tree. Evidence: `evidence/CF-AU-I04-PRECRITIC-A5.md`.
 - A4 delegated Controller PASS is exact to A4; A5 needs a fresh review. The Controller must stay read-only and must not run tests; the parent has already run all required local checks.
 - **Pre-Critic: PASS to publish immutable A5 for one exact-head GitHub review/checks and one separate-process GPT-6 Luna/High/read-only Controller review. No merge or Preview update until those controls pass.**
+
+## CF-AU-I04 Artifact A6 — pending external-object operation deletion guard (2026-10-19)
+
+- Exact executable candidate `549baf37952129d1cacfc46565e8ee1fb5581887`, tree `3887b1056b08d139367e94119c476bc05fcaf9c5`; approved base `774d0c747e8ecbbdb97776641becbd9e49875875` is an ancestor.
+- GitHub P2 `4310358340` is addressed: external/unknown/unset media strategies always deny whole-listing delete before locks or D1 mutations. STATIC_ASSETS denies only when dynamic image rows or incomplete recovery records exist; repo-managed static asset files remain outside delete behavior. D1_BLOB and committed same-key replay remain unchanged.
+- Focused regressions verify OWNER and ADMIN 409 for unset strategy/no image rows, external pending ADD, external pending DELETE backup, and STATIC_ASSETS NEEDS_REPAIR; they assert listing/operation provenance remains and no audit/idempotency receipt appears. Existing D1 BLOB cascade/accounting path remains covered.
+- Worker management 13/13 and Worker typecheck pass on exact candidate. One initial concurrent run timed out in the existing auth hook; isolated rerun passed. No UI changed; existing A5 Playwright/build evidence remains applicable. No R2 objects/remote service were used.
+- Deterministic preflight passed on the full canonical checkpoint: `python3 scripts/check_orchestration_state.py --base origin/main` => PASS; `git diff --check` => PASS.
+- **Pre-Critic: PASS to publish immutable A6 and request exact-head GitHub review/checks plus one GPT-6 Luna/High/read-only Controller review only. This does not authorize merge or Preview update.**
