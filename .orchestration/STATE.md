@@ -2,7 +2,7 @@
 
 State: `READY_TO_RESUME`
 Phase: `CF_AU_I06_3_FINAL_REVIEW`
-Active task: `CF-AU-I06.3 — consolidated accessibility and canonical-state rework`
+Active task: `CF-AU-I06.3 — form boundary and OWNER contact style rework`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1355,3 +1355,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Controller separado solicitó GPT-6 Luna/High y `--sandbox read-only`, exit 0, thread `01a1560e-24a7-7dc1-9985-c0addd8ee7ab`; dio PASS sobre checkpoint `01c6b815ae911fcd3379cc4fa62df102ee4f45e3`, tree `e040d50afddf3ca90e288b6f133a260484cd1bda`, base `489fa0885f28dfa789535dda47f81035422c137e`. Reportó entorno read-only, backend model identity UNVERIFIED. Ese PASS queda histórico y no cubre el rework nuevo; se ejecutará un Controller nuevo.
 - El canonical `candidate_sha` identifica el commit funcional ejecutable (`7e7efbe`); los commits posteriores etiquetados como checkpoint cambian solo estado/evidencia. El review/controller debe registrar por separado su SHA/tree exactos. No se almacenará un SHA autorreferencial dentro de su propio commit.
 - **READY_TO_RESUME:** procesar review GitHub y checks exactos de `7e7efbe`, responder/cerrar las observaciones ya corregidas y explicar el checkpoint de estado sin código, después Controller nuevo read-only exacto, Pre-Critic y merge protegido.
+
+## Event 171 — bordes de formularios y estilo de consultas OWNER reparados
+
+- Review de GitHub en `23a12eb7dfedd1f3b1e296df4d8f4688731f1a9d` agregó P2 para el borde de text/select/textarea (2.11:1) y para la regla visual de nombres de consultas OWNER tras migrar h4→h3. En el candidato `26fd63822fbac5c1c47f853984c609f58d8f4097`, el borde ahora es `#857b6b`; Playwright midió 4.09:1 sobre papel (3.63:1 frente a canvas). Selectores de estilo quedaron `.contacts-section h2` (25.6px) y `.contact-card h3` (16.8px), medidos con CSS real en el runtime local.
+- Typecheck, build Worker/client y `git diff --check` PASS tras el fix; QA y capturas actualizadas en `output/playwright/i06.3/` y `output/playwright/i06.3/QA.md`.
+- Los dos hilos P2 nuevos (`4319108034`, `4319108044`) recibieron respuesta con mediciones y quedaron resueltos. Los hilos anteriores también permanecen resueltos.
+- **READY_TO_RESUME:** ejecutar preflight tras el checkpoint, esperar los checks `worker`/`web` y la nueva review automática en el HEAD consolidado, correr Controller GPT-6 Luna/High/read-only exacto y luego Pre-Critic.
