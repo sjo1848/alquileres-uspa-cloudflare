@@ -1,5 +1,14 @@
 # Mandatory Pre-Critic Gate
 
+## CF-AU-I04 OWNER + ADMIN-assisted lifecycle consolidated candidate (2026-10-19)
+
+- Authorized scope: `.orchestration/contracts/CF-AU-I04-OWNER-ADMIN-LIFECYCLE.md`; Human approval is Issue #7 comment `6257931179`.
+- Executable candidate `87f077ed3a64de36c89a6d4caf985bbd05405c29`, tree `b77fe337a62dbb61bdf4f0163ae40d83bdc532a2`, descends from approved base `774d0c747e8ecbbdb97776641becbd9e49875875`.
+- Controller P1 on public detail routing and GitHub P2 findings 4309937209/4309937211 were repaired together; exact changes and local evidence are in `evidence/critics/CF-AU-I04-CONTROLLER-7C5B5F7-REWORK.md`.
+- Worker management 7/7, Worker/Web typechecks, normal/Preview builds, Python 25/25 and isolated Workerd+D1 Playwright 15 checks PASS. No code changed after these results in the executable commit. Full command/proof details: `evidence/CF-AU-I04-PRECRITIC-87F077E.md`.
+- Applicable security, isolation, public detail, audit, image accounting, source-read-only, no-cost/no-remote/no-real-data and review-boundary invariants were rechecked. No P0/P1 remains known open.
+- **Pre-Critic: PASS to publish this one consolidated candidate for fresh exact-head GitHub review/checks and delegated read-only Controller review only.** No merge or Preview update is authorized by this gate alone.
+
 Before publishing a local substantive artifact for `project_controller` delegated review, Codex must prove:
 
 ## Contract
