@@ -7,8 +7,9 @@ import { currencyOptions, pricePeriodOptions, rentalDurationOptions, type Curren
 type Owner = { id:string; email:string };
 type Listing = { id:string; title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; publicationStatus:'UNPUBLISHED'|'PUBLISHED'; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null; rejectionReason:string|null; updatedAt:string; owner:{id:string;email:string;role:'OWNER'}; images:{id:string;originalName:string;contentType:string;sizeBytes:number;position:number;url?:string}[] };
 type DraftSummary = Pick<Listing,'id'|'title'|'status'>;
+type DraftPage = { items:DraftSummary[]; nextCursor:{updatedAt:string;id:string}|null };
 type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number };
-const session=useSession(),owners=ref<Owner[]>([]),drafts=ref<DraftSummary[]>([]),loading=ref(true),busy=ref(false),error=ref(''),notice=ref(''),created=ref<Listing|null>(null),ownerSearch=ref(''),ownerMatches=ref(0),draftsLoading=ref(false);
+const session=useSession(),owners=ref<Owner[]>([]),drafts=ref<DraftSummary[]>([]),draftsNextCursor=ref<DraftPage['nextCursor']>(null),loading=ref(true),busy=ref(false),error=ref(''),notice=ref(''),created=ref<Listing|null>(null),ownerSearch=ref(''),ownerMatches=ref(0),draftsLoading=ref(false);
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive({...blank(),ownerId:''});
 let pendingCreate:{fingerprint:string;key:string}|null=null;
@@ -18,10 +19,16 @@ const listingFields=(value:Fields)=>({title:value.title,description:value.descri
 const hasUnsavedChanges=computed(()=>!!created.value&&editable()&&JSON.stringify(listingFields(form))!==JSON.stringify(listingFields(created.value)));
 const statusLabel=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function assignListing(item:Listing){created.value=item;form.ownerId=item.owner.id;Object.assign(form,{title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,currency:item.currency,pricePeriod:item.pricePeriod,rentalDuration:item.rentalDuration,maxOccupants:item.maxOccupants});}
-async function loadDrafts(){
-  if(!form.ownerId){drafts.value=[];return;}
+async function loadDrafts(append=false){
+  if(!form.ownerId){drafts.value=[];draftsNextCursor.value=null;return;}
   draftsLoading.value=true;error.value='';
-  try{drafts.value=await session.apiRequest<Listing[]>(`/admin/listings/assisted?ownerId=${encodeURIComponent(form.ownerId)}`);}
+  try{
+    const cursor=append?draftsNextCursor.value:null,query=new URLSearchParams({ownerId:form.ownerId});
+    if(cursor){query.set('afterUpdatedAt',cursor.updatedAt);query.set('afterId',cursor.id);}
+    const page=await session.apiRequest<DraftPage>(`/admin/listings/assisted?${query}`);
+    drafts.value=append?[...drafts.value,...page.items.filter(item=>!drafts.value.some(existing=>existing.id===item.id))]:page.items;
+    draftsNextCursor.value=page.nextCursor;
+  }
   catch(e){error.value=e instanceof Error?e.message:'No pudimos cargar los borradores asistidos.';}
   finally{draftsLoading.value=false;}
 }
@@ -32,7 +39,7 @@ async function searchOwners(){
   catch{error.value='No pudimos buscar las cuentas OWNER.';}
   finally{loading.value=false;}
 }
-watch(()=>form.ownerId,()=>{created.value=null;drafts.value=[];void loadDrafts();});
+watch(()=>form.ownerId,()=>{created.value=null;drafts.value=[];draftsNextCursor.value=null;void loadDrafts();});
 onMounted(()=>void searchOwners());
 function newDraft(){created.value=null;Object.assign(form,blank(),{ownerId:form.ownerId});pendingMutation=null;pendingCreate=null;notice.value='';error.value='';}
 async function create(){
@@ -87,6 +94,7 @@ async function remove(){
       <p v-else-if="ownerMatches===50">Se muestran hasta 50 coincidencias; refiná la búsqueda si hace falta.</p>
       <label>Cuenta OWNER<select v-model="form.ownerId" :disabled="busy||!!created" required><option value="" disabled>Elegí una cuenta</option><option v-for="owner in owners" :key="owner.id" :value="owner.id">{{ owner.email }}</option></select></label>
       <label v-if="drafts.length">Borrador asistido existente<select :disabled="busy||hasUnsavedChanges" @change="openDraftFromEvent"><option value="">Elegí un borrador para administrarlo</option><option v-for="item in drafts" :key="item.id" :value="item.id">{{ item.title }} · {{ statusLabel(item.status) }}</option></select></label>
+      <button v-if="draftsNextCursor" type="button" class="secondary" :disabled="busy||draftsLoading" @click="loadDrafts(true)">Cargar más borradores</button>
       <p v-if="draftsLoading" role="status">Cargando borradores…</p>
       <p v-else-if="form.ownerId&&!drafts.length&&!created">No hay borradores asistidos pendientes para esta cuenta.</p>
       <button v-if="created" type="button" class="secondary" :disabled="busy||hasUnsavedChanges" @click="newDraft">Crear otro borrador asistido</button>

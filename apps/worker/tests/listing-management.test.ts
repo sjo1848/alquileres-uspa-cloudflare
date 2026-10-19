@@ -79,7 +79,7 @@ describe('ADMIN-assisted lifecycle',()=>{
     expect((await request(`/admin/listings/assisted?ownerId=${ownerId}`)).status).toBe(401);
     expect((await request(`/admin/listings/assisted?ownerId=${ownerId}`,'GET',undefined,ownerCookie)).status).toBe(401);
     const drafts=await request(`/admin/listings/assisted?ownerId=${ownerId}`,'GET',undefined,adminCookie);
-    expect(drafts.status).toBe(200);expect((await drafts.json() as any[]).some(item=>item.id===created.id)).toBe(true);
+    expect(drafts.status).toBe(200);expect(((await drafts.json() as any).items as any[]).some(item=>item.id===created.id)).toBe(true);
     const patch={...fields,title:'Asistida editada',location:'Uspallata norte'};
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',{...patch,ownerId:otherId,actorId:otherId},adminCookie,'assisted-reassign-denied')).status).toBe(400);
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',patch,ownerCookie,'admin-edit-denied')).status).toBe(401);
@@ -175,5 +175,24 @@ describe('ADMIN-assisted lifecycle',()=>{
     finally{await env.DB.exec('ALTER TABLE listing_images_disabled RENAME TO listing_images');}
     expect(response!.status).toBe(500);
     expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_ASSISTED_LISTING_RECONFIRMED'").bind(created.id).first('n')).toBe(0);
+  });
+
+  it('paginates ADMIN draft discovery beyond the first 50 without crossing owners',async()=>{
+    const at=new Date().toISOString(),ids=Array.from({length:51},(_,index)=>`assisted-page-${String(index).padStart(2,'0')}`);
+    await env.DB.batch(ids.map((listingId,index)=>env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,location_search,price_amount,price_period,rental_duration,max_occupants,currency,publication_status,availability_status,last_confirmed_at,rejection_reason,created_at,updated_at) VALUES(?,?,'DRAFT',?,'Synthetic pagination fixture','Uspallata','uspallata',10000,'MONTH','FLEXIBLE',1,'ARS','UNPUBLISHED','AVAILABLE',NULL,NULL,?,?)").bind(listingId,otherId,`Paginar ${index}`,at,at)));
+    listingIds.push(...ids);
+    expect((await request(`/admin/listings/assisted?ownerId=${otherId}`)).status).toBe(401);
+    expect((await request(`/admin/listings/assisted?ownerId=${otherId}&afterUpdatedAt=${encodeURIComponent(at)}`,'GET',undefined,adminCookie)).status).toBe(400);
+    const first=await request(`/admin/listings/assisted?ownerId=${otherId}`,'GET',undefined,adminCookie);
+    expect(first.status).toBe(200);const page1=await first.json() as any;
+    expect(page1.items).toHaveLength(50);expect(page1.nextCursor).toMatchObject({updatedAt:at,id:expect.any(String)});
+    expect(page1.items.every((item:any)=>item.owner.id===otherId)).toBe(true);
+    const cursor=page1.nextCursor;
+    const second=await request(`/admin/listings/assisted?ownerId=${otherId}&afterUpdatedAt=${encodeURIComponent(cursor.updatedAt)}&afterId=${encodeURIComponent(cursor.id)}`,'GET',undefined,adminCookie);
+    expect(second.status).toBe(200);const page2=await second.json() as any;
+    expect(page2.items).toHaveLength(1);expect(page2.nextCursor).toBeNull();
+    expect([...page1.items,...page2.items].map((item:any)=>item.id).sort()).toEqual(ids.sort());
+    const scoped=await request(`/admin/listings/assisted?ownerId=${ownerId}`,'GET',undefined,adminCookie);
+    expect((await scoped.json() as any).items.every((item:any)=>item.owner.id===ownerId)).toBe(true);
   });
 });

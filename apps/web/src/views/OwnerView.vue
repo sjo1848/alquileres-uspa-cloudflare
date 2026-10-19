@@ -99,7 +99,7 @@ async function load(discardChanges=false){
   finally{loading.value=false;}
 }
 async function refreshSelected(){
-  const item=selected.value;if(!item||busy.value)return;
+  const item=selected.value;if(!item||busy.value||dirty.value)return;
   busy.value=true;error.value='';notice.value='';
   try{const current=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(item.id)}`);remember(current);if(['DRAFT','REJECTED'].includes(current.status))await loadImages(current);else{images.value=[];imageLoadVersion++;}notice.value='Publicación actualizada.';}
   catch(e){error.value=message(e);}
@@ -217,7 +217,7 @@ onMounted(()=>{void load();void loadContacts();});
         <h3>{{ selected ? 'Tu publicación' : 'Nuevo borrador' }}</h3>
         <p v-if="selected" class="status">{{ label(selected.status) }}</p>
         <div v-if="selected" class="session-actions">
-          <button type="button" class="secondary" :disabled="busy||loading" @click="refreshSelected">Actualizar publicación</button>
+          <button type="button" class="secondary" :disabled="busy||loading||dirty" @click="refreshSelected">Actualizar publicación</button>
           <button v-if="canEdit" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing">Eliminar {{ selected.status==='REJECTED'?'publicación rechazada':'borrador' }}</button>
         </div>
         <section v-if="selected" class="subsection" aria-labelledby="owner-availability-title">
@@ -262,7 +262,7 @@ onMounted(()=>{void load();void loadContacts();});
               </li>
             </ul>
           </section>
-          <p v-if="canEdit&&dirty" class="notice">Guardá los cambios antes de enviar a revisión.</p>
+          <p v-if="canEdit&&dirty" class="notice">Guardá los cambios antes de actualizar la publicación o enviarla a revisión.</p>
           <button v-if="canEdit" :disabled="busy||dirty||imagesLoading" @click="submit">Enviar a revisión</button>
           <p v-else-if="selected.status==='SUBMITTED'">Tu publicación está en revisión.</p>
           <RouterLink v-if="selected.status==='APPROVED'&&selected.publicationStatus==='PUBLISHED'" :to="`/listings/${selected.id}`">Ver ficha publicada</RouterLink>

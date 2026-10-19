@@ -102,8 +102,13 @@ app.get('/admin/owners',async c=>{const search=(c.req.query('search')??'').trim(
 app.get('/admin/listings/assisted',async c=>{
   const owner=c.req.query('ownerId');
   if(!owner||owner.length>100)return c.json({error:'a valid ownerId is required'},400);
-  const rows=await c.env.DB.prepare("SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.owner_id=? AND u.role='OWNER' AND l.status IN ('DRAFT','REJECTED') ORDER BY l.updated_at DESC,l.id DESC LIMIT 50").bind(owner).all<any>();
-  return c.json(rows.results.map(row=>{const {ownerId,ownerEmail,...item}=row;return {...item,owner:{id:ownerId,email:ownerEmail,role:'OWNER'}};}));
+  const afterUpdatedAt=c.req.query('afterUpdatedAt'),afterId=c.req.query('afterId'),hasCursor=afterUpdatedAt!==undefined||afterId!==undefined;
+  if(hasCursor&&(!afterUpdatedAt||!afterId||afterUpdatedAt.length>40||afterId.length>100))return c.json({error:'invalid draft cursor'},400);
+  const base="SELECT l.id,l.owner_id AS ownerId,l.status,l.title,l.description,l.location,l.price_amount AS priceAmount,l.price_period AS pricePeriod,l.rental_duration AS rentalDuration,l.max_occupants AS maxOccupants,l.currency,l.publication_status AS publicationStatus,l.availability_status AS availabilityStatus,l.last_confirmed_at AS lastConfirmedAt,l.rejection_reason AS rejectionReason,l.created_at AS createdAt,l.updated_at AS updatedAt,u.email AS ownerEmail FROM listings l JOIN users u ON u.id=l.owner_id WHERE l.owner_id=? AND u.role='OWNER' AND l.status IN ('DRAFT','REJECTED')";
+  const statement=hasCursor?`${base} AND (l.updated_at<? OR (l.updated_at=? AND l.id<?)) ORDER BY l.updated_at DESC,l.id DESC LIMIT 51`:`${base} ORDER BY l.updated_at DESC,l.id DESC LIMIT 51`;
+  const rows=await c.env.DB.prepare(statement).bind(...(hasCursor?[owner,afterUpdatedAt,afterUpdatedAt,afterId]:[owner])).all<any>();
+  const hasMore=rows.results.length>50,page=rows.results.slice(0,50),last=page.at(-1);
+  return c.json({items:page.map(row=>{const {ownerId,ownerEmail,...item}=row;return {...item,owner:{id:ownerId,email:ownerEmail,role:'OWNER'}};}),nextCursor:hasMore&&last?{updatedAt:last.updatedAt,id:last.id}:null});
 });
 app.post('/admin/listings/assisted',async c=>{
   const input=await boundedJson(c.req.raw,12_000) as any;

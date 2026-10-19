@@ -33,6 +33,13 @@ async (page) => {
   const ownerListing = ownerRows.find(row => row.title === `${title} OWNER`);
   assert(ownerListing?.id && (!ownerListingId || ownerListingId === ownerListing.id), 'created listing must appear in the authenticated OWNER list');
   assert((await page.request.get(`${baseUrl}/api/listings/${encodeURIComponent(ownerListing.id)}`)).status() === 200, 'OWNER must read their own listing');
+  const ownerTitleField = page.getByRole('textbox', { name: 'Título' });
+  await ownerTitleField.fill(`${title} OWNER cambio sin guardar`);
+  assert(await page.getByRole('button', { name: 'Actualizar publicación' }).isDisabled(), 'OWNER refresh must be disabled while editable form values are dirty');
+  const storedOwnerBeforeRefresh = await page.request.get(`${baseUrl}/api/listings/${encodeURIComponent(ownerListing.id)}`);
+  assert((await storedOwnerBeforeRefresh.json()).title === `${title} OWNER`, 'blocked OWNER refresh must not alter persisted state');
+  await ownerTitleField.fill(`${title} OWNER`);
+  assert(await page.getByRole('button', { name: 'Actualizar publicación' }).isEnabled(), 'OWNER refresh is available after reverting unsaved edits');
   const publicDetailPage = await page.request.get(`${baseUrl}/listings/${encodeURIComponent(ownerListing.id)}`);
   assert(publicDetailPage.status() === 200 && publicDetailPage.headers()['content-type']?.includes('text/html') && (await publicDetailPage.text()).includes('id="app"'), 'public property detail URL must serve the SPA shell, not the OWNER API');
   assert((await page.request.get(`${baseUrl}/api/admin/listings/assisted?ownerId=owner-a`)).status() === 401, 'OWNER must not access ADMIN-assisted routes');
@@ -79,9 +86,32 @@ async (page) => {
   await page.context().clearCookies();
   await login('admin@example.test');
   await page.setViewportSize({ width: 390, height: 844 });
+  for (let index = 0; index < 51; index++) {
+    const fixture = await page.request.post(`${baseUrl}/api/admin/listings/assisted`, {
+      data: { ownerId: 'owner-a', title: `E2E draft page ${String(index).padStart(2, '0')}`, description: 'Synthetic cursor fixture.', location: 'Uspallata', priceAmount: 10000, currency: 'ARS', pricePeriod: 'MONTH', rentalDuration: 'FLEXIBLE', maxOccupants: 1 },
+      headers: { Origin: baseUrl, 'Idempotency-Key': `e2e-draft-page-${index}-${Date.now()}` },
+    });
+    assert(fixture.status() === 201, `synthetic pagination fixture ${index} failed: ${fixture.status()}`);
+  }
   await page.goto(`${baseUrl}/admin-assist`);
   await page.getByRole('heading', { name: 'Gestión asistida' }).waitFor();
   await page.getByRole('combobox', { name: 'Cuenta OWNER' }).selectOption('owner-a');
+  await page.getByRole('button', { name: 'Cargar más borradores' }).waitFor();
+  const secondDraftPagePromise = page.waitForResponse(response => {
+    if (!response.url().includes('/api/admin/listings/assisted?')) return false;
+    return new URL(response.url()).searchParams.has('afterId');
+  });
+  await page.getByRole('button', { name: 'Cargar más borradores' }).click();
+  const secondDraftPage = await secondDraftPagePromise;
+  const secondDraftPayload = await secondDraftPage.json();
+  assert(secondDraftPage.status() === 200 && secondDraftPayload.items.length === 1 && secondDraftPayload.nextCursor === null, 'ADMIN draft cursor must return the final older draft');
+  const draftPicker = page.getByLabel('Borrador asistido existente');
+  await page.waitForFunction(() => {
+    const label = [...document.querySelectorAll('label')].find(item => item.textContent?.includes('Borrador asistido existente'));
+    return label?.querySelectorAll('option').length === 52;
+  });
+  const optionCount = await draftPicker.locator('option').count();
+  assert(optionCount === 52, `ADMIN must discover all 51 drafts across cursor pages; got ${optionCount} options`);
   await page.getByRole('textbox', { name: 'Título' }).fill(`${title} ADMIN`);
   await page.getByRole('textbox', { name: 'Descripción' }).fill('Datos sintéticos para el ciclo asistido ADMIN.');
   await page.getByRole('textbox', { name: 'Ubicación' }).fill('Uspallata centro');
@@ -89,7 +119,7 @@ async (page) => {
   await page.getByRole('button', { name: 'Crear borrador asistido' }).click();
   await page.getByText('Borrador asistido creado y registrado en auditoría.', { exact: true }).waitFor();
   const assistedDrafts = await page.request.get(`${baseUrl}/api/admin/listings/assisted?ownerId=owner-a`);
-  const assistedListing = (await assistedDrafts.json()).find(item => item.title === `${title} ADMIN`);
+  const assistedListing = (await assistedDrafts.json()).items.find(item => item.title === `${title} ADMIN`);
   assert(assistedDrafts.status() === 200 && assistedListing?.id, 'new assisted draft must be discoverable for later management');
   const adminRows = await page.request.get(`${baseUrl}/api/admin/listings/audit`);
   assert(adminRows.status() === 200, 'ADMIN audit API must be available to ADMIN');
@@ -132,5 +162,5 @@ async (page) => {
   await page.getByText('Borrador eliminado y auditado.', { exact: true }).waitFor();
   const deleteAudit = await page.request.get(`${baseUrl}/api/admin/listings/audit`);
   assert((await deleteAudit.json()).some(row => row.action === 'ADMIN_ASSISTED_LISTING_DELETED' && row.actor?.id === 'admin-a' && row.targetOwner?.id === 'owner-a'), 'assisted delete audit must preserve ADMIN actor and OWNER target');
-  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submitted ADMIN listing hides availability controls', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
+  return { result: 'PASS', checks: ['desktop OWNER listing read', 'OWNER-to-ADMIN denial', 'cross-owner API IDOR denial', 'public detail URL serves SPA shell for either identity', 'OWNER selected-listing refresh including submitted-state handling', 'OWNER refresh blocked with unsaved edits', 'synthetic D1 BLOB upload', 'delete confirmation cancel', 'OWNER draft delete and image cleanup', 'mobile ADMIN assisted creation', 'ADMIN discovers drafts beyond the first 50', 'persisted owner target and actor audit', 'submit blocked until assisted edits are saved', 'assisted edit', 'availability update and reconfirmation', 'submitted ADMIN listing hides availability controls', 'submit to review rejects a fresh-key duplicate without audit', 'audit for each mutation', 'assisted draft deletion and audit'] };
 }
