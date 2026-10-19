@@ -1214,3 +1214,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Verificaciones sobre el árbol local consolidado: Worker typecheck PASS; prueba local auth 4/4; Access Preview auth 6/6; suites combinadas local auth/Preview/OWNER/contacto 20/20 tras el endurecimiento final del middleware; Worker regression suite de orquestación 25/25; Web typecheck, build normal y build Preview PASS. Playwright en Workerd/D1 local recorrió registro → enlace mock/verificación → login → reset → nuevo login → dashboard OWNER → logout; tras el último cambio fail-closed, login/dashboard/logout volvió a pasar en navegador. E2E remoto sigue BLOCKED_AUTH; no se intentó.
 - Próxima acción autorizada: preflight determinista en staging y diff; publicar un único PR funcional I05 para CI `worker`/`web` y revisión automática consolidada; luego una revisión exacta del Controller Luna High read-only. No actualizar Preview ni comenzar I06/I08.
 - **READY_TO_RESUME:** ejecutar el preflight sobre el staging final, confirmar la evidencia de QA y congelar el candidato antes del primer push. Corregir todo hallazgo material consolidado antes de pedir las revisiones.
+
+## Event 151 — PR #23 abierto; candidato I05 en revisión consolidada
+
+- PR funcional #23: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/23. El candidato ejecutable es `b0fbdb702e1764f6c19cba6b0892dada873738d8`, tree `f782b1ed6b5eb0f78372ace5e1c83b2fcd417aaa`, base `093bd9128653281b79599caf61bb6fa979b8fb49`.
+- El SHA de código no ha cambiado desde las verificaciones locales y el smoke final Playwright. No se actualizó el Preview ni se aplicó migración remota.
+- Controles requeridos de `main` observados por API: checks estrictos `worker`/`web`, PR requerido, resolución de conversaciones, `enforce_admins=true`, force-push y borrado deshabilitados. Approval count es 0; checks y review automática siguen pendientes en PR #23.
+- Próximo paso: procesar una revisión GitHub consolidada; luego Controller read-only exacto con la configuración operacional documentada. No merge ni deployment hasta controles limpios; no abrir otro ciclo por observaciones no materiales.
+- **READY_TO_RESUME:** esperar los checks `worker`/`web` y revisión automática de PR #23; después solicitar una revisión Luna High/read-only exacta de `b0fbdb702e1764f6c19cba6b0892dada873738d8`.
