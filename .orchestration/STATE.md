@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_3_REWORK_REVIEW`
-Active task: `CF-AU-I06.3 — final consolidated review after logout focus regression`
+Phase: `CF_AU_I06_3_FINAL_REVIEW`
+Active task: `CF-AU-I06.3 — consolidated accessibility and canonical-state rework`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1347,3 +1347,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Este resultado fue **REWORK, no PASS**. El proceso reanudado había pedido GPT-6 Luna/High y el hilo original fue creado con `--sandbox read-only`, pero el runtime del revisor reportó `danger-full-access`; por fidelidad no se registra como revisión read-only válida ni como PASS. No realizó escrituras. Informe bruto temporal en `/tmp/i063-controller-final.jsonl`, resultado en `/tmp/i063-controller-final.stderr` / transcript; se solicitará un proceso nuevo explícito `codex exec --sandbox read-only` para el candidato final.
 - Nuevo candidato funcional `87ca9c2e5a51410fee931fc1d90f7fba2f3fce9b`, árbol `ce7ad32e94cd3cffea3b6257379fe6a52497c3df`. Typecheck y build Worker/client PASS; Playwright focalizado de logout PASS. Sin cambios a auth, API, roles, Preview o producción.
 - **READY_TO_RESUME:** publicar checkpoint canónico, esperar worker/web y review automática del nuevo candidato, ejecutar Controller nuevo en proceso GPT-6 Luna/High explícitamente read-only, cerrar únicamente defectos materiales y completar Pre-Critic.
+
+## Event 170 — contraste y jerarquía accesible consolidados
+
+- La review automática de GitHub en `01c6b815ae911fcd3379cc4fa62df102ee4f45e3` encontró dos defectos P2 relacionados: token muted a 4.34:1 sobre canvas y saltos h1→h3. En el candidato `7e7efbef01e580fa1726549276ecb091c77a95ae` se oscureció el token a `#5d6b61`, medido en navegador a 4.89:1; se corrigieron títulos de sección y tarjetas para usar h2/h3 sin saltos. Los títulos de las cards mantienen su tamaño visual.
+- Playwright verificó headings h1→h2 en catálogo y ADMIN, muted 4.89:1 y hover de `.secondary` a 9.99:1; typecheck y build Worker/client PASS. QA/capturas actuales: `output/playwright/i06.3/QA.md` y `output/playwright/i06.3/`.
+- Controller separado solicitó GPT-6 Luna/High y `--sandbox read-only`, exit 0, thread `01a1560e-24a7-7dc1-9985-c0addd8ee7ab`; dio PASS sobre checkpoint `01c6b815ae911fcd3379cc4fa62df102ee4f45e3`, tree `e040d50afddf3ca90e288b6f133a260484cd1bda`, base `489fa0885f28dfa789535dda47f81035422c137e`. Reportó entorno read-only, backend model identity UNVERIFIED. Ese PASS queda histórico y no cubre el rework nuevo; se ejecutará un Controller nuevo.
+- El canonical `candidate_sha` identifica el commit funcional ejecutable (`7e7efbe`); los commits posteriores etiquetados como checkpoint cambian solo estado/evidencia. El review/controller debe registrar por separado su SHA/tree exactos. No se almacenará un SHA autorreferencial dentro de su propio commit.
+- **READY_TO_RESUME:** procesar review GitHub y checks exactos de `7e7efbe`, responder/cerrar las observaciones ya corregidas y explicar el checkpoint de estado sin código, después Controller nuevo read-only exacto, Pre-Critic y merge protegido.

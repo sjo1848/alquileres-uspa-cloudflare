@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "CF_AU_I06_3_REWORK_REVIEW",
+  "phase": "CF_AU_I06_3_FINAL_REVIEW",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I06.3 — final consolidated review after logout focus regression",
+  "active_task": "CF-AU-I06.3 — consolidated accessibility and canonical-state rework",
   "last_completed_task": "CF-AU-I05 synthetic OWNER authentication and clean local startup; PR #23 and PR #24 protected-merged.",
   "last_completed_head": "main@489fa0885f28dfa789535dda47f81035422c137e; executable startup fix b1fecbfcb291c7394299782a511b784e465c91eb, auth fix 8ae6186a310fa665da1cc199ef3aef575b538843.",
   "work_branch": "work/i06-design-system-responsive-nav",
-  "next_action": "Run exact-head GitHub review/checks and a fresh codex exec Controller with explicit read-only sandbox on the canonical checkpoint after the same-route logout focus repair; resolve material findings, complete Pre-Critic and merge protected only after PASS.",
+  "next_action": "Complete exact-head GitHub review/checks for the consolidated 7e7efbe candidate, resolve corrected contrast/heading findings and the documented executable-SHA versus metadata-checkpoint thread, run a fresh explicit GPT-6 Luna/High/read-only Controller on the final checkpoint, then complete Pre-Critic and protected merge.",
   "stop_reason": null,
   "event": {
-    "seq": 169,
-    "id": "CF_AU_I06_3_CONTROLLER_REWORK",
-    "type": "CONTROLLER_REWORK"
+    "seq": 170,
+    "id": "CF_AU_I06_3_ACCESSIBILITY_REWORK",
+    "type": "ACCESSIBILITY_REWORK"
   },
   "external_review": null,
   "human_gate": {
@@ -28,8 +28,8 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38",
     "branch": "work/i06-design-system-responsive-nav",
-    "last_observed_head": "87ca9c2e5a51410fee931fc1d90f7fba2f3fce9b",
-    "head_source": "I06.3 consolidated rework: accessible responsive navigation, route heading semantics, hover contrast and logout focus.",
+    "last_observed_head": "7e7efbef01e580fa1726549276ecb091c77a95ae",
+    "head_source": "I06.3 hybrid foundations and responsive navigation; consolidated accessibility rework for muted-text contrast and heading hierarchy.",
     "base": "489fa0885f28dfa789535dda47f81035422c137e"
   },
   "issue_4": "CLOSED",
@@ -81,24 +81,39 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/30",
     "contract": ".orchestration/contracts/CF-AU-I06.3-DESIGN-SYSTEM-RESPONSIVE-NAV.md",
-    "status": "CONTROLLER_REWORK_REPAIRED_REVIEW_PENDING",
+    "status": "ACCESSIBILITY_REWORK_PUBLISHED_REVIEW_PENDING",
     "base_sha": "489fa0885f28dfa789535dda47f81035422c137e",
     "branch": "work/i06-design-system-responsive-nav",
-    "scope": "Hybrid C design tokens and responsive navigation shell, route-level page headings, accessible focus handoff for route navigation and logout; no auth/API/business behavior changes.",
-    "next": "Complete exact-head GitHub review/checks on latest branch and invoke a fresh separate codex exec Controller with explicit read-only sandbox on final canonical checkpoint.",
+    "scope": "Hybrid C design tokens and responsive navigation shell, route-level heading hierarchy, accessible focus handoff for route navigation and logout; no auth/API/business behavior changes.",
+    "next": "Complete exact-head GitHub review/checks on candidate 7e7efbe; reply/resolve contrast and heading findings; clearly track executable candidate versus the metadata-only checkpoint; then run fresh read-only Controller.",
     "pr_number": 38,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/38",
-    "candidate_sha": "87ca9c2e5a51410fee931fc1d90f7fba2f3fce9b",
-    "candidate_tree": "ce7ad32e94cd3cffea3b6257379fe6a52497c3df",
+    "candidate_sha": "7e7efbef01e580fa1726549276ecb091c77a95ae",
+    "candidate_tree": "add1e9819dd6947e7a3ddebb3ae5d2fdafbc1086",
     "local_checks": {
-      "typecheck": "PASS: npm run typecheck, apps/web, after same-route logout focus repair",
-      "build": "PASS: npm run build, Worker and client, apps/web, after same-route logout focus repair",
-      "state_preflight": "PASS on previous metadata checkpoint; rerun after this state update",
-      "playwright": "PASS: prior 1440x1000/390x844/320px guest/OWNER/ADMIN keyboard/navigation QA; targeted synthetic ADMIN logout at / removed role links and focused main with URL unchanged. No authentication/backend authorization claim."
+      "typecheck": "PASS: npm run typecheck after contrast/heading changes, apps/web",
+      "build": "PASS: npm run build, Worker and client after contrast/heading changes, apps/web",
+      "state_preflight": "PASS: python3 scripts/check_orchestration_state.py --base origin/main on previous checkpoint; rerun after this state update",
+      "playwright": "PASS: local synthetic navigation/focus QA; same-route logout focus; computed shell muted text 4.89:1 on canvas and hover .secondary 9.99:1; no overflow at 320/390px; catalog and ADMIN heading snapshots show h1→h2. No auth/backend authorization claim."
     },
-    "controller": "REWORK on e2e25be5957a07433a9689b25dded7661bf8afc8: P2 same-route logout could drop focus; fixed in 87ca9c2. Resumed session requested GPT-6 Luna/High, but reviewer runtime reported danger-full-access; no writes were made. Do not count as read-only PASS; fresh explicit codex exec --sandbox read-only required.",
-    "github_review": "PENDING consolidated exact-head review for latest rework; worker/web PASS on prior metadata checkpoint e2e25be (run 39326789999); new code commit 87ca9c2 requires fresh exact-head checks/review.",
-    "evidence": "output/playwright/i06.3/QA.md"
+    "controller": "PENDING fresh exact-head review after 7e7efbe changes. Historical PASS on 01c6b81 is superseded by these later substantive accessibility fixes.",
+    "github_review": "PENDING consolidated review/checks on latest candidate 7e7efbe. Previous review 01c6b81 P2 findings for muted contrast and heading levels are fixed in this candidate; two earlier P2 threads are resolved.",
+    "evidence": "output/playwright/i06.3/QA.md",
+    "pr_reviewed_code_sha": "7e7efbef01e580fa1726549276ecb091c77a95ae",
+    "previous_controller_review": {
+      "verdict": "PASS, historical only; later GitHub findings require rework",
+      "reviewed_sha": "01c6b815ae911fcd3379cc4fa62df102ee4f45e3",
+      "tree": "e040d50afddf3ca90e288b6f133a260484cd1bda",
+      "base_sha": "489fa0885f28dfa789535dda47f81035422c137e",
+      "reviewer_kind": "delegated_codex_separate_process",
+      "model_requested": "gpt-6-luna",
+      "reasoning_effort_requested": "high",
+      "sandbox_cli_arg": "--sandbox read-only",
+      "session_id": "01a1560e-24a7-7dc1-9985-c0addd8ee7ab",
+      "exit_code": 0,
+      "filesystem": "read-only per runtime report",
+      "backend_model_identity": "UNVERIFIED"
+    }
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
