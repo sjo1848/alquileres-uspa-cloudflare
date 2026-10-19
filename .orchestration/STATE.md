@@ -1266,3 +1266,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Los cuatro hallazgos automáticos (`4313265555`, `4313360409`, `4313360419`, `4313445923`) tienen reparaciones en el candidato consolidado; los comentarios del PR se resolverán con referencias al test/arranque validado después de la última revisión.
 - CI worker/web PASS `39246902425` corresponde al checkpoint anterior `e6b3883`; el nuevo commit modifica únicamente scripts, config local y README. Requerimos un rerun exacto del HEAD final antes del Controller.
 - **READY_TO_RESUME:** publicar esta corrección y checkpoint; esperar checks exactos y revisión consolidada de GitHub; resolver conversaciones reparadas; luego una sola revisión directa separada GPT-6 Luna / High / read-only del SHA `14d79e5792298c4f2eba0d53bc2f0b102818ab88`. No Preview, producción, datos reales, gasto ni I06.
+
+## Event 158 — CF-AU-I05 superó Controller y Pre-Critic
+
+- Candidato funcional exacto: `14d79e5792298c4f2eba0d53bc2f0b102818ab88`, tree `c8015ee49c29c271e90e8542858ab5fa0fe28997`; base `main@093bd9128653281b79599caf61bb6fa979b8fb49`. Checkpoint revisado de PR #23: `7f30a8eeb7c2283e377ac3dc5d0ba2f7a5d1d3ff`; los commits posteriores de evidencia no modifican código/test.
+- GitHub automático completó sobre el checkpoint exacto con `has_any_findings=false` y `has_unresolved_findings=false`. `worker` y `web` pasaron en run `39247551993`. Las cuatro conversaciones reparadas se respondieron con evidencia y quedaron resueltas.
+- Controller `project_controller`: **PASS** para el milestone sintético local. Proceso separado `codex exec`, CLI `0.163.0`, modelo solicitado `gpt-6-luna`, esfuerzo `high`, sandbox `read-only`, configuración aceptada, salida 0, thread `01a15401-c55e-7611-b784-7fb3c4114acf`. Identidad real del backend UNVERIFIED. Informe, metadata y prompt: `evidence/critics/CF-AU-I05-CONTROLLER-14D79E5-*`.
+- Único seguimiento no bloqueante P2: agregar regresión explícita de logout/revocación para ADMIN; middleware compartido ya verifica `session_version`. Sin P0/P1.
+- Pre-Critic PASS para integración protegida. I05 continúa local/sintético: mock mailbox, D1 local, configuración de loopback; sin inscripción pública/Preview, proveedores, R2, pagos, producción, datos reales ni cambios fuente.
+- **READY_TO_RESUME:** PR #23 está listo para integración protegida preservando historia. Luego verificar SHA exacto de `main` y actualizar el cierre canónico antes de comenzar I06. No actualizar Preview ni iniciar preparación de producción.

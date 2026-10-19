@@ -170,3 +170,11 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Worker management 13/13 and Worker typecheck PASS on A7. No frontend/UI or production-code delta, so existing Playwright/build evidence remains applicable. No R2 or remote service was used.
 - Deterministic preflight passed: `python3 scripts/check_orchestration_state.py --base origin/main` => PASS; `git diff --check` => PASS.
 - **Pre-Critic: PASS to publish immutable A7 and request one exact-head GitHub review/check run plus fresh separate-process GPT-6 Luna/High/read-only Controller. No merge/Preview until both are clean and Controller returns PASS.
+
+## CF-AU-I05 — local synthetic OWNER auth candidate (2026-10-19)
+
+- Exact functional candidate SHA `14d79e5792298c4f2eba0d53bc2f0b102818ab88`, tree `c8015ee49c29c271e90e8542858ab5fa0fe28997`; base `093bd9128653281b79599caf61bb6fa979b8fb49` is an ancestor. Subsequent PR checkpoint `7f30a8eeb7c2283e377ac3dc5d0ba2f7a5d1d3ff` changes only canonical state/evidence.
+- All four consolidated GitHub findings (4313265555, 4313360409, 4313360419, 4313445923) are repaired and their threads are resolved. Final automated review of exact checkpoint `7f30a8e` completed with `has_any_findings=false` and `has_unresolved_findings=false`. Required checks `worker`/`web` passed in run `39247551993`.
+- Separate Controller PASS: exact functional SHA/tree/base; requested GPT-6 Luna / High / read-only accepted; CLI exit 0, thread `01a15401-c55e-7611-b784-7fb3c4114acf`; backend identity UNVERIFIED. Report and prompt are in `evidence/critics/CF-AU-I05-CONTROLLER-14D79E5-*`. One nonblocking P2 follow-up: add explicit ADMIN logout revocation test; shared middleware currently enforces session version for ADMIN routes.
+- Focused evidence and local synthetic browser journey: `evidence/CF-AU-I05-LOCAL-QA.md`. Final local startup smokes cover `local:up` (D1 BLOB/no R2/loopback) and `local:owner-auth` (build SPA, mock registration, local D1). No Preview, remote migration, production, real identity, paid service or source write.
+- **Pre-Critic: PASS for bounded I05 local/synthetic auth candidate and protected integration readiness.** This does not authorize Preview auth rollout or production authentication; do not start I06 UI redesign inside this increment.

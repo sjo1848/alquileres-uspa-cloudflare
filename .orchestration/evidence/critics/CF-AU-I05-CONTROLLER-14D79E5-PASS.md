@@ -1,0 +1,15 @@
+## Verdict: PASS
+
+The candidate satisfies this bounded local synthetic OWNER-auth milestone. I found no P0 or P1 issue that blocks it. One P2 test-coverage follow-up is listed below.
+
+- **Reviewer:** `delegated_codex_separate_process` (not native or external)
+- **Requested model/effort:** `gpt-6-luna` / `high`
+- **Operating evidence:** inspection ran from `/tmp` with read-only permissions; I inspected the pinned tree using `git show` and did not run tests or builds. The requested model and effort are supplied by the assignment; active backend identity is **UNVERIFIED**.
+- **Artifact:** `14d79e5792298c4f2eba0d53bc2f0b102818ab88`, tree `c8015ee49c29c271e90e8542858ab5fa0fe28997`, base `main@093bd9128653281b79599caf61bb6fa979b8fb49`.
+- **Test provenance:** the supplied evidence reports required Worker/Web checks passed in run `39247551993`. I did not independently verify that run or execute tests. The parent is checking the automated review separately.
+
+The auth guard requires loopback plus explicit PASSWORD, local-auth, and MOCK settings. Registration accepts only email/password and assigns OWNER; verification and reset tokens are random, hashed in D1, expire after one hour, and are consumed once. Mutations check exact Origin. Login responses are generic, and rate-limit keys are hashed. Logout and reset advance `session_version`; session middleware checks current D1 identity, role, and version for OWNER and ADMIN routes. The migration preserves existing users as verified while leaving new accounts unverified. Preview uses its separate Access strategy, with no enrollment UI or password fallback. These findings are supported by [local-owner-auth.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/src/local-owner-auth.ts:27), [index.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/src/index.ts:32), [0013_owner_auth_local.sql](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/migrations/0013_owner_auth_local.sql:1), and [AuthView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/AuthView.vue:22).
+
+**P2 follow-up:** [local-owner-auth.test.ts](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/worker/tests/local-owner-auth.test.ts:57) directly tests OWNER logout/reset revocation, but does not directly prove that local logout revokes an ADMIN session and that a subsequent `/admin/*` request is rejected. The logout implementation is role-agnostic and the Admin middleware checks session version; add that explicit regression test in a later focused pass.
+
+The result is limited to local synthetic auth. It makes no production-auth or Cloudflare Free-tier viability claim. Next step: retain this PASS for the bounded milestone, with the Admin revocation test as follow-up; do not infer permission for Preview deployment or production auth.
