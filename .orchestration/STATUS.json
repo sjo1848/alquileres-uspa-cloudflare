@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I04 OWNER/ADMIN lifecycle closed; PR #22 protected-merged and existing private Preview updated.",
   "last_completed_head": "Artifact A7 d2bab1e0af35d6ce9ad39bde520facd5903efdaf; protected merge 093bd9128653281b79599caf61bb6fa979b8fb49; no executable changes after A7.",
   "work_branch": "work/i05-owner-auth",
-  "next_action": "Run preflight and push 6c344ce plus canonical checkpoint. Wait for exact-head full worker/web CI. Then request one final consolidated GitHub review; if clean, execute one fresh direct read-only Codex Controller process on this exact code/test tree (the Controller process itself; no nested codex invocation) with requested GPT-6 Luna High.",
+  "next_action": "Push the final startup fix and canonical checkpoint; wait for exact-head worker/web quick checks and consolidated GitHub review. Resolve all four repaired review threads. Then execute a direct separate-process GPT-6 Luna High read-only Controller on exact code/test SHA 14d79e5792298c4f2eba0d53bc2f0b102818ab88, without launching a nested Codex process.",
   "stop_reason": null,
   "event": {
-    "seq": 156,
-    "id": "CF_AU_I05_GITHUB_REWORK_CONSOLIDATED",
+    "seq": 157,
+    "id": "CF_AU_I05_CLEAN_START_FIXED",
     "type": "CONSOLIDATED_REVIEW_REWORK"
   },
   "external_review": null,
@@ -25,8 +25,8 @@
     "branch": "work/i05-owner-auth",
     "last_observed_head": "de3d2e0fb075b45a0bd8c0c8dd27333eb6956150",
     "merge_commit": null,
-    "head_source": "I05 auth candidate plus all consolidated GitHub review fixes: auth-compatible synthetic fixtures, sv claim in HTTP positive control, and dedicated loopback-only local startup config using D1 BLOB without R2.",
-    "candidate_sha": "6c344ce710a9e9636afd3c546ca4a6a2519d3d01"
+    "head_source": "I05 local OWNER auth with all four GitHub findings fixed; both local startup commands now build/configure loopback auth safely, with D1-only local config for local:up.",
+    "candidate_sha": "14d79e5792298c4f2eba0d53bc2f0b102818ab88"
   },
   "integration_commit": "093bd9128653281b79599caf61bb6fa979b8fb49",
   "issue_4": "CLOSED",
@@ -80,12 +80,12 @@
     "authority": "Issue #7 comment 6265554947 (Human decision, 2026-10-19)",
     "base_sha": "093bd9128653281b79599caf61bb6fa979b8fb49",
     "base_tree": "40489a802ab1af6e51cb9eff20761a847fe1c074",
-    "status": "GITHUB_REWORK_3_FIXED_AWAITING_FINAL_CI_AND_REVIEW",
+    "status": "ALL_GITHUB_FINDINGS_REPAIRED_AWAITING_FINAL_CI_REVIEW_CONTROLLER",
     "code_status": "Worker/D1 registration, verification, password login, logout/session revocation, and reset are implemented behind loopback plus explicit MOCK configuration. Vue forms support the same local flows. No public/Preview auth or external email is enabled.",
     "preview_delivery": "No Preview code/migration/deployment or Access change; existing Access-protected Preview remains unchanged.",
     "remote_authenticated_e2e": "BLOCKED_AUTH; no executor Access session available.",
     "cost_and_scope": "USD 0; no R2, paid/email provider, public registration, real identities/data, production, source writes, or new remote resources.",
-    "next_action": "Run preflight and push 6c344ce plus canonical checkpoint. Wait for exact-head full worker/web CI. Then request one final consolidated GitHub review; if clean, execute one fresh direct read-only Codex Controller process on this exact code/test tree (the Controller process itself; no nested codex invocation) with requested GPT-6 Luna High.",
+    "next_action": "Push the final startup fix and canonical checkpoint; wait for exact-head worker/web quick checks and consolidated GitHub review. Resolve all four repaired review threads. Then execute a direct separate-process GPT-6 Luna High read-only Controller on exact code/test SHA 14d79e5792298c4f2eba0d53bc2f0b102818ab88, without launching a nested Codex process.",
     "local_checks": {
       "worker_typecheck": "PASS",
       "worker_auth_owner": "PASS: 4/4 local lifecycle and abuse/guard tests",
@@ -99,15 +99,16 @@
       "worker_catalog": "PASS: 7/7 after correcting JWT session-version and explicit local-auth bindings in the synthetic media fixture; application implementation unchanged."
     },
     "email_delivery": "MOCK_ONLY_EPHEMERAL; no message delivered externally and no production verification claim",
-    "executable_sha": "6c344ce710a9e9636afd3c546ca4a6a2519d3d01",
-    "executable_tree": "e5e860d133dbeeb5435efd46d2c557cbf4e12cb2",
+    "executable_sha": "14d79e5792298c4f2eba0d53bc2f0b102818ab88",
+    "executable_tree": "c8015ee49c29c271e90e8542858ab5fa0fe28997",
     "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/23",
     "github_worker": "Run 39245304811 passed catalog/media/owner/auth/admin/preview/contact and failed at test:management setup because three synthetic login fixtures were unverified. Corrected idempotently; focused test:admin 12/12 and test:management 13/13 pass locally. All direct-auth seed statements audited; full CI rerun pending.",
     "worker_media": "PASS: 15/15 after marking the two synthetic D1 media fixture accounts verified; the login setup predates the new verification field.",
     "worker_admin": "PASS: 12/12 after direct-seeded OWNER/ADMIN fixtures were set verified; all direct-auth test fixtures audited.",
     "worker_management_tests": "PASS: 13/13 after the three persistent OWNER/ADMIN management fixture users were seeded as verified.",
-    "github_review": "Review on ccd2f5695e4c29379c892c8eacbf1b51f2dafb65 completed with findings 4313265555 (catalog sv claim), 4313360409 (HTTP harness sv claim), and 4313360419 (local:up missing explicit local auth). All repaired in commits through 6c344ce; final exact-head review pending.",
-    "local_startup": "PASS: npm run local:up starts on 127.0.0.1 with wrangler.local.jsonc, D1-only/D1_BLOB, explicit PASSWORD/MOCK; health and seeded synthetic OWNER login return 200."
+    "github_review": "Findings 4313265555, 4313360409, 4313360419, and 4313445923 are repaired in the consolidated candidate. Latest fix makes local:owner-auth install web dependencies/build SPA before Wrangler starts. Exact final-head CI and one final review pending.",
+    "local_startup": "PASS: npm run local:up starts on 127.0.0.1 with wrangler.local.jsonc, D1-only/D1_BLOB, explicit PASSWORD/MOCK; health and seeded synthetic OWNER login return 200.",
+    "local_owner_auth_start": "PASS: clean-start script installed web dependencies, built SPA, applied local synthetic D1 migrations, bound Worker to 127.0.0.1, and returned health 200 plus PASSWORD registration config. No Preview or R2 binding."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
