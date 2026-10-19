@@ -184,3 +184,10 @@ Codex cannot use this gate to self-declare substantive PASS.
 - GitHub P2 `4313547498` on checkpoint `3be04bc0fc3ccd675b6b6c2528c345f9628e2726` showed that Bearer-authenticated sessions survived local logout.
 - Repair candidate `8ae6186a310fa665da1cc199ef3aef575b538843`, tree `7f808d0dbe139ab2812f74925cac7105a40ab219`: revokes both unique Bearer and cookie sessions; OWNER/ADMIN regressions assert both credential forms fail afterward. Worker typecheck and focused auth tests PASS (owner-auth 5/5, Preview auth 6/6).
 - **Pre-Critic status: PENDING.** Exact-head checks, consolidated GitHub review/thread resolution, and fresh exact-SHA separate-process GPT-6 Luna/High/read-only Controller are required. Prior PASS does not transfer. No Preview or production auth is authorized.
+
+## CF-AU-I05 — cierre de logout Bearer y Pre-Critic (2026-10-19)
+
+- Exact executable SHA `8ae6186a310fa665da1cc199ef3aef575b538843`, tree `7f808d0dbe139ab2812f74925cac7105a40ab219`: local logout revokes unique Bearer/cookie sessions; Worker owner-auth 5/5, Preview-auth 6/6, Worker typecheck PASS.
+- Exact PR checkpoint `82d9d0bb9511ee550afd04f4b3514a984db0b110`: worker/web checks PASS (run `39249255619`); consolidated GitHub review completed with no findings/unresolved; finding `4313547498` resolved via reply `4313633558`; 0 unresolved conversations.
+- Controller PASS on exact executable SHA, separate `codex exec`, requested GPT-6 Luna / High / read-only, CLI accepted configuration and exit 0; backend identity UNVERIFIED. Evidence: `evidence/critics/CF-AU-I05-CONTROLLER-8AE6186-PASS.md` and metadata.
+- **Pre-Critic: PASS for protected integration of I05 only.** Final canonical validator still required before merge. No Preview update, production preparation, I06 or I08.
