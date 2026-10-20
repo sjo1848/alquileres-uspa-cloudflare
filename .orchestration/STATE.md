@@ -1419,3 +1419,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - `HomeView.vue` reemplaza la ruta por la última página válida manteniendo los filtros y vuelve a consultar. Playwright agregó regresión contra D1 local sintética. Web typecheck PASS; Playwright 4/4 en 38.2s, incluyendo las pruebas previas.
 - El PASS del Controller anterior cubre el candidato previo y ya no es suficiente para el código modificado. Pre-Critic vuelve a PENDING hasta nueva revisión exact-SHA y nueva review/checks GitHub del mismo PR.
 - **READY_TO_RESUME:** consolidar el fix y evidencia, solicitar Controller read-only exacto, procesar los controles que GitHub dispara en el nuevo HEAD y cerrar el hilo P2; luego Pre-Critic y merge protegido. No iniciar #32/#33 ni I06.5.
+
+
+## Event 179 — rework P2 Controller PASS; GitHub exact-head review pendiente
+
+- Fix `62506f2a0a32d2089d1f73fb2c73accdf99217c0` superó Controller delegado separado (PASS exact delta, sin P0/P1/P2; GPT-6 Luna/High/read-only solicitados; exit 0; backend UNVERIFIED). Evidencia: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-62506F2-PASS.md`.
+- Los checks `worker` y `web` del PR #39 sobre este SHA están SUCCESS. La review automática GitHub de este SHA está en progreso al registrar el evento; el hilo P2 `4320588628` se resolverá después de verificar que el resultado final no añade defectos.
+- **READY_TO_RESUME:** verificar review exacta y conversaciones, resolver el hilo ya corregido, validator/Pre-Critic final y protección/mergeabilidad; luego integrar PR #39 mediante merge protegido. No empezar I06.5.

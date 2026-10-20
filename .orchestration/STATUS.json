@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I06.3 — dirección híbrida C y navegación responsive, PR #38 integrado",
   "last_completed_head": "main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
   "work_branch": "work/i06-catalog-public",
-  "next_action": "Commit the P2 out-of-range page repair, QA evidence, and regression; request a fresh exact-SHA read-only Controller review. Let GitHub run the new HEAD checks and consolidated review, process remaining findings, then final validator/Pre-Critic and protected merge. Stop before I06.5.",
+  "next_action": "Finish exact-head GitHub review on the repaired PR #39 candidate; process any material finding and resolve all threads. Re-run consistency validator and final Pre-Critic, confirm required checks/protection/mergeability, then protected merge. Stop before I06.5.",
   "stop_reason": null,
   "event": {
-    "seq": 178,
-    "id": "CF_AU_I06_4_REWORK_OUT_OF_RANGE_PAGE",
-    "type": "GITHUB_P2_REWORK_REPAIRED"
+    "seq": 179,
+    "id": "CF_AU_I06_4_REWORK_CONTROLLER_PASS_GH_PENDING",
+    "type": "REWORK_CONTROLLER_PASS_GITHUB_FINAL_REVIEW_PENDING"
   },
   "external_review": null,
   "human_gate": {
@@ -28,8 +28,8 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39",
     "branch": "work/i06-catalog-public",
-    "last_observed_head": "011e470088ae7eccdb97dae74e659f73e4d7e97f",
-    "head_source": "Consolidated functional candidate plus Controller and canonical workflow evidence checkpoint.",
+    "last_observed_head": "62506f2a0a32d2089d1f73fb2c73accdf99217c0",
+    "head_source": "Repaired functional candidate plus Controller evidence/canonical checkpoint to be committed; app code reviewed at exact artifact SHA 62506f2.",
     "base": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e"
   },
   "issue_4": "CLOSED",
@@ -81,7 +81,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31",
     "contract": ".orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md",
-    "status": "GITHUB_P2_REPAIRED_AWAITING_FRESH_CONTROLLER_AND_EXACT_HEAD_GITHUB_REVIEW",
+    "status": "REWORK_REPAIRED_CONTROLLER_PASS_GITHUB_REVIEW_PENDING",
     "base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
     "branch": "work/i06-catalog-public",
     "scope": "Public Vue journey catalog → filters → listing detail → idempotent contact. Reconcile I06.3 merge drift in this functional PR. No Worker contract, auth, OWNER/ADMIN, Preview, production, paid service, real data or source repository changes.",
@@ -97,22 +97,23 @@
       "state_preflight": "PASS: python3 scripts/check_orchestration_state.py --base origin/main; git diff --check on committed candidate"
     },
     "controller": {
-      "verdict": "PENDING fresh review because frontend executable code changed after prior PASS",
+      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
       "reviewer_kind": "delegated_codex_separate_process",
-      "artifact_sha": "26742649e37243cba9e48434889f8df10d4d3d67",
+      "artifact_sha": "62506f2a0a32d2089d1f73fb2c73accdf99217c0",
       "canonical_base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
       "model_requested": "gpt-6-luna",
       "reasoning_effort_requested": "high",
-      "sandbox": "read-only explicitly requested; reviewer made no writes and ran no tests",
+      "sandbox": "read-only explicitly requested and accepted",
       "actual_backend_model_identity": "UNVERIFIED",
-      "session_id": "01a156e9-b0e0-7ba3-92ea-6aa5e7d361d9",
-      "evidence": ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-2674264-PASS.md",
-      "findings": "No P0/P1/P2"
+      "session_id": "01a156f1-eb28-7b33-a14b-de8ffc09319b",
+      "process_exit_code": 0,
+      "evidence": ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-62506F2-PASS.md",
+      "findings": "No P0/P1/P2 in exact out-of-range page repair delta"
     },
-    "github_review": "PENDING re-review of new PR #39 head after P2 repair",
-    "precritic": "PENDING fresh exact-head controls after P2 repair",
+    "github_review": "RUNNING exact repaired HEAD 62506f2; prior finding 4320588628 fixed",
+    "precritic": "PENDING exact-head GitHub review and zero open conversations",
     "scope_limits": "Synthetic local D1/Worker only; no Preview/Access change, deployment, production, data real, paid service, R2, source repository write, OWNER #32 or ADMIN #33.",
-    "next_action": "Commit the P2 out-of-range page repair, QA evidence, and regression; request a fresh exact-SHA read-only Controller review. Let GitHub run the new HEAD checks and consolidated review, process remaining findings, then final validator/Pre-Critic and protected merge. Stop before I06.5."
+    "next_action": "Finish exact-head GitHub review on the repaired PR #39 candidate; process any material finding and resolve all threads. Re-run consistency validator and final Pre-Critic, confirm required checks/protection/mergeability, then protected merge. Stop before I06.5."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

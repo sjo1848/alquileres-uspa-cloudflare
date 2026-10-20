@@ -1,3 +1,11 @@
+## CF-AU-I06.4 — P2 de página fuera de rango; review del rework (2026-10-19)
+
+- GitHub exact-head review del PR #39 sobre `0f593ddfa1464d22d99841af4bbf19fd57ccbc58` encontró P2 `4320588628`: una URL guardada en página 2 podía ocultar resultados si los filtros solo devolvían una página. Reparación y regresión constan en `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-4320588628.md`.
+- El frontend normaliza la URL a la última página válida manteniendo filtros. Web typecheck PASS y Playwright público 4/4 en 38.2s con D1 local sintética. Capturas previas siguen válidas (el cambio no altera visuales).
+- Controller delegado separado examinó el delta exacto y emitió PASS: SHA `62506f2a0a32d2089d1f73fb2c73accdf99217c0`, base `cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`, thread `01a156f1-eb28-7b33-a14b-de8ffc09319b`, modelo solicitado `gpt-6-luna`/High y `--sandbox read-only`; backend UNVERIFIED. Reporte: `evidence/critics/CF-AU-I06.4-CONTROLLER-62506F2-PASS.md`.
+- PR #39 HEAD `62506f2`: required `worker` y `web` checks SUCCESS. GitHub automática está revisando ese mismo SHA; revisar completion, hallazgos y hilos antes de integración. Branch protection observada strict, checks `worker`/`web`, enforce admins true.
+- **Gate aún PENDING:** Controller y tests locales PASS; se necesita review GitHub exact-head completa, cero conversaciones abiertas, validator/Pre-Critic final y verificar mergeability/protección en el HEAD final. La nueva evidencia/canonical checkpoint añadida después de `62506f2` no modifica código ejecutable y debe volver a pasar los checks/review de GitHub. No merge hasta entonces.
+
 ## CF-AU-I06.4 — candidato consolidado para review GitHub (2026-10-19)
 
 - Contrato activo `.orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md`; base autorizada `main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`; candidato ejecutable `26742649e37243cba9e48434889f8df10d4d3d67`.
