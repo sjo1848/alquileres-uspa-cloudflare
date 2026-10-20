@@ -154,6 +154,18 @@ test('catálogo: error recuperable, ausencia de resultados e imagen rota', async
   await expect(page.locator('.listing-card')).toHaveCount(6);
 });
 
+test('catálogo: una página guardada fuera del nuevo total vuelve a la última página válida', async ({ page }) => {
+  await page.goto('/?maxOccupants=4&page=2');
+  await expect(page).toHaveURL(/maxOccupants=4/);
+  await expect(page).not.toHaveURL(/page=2/);
+  await expect(page.locator('.listing-card')).toHaveCount(4);
+  for (const card of await page.locator('.listing-card').all()) {
+    const text = await card.innerText();
+    const capacity = Number(text.match(/Hasta (\d+) personas?/)?.[1] ?? 0);
+    expect(capacity).toBeGreaterThanOrEqual(4);
+  }
+});
+
 test('ficha y consulta: D1 real local, reintento idempotente y regresión mobile #35', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/listings/synthetic-casa-rio');

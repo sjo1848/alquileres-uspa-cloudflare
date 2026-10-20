@@ -97,6 +97,14 @@ async function loadPage(pageNumber = pageFromRoute()) {
   try {
     const result = await request<Page>(`/public/listings?${params}`, { signal: controller.signal });
     if (sequence !== requestSequence) return;
+    const lastPage = Math.max(1, result.totalPages);
+    if (pageNumber > lastPage) {
+      const query = { ...route.query };
+      if (lastPage === 1) delete query.page;
+      else query.page = String(lastPage);
+      await router.replace({ path: '/', query });
+      return;
+    }
     page.value = result;
     failedImages.value = new Set();
   } catch (cause) {

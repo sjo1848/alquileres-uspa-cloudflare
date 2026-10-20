@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I06.3 — dirección híbrida C y navegación responsive, PR #38 integrado",
   "last_completed_head": "main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
   "work_branch": "work/i06-catalog-public",
-  "next_action": "Monitor exact PR #39 HEAD for required worker/web checks and the single consolidated GitHub review. Repair any material findings on this PR, rerun affected tests, then final consistency validator/Pre-Critic and protected merge; stop before I06.5.",
+  "next_action": "Commit the P2 out-of-range page repair, QA evidence, and regression; request a fresh exact-SHA read-only Controller review. Let GitHub run the new HEAD checks and consolidated review, process remaining findings, then final validator/Pre-Critic and protected merge. Stop before I06.5.",
   "stop_reason": null,
   "event": {
-    "seq": 177,
-    "id": "CF_AU_I06_4_PR_39_OPEN",
-    "type": "FUNCTIONAL_PR_OPEN_FOR_EXACT_HEAD_CHECKS_AND_REVIEW"
+    "seq": 178,
+    "id": "CF_AU_I06_4_REWORK_OUT_OF_RANGE_PAGE",
+    "type": "GITHUB_P2_REWORK_REPAIRED"
   },
   "external_review": null,
   "human_gate": {
@@ -81,23 +81,23 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31",
     "contract": ".orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md",
-    "status": "PR_OPEN_AWAITING_REQUIRED_CHECKS_AND_GITHUB_REVIEW",
+    "status": "GITHUB_P2_REPAIRED_AWAITING_FRESH_CONTROLLER_AND_EXACT_HEAD_GITHUB_REVIEW",
     "base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
     "branch": "work/i06-catalog-public",
     "scope": "Public Vue journey catalog → filters → listing detail → idempotent contact. Reconcile I06.3 merge drift in this functional PR. No Worker contract, auth, OWNER/ADMIN, Preview, production, paid service, real data or source repository changes.",
     "code_status": "Vue catalog uses existing /public/listings API, progressive filters, server pagination and query URLs with AbortController plus request sequencing. Listing cards show synthetic static photos, explicit currency/period, capacity and truthful availability freshness. Detail and contact use existing APIs; failure retains values and same-payload retry uses same Idempotency-Key. Public #35 overlap fixed; ADMIN form remains pending #33. No Worker runtime/API changes.",
     "local_checks": {
-      "web_typecheck": "PASS: npm run typecheck, apps/web",
+      "web_typecheck": "PASS after P2 repair: npm run typecheck",
       "web_build": "PASS: npm run build (Worker bundle and client)",
       "worker_typecheck": "PASS: npm run typecheck, apps/worker",
       "worker_public_listings": "PASS: 7/7",
       "worker_contact_workflow": "PASS: 6/6; includes real D1 event, owner inbox, exact replay and payload mismatch",
-      "playwright_public": "PASS: 3/3; final run 33s. Catalog/filter/page/back, slow old request vs latest query, loading/error/retry/empty/detail retry/broken image, HTTP 201 contact replay, 1440/390/320 viewport, #35 geometry, focus and representative contrast.",
+      "playwright_public": "PASS: 4/4; final run 38.2s. Added saved out-of-range page normalization retaining filters; existing public journey still passes.",
       "screenshots": "PASS: six runtime screenshots under output/playwright/i06.4/; synthetic static WebP loaded in browser",
       "state_preflight": "PASS: python3 scripts/check_orchestration_state.py --base origin/main; git diff --check on committed candidate"
     },
     "controller": {
-      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC",
+      "verdict": "PENDING fresh review because frontend executable code changed after prior PASS",
       "reviewer_kind": "delegated_codex_separate_process",
       "artifact_sha": "26742649e37243cba9e48434889f8df10d4d3d67",
       "canonical_base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
@@ -109,10 +109,10 @@
       "evidence": ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-2674264-PASS.md",
       "findings": "No P0/P1/P2"
     },
-    "github_review": "PENDING exact PR #39 HEAD; no review requested yet",
-    "precritic": "PASS_TO_PUBLISH; final pre-merge gate pending exact-head GitHub controls",
+    "github_review": "PENDING re-review of new PR #39 head after P2 repair",
+    "precritic": "PENDING fresh exact-head controls after P2 repair",
     "scope_limits": "Synthetic local D1/Worker only; no Preview/Access change, deployment, production, data real, paid service, R2, source repository write, OWNER #32 or ADMIN #33.",
-    "next_action": "Monitor exact PR #39 HEAD for required worker/web checks and the single consolidated GitHub review. Repair any material findings on this PR, rerun affected tests, then final consistency validator/Pre-Critic and protected merge; stop before I06.5."
+    "next_action": "Commit the P2 out-of-range page repair, QA evidence, and regression; request a fresh exact-SHA read-only Controller review. Let GitHub run the new HEAD checks and consolidated review, process remaining findings, then final validator/Pre-Critic and protected merge. Stop before I06.5."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

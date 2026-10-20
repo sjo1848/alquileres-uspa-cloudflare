@@ -10,8 +10,8 @@ Playwright ejecutó la aplicación Vue con el Worker/Hono del plugin Cloudflare 
 - Worker `npm run typecheck`: PASS.
 - Worker `npm run test:catalog`: 7/7 PASS.
 - Worker `npm run test:contact-workflow`: 6/6 PASS. Incluye inserción consultable por OWNER, mismo resultado al repetir la clave y conflicto ante payload distinto.
-- Playwright `npm run test:e2e:public`: 3/3 recorridos PASS (filtros/paginación/vuelta, loading/error/empty/imagen rota/retry/race, y ficha/contacto/idempotencia), ejecución final 33 s sobre D1 local.
-- Desktop 1440×1000; mobile 390×844 y 320×844. QA cubre navegación de vuelta con filtros/página, última respuesta gana ante búsqueda lenta anterior, disponibilidad semántica, paginación, foco/skip link, contraste WCAG AA representativo, ausencia de overflow y labels/campos sin intersecciones en el formulario público (#35).
+- Playwright `npm run test:e2e:public`: 4/4 recorridos PASS (filtros/paginación/vuelta y clamp de página guardada fuera de rango; slow-response race, loading/error/empty/imagen rota/retry; ficha/contacto/idempotencia), ejecución final 38.2 s sobre D1 local.
+- Desktop 1440×1000; mobile 390×844 y 320×844. QA cubre navegación de vuelta con filtros/página, URL guardada fuera de rango normalizada a última página válida conservando filtros, última respuesta gana ante búsqueda lenta anterior, disponibilidad semántica, paginación, foco/skip link, contraste WCAG AA representativo, ausencia de overflow y labels/campos sin intersecciones en el formulario público (#35).
 - El primer envío de contacto en browser se interrumpió de forma controlada antes del Worker. El mensaje y datos se conservaron; el reintento llegó al Worker con la misma `Idempotency-Key` y obtuvo HTTP 201. La prueba Worker separada verifica la fila D1 y replay.
 
 ## Capturas reales

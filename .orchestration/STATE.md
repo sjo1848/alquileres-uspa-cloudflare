@@ -1411,3 +1411,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - PR #39 (`https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39`) abierto desde `work/i06-catalog-public` contra `main`; initial HEAD `011e470088ae7eccdb97dae74e659f73e4d7e97f`. El código ejecutable revisado por Controller sigue siendo exactamente `26742649e37243cba9e48434889f8df10d4d3d67`; los commits siguientes contienen únicamente evidencia/canonical state.
 - El merge depende de checks obligatorios `worker`/`web` en el HEAD final, review consolidada, cero conversaciones pendientes y protecciones vigentes. #31 se cierra con evidencia después del merge; #35 queda parcialmente abierta por el formulario ADMIN pendiente de #33.
 - **READY_TO_RESUME:** obtener el HEAD y resultados actuales de PR #39; resolver defectos materiales del mismo PR; correr validator/Pre-Critic final y fusionar protegido cuando sea elegible. No comenzar #32/#33 ni I06.5.
+
+
+## Event 178 — P2 de página de catálogo fuera de rango corregido
+
+- La review GitHub exact-head del PR #39 (`0f593ddfa1464d22d99841af4bbf19fd57ccbc58`) encontró P2 `4320588628`: una URL page=2 con filtros que ahora producen una sola página ocultaba alojamientos válidos. Evidencia y reparación: `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-4320588628.md`.
+- `HomeView.vue` reemplaza la ruta por la última página válida manteniendo los filtros y vuelve a consultar. Playwright agregó regresión contra D1 local sintética. Web typecheck PASS; Playwright 4/4 en 38.2s, incluyendo las pruebas previas.
+- El PASS del Controller anterior cubre el candidato previo y ya no es suficiente para el código modificado. Pre-Critic vuelve a PENDING hasta nueva revisión exact-SHA y nueva review/checks GitHub del mismo PR.
+- **READY_TO_RESUME:** consolidar el fix y evidencia, solicitar Controller read-only exacto, procesar los controles que GitHub dispara en el nuevo HEAD y cerrar el hilo P2; luego Pre-Critic y merge protegido. No iniciar #32/#33 ni I06.5.
