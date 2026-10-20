@@ -1404,3 +1404,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - El Controller inspeccionó contrato, código y tests, verificó scripts/evidencia por inspección y no ejecutó pruebas ni escribió archivos. Confirmó API existente, filtros/URL/paginación, descarte de respuestas antiguas, semántica de disponibilidad, fallback de imágenes, contacto HTTP/idempotencia, cobertura Playwright y alcance.
 - Pre-Critic: PASS únicamente para publicar el candidato consolidado en el PR funcional I06.4 y solicitar checks `worker`/`web` más una review GitHub consolidada sobre el HEAD final. No autoriza merge por sí solo.
 - **READY_TO_RESUME:** publicar la rama funcional y abrir PR enlazado a #31. Esperar checks/review exactos; resolver hallazgos materiales en el mismo PR, aplicar validator/Pre-Critic y merge solo con protección de `main`. Detenerse antes de I06.5.
+
+
+## Event 177 — PR funcional I06.4 abierto
+
+- PR #39 (`https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39`) abierto desde `work/i06-catalog-public` contra `main`; initial HEAD `011e470088ae7eccdb97dae74e659f73e4d7e97f`. El código ejecutable revisado por Controller sigue siendo exactamente `26742649e37243cba9e48434889f8df10d4d3d67`; los commits siguientes contienen únicamente evidencia/canonical state.
+- El merge depende de checks obligatorios `worker`/`web` en el HEAD final, review consolidada, cero conversaciones pendientes y protecciones vigentes. #31 se cierra con evidencia después del merge; #35 queda parcialmente abierta por el formulario ADMIN pendiente de #33.
+- **READY_TO_RESUME:** obtener el HEAD y resultados actuales de PR #39; resolver defectos materiales del mismo PR; correr validator/Pre-Critic final y fusionar protegido cuando sea elegible. No comenzar #32/#33 ni I06.5.

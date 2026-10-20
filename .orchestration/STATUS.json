@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I06.3 — dirección híbrida C y navegación responsive, PR #38 integrado",
   "last_completed_head": "main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
   "work_branch": "work/i06-catalog-public",
-  "next_action": "Push the consolidated I06.4 branch and open the functional PR linked to Issue #31; obtain exact-head worker/web checks and one consolidated GitHub review, resolve material findings, rerun impacted tests, then complete Pre-Critic and protected merge. Stop before I06.5.",
+  "next_action": "Monitor exact PR #39 HEAD for required worker/web checks and the single consolidated GitHub review. Repair any material findings on this PR, rerun affected tests, then final consistency validator/Pre-Critic and protected merge; stop before I06.5.",
   "stop_reason": null,
   "event": {
-    "seq": 176,
-    "id": "CF_AU_I06_4_CONTROLLER_PASS_READY_FOR_GITHUB",
-    "type": "CONTROLLER_PASS_READY_FOR_GITHUB_REVIEW"
+    "seq": 177,
+    "id": "CF_AU_I06_4_PR_39_OPEN",
+    "type": "FUNCTIONAL_PR_OPEN_FOR_EXACT_HEAD_CHECKS_AND_REVIEW"
   },
   "external_review": null,
   "human_gate": {
@@ -24,12 +24,12 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "state": "NOT_OPEN",
-    "url": null,
+    "number": 39,
+    "state": "OPEN",
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39",
     "branch": "work/i06-catalog-public",
-    "last_observed_head": "26742649e37243cba9e48434889f8df10d4d3d67",
-    "head_source": "Consolidated executable I06.4 candidate; subsequent commit is limited to Controller/Pre-Critic evidence and canonical workflow checkpoint.",
+    "last_observed_head": "011e470088ae7eccdb97dae74e659f73e4d7e97f",
+    "head_source": "Consolidated functional candidate plus Controller and canonical workflow evidence checkpoint.",
     "base": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e"
   },
   "issue_4": "CLOSED",
@@ -81,7 +81,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31",
     "contract": ".orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md",
-    "status": "CONTROLLER_PASS_READY_FOR_GITHUB_REVIEW",
+    "status": "PR_OPEN_AWAITING_REQUIRED_CHECKS_AND_GITHUB_REVIEW",
     "base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
     "branch": "work/i06-catalog-public",
     "scope": "Public Vue journey catalog → filters → listing detail → idempotent contact. Reconcile I06.3 merge drift in this functional PR. No Worker contract, auth, OWNER/ADMIN, Preview, production, paid service, real data or source repository changes.",
@@ -109,10 +109,10 @@
       "evidence": ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-2674264-PASS.md",
       "findings": "No P0/P1/P2"
     },
-    "github_review": "PENDING; request once on the consolidated functional PR HEAD",
-    "precritic": "PASS_TO_PUBLISH_FOR_GITHUB_CHECKS_AND_REVIEW; not merge approval",
+    "github_review": "PENDING exact PR #39 HEAD; no review requested yet",
+    "precritic": "PASS_TO_PUBLISH; final pre-merge gate pending exact-head GitHub controls",
     "scope_limits": "Synthetic local D1/Worker only; no Preview/Access change, deployment, production, data real, paid service, R2, source repository write, OWNER #32 or ADMIN #33.",
-    "next_action": "Push work/i06-catalog-public and open the functional PR. Obtain exact-head required worker/web checks and one consolidated GitHub review; resolve material findings, rerun affected checks, run final validator/Pre-Critic, and merge protected. Stop before I06.5."
+    "next_action": "Monitor exact PR #39 HEAD for required worker/web checks and the single consolidated GitHub review. Repair any material findings on this PR, rerun affected tests, then final consistency validator/Pre-Critic and protected merge; stop before I06.5."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
