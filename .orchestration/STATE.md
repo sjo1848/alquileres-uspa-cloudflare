@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_3_PRECRITIC`
-Active task: `CF-AU-I06.3 — Pre-Critic pass and protected integration`
+Phase: `CF_AU_I06_4_PUBLIC_JOURNEY`
+Active task: `CF-AU-I06.4 — Rediseño de catálogo, filtros, ficha y consulta pública`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1377,3 +1377,22 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - P2 `4319177226` señaló `current_functional_increment.github_review` desactualizado como PENDING a pesar del review exacto `6cb22f9` y Pre-Critic PASS. Se actualizó a COMPLETE, con SHA, unresolved=false y cero conversaciones abiertas; `next_action` permanece en merge protegido.
 - HEAD observado al crear este checkpoint: `aafe0d9e8b28b38b7ba668bee9e69819ff50f485`, solo estado/evidencia posterior al candidato ejecutable `26fd638`. El Controller y review siguen referenciados por SHA exacto `6cb22f9`.
 - **READY_TO_RESUME:** validar protección/checks/review del nuevo checkpoint de solo estado y, con todo verde, merge protegido PR #38 preservando historia.
+
+
+## Event 174 — I06.3 integrado; I06.4 público autorizado e iniciado
+
+- PR #38 quedó integrado con protección de `main` en merge commit `cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`; Issue #30 se cerró con evidencia. `STATUS.json` de ese merge retenía de forma obsoleta I06.3 como PRECRITIC y PR #38 como OPEN; este evento y la actualización activa de STATUS reconcilian ambos hechos dentro del PR funcional I06.4 (#31), sin PR documental.
+- I06.4 autorizado por Issue #31 desde exactamente `main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`, basado en la dirección híbrida C aprobada en #29. Contrato activo: `.orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md`.
+- Alcance exclusivamente público: catálogo, filtros y paginación, ficha y consulta real local. Incluye corrección/regresión mobile del formulario público #35. El formulario ADMIN de #35 seguirá pendiente para #33. No implementar #32/#33.
+- Rama activa: `work/i06-catalog-public`. Primer corte de frontend conectado a APIs existentes y seed sintético iniciado; todavía no es candidato consolidado, ni pasa QA, Controller, GitHub o Pre-Critic.
+- **READY_TO_RESUME:** terminar las pruebas Playwright de recorrido público (incluidas 1440/390/320 y envío/idempotencia), corregir cualquier defecto reproducido, ejecutar validación focalizada final y actualizar esta evidencia antes del PR funcional. No modificar Worker API/reglas, Preview/Access, producción, servicios pagos, R2, datos reales ni el repositorio fuente. Detenerse tras el cierre de I06.4 antes de I06.5.
+
+
+## Event 175 — recorrido público I06.4 consolidado localmente
+
+- El catálogo Vue consume `/public/listings`; filtros progresivos y página viajan en URL y sobreviven navegación a ficha/retorno. Búsquedas anteriores se abortan y descartan por generación. Cards informan precio con moneda/periodicidad explícita, capacidad y estado/frescura sin promesa de reserva; fotos sintéticas WebP del repositorio usan Workers Static Assets.
+- Ficha usa la API existente, presenta galería/fallback y consulta HTTP real. Fallo de red mantiene datos; retry de mismo payload reutiliza `Idempotency-Key`. No cambió Worker runtime/API, autorización, disponibilidad ni base D1.
+- #35 público corregido con fieldset/labels semánticos; Playwright midió separación de labels/inputs a 390×844 y 320×844. ADMIN form no fue tocado; #35 sigue abierto hasta #33.
+- QA local final: Web typecheck/build PASS; Worker typecheck PASS; catálogo 7/7; contacto 6/6; Playwright 3/3 en 33s con D1 local sintética, cubriendo filtros/paginación/retorno, slow-response race, loading/error/retry/empty/detail retry/imagen rota, consulta HTTP 201/idempotencia, keyboard/foco, contraste y 1440/390/320. Capturas y pasos: `output/playwright/i06.4/QA.md`.
+- `npm run seed:local` aplica el seed sintético en la D1 Wrangler `--local`; ningún comando remoto/Preview fue usado.
+- **READY_TO_RESUME:** candidato local consolidado; ejecutar consistency validator y diff preflight del commit; después una revisión separada Controller read-only sobre el SHA exacto, publicar PR funcional y procesar checks/review. El merge sigue sujeto a protección de `main`. No iniciar #32/#33 dentro de esta etapa ni I06.5 después del cierre.
