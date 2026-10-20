@@ -1,3 +1,12 @@
+## CF-AU-I06.4 — candidato consolidado para review GitHub (2026-10-19)
+
+- Contrato activo `.orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md`; base autorizada `main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`; candidato ejecutable `26742649e37243cba9e48434889f8df10d4d3d67`.
+- Código y evidencia local: Vue catálogo/filtros URL/paginación → ficha → consulta HTTP con idempotencia; seis capturas reales 1440/390/320px y `output/playwright/i06.4/QA.md`. Datos D1 e imágenes sintéticos locales. Sin cambios al Worker runtime/API, permisos, Preview, producción, gastos, R2, datos reales, OWNER/ADMIN o source repo. Corrección pública parcial de #35; ADMIN queda para #33.
+- Web typecheck/build, Worker typecheck, catalog tests 7/7, contact tests 6/6, Playwright 3/3 (33 s), consistency validator y `git diff --check`: PASS sobre el candidato ejecutable. Las capturas son runtime y el formulario conserva datos/clave en retry.
+- Controller delegado separado devolvió PASS sobre ese SHA exacto, base exacta; proceso `codex exec`, modelo solicitado `gpt-6-luna`, esfuerzo `high`, `--sandbox read-only`, thread `01a156e9-b0e0-7ba3-92ea-6aa5e7d361d9`. No halló P0/P1/P2. Evidencia `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-2674264-PASS.md`; identidad backend UNVERIFIED.
+- Protecciones verificadas de `main`: required strict checks `worker` y `web`, enforce admins enabled, PR reviews obligatorias = 0. El merge aún debe verificar checks, review, conversaciones y mergeabilidad sobre HEAD final.
+- **Pre-Critic PASS para publicar el candidato en el PR funcional #31 y ejecutar checks `worker`/`web` más una review GitHub consolidada exact-head. No es aprobación de merge.** Si la publicación agrega solo este registro de Controller/gate, el código ejecutable coincide con el SHA revisado; GitHub debe revisar el HEAD completo del PR. Aplicar el validador de nuevo al checkpoint previo al push.
+
 # Mandatory Pre-Critic Gate
 
 ## CF-AU-I04 OWNER + ADMIN-assisted lifecycle consolidated candidate (2026-10-19)
