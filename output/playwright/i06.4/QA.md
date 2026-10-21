@@ -10,7 +10,7 @@ Playwright ejecutó la aplicación Vue con el Worker/Hono del plugin Cloudflare 
 - Worker `npm run typecheck`: PASS.
 - Worker `npm run test:catalog`: 7/7 PASS.
 - Worker `npm run test:contact-workflow`: 6/6 PASS. Incluye inserción consultable por OWNER, mismo resultado al repetir la clave y conflicto ante payload distinto.
-- Playwright `npm run test:e2e:public`: 4/4 recorridos PASS (filtros/paginación/vuelta y clamp de página guardada fuera de rango; slow-response race, loading/error/empty/imagen rota/retry; ficha/contacto/idempotencia), última ejecución 4/4 en 3.5 min sobre D1 local (host cargado).
+- Playwright `npm run test:e2e:public`: 4/4 recorridos PASS (filtros/paginación/vuelta y clamp de página guardada fuera de rango; slow-response race, loading/error/empty/imagen rota/retry; ficha/contacto/idempotencia), última ejecución 4/4 en 1.5 min sobre D1 local.
 - Desktop 1440×1000; mobile 390×844 y 320×844. QA cubre navegación de vuelta con filtros/página, URL guardada fuera de rango normalizada a última página válida conservando filtros; registro con importe/moneda pero periodicidad faltante muestra “Precio a consultar”, última respuesta gana ante búsqueda lenta anterior, disponibilidad semántica, paginación, foco/skip link, contraste WCAG AA representativo, ausencia de overflow y labels/campos sin intersecciones en el formulario público (#35).
 - El seed sintético incluye una ficha legacy incompleta (importe y moneda presentes, periodicidad/capacidad faltantes) que verifica el precio seguro en catálogo.
 

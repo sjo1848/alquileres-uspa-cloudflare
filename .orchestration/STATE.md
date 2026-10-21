@@ -1435,3 +1435,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Typecheck PASS y suite pública Playwright 4/4 en 3.5m sobre D1 sintética local (carga elevada del host); capturas desktop/mobile siguen siendo reales y corresponden a la misma composición visual.
 - Ambos P2 (`4320588628`, `4320628608`) están corregidos en el árbol local, pero los hilos/review de GitHub siguen pendientes para nuevo HEAD. El Controller PASS anterior cubre solo el primer rework y debe renovarse por el cambio de precio/fixture.
 - **READY_TO_RESUME:** congelar el arreglo consolidado, nuevo Controller read-only exacto, GitHub checks/review, resolver hilos, validator/Pre-Critic y merge protegido. No empezar I06.5.
+
+
+## Event 181 — P2 de capacidad mayor a seis corregido
+
+- GitHub review exacta de PR #39 HEAD `3d0662d` encontró P2 `4343003402`: el control fijo 1–6 impedía solicitar capacidades mayores aunque el API las acepta.
+- El filtro ahora es entrada numérica positiva sin tope artificial. Playwright confirma envío `maxOccupants=8`, estado vacío honesto con el inventario sintético actual y recuperación de 4 resultados al volver a capacidad 4. Typecheck PASS; suite pública local 4/4 en 1.5m, incluida regresión de precios incompletos, paginación guardada y contacto #35.
+- Tres P2 GitHub están corregidos y documentados en `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-{4320588628,4343003402}.md`; no se tocaron Worker runtime/API ni alcance OWNER/ADMIN.
+- **READY_TO_RESUME:** congelar candidato consolidado, Controller exacto read-only, checks/review GitHub exactos y cierre de hilos, final Pre-Critic/merge protegido. No iniciar I06.5.

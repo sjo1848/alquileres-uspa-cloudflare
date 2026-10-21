@@ -206,7 +206,7 @@ watch(() => route.query, () => {
             <label for="filter-currency">Moneda<select id="filter-currency" v-model="filters.currency" name="currency"><option value="">Cualquier moneda</option><option value="ARS">Pesos argentinos (ARS)</option><option value="USD">Dólares estadounidenses (USD)</option></select></label>
             <label for="filter-period">Periodicidad<select id="filter-period" v-model="filters.pricePeriod" name="pricePeriod"><option value="">Cualquiera</option><option v-for="option in pricePeriodOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
             <label for="filter-duration">Duración<select id="filter-duration" v-model="filters.rentalDuration" name="rentalDuration"><option value="">Cualquiera</option><option v-for="option in rentalDurationOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
-            <label for="filter-occupants">Personas<select id="filter-occupants" v-model="filters.maxOccupants" name="maxOccupants"><option value="">Cualquier capacidad</option><option v-for="count in [1, 2, 3, 4, 5, 6]" :key="count" :value="String(count)">{{ count }} o más</option></select></label>
+            <label for="filter-occupants">Personas<input id="filter-occupants" v-model="filters.maxOccupants" name="maxOccupants" type="number" min="1" step="1" inputmode="numeric" placeholder="Cualquier capacidad" /></label>
           </div>
           <div class="filter-actions"><button type="submit" class="secondary">Aplicar filtros</button><button type="button" class="text-button" @click="resetFilters">Limpiar</button></div>
         </details>

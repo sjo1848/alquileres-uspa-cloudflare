@@ -68,7 +68,7 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
   await expect(page.locator('.listing-card')).toHaveCount(2);
 
   await page.locator('.catalog-search details summary').click();
-  await page.getByLabel('Personas').selectOption('4');
+  await page.getByLabel('Personas').fill('4');
   await page.getByRole('button', { name: 'Aplicar filtros' }).click();
   await expect(page).toHaveURL(/maxOccupants=4/);
   await expect(page.locator('.listing-card')).toHaveCount(4);
@@ -77,6 +77,13 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
     const capacity = Number(text.match(/Hasta (\d+) personas?/)?.[1] ?? 0);
     expect(capacity).toBeGreaterThanOrEqual(4);
   }
+  await page.getByLabel('Personas').fill('8');
+  await page.getByRole('button', { name: 'Aplicar filtros' }).click();
+  await expect(page).toHaveURL(/maxOccupants=8/);
+  await expect(page.getByRole('status')).toContainText('No encontramos alojamientos');
+  await page.getByLabel('Personas').fill('4');
+  await page.getByRole('button', { name: 'Aplicar filtros' }).click();
+  await expect(page.locator('.listing-card')).toHaveCount(4);
   await page.locator('#filter-available').check();
   await page.getByRole('button', { name: 'Buscar alojamientos' }).click();
   await expect(page).toHaveURL(/availableOnly=true/);
