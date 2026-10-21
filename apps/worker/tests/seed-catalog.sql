@@ -31,7 +31,7 @@ INSERT OR IGNORE INTO listings(
  '2026-08-01T12:00:00.000Z','2026-10-12T12:00:00.000Z','2026-10-12T12:00:00.000Z'),
 ('synthetic-catalog-04','synthetic-catalog-owner','APPROVED','Refugio de Muestra',
  'Publicación sintética con información de precio pendiente de confirmar.',
- 'Uspallata, Mendoza',NULL,NULL,NULL,NULL,NULL,'PUBLISHED','UNAVAILABLE',
+ 'Uspallata, Mendoza',45000,NULL,NULL,NULL,'ARS','PUBLISHED','UNAVAILABLE',
  NULL,'2026-10-11T12:00:00.000Z','2026-10-11T12:00:00.000Z'),
 ('synthetic-catalog-05','synthetic-catalog-owner','APPROVED','Casa del Río Quieto',
  'Casa sintética de muestra con capacidad para grupos.',

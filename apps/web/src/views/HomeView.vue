@@ -11,6 +11,7 @@ import {
   type FreshnessStatus,
 } from './availability-helpers';
 import {
+  hasRentalDomainData,
   pricePeriodOptions,
   pricePeriodLabel,
   rentalDurationOptions,
@@ -155,7 +156,7 @@ function listingPath(id: string) {
 }
 
 function priceAmount(listing: Listing) {
-  if (listing.priceAmount === null || !listing.currency) return 'Precio a consultar';
+  if (!hasRentalDomainData(listing)) return 'Precio a consultar';
   const amount = new Intl.NumberFormat('es-AR', { style: 'currency', currency: listing.currency, maximumFractionDigits: 0 }).format(listing.priceAmount);
   return `${listing.currency} ${amount}`;
 }

@@ -26,6 +26,11 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
   await expect(page.getByRole('heading', { name: 'Alojamientos para explorar' })).toBeVisible();
   await expect(page.locator('.listing-card')).toHaveCount(6);
   await expect(page.locator('.listing-card').first()).toContainText('ARS');
+  const incompleteRentalCard = page.locator('.listing-card').filter({
+    has: page.getByRole('heading', { name: 'Refugio de Muestra' }),
+  });
+  await expect(incompleteRentalCard.locator('.listing-price')).toContainText('Precio a consultar');
+  await expect(incompleteRentalCard.locator('.listing-price')).not.toContainText('45.000');
   const leadPhoto = page.locator('.listing-card-photo img').first();
   await expect(leadPhoto).toBeVisible();
   await expect.poll(() => leadPhoto.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);

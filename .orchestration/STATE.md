@@ -1426,3 +1426,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Fix `62506f2a0a32d2089d1f73fb2c73accdf99217c0` superó Controller delegado separado (PASS exact delta, sin P0/P1/P2; GPT-6 Luna/High/read-only solicitados; exit 0; backend UNVERIFIED). Evidencia: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-62506F2-PASS.md`.
 - Los checks `worker` y `web` del PR #39 sobre este SHA están SUCCESS. La review automática GitHub de este SHA está en progreso al registrar el evento; el hilo P2 `4320588628` se resolverá después de verificar que el resultado final no añade defectos.
 - **READY_TO_RESUME:** verificar review exacta y conversaciones, resolver el hilo ya corregido, validator/Pre-Critic final y protección/mergeabilidad; luego integrar PR #39 mediante merge protegido. No empezar I06.5.
+
+
+## Event 180 — P2 de precio incompleto corregido
+
+- La review automática de PR #39 HEAD `eab7813` detectó P2 `4320628608`: el catálogo presentaba importe sin periodicidad/duración/capacidad cuando la ficha lo mostraba pendiente.
+- Catálogo reutiliza `hasRentalDomainData`; el seed sintético ahora cubre importe+moneda con periodicidad/capacidad faltantes y Playwright exige “Precio a consultar” sin monto ambiguo. Worker runtime/API sin cambios. Evidencia: `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-4320628608.md`.
+- Typecheck PASS y suite pública Playwright 4/4 en 3.5m sobre D1 sintética local (carga elevada del host); capturas desktop/mobile siguen siendo reales y corresponden a la misma composición visual.
+- Ambos P2 (`4320588628`, `4320628608`) están corregidos en el árbol local, pero los hilos/review de GitHub siguen pendientes para nuevo HEAD. El Controller PASS anterior cubre solo el primer rework y debe renovarse por el cambio de precio/fixture.
+- **READY_TO_RESUME:** congelar el arreglo consolidado, nuevo Controller read-only exacto, GitHub checks/review, resolver hilos, validator/Pre-Critic y merge protegido. No empezar I06.5.
