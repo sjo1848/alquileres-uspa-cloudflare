@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { apiUrl, ApiError, request } from '../api';
 import {
   availabilityLabel,
-  availabilityQuery,
+  formatConfirmationDate,
   freshnessLabel,
   freshnessMarker,
   type AvailabilityStatus,
   type FreshnessStatus,
 } from './availability-helpers';
 import {
-  formatRentalPrice,
+  hasRentalDomainData,
   pricePeriodOptions,
+  pricePeriodLabel,
   rentalDurationOptions,
   rentalDurationLabel,
   type Currency,
@@ -19,7 +21,6 @@ import {
   type RentalDuration,
 } from './rental-domain';
 
-type Image = { id: string; contentType: string; url?: string };
 type Listing = {
   id: string;
   title: string;
@@ -31,77 +32,103 @@ type Listing = {
   maxOccupants: number | null;
   currency: Currency | null;
   domainDataStatus: 'COMPLETE' | 'MISSING';
-  images: Image[];
+  images: { id: string; contentType: string; url?: string }[];
   availabilityStatus: AvailabilityStatus;
   lastConfirmedAt: string | null;
   freshnessStatus: FreshnessStatus;
 };
-type Page = {
-  items: Listing[];
-  page: number;
-  pageSize: number;
-  totalItems: number;
-  totalPages: number;
-};
+type Page = { items: Listing[]; page: number; pageSize: number; totalItems: number; totalPages: number };
+const route = useRoute();
+const router = useRouter();
 const filters = reactive({
-  location: '',
-  minPriceAmount: '',
-  maxPriceAmount: '',
-  currency: '' as Currency | '',
-  pricePeriod: '' as PricePeriod | '',
-  rentalDuration: '' as RentalDuration | '',
-  maxOccupants: '',
-  soloDisponibles: false,
+  location: '', minPriceAmount: '', maxPriceAmount: '', currency: '' as Currency | '',
+  pricePeriod: '' as PricePeriod | '', rentalDuration: '' as RentalDuration | '',
+  maxOccupants: '', soloDisponibles: false,
 });
+const advancedOpen = ref(false);
 const page = ref<Page | null>(null);
 const loading = ref(false);
 const error = ref('');
-const failedPage = ref(1);
 const failedImages = ref(new Set<string>());
-const pageSize = 20;
-const query = (pageNumber: number) =>
-  new URLSearchParams(
-    Object.entries({
-      location: filters.location,
-      minPriceAmount: filters.minPriceAmount,
-      maxPriceAmount: filters.maxPriceAmount,
-      currency: filters.currency,
-      pricePeriod: filters.pricePeriod,
-      rentalDuration: filters.rentalDuration,
-      maxOccupants: filters.maxOccupants,
-      ...availabilityQuery(filters.soloDisponibles),
-      page: pageNumber,
-      pageSize,
-    }).filter(([, value]) => value !== '') as string[][],
-  ).toString();
-let searchSequence = 0;
-async function search(pageNumber = 1) {
-  const sequence = ++searchSequence;
-  failedPage.value = pageNumber;
+const pageSize = 6;
+let requestSequence = 0;
+let activeRequest: AbortController | undefined;
+
+const activeFilterCount = computed(() => [
+  filters.minPriceAmount, filters.maxPriceAmount, filters.currency, filters.pricePeriod,
+  filters.rentalDuration, filters.maxOccupants, filters.soloDisponibles ? 'true' : '',
+].filter(Boolean).length);
+const pageFromRoute = () => Math.max(1, Math.min(10_000, Number(route.query.page ?? 1) || 1));
+
+function routeValue(value: unknown) {
+  return typeof value === 'string' ? value : '';
+}
+
+function syncFiltersFromRoute() {
+  filters.location = routeValue(route.query.location);
+  filters.minPriceAmount = routeValue(route.query.minPriceAmount);
+  filters.maxPriceAmount = routeValue(route.query.maxPriceAmount);
+  filters.currency = routeValue(route.query.currency) as Currency | '';
+  filters.pricePeriod = routeValue(route.query.pricePeriod) as PricePeriod | '';
+  filters.rentalDuration = routeValue(route.query.rentalDuration) as RentalDuration | '';
+  filters.maxOccupants = routeValue(route.query.maxOccupants);
+  filters.soloDisponibles = route.query.availableOnly === 'true';
+  advancedOpen.value = activeFilterCount.value > 0;
+}
+
+function paramsForPage(pageNumber: number) {
+  const values: Record<string, string> = {
+    location: filters.location.trim(), minPriceAmount: filters.minPriceAmount,
+    maxPriceAmount: filters.maxPriceAmount, currency: filters.currency,
+    pricePeriod: filters.pricePeriod, rentalDuration: filters.rentalDuration,
+    maxOccupants: filters.maxOccupants,
+    availableOnly: filters.soloDisponibles ? 'true' : '', page: String(pageNumber), pageSize: String(pageSize),
+  };
+  return Object.fromEntries(Object.entries(values).filter(([key, value]) => value !== '' && !(key === 'page' && value === '1')));
+}
+
+async function loadPage(pageNumber = pageFromRoute()) {
+  const sequence = ++requestSequence;
+  activeRequest?.abort();
+  const controller = new AbortController();
+  activeRequest = controller;
   loading.value = true;
   error.value = '';
+  const params = new URLSearchParams(paramsForPage(pageNumber));
   try {
-    const result = await request<Page>(`/public/listings?${query(pageNumber)}`);
-    if (sequence !== searchSequence) return;
+    const result = await request<Page>(`/public/listings?${params}`, { signal: controller.signal });
+    if (sequence !== requestSequence) return;
+    const lastPage = Math.max(1, result.totalPages);
+    if (pageNumber > lastPage) {
+      const query = { ...route.query };
+      if (lastPage === 1) delete query.page;
+      else query.page = String(lastPage);
+      await router.replace({ path: '/', query });
+      return;
+    }
     page.value = result;
     failedImages.value = new Set();
-  } catch (e) {
-    if (sequence !== searchSequence) return;
-    error.value =
-      e instanceof ApiError ? e.message : 'No pudimos cargar el catálogo.';
+  } catch (cause) {
+    if (sequence !== requestSequence || controller.signal.aborted) return;
+    error.value = cause instanceof ApiError ? cause.message : 'No pudimos cargar los alojamientos.';
   } finally {
-    if (sequence === searchSequence) loading.value = false;
+    if (sequence === requestSequence) loading.value = false;
   }
 }
-function imageUrl(listing: Listing) {
-  const image = listing.images[0];
-  return image
-    ? image.url ?? apiUrl(`/public/listings/${listing.id}/images/${image.id}`)
-    : '';
+
+async function navigateToResults(pageNumber = 1) {
+  const query = paramsForPage(pageNumber);
+  const current = new URLSearchParams(Object.entries(route.query).flatMap(([key, value]) =>
+    typeof value === 'string' ? [[key, value]] : [],
+  ));
+  const next = new URLSearchParams(query);
+  if (current.toString() === next.toString()) {
+    await loadPage(pageNumber);
+    return;
+  }
+  await router.push({ path: '/', query });
 }
-function imageFailed(listingId: string) {
-  failedImages.value = new Set(failedImages.value).add(listingId);
-}
+
 function resetFilters() {
   filters.location = '';
   filters.minPriceAmount = '';
@@ -111,210 +138,134 @@ function resetFilters() {
   filters.rentalDuration = '';
   filters.maxOccupants = '';
   filters.soloDisponibles = false;
-  void search();
+  advancedOpen.value = false;
+  void navigateToResults(1);
 }
-void search();
+
+function toggleAdvanced(event: Event) {
+  advancedOpen.value = (event.currentTarget as HTMLDetailsElement).open;
+}
+
+function imageUrl(listing: Listing) {
+  const image = listing.images[0];
+  return image ? image.url ?? apiUrl(`/public/listings/${listing.id}/images/${image.id}`) : '';
+}
+
+function listingPath(id: string) {
+  return { path: `/listings/${encodeURIComponent(id)}`, query: { ...route.query } };
+}
+
+function priceAmount(listing: Listing) {
+  if (!hasRentalDomainData(listing)) return 'Precio a consultar';
+  const amount = new Intl.NumberFormat('es-AR', { style: 'currency', currency: listing.currency, maximumFractionDigits: 0 }).format(listing.priceAmount);
+  return `${listing.currency} ${amount}`;
+}
+
+function imageFailed(listingId: string) {
+  failedImages.value = new Set(failedImages.value).add(listingId);
+}
+
+watch(() => route.query, () => {
+  syncFiltersFromRoute();
+  void loadPage();
+}, { immediate: true });
 </script>
+
 <template>
-  <section class="hero">
-    <p class="eyebrow">BUSCADOR</p>
-    <h1>Encontrá tu próximo alquiler</h1>
-    <p>Publicaciones en Uspallata, con información de disponibilidad.</p>
-  </section>
-  <form class="filters card" @submit.prevent="search()">
-    <h2>Filtrar publicaciones</h2>
-    <label
-      >Ubicación
-      <input
-        v-model="filters.location"
-        name="location"
-        autocomplete="address-level2"
-    /></label>
-    <label
-      >Importe mínimo
-      <input
-        v-model="filters.minPriceAmount"
-        name="minPriceAmount"
-        type="number"
-        min="0"
-    /></label>
-    <label
-      >Importe máximo
-      <input
-        v-model="filters.maxPriceAmount"
-        name="maxPriceAmount"
-        type="number"
-        min="0"
-    /></label>
-    <label
-      >Moneda<select v-model="filters.currency" name="currency">
-        <option value="">Cualquier moneda</option>
-        <option value="ARS">Pesos argentinos (ARS)</option>
-        <option value="USD">Dólares estadounidenses (USD)</option>
-      </select></label
-    >
-    <label
-      >Periodicidad<select v-model="filters.pricePeriod" name="pricePeriod">
-        <option value="">Cualquier periodicidad</option>
-        <option
-          v-for="option in pricePeriodOptions"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.label }}
-        </option>
-      </select></label
-    >
-    <label
-      >Duración<select v-model="filters.rentalDuration" name="rentalDuration">
-        <option value="">Cualquier duración</option>
-        <option
-          v-for="option in rentalDurationOptions"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.label }}
-        </option>
-      </select></label
-    >
-    <label
-      >Ocupantes máximos
-      <input
-        v-model="filters.maxOccupants"
-        name="maxOccupants"
-        type="number"
-        min="1"
-    /></label>
-    <label class="availability-filter">
-      <input
-        v-model="filters.soloDisponibles"
-        name="soloDisponibles"
-        type="checkbox"
-      />
-      Solo disponibles
-    </label>
-    <button type="submit" :disabled="loading">
-      {{ loading ? 'Buscando…' : 'Buscar' }}
-    </button>
-    <button
-      type="button"
-      class="secondary"
-      :disabled="loading"
-      @click="resetFilters"
-    >
-      Restablecer filtros
-    </button>
-  </form>
-  <div v-if="error" class="error-state" role="alert">
-    <p class="error">{{ error }}</p>
-    <p v-if="page" class="previous-results" role="status">
-      Mostrando los resultados anteriores.
-    </p>
-    <button type="button" class="inline-retry" @click="search(failedPage)">
-      Reintentar búsqueda
-    </button>
-  </div>
-  <p v-if="loading" aria-live="polite">Cargando publicaciones…</p>
-  <template v-else-if="page">
-    <p aria-live="polite">
-      {{ page.totalItems }} {{ page.totalItems === 1 ? 'propiedad encontrada' : 'propiedades encontradas' }}.
-    </p>
-    <section
-      v-if="page.items.length"
-      class="listing-grid"
-      aria-label="Publicaciones disponibles"
-    >
-      <article
-        v-for="listing in page.items"
-        :key="listing.id"
-        class="card listing-card"
-      >
-        <div
-          v-if="imageUrl(listing) && !failedImages.has(listing.id)"
-          class="listing-image"
-        >
-          <img
-            :src="imageUrl(listing)"
-            :alt="`Imagen de ${listing.title} en ${listing.location}`"
-            @error="imageFailed(listing.id)"
-          />
-        </div>
-        <div
-          v-else
-          class="image-placeholder"
-          role="img"
-          :aria-label="`Sin imagen disponible para ${listing.title}`"
-        >
-          🏔️
-        </div>
-        <p class="eyebrow">{{ listing.location }}</p>
-        <h2>{{ listing.title }}</h2>
-        <p>{{ listing.description }}</p>
-        <p class="rental-summary">{{ formatRentalPrice(listing) }}</p>
-        <p v-if="listing.domainDataStatus === 'COMPLETE'">
-          Duración: {{ rentalDurationLabel(listing.rentalDuration) }}
-        </p>
-        <div class="availability-summary" aria-label="Disponibilidad">
-          <p
-            class="status"
-            :class="[
-              listing.availabilityStatus === 'AVAILABLE'
-                ? 'available'
-                : 'unavailable',
-              listing.freshnessStatus !== 'FRESH'
-                ? 'availability-unconfirmed'
-                : '',
-            ]"
-          >
-            {{
-              availabilityLabel(
-                listing.availabilityStatus,
-                listing.freshnessStatus,
-              )
-            }}
-          </p>
-          <p
-            class="freshness"
-            :class="`freshness-${listing.freshnessStatus.toLowerCase()}`"
-          >
-            <span aria-hidden="true">{{
-              freshnessMarker(listing.freshnessStatus)
-            }}</span>
-            {{
-              freshnessLabel(listing.freshnessStatus, listing.lastConfirmedAt)
-            }}
-          </p>
-        </div>
-        <RouterLink class="button-link" :to="`/listings/${listing.id}`"
-          >Ver ficha</RouterLink
-        >
-      </article>
+  <div class="catalog-page">
+    <section class="catalog-intro" aria-labelledby="catalog-title">
+      <p class="eyebrow">Alojamientos · Uspallata, Mendoza</p>
+      <div class="catalog-intro-copy">
+        <h1 id="catalog-title">Una pausa entre la montaña y el cielo.</h1>
+        <p>Explorá alquileres en el valle. Compará sus detalles y consultá directamente a cada propietario.</p>
+      </div>
+      <div class="catalog-intro-note" aria-label="Información del catálogo">
+        <span aria-hidden="true">⌖</span><span>Valle de Uspallata</span>
+      </div>
     </section>
-    <p v-else class="card" role="status">
-      No encontramos publicaciones con esos filtros.
-    </p>
-    <nav
-      v-if="page.totalPages > 1"
-      class="pagination"
-      aria-label="Paginación del catálogo"
-    >
-      <button
-        type="button"
-        :disabled="loading || page.page <= 1"
-        @click="search(page.page - 1)"
-      >
-        Anterior
-      </button>
-      <span aria-live="polite"
-        >Página {{ page.page }} de {{ page.totalPages }}</span
-      >
-      <button
-        type="button"
-        :disabled="loading || page.page >= page.totalPages"
-        @click="search(page.page + 1)"
-      >
-        Siguiente
-      </button>
-    </nav>
-  </template>
+
+    <section class="search-panel" aria-labelledby="search-title">
+      <h2 id="search-title">¿Dónde querés quedarte?</h2>
+      <form class="catalog-search" @submit.prevent="navigateToResults(1)">
+        <label class="search-location" for="filter-location">
+          <span>Ubicación</span>
+          <input id="filter-location" v-model="filters.location" name="location" autocomplete="address-level2" placeholder="Uspallata y alrededores" />
+        </label>
+        <label class="quick-availability" for="filter-available">
+          <input id="filter-available" v-model="filters.soloDisponibles" name="soloDisponibles" type="checkbox" />
+          <span>Último registro disponible</span>
+        </label>
+        <button type="submit" class="search-submit" :aria-busy="loading">
+          <span aria-hidden="true">⌕</span> {{ loading ? 'Actualizando…' : 'Buscar alojamientos' }}
+        </button>
+        <details class="advanced-filters" :open="advancedOpen" @toggle="toggleAdvanced">
+          <summary>Más filtros <span v-if="activeFilterCount" class="filter-count">{{ activeFilterCount }}</span></summary>
+          <div class="advanced-filter-grid">
+            <label for="filter-min-price">Precio mínimo<input id="filter-min-price" v-model="filters.minPriceAmount" name="minPriceAmount" type="number" min="0" inputmode="numeric" /></label>
+            <label for="filter-max-price">Precio máximo<input id="filter-max-price" v-model="filters.maxPriceAmount" name="maxPriceAmount" type="number" min="0" inputmode="numeric" /></label>
+            <label for="filter-currency">Moneda<select id="filter-currency" v-model="filters.currency" name="currency"><option value="">Cualquier moneda</option><option value="ARS">Pesos argentinos (ARS)</option><option value="USD">Dólares estadounidenses (USD)</option></select></label>
+            <label for="filter-period">Periodicidad<select id="filter-period" v-model="filters.pricePeriod" name="pricePeriod"><option value="">Cualquiera</option><option v-for="option in pricePeriodOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
+            <label for="filter-duration">Duración<select id="filter-duration" v-model="filters.rentalDuration" name="rentalDuration"><option value="">Cualquiera</option><option v-for="option in rentalDurationOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
+            <label for="filter-occupants">Personas<input id="filter-occupants" v-model="filters.maxOccupants" name="maxOccupants" type="number" min="1" step="1" inputmode="numeric" placeholder="Cualquier capacidad" /></label>
+          </div>
+          <div class="filter-actions"><button type="submit" class="secondary">Aplicar filtros</button><button type="button" class="text-button" @click="resetFilters">Limpiar</button></div>
+        </details>
+      </form>
+    </section>
+
+    <section class="catalog-results" aria-labelledby="results-title" :aria-busy="loading">
+      <div class="results-heading">
+        <div><p class="eyebrow">El valle te espera</p><h2 id="results-title">Alojamientos para explorar</h2></div>
+        <p v-if="page" class="result-count" aria-live="polite">{{ page.totalItems }} {{ page.totalItems === 1 ? 'alojamiento' : 'alojamientos' }}</p>
+      </div>
+
+      <div v-if="loading && !page" class="catalog-loading" role="status" aria-live="polite">
+        <span class="loading-mark" aria-hidden="true"></span><p>Buscando lugares para tu estadía…</p>
+      </div>
+      <div v-if="error" class="catalog-message error-state" role="alert">
+        <div><strong>No pudimos actualizar el catálogo.</strong><p>{{ error }}<span v-if="page"> Conservamos los resultados anteriores.</span></p></div>
+        <button type="button" class="secondary" @click="loadPage()">Reintentar</button>
+      </div>
+      <div v-else-if="loading && page" class="catalog-refresh" role="status" aria-live="polite">Actualizando resultados…</div>
+
+      <template v-if="page">
+        <div v-if="page.items.length" class="listing-grid" :class="{ 'is-refreshing': loading }" aria-label="Resultados de alojamientos">
+          <article v-for="listing in page.items" :key="listing.id" class="listing-card">
+            <RouterLink class="listing-card-photo" :to="listingPath(listing.id)" :aria-label="`Ver fotos y detalles de ${listing.title}`">
+              <img v-if="imageUrl(listing) && !failedImages.has(listing.id)" :src="imageUrl(listing)" :alt="`Imagen de ${listing.title}, ${listing.location}`" loading="lazy" decoding="async" @error="imageFailed(listing.id)" />
+              <span v-else class="photo-placeholder" role="img" :aria-label="`Imagen no disponible para ${listing.title}`"><span aria-hidden="true">⌁</span><small>Uspallata</small></span>
+              <span class="photo-location">{{ listing.location }}</span>
+            </RouterLink>
+            <div class="listing-card-content">
+              <h3><RouterLink :to="listingPath(listing.id)">{{ listing.title }}</RouterLink></h3>
+              <p class="listing-description">{{ listing.description }}</p>
+              <div class="listing-meta" aria-label="Características">
+                <span v-if="listing.maxOccupants">Hasta {{ listing.maxOccupants }} {{ listing.maxOccupants === 1 ? 'persona' : 'personas' }}</span>
+                <span v-else>Capacidad a consultar</span>
+                <span v-if="listing.domainDataStatus === 'COMPLETE'">{{ rentalDurationLabel(listing.rentalDuration) }}</span>
+              </div>
+              <div class="listing-card-bottom">
+                <p class="listing-price"><strong>{{ priceAmount(listing) }}</strong><span v-if="listing.pricePeriod">por {{ pricePeriodLabel(listing.pricePeriod) }}</span></p>
+                <span class="availability-pill" :class="[`availability-${listing.freshnessStatus.toLowerCase()}`, { 'is-unavailable': listing.availabilityStatus === 'UNAVAILABLE' }]">
+                  <span aria-hidden="true">{{ freshnessMarker(listing.freshnessStatus) }}</span>{{ availabilityLabel(listing.availabilityStatus, listing.freshnessStatus) }}
+                </span>
+              </div>
+              <p class="listing-freshness" :class="`freshness-${listing.freshnessStatus.toLowerCase()}`">
+                {{ freshnessLabel(listing.freshnessStatus, listing.lastConfirmedAt) }} · {{ formatConfirmationDate(listing.lastConfirmedAt) }}
+              </p>
+              <RouterLink class="listing-card-cta" :to="listingPath(listing.id)">Conocer el alojamiento <span aria-hidden="true">→</span></RouterLink>
+            </div>
+          </article>
+        </div>
+        <div v-else class="catalog-empty" role="status">
+          <span class="empty-mark" aria-hidden="true">⌖</span><p class="eyebrow">Probemos otro camino</p><h3>No encontramos alojamientos con esos filtros.</h3><p>Ampliá la ubicación o quitá alguno de los filtros para ver más opciones.</p><button type="button" class="secondary" @click="resetFilters">Ver todos los alojamientos</button>
+        </div>
+        <nav v-if="page.totalPages > 1" class="catalog-pagination" aria-label="Páginas de resultados">
+          <button type="button" class="secondary" :disabled="loading || page.page <= 1" @click="navigateToResults(page.page - 1)">← Anterior</button>
+          <span>Página <strong>{{ page.page }}</strong> de {{ page.totalPages }}</span>
+          <button type="button" class="secondary" :disabled="loading || page.page >= page.totalPages" @click="navigateToResults(page.page + 1)">Siguiente →</button>
+        </nav>
+      </template>
+    </section>
+  </div>
 </template>

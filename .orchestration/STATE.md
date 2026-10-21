@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_3_PRECRITIC`
-Active task: `CF-AU-I06.3 — Pre-Critic pass and protected integration`
+Phase: `CF_AU_I06_4_PUBLIC_JOURNEY`
+Active task: `CF-AU-I06.4 — Rediseño de catálogo, filtros, ficha y consulta pública`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1377,3 +1377,78 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - P2 `4319177226` señaló `current_functional_increment.github_review` desactualizado como PENDING a pesar del review exacto `6cb22f9` y Pre-Critic PASS. Se actualizó a COMPLETE, con SHA, unresolved=false y cero conversaciones abiertas; `next_action` permanece en merge protegido.
 - HEAD observado al crear este checkpoint: `aafe0d9e8b28b38b7ba668bee9e69819ff50f485`, solo estado/evidencia posterior al candidato ejecutable `26fd638`. El Controller y review siguen referenciados por SHA exacto `6cb22f9`.
 - **READY_TO_RESUME:** validar protección/checks/review del nuevo checkpoint de solo estado y, con todo verde, merge protegido PR #38 preservando historia.
+
+
+## Event 174 — I06.3 integrado; I06.4 público autorizado e iniciado
+
+- PR #38 quedó integrado con protección de `main` en merge commit `cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`; Issue #30 se cerró con evidencia. `STATUS.json` de ese merge retenía de forma obsoleta I06.3 como PRECRITIC y PR #38 como OPEN; este evento y la actualización activa de STATUS reconcilian ambos hechos dentro del PR funcional I06.4 (#31), sin PR documental.
+- I06.4 autorizado por Issue #31 desde exactamente `main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`, basado en la dirección híbrida C aprobada en #29. Contrato activo: `.orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md`.
+- Alcance exclusivamente público: catálogo, filtros y paginación, ficha y consulta real local. Incluye corrección/regresión mobile del formulario público #35. El formulario ADMIN de #35 seguirá pendiente para #33. No implementar #32/#33.
+- Rama activa: `work/i06-catalog-public`. Primer corte de frontend conectado a APIs existentes y seed sintético iniciado; todavía no es candidato consolidado, ni pasa QA, Controller, GitHub o Pre-Critic.
+- **READY_TO_RESUME:** terminar las pruebas Playwright de recorrido público (incluidas 1440/390/320 y envío/idempotencia), corregir cualquier defecto reproducido, ejecutar validación focalizada final y actualizar esta evidencia antes del PR funcional. No modificar Worker API/reglas, Preview/Access, producción, servicios pagos, R2, datos reales ni el repositorio fuente. Detenerse tras el cierre de I06.4 antes de I06.5.
+
+
+## Event 175 — recorrido público I06.4 consolidado localmente
+
+- El catálogo Vue consume `/public/listings`; filtros progresivos y página viajan en URL y sobreviven navegación a ficha/retorno. Búsquedas anteriores se abortan y descartan por generación. Cards informan precio con moneda/periodicidad explícita, capacidad y estado/frescura sin promesa de reserva; fotos sintéticas WebP del repositorio usan Workers Static Assets.
+- Ficha usa la API existente, presenta galería/fallback y consulta HTTP real. Fallo de red mantiene datos; retry de mismo payload reutiliza `Idempotency-Key`. No cambió Worker runtime/API, autorización, disponibilidad ni base D1.
+- #35 público corregido con fieldset/labels semánticos; Playwright midió separación de labels/inputs a 390×844 y 320×844. ADMIN form no fue tocado; #35 sigue abierto hasta #33.
+- QA local final: Web typecheck/build PASS; Worker typecheck PASS; catálogo 7/7; contacto 6/6; Playwright 3/3 en 33s con D1 local sintética, cubriendo filtros/paginación/retorno, slow-response race, loading/error/retry/empty/detail retry/imagen rota, consulta HTTP 201/idempotencia, keyboard/foco, contraste y 1440/390/320. Capturas y pasos: `output/playwright/i06.4/QA.md`.
+- `npm run seed:local` aplica el seed sintético en la D1 Wrangler `--local`; ningún comando remoto/Preview fue usado.
+- **READY_TO_RESUME:** candidato ejecutable `26742649e37243cba9e48434889f8df10d4d3d67` consolidado y revisado; falta publicar PR funcional, procesar checks/review GitHub, completar Pre-Critic final y merge protegido. No iniciar #32/#33 ni I06.5.
+
+
+## Event 176 — Controller PASS exacto y candidato I06.4 listo para GitHub
+
+- Controller `delegated_codex_separate_process` devolvió PASS para el alcance público, sin P0/P1/P2, sobre commit `26742649e37243cba9e48434889f8df10d4d3d67`, base canónica `cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`. Proceso separado `codex exec`, modelo solicitado `gpt-6-luna`, esfuerzo `high`, `--sandbox read-only`; sesión `01a156e9-b0e0-7ba3-92ea-6aa5e7d361d9`. La configuración CLI fue aceptada y el proceso completó; identidad de backend no expuesta (UNVERIFIED), sin atestación criptográfica. Informe íntegro y límites: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-2674264-PASS.md`.
+- El Controller inspeccionó contrato, código y tests, verificó scripts/evidencia por inspección y no ejecutó pruebas ni escribió archivos. Confirmó API existente, filtros/URL/paginación, descarte de respuestas antiguas, semántica de disponibilidad, fallback de imágenes, contacto HTTP/idempotencia, cobertura Playwright y alcance.
+- Pre-Critic: PASS únicamente para publicar el candidato consolidado en el PR funcional I06.4 y solicitar checks `worker`/`web` más una review GitHub consolidada sobre el HEAD final. No autoriza merge por sí solo.
+- **READY_TO_RESUME:** publicar la rama funcional y abrir PR enlazado a #31. Esperar checks/review exactos; resolver hallazgos materiales en el mismo PR, aplicar validator/Pre-Critic y merge solo con protección de `main`. Detenerse antes de I06.5.
+
+
+## Event 177 — PR funcional I06.4 abierto
+
+- PR #39 (`https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39`) abierto desde `work/i06-catalog-public` contra `main`; initial HEAD `011e470088ae7eccdb97dae74e659f73e4d7e97f`. El código ejecutable revisado por Controller sigue siendo exactamente `26742649e37243cba9e48434889f8df10d4d3d67`; los commits siguientes contienen únicamente evidencia/canonical state.
+- El merge depende de checks obligatorios `worker`/`web` en el HEAD final, review consolidada, cero conversaciones pendientes y protecciones vigentes. #31 se cierra con evidencia después del merge; #35 queda parcialmente abierta por el formulario ADMIN pendiente de #33.
+- **READY_TO_RESUME:** obtener el HEAD y resultados actuales de PR #39; resolver defectos materiales del mismo PR; correr validator/Pre-Critic final y fusionar protegido cuando sea elegible. No comenzar #32/#33 ni I06.5.
+
+
+## Event 178 — P2 de página de catálogo fuera de rango corregido
+
+- La review GitHub exact-head del PR #39 (`0f593ddfa1464d22d99841af4bbf19fd57ccbc58`) encontró P2 `4320588628`: una URL page=2 con filtros que ahora producen una sola página ocultaba alojamientos válidos. Evidencia y reparación: `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-4320588628.md`.
+- `HomeView.vue` reemplaza la ruta por la última página válida manteniendo los filtros y vuelve a consultar. Playwright agregó regresión contra D1 local sintética. Web typecheck PASS; Playwright 4/4 en 38.2s, incluyendo las pruebas previas.
+- El PASS del Controller anterior cubre el candidato previo y ya no es suficiente para el código modificado. Pre-Critic vuelve a PENDING hasta nueva revisión exact-SHA y nueva review/checks GitHub del mismo PR.
+- **READY_TO_RESUME:** consolidar el fix y evidencia, solicitar Controller read-only exacto, procesar los controles que GitHub dispara en el nuevo HEAD y cerrar el hilo P2; luego Pre-Critic y merge protegido. No iniciar #32/#33 ni I06.5.
+
+
+## Event 179 — rework P2 Controller PASS; GitHub exact-head review pendiente
+
+- Fix `62506f2a0a32d2089d1f73fb2c73accdf99217c0` superó Controller delegado separado (PASS exact delta, sin P0/P1/P2; GPT-6 Luna/High/read-only solicitados; exit 0; backend UNVERIFIED). Evidencia: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-62506F2-PASS.md`.
+- Los checks `worker` y `web` del PR #39 sobre este SHA están SUCCESS. La review automática GitHub de este SHA está en progreso al registrar el evento; el hilo P2 `4320588628` se resolverá después de verificar que el resultado final no añade defectos.
+- **READY_TO_RESUME:** verificar review exacta y conversaciones, resolver el hilo ya corregido, validator/Pre-Critic final y protección/mergeabilidad; luego integrar PR #39 mediante merge protegido. No empezar I06.5.
+
+
+## Event 180 — P2 de precio incompleto corregido
+
+- La review automática de PR #39 HEAD `eab7813` detectó P2 `4320628608`: el catálogo presentaba importe sin periodicidad/duración/capacidad cuando la ficha lo mostraba pendiente.
+- Catálogo reutiliza `hasRentalDomainData`; el seed sintético ahora cubre importe+moneda con periodicidad/capacidad faltantes y Playwright exige “Precio a consultar” sin monto ambiguo. Worker runtime/API sin cambios. Evidencia: `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-4320628608.md`.
+- Typecheck PASS y suite pública Playwright 4/4 en 3.5m sobre D1 sintética local (carga elevada del host); capturas desktop/mobile siguen siendo reales y corresponden a la misma composición visual.
+- Ambos P2 (`4320588628`, `4320628608`) están corregidos en el árbol local, pero los hilos/review de GitHub siguen pendientes para nuevo HEAD. El Controller PASS anterior cubre solo el primer rework y debe renovarse por el cambio de precio/fixture.
+- **READY_TO_RESUME:** congelar el arreglo consolidado, nuevo Controller read-only exacto, GitHub checks/review, resolver hilos, validator/Pre-Critic y merge protegido. No empezar I06.5.
+
+
+## Event 181 — P2 de capacidad mayor a seis corregido
+
+- GitHub review exacta de PR #39 HEAD `3d0662d` encontró P2 `4343003402`: el control fijo 1–6 impedía solicitar capacidades mayores aunque el API las acepta.
+- El filtro ahora es entrada numérica positiva sin tope artificial. Playwright confirma envío `maxOccupants=8`, estado vacío honesto con el inventario sintético actual y recuperación de 4 resultados al volver a capacidad 4. Typecheck PASS; suite pública local 4/4 en 1.5m, incluida regresión de precios incompletos, paginación guardada y contacto #35.
+- Tres P2 GitHub están corregidos y documentados en `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-{4320588628,4343003402}.md`; no se tocaron Worker runtime/API ni alcance OWNER/ADMIN.
+- **READY_TO_RESUME:** congelar candidato consolidado, Controller exacto read-only, checks/review GitHub exactos y cierre de hilos, final Pre-Critic/merge protegido. No iniciar I06.5.
+
+
+## Event 182 — tres P2 corregidos; controles PASS sobre candidato ejecutable
+
+- PR #39 candidato ejecutable `6891e618e3a30fcfb00aef2adfa3c3883c03d4b4` incluye los tres reworks de review: page out-of-range preserva filtros (`4320588628`), datos incompletos no muestran precio ambiguo (`4320628608`) y la capacidad acepta búsquedas >6 (`4343003402`). Regresiones Playwright consolidadas: 4/4; Web typecheck PASS; worker/web CI SUCCESS; review GitHub exacta de `6891e61` completó sin hallazgos nuevos.
+- Los tres hilos P2 fueron respondidos con evidencia y resueltos. QA local sintética y captura real 1440/390/320: `output/playwright/i06.4/QA.md`.
+- Controller PASS acumulativo: revisión exacta/delta `3d0662d` cubre página+precio, más `6891e61` para capacidad; ambas con modelo GPT-6 Luna/High solicitado y sandbox read-only; backend UNVERIFIED. Informes: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-3D0662D-PASS.md` y `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-6891E61-PASS.md`; PASS original `2674264` conserva el resto del candidato.
+- Pre-Critic: **PASS para merge protegido después de registrar los informes y volver a verificar checks/review del checkpoint final evidencia-only**, sin cambios ejecutables. No quedan cambios de producto/alcance pendientes en I06.4. Sin despliegue/Preview, gasto, R2, datos reales ni source repo.
+- **READY_TO_RESUME:** commit único de informes/precritic canonical, correr validador y `git diff --check`, esperar los checks/review exactos que dispare ese HEAD, verificar cero conversaciones/protección `main`, y merge protegido PR #39. Luego actualizar/cerrar #31 y comentar Epic #25. Detener antes de I06.5.

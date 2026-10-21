@@ -1,3 +1,29 @@
+## CF-AU-I06.4 — cierre de reworks GitHub; Pre-Critic de integración (2026-10-21)
+
+- Contrato público I06.4, base `main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`, candidato ejecutable final `6891e618e3a30fcfb00aef2adfa3c3883c03d4b4`. Dirección C, #31; #32/#33/I06.5 fuera.
+- Tres hallazgos P2 GitHub corregidos y probados en el mismo PR #39: página guardada fuera del nuevo total; monto sin periodicidad/capacidad; capacidad >6. Evidencias `CF-AU-I06.4-GITHUB-REWORK-4320588628.md`, `...-4320628608.md`, `...-4343003402.md`. Hilos respondidos y resueltos.
+- Web typecheck PASS. Playwright Vue + Worker/Hono + D1 sintética local 4/4 (1.5m), con páginas/filtros, precio incompleto, capacidad 8, contacto/idempotencia, errores/retries, keyboard/focus/contrast y mobile 320/390; capturas runtime desktop/mobile conservadas. Worker tests catalog 7/7 y contact 6/6 anteriores aplican porque Worker runtime/API no cambiaron; CI exacta volvió a correr Worker y Web tras las tres reparaciones.
+- Controller delegated separate-process PASS acumulativo: inicial `2674264`, reparación precio/página `3d0662d`, delta capacidad `6891e61`. GPT-6 Luna/High y `--sandbox read-only` solicitados y aceptados; runtime backend UNVERIFIED. Informes inspeccionables en `evidence/critics/CF-AU-I06.4-CONTROLLER-{2674264,3D0662D,6891E61}-PASS.md`. El Controller no ejecutó pruebas; QA/CI son evidencia separada.
+- Review GitHub exacta sobre `6891e61` finalizó con `has_any_findings=false`, `has_unresolved_findings=false`; CI `worker`/`web` SUCCESS; branch protection observada: required checks strict `worker`,`web`, enforce-admins true, required approvals 0. Mergeable/clean tras review, pero revalidar inmediatamente antes del merge.
+- **Pre-Critic PASS para integración protegida de I06.4 tras un último checkpoint evidencia-only** con tres reportes Controller y esta gate. Ese commit cambiará HEAD y reiniciará checks/review; no modificar código. Requerir PASS de ambos checks, review sin hallazgos ni hilos abiertos, mergeability/protección intactas sobre el nuevo HEAD y validador. Solo entonces hacer merge commit preservando historia. No Preview, despliegue, gasto, real data, R2, OWNER/ADMIN, source writes ni producción.
+
+## CF-AU-I06.4 — P2 de página fuera de rango; review del rework (2026-10-19)
+
+- GitHub exact-head review del PR #39 sobre `0f593ddfa1464d22d99841af4bbf19fd57ccbc58` encontró P2 `4320588628`: una URL guardada en página 2 podía ocultar resultados si los filtros solo devolvían una página. Reparación y regresión constan en `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-4320588628.md`.
+- El frontend normaliza la URL a la última página válida manteniendo filtros. Web typecheck PASS y Playwright público 4/4 en 38.2s con D1 local sintética. Capturas previas siguen válidas (el cambio no altera visuales).
+- Controller delegado separado examinó el delta exacto y emitió PASS: SHA `62506f2a0a32d2089d1f73fb2c73accdf99217c0`, base `cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`, thread `01a156f1-eb28-7b33-a14b-de8ffc09319b`, modelo solicitado `gpt-6-luna`/High y `--sandbox read-only`; backend UNVERIFIED. Reporte: `evidence/critics/CF-AU-I06.4-CONTROLLER-62506F2-PASS.md`.
+- PR #39 HEAD `62506f2`: required `worker` y `web` checks SUCCESS. GitHub automática está revisando ese mismo SHA; revisar completion, hallazgos y hilos antes de integración. Branch protection observada strict, checks `worker`/`web`, enforce admins true.
+- **Gate aún PENDING:** Controller y tests locales PASS; se necesita review GitHub exact-head completa, cero conversaciones abiertas, validator/Pre-Critic final y verificar mergeability/protección en el HEAD final. La nueva evidencia/canonical checkpoint añadida después de `62506f2` no modifica código ejecutable y debe volver a pasar los checks/review de GitHub. No merge hasta entonces.
+
+## CF-AU-I06.4 — candidato consolidado para review GitHub (2026-10-19)
+
+- Contrato activo `.orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md`; base autorizada `main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e`; candidato ejecutable `26742649e37243cba9e48434889f8df10d4d3d67`.
+- Código y evidencia local: Vue catálogo/filtros URL/paginación → ficha → consulta HTTP con idempotencia; seis capturas reales 1440/390/320px y `output/playwright/i06.4/QA.md`. Datos D1 e imágenes sintéticos locales. Sin cambios al Worker runtime/API, permisos, Preview, producción, gastos, R2, datos reales, OWNER/ADMIN o source repo. Corrección pública parcial de #35; ADMIN queda para #33.
+- Web typecheck/build, Worker typecheck, catalog tests 7/7, contact tests 6/6, Playwright 3/3 (33 s), consistency validator y `git diff --check`: PASS sobre el candidato ejecutable. Las capturas son runtime y el formulario conserva datos/clave en retry.
+- Controller delegado separado devolvió PASS sobre ese SHA exacto, base exacta; proceso `codex exec`, modelo solicitado `gpt-6-luna`, esfuerzo `high`, `--sandbox read-only`, thread `01a156e9-b0e0-7ba3-92ea-6aa5e7d361d9`. No halló P0/P1/P2. Evidencia `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-2674264-PASS.md`; identidad backend UNVERIFIED.
+- Protecciones verificadas de `main`: required strict checks `worker` y `web`, enforce admins enabled, PR reviews obligatorias = 0. El merge aún debe verificar checks, review, conversaciones y mergeabilidad sobre HEAD final.
+- **Pre-Critic PASS para publicar el candidato en el PR funcional #31 y ejecutar checks `worker`/`web` más una review GitHub consolidada exact-head. No es aprobación de merge.** Si la publicación agrega solo este registro de Controller/gate, el código ejecutable coincide con el SHA revisado; GitHub debe revisar el HEAD completo del PR. Aplicar el validador de nuevo al checkpoint previo al push.
+
 # Mandatory Pre-Critic Gate
 
 ## CF-AU-I04 OWNER + ADMIN-assisted lifecycle consolidated candidate (2026-10-19)
