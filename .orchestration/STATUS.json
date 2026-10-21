@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I06.3 — dirección híbrida C y navegación responsive, PR #38 integrado",
   "last_completed_head": "main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
   "work_branch": "work/i06-catalog-public",
-  "next_action": "Commit consolidated fixes for GitHub P2 findings 4320588628, 4320628608, and 4343003402 plus regressions/evidence; run one final exact-SHA read-only Controller review; obtain new PR #39 worker/web checks and GitHub review, resolve fixed threads, then final consistency validator/Pre-Critic and protected merge. Stop before I06.5.",
+  "next_action": "Persist the cumulative Controller PASS evidence and final Pre-Critic checkpoint on PR #39, revalidate exact resulting HEAD worker/web checks and GitHub review (docs-only commit, executable tree unchanged), then verify protection/threads and protected-merge. After merge, close/update Issue #31 and Epic #25 with evidence; stop before I06.5.",
   "stop_reason": null,
   "event": {
-    "seq": 181,
-    "id": "CF_AU_I06_4_REWORK_CAPACITY_ABOVE_SIX",
-    "type": "THIRD_GITHUB_P2_REPAIRED"
+    "seq": 182,
+    "id": "CF_AU_I06_4_REWORKS_PASS_FINAL_CHECKPOINT_PENDING",
+    "type": "ALL_THREE_P2_REPAIRED_CODE_CONTROLS_PASS"
   },
   "external_review": null,
   "human_gate": {
@@ -28,8 +28,8 @@
     "state": "OPEN",
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39",
     "branch": "work/i06-catalog-public",
-    "last_observed_head": "62506f2a0a32d2089d1f73fb2c73accdf99217c0",
-    "head_source": "Repaired functional candidate plus Controller evidence/canonical checkpoint to be committed; app code reviewed at exact artifact SHA 62506f2.",
+    "last_observed_head": "6891e618e3a30fcfb00aef2adfa3c3883c03d4b4",
+    "head_source": "Executable candidate after all three P2 fixes; final evidence-only checkpoint pending, must revalidate checks/review on its resulting HEAD.",
     "base": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e"
   },
   "issue_4": "CLOSED",
@@ -81,7 +81,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31",
     "contract": ".orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md",
-    "status": "THREE_GITHUB_P2_REPAIRS_CONSOLIDATED_AWAITING_FINAL_CONTROLLER_AND_GITHUB",
+    "status": "EXECUTABLE_CANDIDATE_PASS_AWAITING_FINAL_EVIDENCE_CHECKPOINT",
     "base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
     "branch": "work/i06-catalog-public",
     "scope": "Public Vue journey catalog → filters → listing detail → idempotent contact. Reconcile I06.3 merge drift in this functional PR. No Worker contract, auth, OWNER/ADMIN, Preview, production, paid service, real data or source repository changes.",
@@ -94,26 +94,27 @@
       "worker_contact_workflow": "PASS: 6/6; includes real D1 event, owner inbox, exact replay and payload mismatch",
       "playwright_public": "PASS: 4/4 in 1.5m with local synthetic D1; includes out-of-range page normalization, incomplete price fallback, capacity filter 8, existing public/contact flows and mobile #35.",
       "screenshots": "PASS: six runtime screenshots under output/playwright/i06.4/; synthetic static WebP loaded in browser",
-      "state_preflight": "PASS: python3 scripts/check_orchestration_state.py --base origin/main; git diff --check on committed candidate"
+      "state_preflight": "PASS on candidate and current worktree; final evidence-only checkpoint validation pending before push"
     },
     "controller": {
-      "verdict": "PENDING one final review of consolidated exact candidate including numeric capacity input",
-      "reviewer_kind": "delegated_codex_separate_process",
-      "artifact_sha": "62506f2a0a32d2089d1f73fb2c73accdf99217c0",
+      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC_CUMULATIVE_EXACT_DELTA_REVIEWS",
+      "reviewed_executable_sha": "6891e618e3a30fcfb00aef2adfa3c3883c03d4b4",
       "canonical_base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
+      "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
       "reasoning_effort_requested": "high",
       "sandbox": "read-only explicitly requested and accepted",
       "actual_backend_model_identity": "UNVERIFIED",
-      "session_id": "01a156f1-eb28-7b33-a14b-de8ffc09319b",
-      "process_exit_code": 0,
-      "evidence": ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-62506F2-PASS.md",
-      "findings": "No P0/P1/P2 in exact out-of-range page repair delta"
+      "reports": [
+        ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-3D0662D-PASS.md",
+        ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-6891E61-PASS.md"
+      ],
+      "summary": "Cumulative PASS: exact review of price/page repair at 3d0662d, and exact capacity delta at 6891e61; prior 2674264 PASS covers original implementation."
     },
-    "github_review": "PENDING new PR #39 head review after third P2 fix; findings 4320588628, 4320628608, 4343003402 repaired",
-    "precritic": "PENDING final exact candidate Controller, CI/review, zero open threads",
+    "github_review": "COMPLETE on executable HEAD 6891e618e3a30fcfb00aef2adfa3c3883c03d4b4, no findings; all three P2 threads replied/resolved. Final evidence-only checkpoint will trigger a new exact-head review.",
+    "precritic": "PASS_TO_PROTECTED_MERGE_AFTER_FINAL_EVIDENCE_CHECKPOINT_WORKER_WEB_AND_GITHUB_REVIEW",
     "scope_limits": "Synthetic local D1/Worker only; no Preview/Access change, deployment, production, data real, paid service, R2, source repository write, OWNER #32 or ADMIN #33.",
-    "next_action": "Commit consolidated fixes for GitHub P2 findings 4320588628, 4320628608, and 4343003402 plus regressions/evidence; run one final exact-SHA read-only Controller review; obtain new PR #39 worker/web checks and GitHub review, resolve fixed threads, then final consistency validator/Pre-Critic and protected merge. Stop before I06.5."
+    "next_action": "Persist the cumulative Controller PASS evidence and final Pre-Critic checkpoint on PR #39, revalidate exact resulting HEAD worker/web checks and GitHub review (docs-only commit, executable tree unchanged), then verify protection/threads and protected-merge. After merge, close/update Issue #31 and Epic #25 with evidence; stop before I06.5."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

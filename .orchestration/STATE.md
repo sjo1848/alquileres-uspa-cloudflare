@@ -1443,3 +1443,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - El filtro ahora es entrada numérica positiva sin tope artificial. Playwright confirma envío `maxOccupants=8`, estado vacío honesto con el inventario sintético actual y recuperación de 4 resultados al volver a capacidad 4. Typecheck PASS; suite pública local 4/4 en 1.5m, incluida regresión de precios incompletos, paginación guardada y contacto #35.
 - Tres P2 GitHub están corregidos y documentados en `.orchestration/evidence/CF-AU-I06.4-GITHUB-REWORK-{4320588628,4343003402}.md`; no se tocaron Worker runtime/API ni alcance OWNER/ADMIN.
 - **READY_TO_RESUME:** congelar candidato consolidado, Controller exacto read-only, checks/review GitHub exactos y cierre de hilos, final Pre-Critic/merge protegido. No iniciar I06.5.
+
+
+## Event 182 — tres P2 corregidos; controles PASS sobre candidato ejecutable
+
+- PR #39 candidato ejecutable `6891e618e3a30fcfb00aef2adfa3c3883c03d4b4` incluye los tres reworks de review: page out-of-range preserva filtros (`4320588628`), datos incompletos no muestran precio ambiguo (`4320628608`) y la capacidad acepta búsquedas >6 (`4343003402`). Regresiones Playwright consolidadas: 4/4; Web typecheck PASS; worker/web CI SUCCESS; review GitHub exacta de `6891e61` completó sin hallazgos nuevos.
+- Los tres hilos P2 fueron respondidos con evidencia y resueltos. QA local sintética y captura real 1440/390/320: `output/playwright/i06.4/QA.md`.
+- Controller PASS acumulativo: revisión exacta/delta `3d0662d` cubre página+precio, más `6891e61` para capacidad; ambas con modelo GPT-6 Luna/High solicitado y sandbox read-only; backend UNVERIFIED. Informes: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-3D0662D-PASS.md` y `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-6891E61-PASS.md`; PASS original `2674264` conserva el resto del candidato.
+- Pre-Critic: **PASS para merge protegido después de registrar los informes y volver a verificar checks/review del checkpoint final evidencia-only**, sin cambios ejecutables. No quedan cambios de producto/alcance pendientes en I06.4. Sin despliegue/Preview, gasto, R2, datos reales ni source repo.
+- **READY_TO_RESUME:** commit único de informes/precritic canonical, correr validador y `git diff --check`, esperar los checks/review exactos que dispare ese HEAD, verificar cero conversaciones/protección `main`, y merge protegido PR #39. Luego actualizar/cerrar #31 y comentar Epic #25. Detener antes de I06.5.
