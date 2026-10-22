@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "CF_AU_I06_4_PUBLIC_JOURNEY",
+  "phase": "CF_AU_I06_5_OWNER_AUTH",
   "runtime_status": "READY_TO_RESUME",
   "resume_authorized": true,
-  "active_task": "CF-AU-I06.4 — Rediseño de catálogo, filtros, ficha y consulta pública",
-  "last_completed_task": "CF-AU-I06.3 — dirección híbrida C y navegación responsive, PR #38 integrado",
-  "last_completed_head": "main@cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
-  "work_branch": "work/i06-catalog-public",
-  "next_action": "Persist the cumulative Controller PASS evidence and final Pre-Critic checkpoint on PR #39, revalidate exact resulting HEAD worker/web checks and GitHub review (docs-only commit, executable tree unchanged), then verify protection/threads and protected-merge. After merge, close/update Issue #31 and Epic #25 with evidence; stop before I06.5.",
+  "active_task": "CF-AU-I06.5 — Rediseño de identidad y panel OWNER",
+  "last_completed_task": "CF-AU-I06.4 — catálogo, filtros, ficha y consulta pública; PR #39 integrado",
+  "last_completed_head": "main@48e4f5c4251fe939cb779698e4e51b16614be178",
+  "work_branch": "work/i06-owner",
+  "next_action": "Finalizar snapshot inmutable del candidato local, ejecutar preflight, crear/pushear el PR funcional vinculado a #32 y procesar CI/review exactos más una revisión Controller GPT-6 Luna High read-only. Resolver defectos dentro del contrato; no Preview, producción ni #33.",
   "stop_reason": null,
   "event": {
-    "seq": 182,
-    "id": "CF_AU_I06_4_REWORKS_PASS_FINAL_CHECKPOINT_PENDING",
-    "type": "ALL_THREE_P2_REPAIRED_CODE_CONTROLS_PASS"
+    "seq": 184,
+    "id": "CF_AU_I06_5_CONSOLIDATED_LOCAL_CANDIDATE",
+    "type": "LOCAL_SYNTHETIC_QA_PASS_PRE_PUBLICATION"
   },
   "external_review": null,
   "human_gate": {
@@ -23,15 +23,7 @@
     "reference": "https://gist.github.com/sjo1848/b909a2ba05959450ce848eec0ff43699/ffa166c79e9ba8e2a05aa42766459a20c48c70b2"
   },
   "blocker": null,
-  "pull_request": {
-    "number": 39,
-    "state": "OPEN",
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39",
-    "branch": "work/i06-catalog-public",
-    "last_observed_head": "6891e618e3a30fcfb00aef2adfa3c3883c03d4b4",
-    "head_source": "Executable candidate after all three P2 fixes; final evidence-only checkpoint pending, must revalidate checks/review on its resulting HEAD.",
-    "base": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e"
-  },
+  "pull_request": null,
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": null,
@@ -79,42 +71,38 @@
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
-    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31",
-    "contract": ".orchestration/contracts/CF-AU-I06.4-PUBLIC-CATALOG-DETAIL-CONTACT.md",
-    "status": "EXECUTABLE_CANDIDATE_PASS_AWAITING_FINAL_EVIDENCE_CHECKPOINT",
-    "base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
-    "branch": "work/i06-catalog-public",
-    "scope": "Public Vue journey catalog → filters → listing detail → idempotent contact. Reconcile I06.3 merge drift in this functional PR. No Worker contract, auth, OWNER/ADMIN, Preview, production, paid service, real data or source repository changes.",
-    "code_status": "Vue catalog uses existing /public/listings API, progressive filters, server pagination and query URLs with AbortController plus request sequencing. Listing cards show synthetic static photos, explicit currency/period, capacity and truthful availability freshness. Detail and contact use existing APIs; failure retains values and same-payload retry uses same Idempotency-Key. Public #35 overlap fixed; ADMIN form remains pending #33. No Worker runtime/API changes.",
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/32",
+    "contract": ".orchestration/contracts/CF-AU-I06.5-OWNER-AUTH.md",
+    "status": "CONSOLIDATED_LOCAL_CANDIDATE_READY_FOR_REVIEW",
+    "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+    "branch": "work/i06-owner",
+    "scope": "I06.5 local synthetic OWNER and I05 mock authentication experience, integrated Vue/Worker/Hono/D1. Reconcile I06.4 post-merge state in this functional PR. No I06.6/#33, Preview/Access remote change, production, paid services, external email, R2, real data or source repository write.",
+    "code_status": "I06.5 OWNER/auth integrated implementation complete; #36 fixed and demonstrated. Final local QA and real D1/Workerd Playwright passed; screenshot evidence is under output/playwright/i06.5/.",
     "local_checks": {
-      "web_typecheck": "PASS after three consolidated GitHub P2 fixes: npm run typecheck",
-      "web_build": "PASS: npm run build (Worker bundle and client)",
-      "worker_typecheck": "PASS: npm run typecheck, apps/worker",
-      "worker_public_listings": "PASS: 7/7",
-      "worker_contact_workflow": "PASS: 6/6; includes real D1 event, owner inbox, exact replay and payload mismatch",
-      "playwright_public": "PASS: 4/4 in 1.5m with local synthetic D1; includes out-of-range page normalization, incomplete price fallback, capacity filter 8, existing public/contact flows and mobile #35.",
-      "screenshots": "PASS: six runtime screenshots under output/playwright/i06.4/; synthetic static WebP loaded in browser",
-      "state_preflight": "PASS on candidate and current worktree; final evidence-only checkpoint validation pending before push"
+      "web_typecheck": "PASS: apps/web npm run typecheck",
+      "web_build": "PASS: apps/web npm run build (Worker bundle and client)",
+      "worker_owner_auth": "PASS: 5/5 local D1 tests",
+      "worker_owner_lifecycle": "PASS: 5/5 local D1 tests, including expired-session no-mutation",
+      "worker_media": "PASS: owner D1 BLOB 12/12 and 256 KiB spike 3/3; run separately to avoid Workerd contention",
+      "worker_contact": "PASS: 6/6 local D1 tests",
+      "worker_typecheck": "PASS: apps/worker npm run typecheck",
+      "playwright_owner": "PASS: 2/2 integrated local Workerd+D1 tests, 2.2m; Vue UI + real Hono APIs, synthetic rows, MOCK email",
+      "screenshots": "PASS: 9 desktop/mobile Playwright captures under output/playwright/i06.5/; includes 320 px and #36 read-only photos",
+      "accessibility": "PASS: keyboard skip-link and 320 px overflow; core text token contrast >=4.68:1 against canvas",
+      "state_preflight": "PASS: check_orchestration_state.py --base origin/main; git diff --check"
     },
     "controller": {
-      "verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC_CUMULATIVE_EXACT_DELTA_REVIEWS",
-      "reviewed_executable_sha": "6891e618e3a30fcfb00aef2adfa3c3883c03d4b4",
-      "canonical_base_sha": "cc91463d81b1b7d19d0cb44912772f1cd10ecf8e",
+      "verdict": "PENDING_EXACT_EXECUTABLE_SHA",
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
       "reasoning_effort_requested": "high",
-      "sandbox": "read-only explicitly requested and accepted",
-      "actual_backend_model_identity": "UNVERIFIED",
-      "reports": [
-        ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-3D0662D-PASS.md",
-        ".orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-6891E61-PASS.md"
-      ],
-      "summary": "Cumulative PASS: exact review of price/page repair at 3d0662d, and exact capacity delta at 6891e61; prior 2674264 PASS covers original implementation."
+      "sandbox": "read-only",
+      "actual_backend_model_identity": "UNVERIFIED"
     },
-    "github_review": "COMPLETE on executable HEAD 6891e618e3a30fcfb00aef2adfa3c3883c03d4b4, no findings; all three P2 threads replied/resolved. Final evidence-only checkpoint will trigger a new exact-head review.",
-    "precritic": "PASS_TO_PROTECTED_MERGE_AFTER_FINAL_EVIDENCE_CHECKPOINT_WORKER_WEB_AND_GITHUB_REVIEW",
-    "scope_limits": "Synthetic local D1/Worker only; no Preview/Access change, deployment, production, data real, paid service, R2, source repository write, OWNER #32 or ADMIN #33.",
-    "next_action": "Persist the cumulative Controller PASS evidence and final Pre-Critic checkpoint on PR #39, revalidate exact resulting HEAD worker/web checks and GitHub review (docs-only commit, executable tree unchanged), then verify protection/threads and protected-merge. After merge, close/update Issue #31 and Epic #25 with evidence; stop before I06.5."
+    "github_review": "PENDING_PR_EXACT_HEAD",
+    "precritic": "PENDING_FINAL_CANDIDATE_PREFLIGHT",
+    "scope_limits": "Local synthetic Worker+D1 only. No Preview/Access remote change, deployment, production, real data, paid service, external email, R2, source repo write, I06.6/#33.",
+    "next_action": "Finalizar snapshot inmutable del candidato local, ejecutar preflight, crear/pushear el PR funcional vinculado a #32 y procesar CI/review exactos más una revisión Controller GPT-6 Luna High read-only. Resolver defectos dentro del contrato; no Preview, producción ni #33."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
@@ -875,5 +863,20 @@
     "merge_commit": "489fa0885f28dfa789535dda47f81035422c137e",
     "head_source": "I05 clean-start rework merged after exact-head reviews/checks; see closeout on Issue #7.",
     "candidate_sha": "b1fecbfcb291c7394299782a511b784e465c91eb"
+  },
+  "historical_pull_request_i06_4": {
+    "number": 39,
+    "state": "MERGED",
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/39",
+    "branch": "work/i06-catalog-public",
+    "head_sha": "7b49a054d00425529b7aefa2afcbc8f96a84ea06",
+    "executable_sha": "6891e618e3a30fcfb00aef2adfa3c3883c03d4b4",
+    "merge_commit": "48e4f5c4251fe939cb779698e4e51b16614be178",
+    "github_checks": "worker/web PASS on exact checkpoint HEAD",
+    "github_review": "completed on exact checkpoint HEAD; no findings/unresolved findings",
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31",
+    "closeout_evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31#issuecomment-6328955365",
+    "controller": "cumulative PASS on executable SHA 6891e618e3a30fcfb00aef2adfa3c3883c03d4b4; separate codex exec requested GPT-6 Luna/High/read-only; backend identity UNVERIFIED",
+    "preview": "unchanged; no deployment"
   }
 }

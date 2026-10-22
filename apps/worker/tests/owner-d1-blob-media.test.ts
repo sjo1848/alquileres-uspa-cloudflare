@@ -95,7 +95,7 @@ it('keeps private ownership, CSRF, editable status and request limits enforced',
   expect((await request(`/listings/${other}/images`,'GET',undefined,{cookie:ownerCookie})).status).toBe(404);
   expect((await upload(other,'cross-owner-1',ownerCookie)).status).toBe(404);
   await env.DB.prepare("UPDATE listings SET status='SUBMITTED' WHERE id=?").bind(lid).run();
-  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie})).status).toBe(200);
   expect((await upload(lid,'submitted-1',ownerCookie)).status).toBe(404);
 });
 
@@ -108,6 +108,16 @@ it('reorders densely and deletes with stable idempotent results while returning 
   expect((await request(`/listings/${lid}/images/${b.id}`,'DELETE',undefined,{cookie:ownerCookie,key:'delete-reordered-image'})).status).toBe(200);
   const images=await (await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie})).json() as any[];expect(images).toHaveLength(1);expect(images[0]).toMatchObject({id:a.id,position:0});
   await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(lid).run();
+  const ownerImages=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie});
+  expect(ownerImages.status).toBe(200);expect(await ownerImages.json()).toMatchObject([{id:a.id,position:0,originalName:'casa.png'}]);
+  const privateApprovedImage=await request(`/listings/${lid}/images/${a.id}`,'GET',undefined,{cookie:ownerCookie});
+  expect(privateApprovedImage.status).toBe(200);expect(privateApprovedImage.headers.get('cache-control')).toContain('private');expect(new Uint8Array(await privateApprovedImage.arrayBuffer())).toEqual(png);
+  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/${a.id}`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
+  expect((await upload(lid,'approved-image-upload',ownerCookie)).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/${a.id}`,'PATCH',JSON.stringify({position:0}),{cookie:ownerCookie,key:'approved-image-reorder',type:'application/json'})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/${a.id}`,'DELETE',undefined,{cookie:ownerCookie,key:'approved-image-delete'})).status).toBe(404);
+  expect(await env.DB.prepare('SELECT id,position FROM listing_images WHERE listing_id=?').bind(lid).all()).toMatchObject({results:[{id:a.id,position:0}]});
   const listingResponse=await request(`/public/listings/${lid}`);expect(listingResponse.status).toBe(200);expect(((await listingResponse.json() as any).images as any[]).map(x=>x.id)).toEqual([a.id]);
   const publicRead=await request(`/public/listings/${lid}/images/${a.id}`);expect(publicRead.status).toBe(200);expect(new Uint8Array(await publicRead.arrayBuffer())).toEqual(png);
 });

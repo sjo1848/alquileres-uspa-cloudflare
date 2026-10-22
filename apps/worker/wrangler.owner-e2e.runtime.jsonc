@@ -1,21 +1,22 @@
 {
-  "name": "cf-au-owner-e2e-local",
+  "name": "cf-au-i06-5-owner-e2e-local",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-12",
   "vars": {
     "JWT_EXPIRES_IN": "15m",
-    "COOKIE_SAME_SITE": "lax",
     "COOKIE_SECURE": "false",
+    "COOKIE_SAME_SITE": "lax",
     "MEDIA_STRATEGY": "D1_BLOB",
     "AUTH_STRATEGY": "PASSWORD",
     "LOCAL_OWNER_AUTH_ENABLED": "true",
-    "LOCAL_EMAIL_ADAPTER": "MOCK"
+    "LOCAL_EMAIL_ADAPTER": "MOCK",
+    "JWT_SECRET": "local-only-synthetic-secret-never-use-remotely-0000000000"
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "cf-au-owner-e2e-local",
-      "database_id": "00000000-0000-0000-0000-000000000071",
+      "database_name": "cf-au-i06-5-owner-e2e-local",
+      "database_id": "00000000-0000-0000-0000-000000000073",
       "migrations_dir": "migrations"
     }
   ],
@@ -23,17 +24,8 @@
     "directory": "../web/dist/client",
     "not_found_handling": "single-page-application",
     "run_worker_first": [
-      "/api/*",
-      "/public/*",
-      "/auth/*",
-      "/owner/*",
-      "/admin/*",
-      "/health",
-      "/listings",
-      "/listings/*/availability",
-      "/listings/*/reconfirm",
-      "/listings/*/images",
-      "/listings/*/images/*"
+      "/api/*", "/public/*", "/auth/*", "/owner/*", "/admin/*", "/health",
+      "/listings", "/listings/*/availability", "/listings/*/reconfirm", "/listings/*/images", "/listings/*/images/*"
     ]
   }
 }

@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_4_PUBLIC_JOURNEY`
-Active task: `CF-AU-I06.4 — Rediseño de catálogo, filtros, ficha y consulta pública`
+Phase: `CF_AU_I06_5_OWNER_AUTH`
+Active task: `CF-AU-I06.5 — Rediseño de identidad y panel OWNER`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1452,3 +1452,20 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Controller PASS acumulativo: revisión exacta/delta `3d0662d` cubre página+precio, más `6891e61` para capacidad; ambas con modelo GPT-6 Luna/High solicitado y sandbox read-only; backend UNVERIFIED. Informes: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-3D0662D-PASS.md` y `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-6891E61-PASS.md`; PASS original `2674264` conserva el resto del candidato.
 - Pre-Critic: **PASS para merge protegido después de registrar los informes y volver a verificar checks/review del checkpoint final evidencia-only**, sin cambios ejecutables. No quedan cambios de producto/alcance pendientes en I06.4. Sin despliegue/Preview, gasto, R2, datos reales ni source repo.
 - **READY_TO_RESUME:** commit único de informes/precritic canonical, correr validador y `git diff --check`, esperar los checks/review exactos que dispare ese HEAD, verificar cero conversaciones/protección `main`, y merge protegido PR #39. Luego actualizar/cerrar #31 y comentar Epic #25. Detener antes de I06.5.
+
+
+## Event 183 — I06.4 reconciliado tras merge; I06.5 autorizado
+
+- GitHub confirma PR #39 mergeado en `main@48e4f5c4251fe939cb779698e4e51b16614be178`; Issue #31 está cerrado y Epic #25 actualizado. Checks worker/web y GitHub exact-head review pasaron; se preserva evidencia y cierre en [Issue #31](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31#issuecomment-6328955365). No hubo Preview deployment.
+- La rama de trabajo activa parte de ese `main`; artefactos locales no rastreados preexistentes se preservan. El estado anterior de PR #39 queda como histórico, no como tarea activa.
+- Issue #32 está READY y autoriza I06.5: UX integrada de autenticación OWNER MOCK local, publicaciones, fotos D1 BLOB, disponibilidad, consultas y logout; reparar #36. Contrato: `.orchestration/contracts/CF-AU-I06.5-OWNER-AUTH.md`.
+- **READY_TO_RESUME:** auditar e implementar el recorrido en Vue + Worker/Hono + D1 local sintética; ejecutar QA integrada desktop/mobile, pruebas focales, exact-head review/Controller y merge protegido. No iniciar I06.6/#33 ni modificar Preview/Access remoto, pagos, producción, datos reales, correo externo, R2 o repositorio fuente.
+
+## Event 184 — I06.5 candidate consolidated locally
+
+- Implementación funcional OWNER/auth consolidada en la rama `work/i06-owner`; base canónica `48e4f5c4251fe939cb779698e4e51b16614be178`. Incluye estado reconciliado de PR #39, sin tocar Preview ni el repo fuente.
+- #36 corregido en backend y UI: OWNER lee metadata/BLOB privado de sus publicaciones aprobadas en modo lectura; OWNER ajeno recibe 404 y mutaciones aprobadas continúan rechazadas. E2E verifica vista de fotos; prueba Worker cubre autorización/bytes.
+- Worker local D1: OWNER lifecycle 5/5; D1 BLOB ownership 12/12; media spike 3/3; local auth 5/5; contact 6/6; Worker typecheck PASS. Vue typecheck/build PASS. Playwright integrado real con Workerd+D1, dos recorridos PASS (2/2, 2.2m), incluye auth MOCK, owner lifecycle, errores/retry, permisos, 320/390 y capturas inspeccionables en `output/playwright/i06.5/QA.md`.
+- Capturas revisadas visualmente: login y dashboard desktop/mobile (320/390), editor desktop y fotos aprobadas en lectura. Token de texto interactivo arcilla ajustado; contraste calculado de tokens principales >=4.68:1 sobre canvas. E2E pasa skip-link por teclado y sin overflow en 320 px.
+- Consistency validator y `git diff --check` PASS. Las regresiones #35 ADMIN y #37 siguen para #33; #36 sólo se cerrará después del merge protegido con la evidencia del PR.
+- **READY_TO_RESUME:** ejecutar el preflight final y crear un commit funcional inmutable en `work/i06-owner`; publicar PR vinculado a #32; procesar checks/review exactos y Controller separado GPT-6 Luna/High/read-only. Integrar protegido, comentar/cerrar #32 y #36 y actualizar Epic #25 sólo tras todos los gates; detener antes de #33. Sin Preview, producción, costo, R2, email externo o datos reales.
