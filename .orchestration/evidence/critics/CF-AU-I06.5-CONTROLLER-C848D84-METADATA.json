@@ -1,0 +1,26 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "reviewer_name": "project_controller (delegated local technical review)",
+  "artifact_sha": "c848d8459f2aff10bb023cd4d14059d6604c2649",
+  "artifact_tree": "9e36b20240057093df3ebffee253a38d2c1899c0",
+  "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+  "model_requested": "gpt-6-luna",
+  "reasoning_effort_requested": "high",
+  "sandbox_requested_and_accepted": "read-only",
+  "cli_configuration_accepted": true,
+  "cli_exit_code": 0,
+  "actual_backend_model_identity": "UNVERIFIED",
+  "session_id": "01a16127-d995-7b70-bdde-198dafb27ffd",
+  "command": "codex exec --model gpt-6-luna -c 'model_reasoning_effort=\"high\"' --sandbox read-only --json -o <report> -C <repository> - <prompt",
+  "prompt_file": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-C848D84-PROMPT.md",
+  "raw_final_response": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-C848D84-PASS.md",
+  "transcript_metadata": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-C848D84-TRANSCRIPT.json",
+  "tests_run_by_controller": false,
+  "parent_tests_evidence": "output/playwright/i06.5/QA.md",
+  "runtime_notes": [
+    "The CLI accepted the requested model/effort/sandbox flags and completed with exit 0; backend model identity remains unverified.",
+    "Read-only reviewer command trace contained only read operations and git identity/diff inspection; no files, refs, or source repository were modified by the reviewer.",
+    "Configured localhost:4401 MCP transport was unavailable and emitted stderr warnings; review completed using repository inspection without that MCP."
+  ],
+  "verdict": "PASS"
+}
