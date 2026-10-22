@@ -234,7 +234,7 @@ async function moveImage(image:Image,delta:number){
   const position=image.position+delta;if(position<0||position>=mutableImages.value.length)return;
   const keyScope=`reorder:${item.id}:${image.id}:${position}`,key=imageMutationKey(keyScope);
   busy.value=true;imageBusy.value='reorder';error.value='';notice.value='';
-  try{images.value=await session.apiRequest<Image[]>(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'PATCH',body:JSON.stringify({position}),headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);notice.value='Orden de imágenes actualizado.';}
+  try{await session.apiRequest<Image[]>(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'PATCH',body:JSON.stringify({position}),headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);await loadImages(item);notice.value='Orden de imágenes actualizado.';}
   catch(e){error.value=imageMessage(e);}
   finally{busy.value=false;imageBusy.value=null;}
 }
@@ -247,6 +247,7 @@ async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=s
 async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
 function resolvePendingLeave(leave:boolean){const resolve=resolveLeave;resolveLeave=null;confirmLeave.value=false;resolve?.(leave);if(!leave)closeDialogFocus('leave');else delete dialogReturnFocus.leave;}
 onBeforeRouteLeave(()=>{
+  if(!session.isAuthenticated.value)return true;
   if(!unsaved.value)return true;
   confirmLeave.value=true;
   openDialog('leave',leaveDialog);

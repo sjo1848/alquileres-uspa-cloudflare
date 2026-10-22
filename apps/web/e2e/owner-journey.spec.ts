@@ -151,6 +151,13 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.getByRole('button', { name: /Borrador con foto administrada/ }).click();
   await expect(page.getByText('Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.')).toBeVisible();
   await expect(page.locator('input[type="file"]')).toHaveCount(0);
+  await page.getByRole('button', { name: /Borrador mixto con foto del repositorio/ }).click();
+  await expect(page.locator('.owner-image-card')).toHaveCount(3);
+  await page.getByRole('button', { name: 'Mover mezcla-b.png hacia arriba' }).click();
+  await expect(page.getByRole('status')).toContainText('Orden de imágenes actualizado');
+  await expect(page.locator('.owner-image-card')).toHaveCount(3);
+  await expect(page.locator('.owner-image-card').nth(0)).toContainText('mezcla-b.png');
+  await expect(page.locator('.owner-image-card').nth(2)).toContainText('cabana-cerro.svg');
   await page.getByRole('button', { name: /Casa aprobada con fotos/ }).click();
 
   await page.getByRole('button', { name: 'Marcar no disponible' }).click();
@@ -370,4 +377,16 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   const deniedOwnerApi = await adminPage.request.get('/api/listings');
   expect(deniedOwnerApi.status()).toBe(401);
   await adminContext.close();
+
+  await page.getByRole('button', { name: /Borrador con foto administrada/ }).click();
+  await page.getByLabel('Nombre del alojamiento').fill('Edición privada tras expirar sesión');
+  await page.route('**/api/listings/owner-draft-static-photo', async route => {
+    if (route.request().method() === 'PATCH') await route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: 'expired session' }) });
+    else await route.continue();
+  });
+  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(page).toHaveURL(/\/login\?expired=1/);
+  await expect(page.getByRole('alert')).toContainText('La sesión expiró');
+  await expect(page.getByRole('heading', { name: 'Tu lugar en Uspallata' })).toHaveCount(0);
+  await expect(page.getByText('Edición privada tras expirar sesión')).toHaveCount(0);
 });
