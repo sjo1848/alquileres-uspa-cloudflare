@@ -128,7 +128,8 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(configRetryPage.getByRole('alert')).toContainText('No pudimos comprobar cómo se gestionan las fotos');
   await configRetryPage.getByRole('button',{name:'Reintentar configuración de fotos'}).click();
   await expect(configRetryPage.getByRole('alert')).toHaveCount(0);
-  await expect(configRetryPage.getByText(/JPEG, PNG o WebP/)).toBeVisible();
+  await expect(configRetryPage.getByText(/no se pueden combinar con nuevas cargas/)).toBeVisible();
+  await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(0);
   expect(configAttempts).toBe(3);
   await configRetryPage.close();
   await capture(page, 'owner-dashboard-desktop-1440x1000.png');
@@ -146,6 +147,11 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(page.getByLabel('Agregar fotos')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Eliminar foto aprobada.png' })).toHaveCount(0);
   await capture(page, 'owner-approved-photos-desktop-1440x1000.png');
+
+  await page.getByRole('button', { name: /Borrador con foto administrada/ }).click();
+  await expect(page.getByText('Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.')).toBeVisible();
+  await expect(page.locator('input[type="file"]')).toHaveCount(0);
+  await page.getByRole('button', { name: /Casa aprobada con fotos/ }).click();
 
   await page.getByRole('button', { name: 'Marcar no disponible' }).click();
   await expect(page.locator('.owner-availability-card h3')).toHaveText('No disponible');

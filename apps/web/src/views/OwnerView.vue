@@ -31,6 +31,8 @@ const nextStep=computed(()=>{if(!selected.value)return 'Elegí una publicación 
 const confirmedLabel=computed(()=>selected.value?.lastConfirmedAt?new Date(selected.value.lastConfirmedAt).toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short'}):'Todavía no confirmaste la disponibilidad.');
 const canEdit=computed(()=>!selected.value||['DRAFT','REJECTED'].includes(selected.value.status));
 const ownerUploadsEnabled=computed(()=>session.mediaStrategy.value==='D1_BLOB');
+const hasRepositoryManagedImages=computed(()=>images.value.some(image=>image.source==='STATIC_ASSET'));
+const ownerCanUpload=computed(()=>ownerUploadsEnabled.value&&!hasRepositoryManagedImages.value);
 const mutableImages=computed(()=>images.value.filter(image=>image.source!=='STATIC_ASSET'));
 const dirty=computed(()=>selected.value&&Object.keys(blank()).some(key=>form[key as keyof Fields]!==selected.value![key as keyof Fields]));
 const unsaved=computed(()=>{
@@ -368,8 +370,8 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
           <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title" tabindex="-1">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ images.length }} / {{ MAX_IMAGES }}</span></header>
             <div v-if="mediaConfigError&&session.mediaStrategy.value==='UNKNOWN'" class="owner-media-config-error" role="alert"><p>{{ mediaConfigError }}</p><button type="button" class="secondary" :disabled="mediaConfigLoading" @click="loadMediaConfig">{{ mediaConfigLoading?'Comprobando…':'Reintentar configuración de fotos' }}</button></div>
             <p v-else-if="mediaConfigLoading" class="owner-section-copy" role="status">Comprobando las opciones disponibles para las fotos…</p>
-            <p v-else class="owner-section-copy">{{ ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':session.mediaStrategy.value==='STATIC_ASSETS'?'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.':'La gestión de fotos no está habilitada en este entorno.' }}</p>
-            <label v-if="canEdit&&ownerUploadsEnabled&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
+            <p v-else class="owner-section-copy">{{ hasRepositoryManagedImages?'Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.':ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':session.mediaStrategy.value==='STATIC_ASSETS'?'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.':'La gestión de fotos no está habilitada en este entorno.' }}</p>
+            <label v-if="canEdit&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!imagesLoading&&!mediaConfigLoading" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
               <img :src="selectedPhoto.previewUrl" :alt="`Vista previa de ${selectedPhoto.file.name}`" width="640" height="480" />
               <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ (selectedPhoto.file.size/1024).toFixed(0) }} KB · Todavía no se guardó</small></div>

@@ -150,7 +150,7 @@ it('merges repository and OWNER-uploaded photos in their stored position order',
   ]);
   const tiedStaticId=`aaa-static-tie-${lid}`;
   await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind(tiedStaticId,lid,'/media/catalog/static-tie.svg','image/svg+xml',123,0).run();
-  const expectedMixed:Array<[string,number]>=[[dynamic.id,0],[tiedStaticId,0],[`static-after-upload-${lid}`,1]].sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
+  const expectedMixed:Array<[string,number]>=[[tiedStaticId,0],[dynamic.id,0],[`static-after-upload-${lid}`,1]];
   const mixedOwner=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie});
   expect((await mixedOwner.json() as any[]).map(row=>[row.id,row.position])).toEqual(expectedMixed);
   await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(lid).run();

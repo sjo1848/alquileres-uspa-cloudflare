@@ -14,7 +14,9 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 - Rework GitHub P2 `4343754584`: los diálogos para borrar foto y borrador ahora enfocan inicialmente la opción segura, confinan Tab/Shift+Tab, cierran con Escape y restauran foco al botón de origen al cancelar. Tras borrar correctamente, el foco pasa al título de la sección porque el botón de origen desaparece. Playwright cubre cancelación, confirmación, preview de foto sin guardar y foco en ambos recorridos.
 - Rework GitHub P2 `4343798935`: la respuesta de imágenes OWNER combina Static Assets y D1 BLOB por posición almacenada y usa `id` como desempate determinista; la regresión compara el orden OWNER y público con fixtures sintéticos mezclados.
 - Rework GitHub P2 `4343866111`: un fallo temporal de `/auth/config` ya no deja las acciones de foto ocultas sin explicación. La configuración se comparte mientras hay una solicitud activa; OWNER muestra el problema y ofrece reintento, y vuelve a habilitar solo las acciones permitidas por la estrategia recuperada. Playwright inyecta fallos sintéticos de configuración y confirma que un reintento HTTP real recupera la carga de fotos.
-- Reconciliación GitHub P1 `4343866105`: `STATE.md` y `STATUS.json` se actualizarán en el mismo PR funcional para identificar el SHA ejecutable final y el estado vigente de cada control; no hay candidato ni PASS anclado a c848d84.
+- Controller exact-delta del candidato `3129ce7` identificó que en un borrador con Static Assets la UI ofrecía una carga que Worker rechaza. OWNER ahora espera a cargar las imágenes y oculta el selector si la publicación contiene cualquier foto administrada desde el repositorio; informa por qué no permite mezclar cargas. E2E usa una publicación sintética DRAFT con Static Asset y comprueba mensaje + ausencia del selector.
+- La regresión de empate de orden ya no calcula el esperado con el comparador de producción: IDs sintéticos controlados exigen explícitamente Static Asset `aaa-…` antes del D1 BLOB `d1-…` cuando ambas tienen posición 0. Revisión Worker compara también el orden público.
+- Reconciliación GitHub P1 `4343866105`: `STATE.md` y `STATUS.json` se reconciliaron en el PR funcional al candidato ejecutable y a los controles vigentes; el PASS anterior a `c848d84` queda histórico y no se transfiere.
 - Regresiones del último exact-head review: OWNER puede leer Static Assets de una publicación propia en modos `STATIC_ASSETS` y `D1_BLOB`, sin ampliar mutaciones; la configuración pública de auth informa la estrategia de medios y la UI oculta acciones de subida cuando el modo es `STATIC_ASSETS`. Playwright desactiva la reutilización del servidor; dos ejecuciones completas consecutivas volvieron a seedear D1 sintética y pasaron 2/2 cada una (2.1 y 2.4 min).
 - ADMIN no puede usar UI ni API OWNER; sesión expirada no muta estado (regresiones Worker).
 - Teclado/skip-link, diálogo de salida y viewports 1440, 390 y 320 px; el E2E comprobó que `scrollWidth <= viewport` en 320 px.
@@ -24,7 +26,7 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 | Verificación | Resultado |
 |---|---:|
 | `apps/worker`: `npm run test:owner` | 6/6, incluye Static Assets en lectura y escrituras bloqueadas |
-| `apps/worker`: `owner-d1-blob-media.test.ts` | 12/12, incluye lectura Static Assets en modo D1 BLOB |
+| `apps/worker`: `owner-d1-blob-media.test.ts` | 13/13, incluye lectura Static Assets en modo D1 BLOB y orden empatado con esperado fijo |
 | `apps/worker`: `npm run test:preview-auth` | 6/6; `/auth/config` conserva estrategia y reporta la estrategia de medios |
 | `apps/worker`: `npm run test:catalog` | 7/7; mutaciones Static Assets siguen denegadas |
 | `apps/worker`: `media-blob-spike.test.ts` | 3/3 |
@@ -41,10 +43,12 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 | GitHub P2: foto staged al borrar + foco modal de salida | PASS en el candidato anterior; E2E integrado 2/2 y foco focalizado 1/1 |
 | GitHub P2 `4343754584`: foco/teclado de diálogos destructivos | PASS, suite completa OWNER 2/2 (3.6m) |
 | GitHub P2 `4343798935`: orden combinado OWNER Static Assets + D1 BLOB | PASS, `owner-d1-blob-media.test.ts` 13/13 y Worker typecheck |
-| GitHub P2 `4343866111`: fallo y reintento de configuración de medios | PASS, Playwright OWNER focalizado 1/1; sintético 503 en la carga inicial y respuesta real exitosa en el reintento |
+| GitHub P2 `4343866111`: fallo y reintento de configuración de medios | PASS, Playwright OWNER focalizado 1/1; sintéticos 503 iniciales, retry real exitoso y controles correctos para fotos Static Assets |
 | Owner CRUD/fotos/inbox/availability y regresiones de diálogos | PASS, Playwright OWNER focalizado 1/1; la prueba auth/identidad también pasó 1/1 en la ejecución completa |
 | Preflight de compilación final | Web typecheck/build PASS; Worker typecheck PASS |
-| GitHub P2 `4343866111`: recuperación de configuración de fotos | PASS, Playwright OWNER focalizado 1/1 después de dos respuestas sintéticas 503 y un retry HTTP real |
+| Controller P2 sobre `3129ce7`: borrador con foto Static Asset mostraba carga incompatible | PASS, UI oculta selector después de cargar imágenes; OWNER E2E focalizado 1/1 (59.9 s) con fixture sintético |
+| Controller evidencia: expected del desempate de fotos calculado por comparador tautológico | PASS, esperado fijo explícito; Worker `owner-d1-blob-media.test.ts` 13/13 |
+| Web tras rework del Controller | PASS, `npm run typecheck` y `npm run build` |
 | Consistency validator contra `origin/main` y `git diff --check` | PASS |
 
 Los tests de media se ejecutaron por archivo para aislar Workerd; el spike de 256 KiB necesitó `--testTimeout=15000` en la primera corrida concurrente. La suite final integrada pasó sin concurrencia de QA adicional.
