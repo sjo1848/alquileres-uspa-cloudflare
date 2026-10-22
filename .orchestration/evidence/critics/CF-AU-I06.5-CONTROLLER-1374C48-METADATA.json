@@ -1,0 +1,21 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "reviewer_name": "project_controller (delegated local technical Controller)",
+  "artifact_sha": "1374c48575296ba44431cc27c503007e3c14157e",
+  "artifact_tree": "ebf5f79415f276747db8e57ba264082f3be46e57",
+  "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+  "model_requested": "gpt-6-luna",
+  "reasoning_effort_requested": "high",
+  "sandbox_requested": "read-only",
+  "cli_configuration_accepted": true,
+  "cli_exit_code": 0,
+  "actual_backend_model_identity": "UNVERIFIED",
+  "thread_id": "01a16366-511e-7391-8262-fd1a718cdf5e",
+  "command": "codex exec --model gpt-6-luna -c 'model_reasoning_effort=\"high\"' --sandbox read-only --json -o <report> -C <repository> - <prompt>",
+  "controller_verdict": "PASS; no P0/P1/P2. P3 evidence follow-up described in report; later completed on subsequent candidate tests.",
+  "tests_run_by_controller": false,
+  "mcp_warning": "localhost:4401 transport failures; no impact to repository read-only inspection",
+  "report": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-1374C48-PASS.md",
+  "prompt": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-1374C48-PROMPT.md",
+  "transcript": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-1374C48-TRANSCRIPT.json"
+}
