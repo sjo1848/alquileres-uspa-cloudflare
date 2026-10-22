@@ -30,6 +30,7 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 | `apps/web`: `npm run typecheck` y `npm run build` | PASS |
 | `apps/web`: `npm run test:e2e:owner` (Workerd + D1 real local) | PASS final exact-tree: 2/2 (2.4m); antes, el re-seed determinista pasó en dos arranques consecutivos 2/2 (2.1m y 2.4m) |
 | Regresión foco/logout final (Playwright focalizado) | 1/1 (1.6m): foco inicial, cancelación y restauración al botón de logout |
+| Rework Controller P3: cancelar navegación restaura foco al enlace iniciador | PASS, assertion añadida a Playwright y corrida integrada final 2/2 (2.3m) |
 | Regresión GitHub P2: cancelar logout conserva cambios y sesión | PASS, Playwright integrado |
 | Regresión GitHub P2: actualizar lista conserva/bloquea foto pendiente | PASS, Playwright integrado |
 | GitHub P2: OWNER Static Assets y E2E state reset | PASS, tests Worker + dos arranques E2E independientes |

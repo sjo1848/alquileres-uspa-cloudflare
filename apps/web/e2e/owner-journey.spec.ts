@@ -184,7 +184,8 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.unroute(`**/api/listings/${draft!.id}`);
 
   await page.getByLabel('Descripción').fill('Cambio pendiente que se debe preservar ante navegación.');
-  await page.getByRole('link', { name: 'Descubrir' }).click();
+  const discoverLink=page.getByRole('link', { name: 'Descubrir' });
+  await discoverLink.click();
   const leaveDialog = page.getByRole('alertdialog', { name: '¿Salir sin guardar?' });
   await expect(leaveDialog).toBeVisible();
   const leaveButton=leaveDialog.getByRole('button', { name: 'Salir y descartar cambios' });
@@ -196,11 +197,13 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(keepEditing).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(leaveDialog).toHaveCount(0);
+  await expect(discoverLink).toBeFocused();
   await expect(page.getByLabel('Descripción')).toHaveValue('Cambio pendiente que se debe preservar ante navegación.');
-  await page.getByRole('link', { name: 'Descubrir' }).click();
+  await discoverLink.click();
   await expect(page.getByRole('alertdialog', { name: '¿Salir sin guardar?' }).getByRole('button', { name: 'Seguir editando' })).toBeFocused();
   await page.getByRole('alertdialog', { name: '¿Salir sin guardar?' }).getByRole('button', { name: 'Seguir editando' }).click();
   await expect(page).toHaveURL(/\/owner$/);
+  await expect(discoverLink).toBeFocused();
   await expect(page.getByLabel('Descripción')).toHaveValue('Cambio pendiente que se debe preservar ante navegación.');
   await page.getByRole('link', { name: 'Descubrir' }).click();
   await page.getByRole('alertdialog', { name: '¿Salir sin guardar?' }).getByRole('button', { name: 'Salir y descartar cambios' }).click();
