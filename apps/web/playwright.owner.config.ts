@@ -20,7 +20,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run seed:owner-e2e && npm run dev -- --port 5175 --strictPort',
     url: 'http://127.0.0.1:5175/api/health',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 180_000,
     env: { CF_PREVIEW_CONFIG: '../worker/wrangler.owner-e2e.runtime.jsonc' },
   },

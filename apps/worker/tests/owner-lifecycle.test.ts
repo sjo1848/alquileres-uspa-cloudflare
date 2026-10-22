@@ -22,7 +22,7 @@ async function expiredOwnerCookie(){
 }
 beforeAll(async()=>{
   const hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS',now=new Date().toISOString();
-  for(const [id,email,role]of [['owner-a','owner.a@example.test','OWNER'],['owner-b','owner.b@example.test','OWNER'],['admin','admin@example.test','ADMIN']]){
+  for(const [id,email,role]of [['owner-a','owner.a@example.test','OWNER'],['owner-b','owner.b@example.test','OWNER'],['owner-static','owner.static@example.test','OWNER'],['admin','admin@example.test','ADMIN']]){
     await env.DB.prepare('INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at) VALUES(?,?,?,?,?,?,?)').bind(id,email,hash,role,now,now,now).run();
   }
 });
@@ -46,6 +46,37 @@ describe('OWNER cookie session and draft → review journey',()=>{
     expect((await request('/listings','GET',undefined,expired)).status).toBe(401);
     expect((await request('/listings','POST',fields,expired,true,'expired-owner-create')).status).toBe(401);
     expect(await env.DB.prepare("SELECT COUNT(*) AS count FROM listings WHERE title=?").bind(fields.title).first('count')).toBe(0);
+  });
+  it('lets an OWNER read repository-managed photos but fails closed on their mutations in STATIC_ASSETS mode',async()=>{
+    const cookie=await login('owner.static@example.test'),other=await login();
+    const created=await request('/listings','POST',fields,cookie),item=await created.json() as any;
+    expect(created.status).toBe(201);
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const imageId=`static-owner-${crypto.randomUUID()}`;
+    await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind(imageId,item.id,'/media/catalog/casa-rio.svg','image/svg+xml',123,0).run();
+
+    expect(await (await request('/auth/config')).json()).toMatchObject({mediaStrategy:'STATIC_ASSETS'});
+    const metadata=await request(`/listings/${item.id}/images`,'GET',undefined,cookie);
+    expect(metadata.status).toBe(200);
+    expect(await metadata.json()).toEqual([{id:imageId,originalName:'casa-rio.svg',contentType:'image/svg+xml',sizeBytes:123,position:0,source:'STATIC_ASSET'}]);
+    const photo=await request(`/listings/${item.id}/images/${imageId}`,'GET',undefined,cookie);
+    expect(photo.status).toBe(302);
+    expect(photo.headers.get('location')).toBe('/media/catalog/casa-rio.svg');
+    expect(photo.headers.get('cache-control')).toContain('private');
+    expect((await request(`/listings/${item.id}/images`,'GET',undefined,other)).status).toBe(404);
+    expect((await request(`/listings/${item.id}/images/${imageId}`,'GET',undefined,other)).status).toBe(404);
+
+    for(const [method,path,body] of [
+      ['POST',`/listings/${item.id}/images`,undefined],
+      ['PATCH',`/listings/${item.id}/images/${imageId}`,{position:1}],
+      ['DELETE',`/listings/${item.id}/images/${imageId}`,undefined],
+    ] as const){
+      const denied=await request(path,method,body,cookie);
+      expect(denied.status).toBe(503);
+      expect(await denied.json()).toEqual({error:'Owner image changes are not available for repository-managed media'});
+    }
+    expect(await env.DB.prepare('SELECT id FROM static_listing_images WHERE id=? AND listing_id=?').bind(imageId,item.id).first()).not.toBeNull();
+    expect((await request(`/listings/${item.id}`,'GET',undefined,cookie)).status).toBe(200);
   });
   it('creates, replays, edits and submits only the current OWNER draft',async()=>{
     const cookie=await login(),other=await login('owner.b@example.test'),admin=await login('admin@example.test');

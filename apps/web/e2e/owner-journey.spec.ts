@@ -117,7 +117,10 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   const approved = page.getByRole('button', { name: /Casa aprobada con fotos/ });
   await expect(approved).toBeVisible();
   await approved.click();
-  const approvedPhoto = page.getByRole('img', { name: 'Foto 1 de Casa aprobada con fotos' });
+  const approvedStaticPhoto = page.getByRole('img', { name: 'Foto 1 de Casa aprobada con fotos' });
+  await expect(approvedStaticPhoto).toBeVisible();
+  await expect.poll(() => approvedStaticPhoto.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  const approvedPhoto = page.getByRole('img', { name: 'Foto 2 de Casa aprobada con fotos' });
   await expect(approvedPhoto).toBeVisible();
   await expect.poll(() => approvedPhoto.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   await expect(page.getByText('Las fotos de una publicación aprobada se muestran en modo lectura.')).toBeVisible();

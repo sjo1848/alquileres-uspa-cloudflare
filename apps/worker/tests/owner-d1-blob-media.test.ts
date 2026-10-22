@@ -128,6 +128,12 @@ it('continues to expose repository-managed Static Assets when D1 BLOB is the Pre
   await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind('static-kept-'+lid,lid,'/media/catalog/synthetic.svg','image/svg+xml',123,0).run();
   const page=await request(`/public/listings/${lid}`),body=await page.json() as any;
   expect(page.status).toBe(200);expect(body.images).toEqual([{id:'static-kept-'+lid,contentType:'image/svg+xml',sizeBytes:123,position:0,url:'/media/catalog/synthetic.svg'}]);
+  const ownerImages=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie}),ownerRows=await ownerImages.json() as any[];
+  expect(ownerImages.status).toBe(200);expect(ownerRows).toEqual([{id:'static-kept-'+lid,originalName:'synthetic.svg',contentType:'image/svg+xml',sizeBytes:123,position:0,source:'STATIC_ASSET'}]);
+  const privateOwnerAsset=await request(`/listings/${lid}/images/static-kept-${lid}`,'GET',undefined,{cookie:ownerCookie});
+  expect(privateOwnerAsset.status).toBe(302);expect(privateOwnerAsset.headers.get('location')).toBe('/media/catalog/synthetic.svg');
+  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/static-kept-${lid}`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
   const image=await request(`/public/listings/${lid}/images/static-kept-${lid}`);
   expect(image.status).toBe(302);expect(image.headers.get('location')).toBe('/media/catalog/synthetic.svg');
 });

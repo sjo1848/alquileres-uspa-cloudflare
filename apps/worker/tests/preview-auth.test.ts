@@ -117,9 +117,9 @@ describe('Access identity → fixed synthetic role session, Preview only',()=>{
       }
     }
     expect(passwordCompare).not.toHaveBeenCalled();
-    expect(await (await app.request(PREVIEW_ORIGIN+'/auth/config',{},bindings)).json()).toEqual({strategy:'ACCESS_PREVIEW'});
+    expect(await (await app.request(PREVIEW_ORIGIN+'/auth/config',{},bindings)).json()).toEqual({strategy:'ACCESS_PREVIEW',mediaStrategy:'STATIC_ASSETS'});
     expect((await app.request('http://localhost/auth/config',{}, {...bindings,AUTH_STRATEGY:undefined})).status).toBe(503);
-    expect(await (await app.request('http://localhost/auth/config',{}, {...bindings,AUTH_STRATEGY:'PASSWORD',LOCAL_OWNER_AUTH_ENABLED:'true',LOCAL_EMAIL_ADAPTER:'MOCK'})).json()).toEqual({strategy:'PASSWORD',registration:true,recovery:true});
+    expect(await (await app.request('http://localhost/auth/config',{}, {...bindings,AUTH_STRATEGY:'PASSWORD',LOCAL_OWNER_AUTH_ENABLED:'true',LOCAL_EMAIL_ADAPTER:'MOCK'})).json()).toEqual({strategy:'PASSWORD',registration:true,recovery:true,mediaStrategy:'STATIC_ASSETS'});
   });
   it('requires the synthetic user to exist with its expected OWNER role and email',async()=>{
     await env.DB.prepare("UPDATE users SET role='ADMIN' WHERE id=?").bind(PREVIEW_OWNER_ID).run();

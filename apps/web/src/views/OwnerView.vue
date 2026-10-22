@@ -6,7 +6,7 @@ import { useSession } from '../session';
 import { currencyOptions, pricePeriodOptions, rentalDurationOptions, formatRentalPrice, type Currency, type PricePeriod, type RentalDuration } from './rental-domain';
 type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number };
 type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null };
-type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt:string };
+type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt?:string; source?:'STATIC_ASSET'|'OWNER_UPLOAD' };
 type ContactEvent = { id:string; state:'UNREAD'|'READ'; visitorName:string; visitorEmail:string; message:string; createdAt:string; listing:{id:string;title:string;location:string} };
 const MAX_IMAGE_BYTES=1_800_000, MAX_IMAGES=20;
 const MAX_IMAGE_WIDTH=640,MAX_IMAGE_HEIGHT=480;
@@ -28,6 +28,8 @@ const listingCounts=computed(()=>({all:listings.value.length,drafts:listings.val
 const nextStep=computed(()=>{if(!selected.value)return 'Elegí una publicación o empezá un nuevo borrador.';if(selected.value.status==='REJECTED')return 'Revisá el motivo, corregí los datos y volvé a enviarla.';if(selected.value.status==='DRAFT')return dirty.value?'Guardá tus cambios para continuar.':'Completá la publicación y enviála a revisión cuando esté lista.';if(selected.value.status==='SUBMITTED')return 'El equipo está revisando esta publicación. Te avisaremos cuando cambie.';if(selected.value.publicationStatus==='PUBLISHED')return 'Tu alojamiento está publicado. Revisá la disponibilidad cuando cambie.';return 'La publicación fue aprobada y está pendiente de publicación.';});
 const confirmedLabel=computed(()=>selected.value?.lastConfirmedAt?new Date(selected.value.lastConfirmedAt).toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short'}):'Todavía no confirmaste la disponibilidad.');
 const canEdit=computed(()=>!selected.value||['DRAFT','REJECTED'].includes(selected.value.status));
+const ownerUploadsEnabled=computed(()=>session.mediaStrategy.value==='D1_BLOB');
+const mutableImages=computed(()=>images.value.filter(image=>image.source!=='STATIC_ASSET'));
 const dirty=computed(()=>selected.value&&Object.keys(blank()).some(key=>form[key as keyof Fields]!==selected.value![key as keyof Fields]));
 const unsaved=computed(()=>{
   const baseline=selected.value??blank();
@@ -195,7 +197,7 @@ async function removeImage(){
 }
 async function moveImage(image:Image,delta:number){
   const item=selected.value;if(!item||busy.value||!canEdit.value)return;
-  const position=image.position+delta;if(position<0||position>=images.value.length)return;
+  const position=image.position+delta;if(position<0||position>=mutableImages.value.length)return;
   const keyScope=`reorder:${item.id}:${image.id}:${position}`,key=imageMutationKey(keyScope);
   busy.value=true;imageBusy.value='reorder';error.value='';notice.value='';
   try{images.value=await session.apiRequest<Image[]>(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'PATCH',body:JSON.stringify({position}),headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);notice.value='Orden de imágenes actualizado.';}
@@ -331,8 +333,8 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
 
           <section v-if="selected" class="owner-photos" aria-labelledby="owner-images-title">
             <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ images.length }} / {{ MAX_IMAGES }}</span></header>
-            <p class="owner-section-copy">JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos se guardan de forma privada.</p>
-            <label v-if="canEdit&&images.length<MAX_IMAGES&&!selectedPhoto" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
+            <p class="owner-section-copy">{{ ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.' }}</p>
+            <label v-if="canEdit&&ownerUploadsEnabled&&images.length<MAX_IMAGES&&!selectedPhoto" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
               <img :src="selectedPhoto.previewUrl" :alt="`Vista previa de ${selectedPhoto.file.name}`" width="640" height="480" />
               <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ (selectedPhoto.file.size/1024).toFixed(0) }} KB · Todavía no se guardó</small></div>
@@ -341,10 +343,10 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <p v-if="imagesLoading" role="status">Cargando fotos…</p>
             <div v-else-if="!images.length" class="owner-photo-empty"><span aria-hidden="true">▧</span><p>{{ canEdit?'Todavía no agregaste fotos.':'Esta publicación no tiene fotos guardadas.' }}</p></div>
             <ul v-else class="owner-image-grid" :aria-busy="imageBusy!==null">
-              <li v-for="image in images" :key="image.id" class="owner-image-card">
-                <img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${image.position+1} de ${selected.title}`" width="640" height="480" loading="lazy" />
-                <div class="owner-image-meta"><span><strong>{{ image.position+1 }}.</strong> {{ image.originalName }}</span><small>{{ (image.sizeBytes/1024).toFixed(0) }} KB</small></div>
-                <div v-if="canEdit" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===images.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image)">Eliminar</button></div>
+              <li v-for="(image,index) in images" :key="image.id" class="owner-image-card">
+                <img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${index+1} de ${selected.title}`" width="640" height="480" loading="lazy" />
+                <div class="owner-image-meta"><span><strong>{{ index+1 }}.</strong> {{ image.originalName }}<small v-if="image.source==='STATIC_ASSET'"> · Administrada desde el repositorio</small></span><small>{{ (image.sizeBytes/1024).toFixed(0) }} KB</small></div>
+                <div v-if="canEdit&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image)">Eliminar</button></div>
               </li>
             </ul>
             <p v-if="selected.status==='APPROVED'&&images.length" class="owner-readonly-note">Las fotos de una publicación aprobada se muestran en modo lectura.</p>

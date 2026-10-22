@@ -6,10 +6,11 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 
 - Registro → bandeja MOCK → verificación de un solo uso → login → logout.
 - Recuperación antienumeradora (dirección existente/desconocida), restablecimiento, rechazo de contraseña anterior y nuevo login.
-- OWNER abre publicación aprobada con fotos (regresión #36), las lee en modo privado, y no puede editarlas; otro OWNER no puede acceder. La API también rechaza mutaciones de fotos en estado aprobado.
+- OWNER abre publicación aprobada con fotos de repositorio y D1 BLOB mezcladas (regresión #36); el Worker entrega metadata y redirect seguro para Static Assets y bytes privados D1, y otro OWNER recibe 404. Las fotos aprobadas permanecen de solo lectura; la suite estática también demuestra que POST/PATCH/DELETE continúan bloqueados sin mutar la ficha.
 - Disponibilidad/reconfirmación y consulta real sintética en inbox; cambio leído/no leído.
 - Crear/editar borrador, error HTTP transitorio y retry preservando campos, advertencia de cambios no guardados, preview local de foto, fallo/retry de carga, orden, borrado confirmado, envío a revisión y eliminación confirmada.
 - Regresiones GitHub PR #40: cancelar logout con un formulario modificado conserva sesión y valores; una foto local previsualizada bloquea “Actualizar lista”, ofrece descartar explícitamente y no puede perderse con “Actualizar desde servidor”. E2E focalizado consolidado: 2/2 en 2.2 min sobre Workerd + D1 real local.
+- Regresiones del último exact-head review: OWNER puede leer Static Assets de una publicación propia en modos `STATIC_ASSETS` y `D1_BLOB`, sin ampliar mutaciones; la configuración pública de auth informa la estrategia de medios y la UI oculta acciones de subida cuando el modo es `STATIC_ASSETS`. Playwright desactiva la reutilización del servidor; dos ejecuciones completas consecutivas volvieron a seedear D1 sintética y pasaron 2/2 cada una (2.1 y 2.4 min).
 - ADMIN no puede usar UI ni API OWNER; sesión expirada no muta estado (regresiones Worker).
 - Teclado/skip-link, diálogo de salida y viewports 1440, 390 y 320 px; el E2E comprobó que `scrollWidth <= viewport` en 320 px.
 
@@ -17,16 +18,19 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 
 | Verificación | Resultado |
 |---|---:|
-| `apps/worker`: `npm run test:owner` | 5/5 |
-| `apps/worker`: `owner-d1-blob-media.test.ts` | 12/12 |
+| `apps/worker`: `npm run test:owner` | 6/6, incluye Static Assets en lectura y escrituras bloqueadas |
+| `apps/worker`: `owner-d1-blob-media.test.ts` | 12/12, incluye lectura Static Assets en modo D1 BLOB |
+| `apps/worker`: `npm run test:preview-auth` | 6/6; `/auth/config` conserva estrategia y reporta la estrategia de medios |
+| `apps/worker`: `npm run test:catalog` | 7/7; mutaciones Static Assets siguen denegadas |
 | `apps/worker`: `media-blob-spike.test.ts` | 3/3 |
 | `apps/worker`: `npm run test:owner-auth` | 5/5 |
 | `apps/worker`: `npm run test:contact-workflow` | 6/6 |
 | `apps/worker`: `npm run typecheck` | PASS |
 | `apps/web`: `npm run typecheck` y `npm run build` | PASS |
-| `apps/web`: `npm run test:e2e:owner` (Workerd + D1 real local) | 2/2, 2.2 min |
+| `apps/web`: `npm run test:e2e:owner` (Workerd + D1 real local) | 2 ejecuciones consecutivas: 2/2 (2.1m), 2/2 (2.4m), cada una con startup y re-seed propios |
 | Regresión GitHub P2: cancelar logout conserva cambios y sesión | PASS, Playwright integrado |
 | Regresión GitHub P2: actualizar lista conserva/bloquea foto pendiente | PASS, Playwright integrado |
+| GitHub P2: OWNER Static Assets y E2E state reset | PASS, tests Worker + dos arranques E2E independientes |
 | Consistency validator contra `origin/main` y `git diff --check` | PASS |
 
 Los tests de media se ejecutaron por archivo para aislar Workerd; el spike de 256 KiB necesitó `--testTimeout=15000` en la primera corrida concurrente. La suite final integrada pasó sin concurrencia de QA adicional.

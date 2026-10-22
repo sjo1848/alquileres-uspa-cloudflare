@@ -4,9 +4,11 @@ import { ApiError, request, type Role, type User } from './api';
 export type SessionStatus =
   'unknown' | 'loading' | 'authenticated' | 'anonymous' | 'error';
 export type AuthStrategy = 'PASSWORD' | 'ACCESS_PREVIEW' | 'UNKNOWN';
+export type MediaStrategy = 'STATIC_ASSETS' | 'D1_BLOB' | 'R2' | 'UNKNOWN';
 const status = ref<SessionStatus>('unknown');
 const user = ref<User | null>(null);
 const authStrategy = ref<AuthStrategy>('UNKNOWN');
+const mediaStrategy = ref<MediaStrategy>('UNKNOWN');
 let restorePromise: Promise<void> | undefined;
 let onSessionExpired: (() => void) | undefined;
 
@@ -44,9 +46,10 @@ export function useSession() {
   }
 
   async function loadAuthStrategy() {
-    const config = await request<{strategy:string}>('/auth/config');
+    const config = await request<{strategy:string;mediaStrategy?:string}>('/auth/config');
     if(config.strategy!=='PASSWORD'&&config.strategy!=='ACCESS_PREVIEW')throw Error('Unsupported authentication');
     authStrategy.value=config.strategy;
+    mediaStrategy.value=config.mediaStrategy==='STATIC_ASSETS'||config.mediaStrategy==='D1_BLOB'||config.mediaStrategy==='R2'?config.mediaStrategy:'UNKNOWN';
     return authStrategy.value;
   }
 
@@ -98,6 +101,7 @@ export function useSession() {
     user,
     role,
     authStrategy,
+    mediaStrategy,
     isAuthenticated,
     authenticate,
     authenticatePreview,
