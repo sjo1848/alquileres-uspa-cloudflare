@@ -13,7 +13,7 @@ const MAX_IMAGE_WIDTH=640,MAX_IMAGE_HEIGHT=480;
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
 const creating=ref(false);
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
-const images=ref<Image[]>([]),imagesLoading=ref(false),imageBusy=ref<'upload'|'delete'|'reorder'|null>(null);
+const images=ref<Image[]>([]),imagesLoading=ref(false),imagesLoadError=ref(''),imageBusy=ref<'upload'|'delete'|'reorder'|null>(null);
 const contacts=ref<ContactEvent[]>([]), unreadContacts=ref(0), contactsLoading=ref(false), contactBusy=ref('');
 const mediaConfigLoading=ref(false),mediaConfigError=ref('');
 const confirmReload=ref(false);
@@ -32,7 +32,7 @@ const confirmedLabel=computed(()=>selected.value?.lastConfirmedAt?new Date(selec
 const canEdit=computed(()=>!selected.value||['DRAFT','REJECTED'].includes(selected.value.status));
 const ownerUploadsEnabled=computed(()=>session.mediaStrategy.value==='D1_BLOB');
 const hasRepositoryManagedImages=computed(()=>images.value.some(image=>image.source==='STATIC_ASSET'));
-const ownerCanUpload=computed(()=>ownerUploadsEnabled.value&&!hasRepositoryManagedImages.value);
+const ownerCanUpload=computed(()=>ownerUploadsEnabled.value&&!imagesLoading.value&&!imagesLoadError.value&&!hasRepositoryManagedImages.value);
 const mutableImages=computed(()=>images.value.filter(image=>image.source!=='STATIC_ASSET'));
 const dirty=computed(()=>selected.value&&Object.keys(blank()).some(key=>form[key as keyof Fields]!==selected.value![key as keyof Fields]));
 const unsaved=computed(()=>{
@@ -111,15 +111,16 @@ function choose(item?:Listing){
   confirmReload.value=false;
   pendingSelection.value=null;
   confirmDelete.value=false;
-  images.value=[];imageLoadVersion++;
+  images.value=[];imagesLoadError.value='';imageLoadVersion++;
   if(item)void loadImages(item);
 }
 async function loadImages(item:Listing){
-  const version=++imageLoadVersion;imagesLoading.value=true;
+  const version=++imageLoadVersion,previousError=imagesLoadError.value;imagesLoading.value=true;imagesLoadError.value='';if(previousError&&error.value===previousError)error.value='';
   try{const result=await session.apiRequest<Image[]>(`/listings/${encodeURIComponent(item.id)}/images`);if(version===imageLoadVersion&&selectedId.value===item.id)images.value=result;}
-  catch(e){if(version===imageLoadVersion&&selectedId.value===item.id)error.value=imageMessage(e);}
+  catch(e){if(version===imageLoadVersion&&selectedId.value===item.id){imagesLoadError.value='No pudimos confirmar si esta publicación tiene fotos administradas desde el repositorio. Reintentá antes de agregar una foto.';error.value=imagesLoadError.value;}}
   finally{if(version===imageLoadVersion)imagesLoading.value=false;}
 }
+async function retryLoadImages(){const item=selected.value;if(item&&!imagesLoading.value)await loadImages(item);}
 function requestChoose(item?:Listing,event?:MouseEvent){
   if(busy.value)return;
   if(unsaved.value){pendingSelection.value={item};confirmReload.value=false;openDialog('selection',selectionDialog,event?.currentTarget instanceof HTMLElement?event.currentTarget:null);return;}
@@ -368,7 +369,8 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <div v-if="mediaConfigError&&session.mediaStrategy.value==='UNKNOWN'" class="owner-media-config-error" role="alert"><p>{{ mediaConfigError }}</p><button type="button" class="secondary" :disabled="mediaConfigLoading" @click="loadMediaConfig">{{ mediaConfigLoading?'Comprobando…':'Reintentar configuración de fotos' }}</button></div>
             <p v-else-if="mediaConfigLoading" class="owner-section-copy" role="status">Comprobando las opciones disponibles para las fotos…</p>
             <p v-else class="owner-section-copy">{{ hasRepositoryManagedImages?'Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.':ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':session.mediaStrategy.value==='STATIC_ASSETS'?'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.':'La gestión de fotos no está habilitada en este entorno.' }}</p>
-            <label v-if="canEdit&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!imagesLoading&&!mediaConfigLoading" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
+            <p v-if="imagesLoadError" class="error" role="alert">{{ imagesLoadError }} <button type="button" class="secondary" :disabled="imagesLoading" @click="retryLoadImages">Reintentar carga de fotos</button></p>
+            <label v-if="canEdit&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
               <img :src="selectedPhoto.previewUrl" :alt="`Vista previa de ${selectedPhoto.file.name}`" width="640" height="480" />
               <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ (selectedPhoto.file.size/1024).toFixed(0) }} KB · Todavía no se guardó</small></div>

@@ -138,6 +138,19 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(configRetryPage.getByRole('status')).toContainText('Imagen guardada');
   await expect(configRetryPage.locator('.owner-image-card')).toContainText('owner-e2e-red.jpg');
   expect(configAttempts).toBe(3);
+  let failStaticImagesOnce=true;
+  await configRetryPage.route('**/api/listings/owner-draft-static-photo/images',async route=>{
+    if(route.request().method()==='GET'&&failStaticImagesOnce){failStaticImagesOnce=false;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"synthetic image list failure"}'});return;}
+    await route.continue();
+  });
+  await configRetryPage.getByRole('button',{name:/Borrador con foto administrada/}).click();
+  await expect(configRetryPage.locator('.owner-photos [role="alert"]')).toContainText('No pudimos confirmar si esta publicación tiene fotos administradas');
+  await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(0);
+  await configRetryPage.getByRole('button',{name:'Reintentar carga de fotos'}).click();
+  await expect(configRetryPage.locator('.owner-photos [role="alert"]')).toHaveCount(0);
+  await expect(configRetryPage.locator('.owner-image-card')).toContainText('cabana-cerro.svg');
+  await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(0);
+  await configRetryPage.unroute('**/api/listings/owner-draft-static-photo/images');
   await configRetryPage.close();
   await capture(page, 'owner-dashboard-desktop-1440x1000.png');
   const approved = page.getByRole('button', { name: /Casa aprobada con fotos/ });
