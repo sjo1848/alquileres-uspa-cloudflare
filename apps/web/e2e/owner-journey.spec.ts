@@ -173,6 +173,24 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(page.getByRole('button', { name: 'Eliminar foto aprobada.png' })).toHaveCount(0);
   await capture(page, 'owner-approved-photos-desktop-1440x1000.png');
 
+  let releasePendingImages!:()=>void;
+  const pendingImages=new Promise<void>(resolve=>{releasePendingImages=resolve;});
+  await page.route('**/api/listings/owner-draft-static-photo/images',async route=>{await pendingImages;await route.continue();});
+  await page.getByRole('button',{name:/Borrador con foto administrada/}).click();
+  await expect(page.getByText('Cargando fotos…')).toBeVisible();
+  const pendingImageResponse=page.waitForResponse(response=>response.request().method()==='GET'&&response.url().includes('/api/listings/owner-draft-static-photo/images'));
+  await page.getByRole('button',{name:'+ Nuevo borrador'}).click();
+  await expect(page.getByText('Cargando fotos…')).toHaveCount(0);
+  await page.getByLabel('Nombre del alojamiento').fill('Borrador nuevo con galería disponible');
+  await page.getByLabel('Ubicación').fill('Uspallata, Mendoza');
+  await page.getByRole('button',{name:'Guardar borrador'}).click();
+  await expect(page.getByRole('status')).toContainText('Borrador creado.');
+  await expect(page.getByText('Cargando fotos…')).toHaveCount(0);
+  await expect(page.locator('input[type="file"]')).toHaveCount(1);
+  releasePendingImages();
+  await pendingImageResponse;
+  await page.unroute('**/api/listings/owner-draft-static-photo/images');
+
   await page.getByRole('button', { name: /Borrador con foto administrada/ }).click();
   await expect(page.getByText('Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.')).toBeVisible();
   await expect(page.locator('input[type="file"]')).toHaveCount(0);

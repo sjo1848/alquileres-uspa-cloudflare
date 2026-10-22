@@ -111,7 +111,7 @@ function choose(item?:Listing){
   confirmReload.value=false;
   pendingSelection.value=null;
   confirmDelete.value=false;
-  images.value=[];imagesLoadError.value='';imageLoadVersion++;
+  images.value=[];imagesLoading.value=false;imagesLoadError.value='';imageLoadVersion++;
   if(item)void loadImages(item);
 }
 async function loadImages(item:Listing){
