@@ -138,6 +138,22 @@ it('continues to expose repository-managed Static Assets when D1 BLOB is the Pre
   expect(image.status).toBe(302);expect(image.headers.get('location')).toBe('/media/catalog/synthetic.svg');
 });
 
+it('merges repository and OWNER-uploaded photos in their stored position order',async()=>{
+  const lid=await listing();
+  const created=await upload(lid,`dynamic-before-static-${lid}`),dynamic=await created.json() as any;
+  expect(created.status).toBe(201);expect(dynamic.position).toBe(0);
+  await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind(`static-after-upload-${lid}`,lid,'/media/catalog/static-after-upload.svg','image/svg+xml',123,1).run();
+  const ownerRows=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie});
+  expect(ownerRows.status).toBe(200);
+  expect((await ownerRows.json() as any[]).map(row=>[row.id,row.position,row.source??'OWNER_UPLOAD'])).toEqual([
+    [dynamic.id,0,'OWNER_UPLOAD'],[`static-after-upload-${lid}`,1,'STATIC_ASSET'],
+  ]);
+  await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(lid).run();
+  const publicListing=await request(`/public/listings/${lid}`),publicBody=await publicListing.json() as any;
+  expect(publicListing.status).toBe(200);
+  expect(publicBody.images.map((row:any)=>[row.id,row.position])).toEqual([[dynamic.id,0],[`static-after-upload-${lid}`,1]]);
+});
+
 it('fails closed with a migration conflict for legacy R2 rows in D1 BLOB mode',async()=>{
   const lid=await listing(),legacyId='legacy-r2-'+lid,created=new Date().toISOString();
   await env.DB.prepare("UPDATE listings SET location='Legacy Probe',location_search='legacy probe' WHERE id=?").bind(lid).run();

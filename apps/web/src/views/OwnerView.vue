@@ -18,7 +18,7 @@ const contacts=ref<ContactEvent[]>([]), unreadContacts=ref(0), contactsLoading=r
 const confirmReload=ref(false);
 const pendingSelection=ref<{item?:Listing}|null>(null);
 const confirmDelete=ref(false), confirmLeave=ref(false), pendingImageDelete=ref<Image|null>(null);
-const leaveDialog=ref<HTMLElement|null>(null);
+const leaveDialog=ref<HTMLElement|null>(null),imageDeleteDialog=ref<HTMLElement|null>(null),listingDeleteDialog=ref<HTMLElement|null>(null);
 const selectedPhoto=ref<{file:File;previewUrl:string}|null>(null);
 const statusFilter=ref<'ALL'|'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'>('ALL');
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
@@ -41,7 +41,26 @@ let pendingListingDelete:{id:string;key:string}|undefined;
 let pendingUpload:{identity:string;key:string}|undefined;
 const imageKeys=new Map<string,string>();let imageLoadVersion=0;
 let resolveLeave:((leave:boolean)=>void)|null=null;
-let leaveDialogReturnFocus:HTMLElement|null=null;
+type DialogName='leave'|'image-delete'|'listing-delete';
+const dialogReturnFocus:Partial<Record<DialogName,HTMLElement|null>>={};
+function openDialog(name:DialogName,dialog:typeof leaveDialog,trigger?:HTMLElement|null){
+  dialogReturnFocus[name]=trigger??(document.activeElement instanceof HTMLElement?document.activeElement:null);
+  void nextTick(()=>dialog.value?.querySelector<HTMLButtonElement>('[data-dialog-initial-focus]')?.focus());
+}
+function closeDialogFocus(name:DialogName,fallbackId?:string,fallbackFirst=false){
+  const trigger=dialogReturnFocus[name];delete dialogReturnFocus[name];
+  void nextTick(()=>{const fallback=fallbackId?document.getElementById(fallbackId):null;if(fallbackFirst&&fallback){fallback.focus({preventScroll:true});return;}if(trigger?.isConnected){trigger.focus({preventScroll:true});return;}fallback?.focus({preventScroll:true});});
+}
+function trapDialogFocus(event:KeyboardEvent,dialog:HTMLElement|null,onEscape:()=>void){
+  if(event.key==='Escape'){event.preventDefault();onEscape();return;}
+  if(event.key!=='Tab')return;
+  if(!dialog)return;
+  const controls=[...dialog.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+  if(!controls.length){event.preventDefault();return;}
+  const first=controls[0],last=controls[controls.length-1],active=document.activeElement;
+  if(event.shiftKey&&(active===first||!dialog.contains(active))){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&(active===last||!dialog.contains(active))){event.preventDefault();first.focus();}
+}
 function imageMutationKey(operation:string){let key=imageKeys.get(operation);if(!key){key=crypto.randomUUID();imageKeys.set(operation,key);}return key;}
 const label=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function message(e:unknown){
@@ -122,9 +141,10 @@ async function refreshSelected(){
   catch(e){error.value=message(e);}
   finally{busy.value=false;}
 }
-async function removeListing(){
+async function removeListing(event?:MouseEvent){
   const item=selected.value;if(!item||busy.value||!canEdit.value)return;
   confirmDelete.value=true;
+  openDialog('listing-delete',listingDeleteDialog,event?.currentTarget instanceof HTMLElement?event.currentTarget:null);
 }
 async function confirmRemoveListing(){
   const item=selected.value;if(!item||busy.value||!canEdit.value)return;
@@ -133,8 +153,8 @@ async function confirmRemoveListing(){
   busy.value=true;error.value='';notice.value='';
   try{
     await session.apiRequest<{id:string;deleted:true}>(`/listings/${encodeURIComponent(item.id)}`,{method:'DELETE',headers:{'Idempotency-Key':pendingListingDelete.key}});
-    discardSelectedPhoto();listings.value=listings.value.filter(row=>row.id!==item.id);selectedId.value=null;creating.value=false;Object.assign(form,blank());images.value=[];pendingListingDelete=undefined;notice.value='Publicación eliminada.';
-  }catch(e){error.value=message(e);}
+    discardSelectedPhoto();listings.value=listings.value.filter(row=>row.id!==item.id);selectedId.value=null;creating.value=false;Object.assign(form,blank());images.value=[];pendingListingDelete=undefined;notice.value='Publicación eliminada.';closeDialogFocus('listing-delete','owner-listings-title',true);
+  }catch(e){error.value=message(e);closeDialogFocus('listing-delete');}
   finally{busy.value=false;}
 }
 function remember(item:Listing){
@@ -187,13 +207,15 @@ async function uploadSelectedPhoto(){
   }catch(e){error.value=imageMessage(e);}
   finally{busy.value=false;imageBusy.value=null;}
 }
-function requestRemoveImage(image:Image){if(!busy.value&&canEdit.value)pendingImageDelete.value=image;}
+function requestRemoveImage(image:Image,event?:MouseEvent){if(!busy.value&&canEdit.value){pendingImageDelete.value=image;openDialog('image-delete',imageDeleteDialog,event?.currentTarget instanceof HTMLElement?event.currentTarget:null);}}
+function closeImageDelete(){pendingImageDelete.value=null;closeDialogFocus('image-delete');}
+function closeListingDelete(){confirmDelete.value=false;closeDialogFocus('listing-delete');}
 async function removeImage(){
   const image=pendingImageDelete.value;
   const item=selected.value;if(!item||!image||busy.value||!canEdit.value)return;
   busy.value=true;imageBusy.value='delete';error.value='';notice.value='';
   const keyScope=`delete:${item.id}:${image.id}`,key=imageMutationKey(keyScope);
-  try{await session.apiRequest(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'DELETE',headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);pendingImageDelete.value=null;await loadImages(item);notice.value='Imagen eliminada.';}
+  try{await session.apiRequest(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'DELETE',headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);pendingImageDelete.value=null;closeDialogFocus('image-delete','owner-images-title',true);await loadImages(item);notice.value='Imagen eliminada.';}
   catch(e){error.value=imageMessage(e);}
   finally{busy.value=false;imageBusy.value=null;}
 }
@@ -213,22 +235,11 @@ async function setContactState(event:ContactEvent,state:'UNREAD'|'READ'){if(cont
 async function loadMoreContacts(){if(nextContactCursor.value)await loadContacts(nextContactCursor.value,true);}
 async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/availability`,{method:'PATCH',body:JSON.stringify({availabilityStatus:status})});Object.assign(item,updated);notice.value='Disponibilidad actualizada.';}catch{error.value='No pudimos actualizar la disponibilidad.';}finally{contactBusy.value='';}}
 async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
-function resolvePendingLeave(leave:boolean){const resolve=resolveLeave,returnFocus=leaveDialogReturnFocus;resolveLeave=null;leaveDialogReturnFocus=null;confirmLeave.value=false;resolve?.(leave);if(!leave&&returnFocus)void nextTick(()=>{if(returnFocus.isConnected)returnFocus.focus({preventScroll:true});});}
-function containLeaveDialogFocus(event:KeyboardEvent){
-  if(event.key==='Escape'){event.preventDefault();resolvePendingLeave(false);return;}
-  if(event.key!=='Tab')return;
-  const dialog=leaveDialog.value;if(!dialog)return;
-  const controls=[...dialog.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
-  if(!controls.length){event.preventDefault();return;}
-  const first=controls[0],last=controls[controls.length-1],active=document.activeElement;
-  if(event.shiftKey&&(active===first||!dialog.contains(active))){event.preventDefault();last?.focus();}
-  else if(!event.shiftKey&&(active===last||!dialog.contains(active))){event.preventDefault();first.focus();}
-}
+function resolvePendingLeave(leave:boolean){const resolve=resolveLeave;resolveLeave=null;confirmLeave.value=false;resolve?.(leave);if(!leave)closeDialogFocus('leave');else delete dialogReturnFocus.leave;}
 onBeforeRouteLeave(()=>{
   if(!unsaved.value)return true;
-  leaveDialogReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
   confirmLeave.value=true;
-  void nextTick(()=>leaveDialog.value?.querySelector<HTMLButtonElement>('[data-leave-initial-focus]')?.focus());
+  openDialog('leave',leaveDialog);
   return new Promise<boolean>(resolve=>{resolveLeave=resolve;});
 });
 function beforeUnload(event:BeforeUnloadEvent){if(unsaved.value){event.preventDefault();event.returnValue='';}}
@@ -265,7 +276,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
     <section id="owner-listings" class="owner-workspace" aria-labelledby="owner-listings-title">
       <aside class="owner-list-panel card">
         <div class="owner-list-heading">
-          <div><p class="eyebrow">Tu inventario</p><h2 id="owner-listings-title">Mis alojamientos</h2></div>
+          <div><p class="eyebrow">Tu inventario</p><h2 id="owner-listings-title" tabindex="-1">Mis alojamientos</h2></div>
           <button type="button" :disabled="busy||loading" @click="requestChoose()">+ Nuevo borrador</button>
         </div>
         <label class="owner-filter-label" for="owner-status-filter">Mostrar</label>
@@ -339,14 +350,14 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <p v-if="selected && canEdit && !dirty" class="owner-save-hint">{{ formatRentalPrice(selected) }}</p>
             <div class="owner-form-actions">
               <button type="submit" :disabled="busy||loading||!canEdit">{{ busy?'Guardando…':selected?'Guardar cambios':'Guardar borrador' }}</button>
-              <button v-if="selected && canEdit" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing">Eliminar borrador</button>
+              <button v-if="selected && canEdit" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing($event)">Eliminar borrador</button>
               <button v-if="canEdit" type="button" class="secondary" :disabled="busy||loading||unsaved" @click="refreshSelected">Actualizar desde servidor</button>
               <button v-if="canEdit && selected" type="button" :disabled="busy||dirty||imagesLoading||selectedPhoto!==null" @click="submit">{{ busy?'Enviando…':'Enviar a revisión' }}</button>
             </div>
           </form>
 
           <section v-if="selected" class="owner-photos" aria-labelledby="owner-images-title">
-            <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ images.length }} / {{ MAX_IMAGES }}</span></header>
+          <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title" tabindex="-1">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ images.length }} / {{ MAX_IMAGES }}</span></header>
             <p class="owner-section-copy">{{ ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.' }}</p>
             <label v-if="canEdit&&ownerUploadsEnabled&&images.length<MAX_IMAGES&&!selectedPhoto" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
@@ -360,7 +371,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
               <li v-for="(image,index) in images" :key="image.id" class="owner-image-card">
                 <img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${index+1} de ${selected.title}`" width="640" height="480" loading="lazy" />
                 <div class="owner-image-meta"><span><strong>{{ index+1 }}.</strong> {{ image.originalName }}<small v-if="image.source==='STATIC_ASSET'"> · Administrada desde el repositorio</small></span><small>{{ (image.sizeBytes/1024).toFixed(0) }} KB</small></div>
-                <div v-if="canEdit&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image)">Eliminar</button></div>
+                <div v-if="canEdit&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image,$event)">Eliminar</button></div>
               </li>
             </ul>
             <p v-if="selected.status==='APPROVED'&&images.length" class="owner-readonly-note">Las fotos de una publicación aprobada se muestran en modo lectura.</p>
@@ -392,21 +403,21 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
     </section>
 
     <div v-if="pendingImageDelete && selected" class="owner-dialog-backdrop">
-      <section class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-image-delete-title" aria-describedby="owner-image-delete-copy">
+      <section ref="imageDeleteDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-image-delete-title" aria-describedby="owner-image-delete-copy" @keydown="trapDialogFocus($event,imageDeleteDialog,closeImageDelete)">
         <p class="eyebrow">Eliminar foto</p><h2 id="owner-image-delete-title">¿Quitar “{{ pendingImageDelete.originalName }}”?</h2><p id="owner-image-delete-copy">La foto se eliminará de este alojamiento. El resto de las imágenes conserva su orden.</p>
-        <div class="owner-confirm-actions"><button type="button" class="danger" :disabled="busy" @click="removeImage">{{ busy?'Eliminando…':'Eliminar foto' }}</button><button type="button" class="secondary" :disabled="busy" @click="pendingImageDelete=null">Conservar foto</button></div>
+        <div class="owner-confirm-actions"><button type="button" class="danger" :disabled="busy" @click="removeImage">{{ busy?'Eliminando…':'Eliminar foto' }}</button><button data-dialog-initial-focus type="button" class="secondary" :disabled="busy" @click="closeImageDelete">Conservar foto</button></div>
       </section>
     </div>
     <div v-if="confirmDelete && selected" class="owner-dialog-backdrop">
-      <section class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-delete-title" aria-describedby="owner-delete-copy">
+      <section ref="listingDeleteDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-delete-title" aria-describedby="owner-delete-copy" @keydown="trapDialogFocus($event,listingDeleteDialog,closeListingDelete)">
         <p class="eyebrow">Acción permanente</p><h2 id="owner-delete-title">¿Eliminar “{{ selected.title }}”?</h2><p id="owner-delete-copy">Se eliminará el borrador y sus fotos guardadas. Esta acción no se puede deshacer.</p>
-        <div class="owner-confirm-actions"><button type="button" class="danger" :disabled="busy" @click="confirmRemoveListing">{{ busy?'Eliminando…':'Eliminar alojamiento' }}</button><button type="button" class="secondary" :disabled="busy" @click="confirmDelete=false">Conservar borrador</button></div>
+        <div class="owner-confirm-actions"><button type="button" class="danger" :disabled="busy" @click="confirmRemoveListing">{{ busy?'Eliminando…':'Eliminar alojamiento' }}</button><button data-dialog-initial-focus type="button" class="secondary" :disabled="busy" @click="closeListingDelete">Conservar borrador</button></div>
       </section>
     </div>
     <div v-if="confirmLeave" class="owner-dialog-backdrop">
-      <section ref="leaveDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-leave-title" aria-describedby="owner-leave-copy" @keydown="containLeaveDialogFocus">
+      <section ref="leaveDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-leave-title" aria-describedby="owner-leave-copy" @keydown="trapDialogFocus($event,leaveDialog,()=>resolvePendingLeave(false))">
         <p class="eyebrow">Cambios pendientes</p><h2 id="owner-leave-title">¿Salir sin guardar?</h2><p id="owner-leave-copy">Los cambios que hiciste en este borrador todavía no están guardados.</p>
-        <div class="owner-confirm-actions"><button type="button" @click="resolvePendingLeave(true)">Salir y descartar cambios</button><button data-leave-initial-focus type="button" class="secondary" @click="resolvePendingLeave(false)">Seguir editando</button></div>
+        <div class="owner-confirm-actions"><button type="button" @click="resolvePendingLeave(true)">Salir y descartar cambios</button><button data-dialog-initial-focus type="button" class="secondary" @click="resolvePendingLeave(false)">Seguir editando</button></div>
       </section>
     </div>
   </section>

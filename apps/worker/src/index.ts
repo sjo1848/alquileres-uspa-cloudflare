@@ -687,7 +687,7 @@ app.get('/listings/:id/images',async c=>{
   const rows=d1ImageStatus(c)?await orderedD1Images(c.env.DB,lid):await ordered(c.env.DB,lid);
   if(!rows.every((row,index)=>row.position===index))return c.json({error:'image ordering requires recovery; retry after recovery'},503);
   const dynamicRows=(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'?[]:rows.map(imageDto));
-  return c.json([...staticRows,...dynamicRows]);
+  return c.json([...staticRows,...dynamicRows].sort((a:any,b:any)=>a.position-b.position||a.id.localeCompare(b.id)));
 });
 app.post('/listings/:id/images', async c => {
   const lid=c.req.param('id');
