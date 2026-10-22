@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I06.4 — catálogo, filtros, ficha y consulta pública; PR #39 integrado",
   "last_completed_head": "main@48e4f5c4251fe939cb779698e4e51b16614be178",
   "work_branch": "work/i06-owner",
-  "next_action": "Crear y publicar el PR funcional vinculado a #32; ejecutar CI y review automáticas exact-head y una revisión Controller separada GPT-6 Luna High read-only sobre el SHA ejecutable 0d4f4c5074ed89483649e4de30136b507763dbd2. Resolver reworks consolidados y luego merge protegido. No Preview ni #33.",
+  "next_action": "Completar una revisión GitHub exact-head y checks worker/web; ejecutar Controller read-only sobre candidate_executable_sha 0d4f4c5...; procesar hallazgos/reworks en el PR #40. Luego verificar protecciones, mergeabilidad y cero hilos abiertos antes de integrar.",
   "stop_reason": null,
   "event": {
-    "seq": 185,
-    "id": "CF_AU_I06_5_PRECRITIC_PASS_TO_PUBLISH",
-    "type": "PRECRITIC_PASS_TO_EXACT_HEAD_REVIEW"
+    "seq": 186,
+    "id": "CF_AU_I06_5_PR40_PUBLISHED",
+    "type": "FUNCTIONAL_PR_PUBLISHED_FOR_REVIEW"
   },
   "external_review": null,
   "human_gate": {
@@ -23,7 +23,14 @@
     "reference": "https://gist.github.com/sjo1848/b909a2ba05959450ce848eec0ff43699/ffa166c79e9ba8e2a05aa42766459a20c48c70b2"
   },
   "blocker": null,
-  "pull_request": null,
+  "pull_request": {
+    "number": 40,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/40",
+    "branch": "work/i06-owner",
+    "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+    "executable_sha": "0d4f4c5074ed89483649e4de30136b507763dbd2",
+    "status": "OPEN"
+  },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": null,
@@ -73,7 +80,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/32",
     "contract": ".orchestration/contracts/CF-AU-I06.5-OWNER-AUTH.md",
-    "status": "CONSOLIDATED_LOCAL_CANDIDATE_READY_FOR_REVIEW",
+    "status": "PR_PUBLISHED_REVIEW_PENDING",
     "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
     "branch": "work/i06-owner",
     "scope": "I06.5 local synthetic OWNER and I05 mock authentication experience, integrated Vue/Worker/Hono/D1. Reconcile I06.4 post-merge state in this functional PR. No I06.6/#33, Preview/Access remote change, production, paid services, external email, R2, real data or source repository write.",
@@ -99,10 +106,10 @@
       "sandbox": "read-only",
       "actual_backend_model_identity": "UNVERIFIED"
     },
-    "github_review": "PENDING_PR_EXACT_HEAD",
+    "github_review": "PENDING_AUTOMATED_REVIEW_ON_CURRENT_HEAD",
     "precritic": "PASS_TO_PUBLISH_FOR_EXACT_HEAD_GITHUB_AND_CONTROLLER_REVIEW",
     "scope_limits": "Local synthetic Worker+D1 only. No Preview/Access remote change, deployment, production, real data, paid service, external email, R2, source repo write, I06.6/#33.",
-    "next_action": "Crear y publicar el PR funcional vinculado a #32; ejecutar CI y review automáticas exact-head y una revisión Controller separada GPT-6 Luna High read-only sobre el SHA ejecutable 0d4f4c5074ed89483649e4de30136b507763dbd2. Resolver reworks consolidados y luego merge protegido. No Preview ni #33.",
+    "next_action": "Completar una revisión GitHub exact-head y checks worker/web; ejecutar Controller read-only sobre candidate_executable_sha 0d4f4c5...; procesar hallazgos/reworks en el PR #40. Luego verificar protecciones, mergeabilidad y cero hilos abiertos antes de integrar.",
     "candidate_executable_sha": "0d4f4c5074ed89483649e4de30136b507763dbd2",
     "candidate_tree_sha": "bdc1c8676dcac3637512e9b135083bfb75ccfe38"
   },

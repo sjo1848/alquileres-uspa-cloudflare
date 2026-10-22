@@ -1475,3 +1475,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Exact executable candidate `0d4f4c5074ed89483649e4de30136b507763dbd2` (tree `bdc1c8676dcac3637512e9b135083bfb75ccfe38`), ancestor base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Pre-Critic gate: PASS to publish for exact-head GitHub review/checks and one GPT-6 Luna High read-only delegated Controller review only.
 - Local tests/evidence and #36 authorization proof are enumerated in `output/playwright/i06.5/QA.md` and `.orchestration/PRECRITIC-GATE.md`. No P0/P1 is known open. GitHub/Controller results remain pending; do not merge until both PASS, checks green, conversations resolved and main protection/mergeability verified.
 - **READY_TO_RESUME:** push functional branch/create PR linked to #32 and publish nine visual captures through issue/PR links. No Preview, #33, production, paid service or source writes.
+
+## Event 186 — PR #40 published
+
+- PR funcional #40: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/40, branch `work/i06-owner`, base `48e4f5c4251fe939cb779698e4e51b16614be178`. Executable candidate remains `0d4f4c5074ed89483649e4de30136b507763dbd2`; subsequent current checkpoint is state/evidence only.
+- Local verification is recorded at `output/playwright/i06.5/QA.md`. Current exact PR checks/review, Controller, final Pre-Critic and merge protection are pending. #32/#36 and Epic #25 closeout wait for protected merge.
+- **READY_TO_RESUME:** evaluate CI/GitHub review on current PR HEAD and run the required separate GPT-6 Luna High read-only Controller against exact executable candidate; repair any bounded findings autonomously. No remote deployment, Preview changes, or I06.6.
