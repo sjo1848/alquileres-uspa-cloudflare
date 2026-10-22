@@ -130,6 +130,8 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(configRetryPage.getByRole('alert')).toHaveCount(0);
   await expect(configRetryPage.getByText(/no se pueden combinar con nuevas cargas/)).toBeVisible();
   await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(0);
+  await configRetryPage.getByRole('button',{name:/Borrador listo para cargar/}).click();
+  await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(1);
   expect(configAttempts).toBe(3);
   await configRetryPage.close();
   await capture(page, 'owner-dashboard-desktop-1440x1000.png');

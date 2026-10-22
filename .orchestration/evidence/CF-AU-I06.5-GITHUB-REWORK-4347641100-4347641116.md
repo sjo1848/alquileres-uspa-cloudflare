@@ -21,6 +21,6 @@ Head revisado por GitHub: `868a2c79cdf715816520f5c549a8086c4065f7fa`. Candidato 
 ## Verificaciones afectadas
 
 - `apps/web`: typecheck y build PASS.
-- Playwright OWNER focalizado: 1/1 PASS (52.2 s), Vue + Worker/Hono + Workerd + D1 local reseed; cubre además upload bloqueado para Static Asset y retry de `/auth/config`.
+- Playwright OWNER focalizado: 1/1 PASS (55.7 s), Vue + Worker/Hono + Workerd + D1 local reseed; cubre upload bloqueado para Static Asset, upload disponible en D1 BLOB después de retry de `/auth/config`, reorder mixto y sesión expirada.
 - Worker `owner-d1-blob-media.test.ts`: 13/13 PASS (la corrección de expectativa fija es la misma del candidato; no cambió Worker desde esa ejecución).
 - Sin suites completas adicionales, Preview, R2, datos reales, correo externo o servicios pagos.
