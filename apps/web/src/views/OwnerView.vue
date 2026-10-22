@@ -15,6 +15,7 @@ const creating=ref(false);
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
 const images=ref<Image[]>([]),imagesLoading=ref(false),imageBusy=ref<'upload'|'delete'|'reorder'|null>(null);
 const contacts=ref<ContactEvent[]>([]), unreadContacts=ref(0), contactsLoading=ref(false), contactBusy=ref('');
+const mediaConfigLoading=ref(false),mediaConfigError=ref('');
 const confirmReload=ref(false);
 const pendingSelection=ref<{item?:Listing}|null>(null);
 const confirmDelete=ref(false), confirmLeave=ref(false), pendingImageDelete=ref<Image|null>(null);
@@ -78,6 +79,13 @@ function imageMessage(e:unknown){
   if(e instanceof ApiError&&e.status===413)return 'La imagen supera el límite de 1,8 MB.';
   if(e instanceof ApiError&&e.status===507)return 'Se alcanzó el espacio reservado para imágenes en este Preview.';
   return message(e);
+}
+async function loadMediaConfig(){
+  if(mediaConfigLoading.value)return;
+  mediaConfigLoading.value=true;mediaConfigError.value='';
+  try{await session.loadAuthStrategy();if(session.mediaStrategy.value==='UNKNOWN')throw new Error('Image storage configuration is unavailable');}
+  catch{mediaConfigError.value='No pudimos comprobar cómo se gestionan las fotos. Reintentá para habilitar las acciones disponibles.';}
+  finally{mediaConfigLoading.value=false;}
 }
 async function normalizePhoto(file:File){
   const bitmap=await createImageBitmap(file);
@@ -243,7 +251,7 @@ onBeforeRouteLeave(()=>{
   return new Promise<boolean>(resolve=>{resolveLeave=resolve;});
 });
 function beforeUnload(event:BeforeUnloadEvent){if(unsaved.value){event.preventDefault();event.returnValue='';}}
-onMounted(()=>{void load();void loadContacts();window.addEventListener('beforeunload',beforeUnload);});
+onMounted(()=>{void load();void loadContacts();if(session.mediaStrategy.value==='UNKNOWN')void loadMediaConfig();window.addEventListener('beforeunload',beforeUnload);});
 onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);resolvePendingLeave(false);discardSelectedPhoto();});
 </script>
 <template>
@@ -358,8 +366,10 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
 
           <section v-if="selected" class="owner-photos" aria-labelledby="owner-images-title">
           <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title" tabindex="-1">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ images.length }} / {{ MAX_IMAGES }}</span></header>
-            <p class="owner-section-copy">{{ ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.' }}</p>
-            <label v-if="canEdit&&ownerUploadsEnabled&&images.length<MAX_IMAGES&&!selectedPhoto" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
+            <div v-if="mediaConfigError&&session.mediaStrategy.value==='UNKNOWN'" class="owner-media-config-error" role="alert"><p>{{ mediaConfigError }}</p><button type="button" class="secondary" :disabled="mediaConfigLoading" @click="loadMediaConfig">{{ mediaConfigLoading?'Comprobando…':'Reintentar configuración de fotos' }}</button></div>
+            <p v-else-if="mediaConfigLoading" class="owner-section-copy" role="status">Comprobando las opciones disponibles para las fotos…</p>
+            <p v-else class="owner-section-copy">{{ ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':session.mediaStrategy.value==='STATIC_ASSETS'?'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.':'La gestión de fotos no está habilitada en este entorno.' }}</p>
+            <label v-if="canEdit&&ownerUploadsEnabled&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
               <img :src="selectedPhoto.previewUrl" :alt="`Vista previa de ${selectedPhoto.file.name}`" width="640" height="480" />
               <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ (selectedPhoto.file.size/1024).toFixed(0) }} KB · Todavía no se guardó</small></div>

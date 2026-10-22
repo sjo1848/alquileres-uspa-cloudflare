@@ -1042,6 +1042,9 @@ input::placeholder, textarea::placeholder { color: #67736b; opacity: 1; }
 .owner-photos { display: grid; gap: .7rem; padding-top: 1rem; border-top: 1px solid var(--color-border); }
 .owner-photos h3 { font: 600 1.45rem/1.15 var(--font-display); }
 .owner-section-copy { max-width: 60ch; margin: 0; color: var(--color-muted); font-size: .8rem; line-height: 1.5; }
+.owner-media-config-error { display: grid; gap: .65rem; padding: .85rem; border-inline-start: .2rem solid var(--color-clay); border-radius: var(--radius-control); background: var(--color-paper); }
+.owner-media-config-error p { margin: 0; color: var(--color-forest); font-size: .85rem; line-height: 1.5; }
+.owner-media-config-error button { justify-self: start; }
 .owner-photo-count { flex: 0 0 auto; padding: .22rem .55rem; border-radius: 999px; background: var(--color-sage); font-size: .75rem; font-weight: 700; }
 .owner-upload { display: grid; justify-items: start; gap: .35rem; color: var(--color-clay-dark); font-size: .83rem; font-weight: 700; }
 .owner-upload input { width: 100%; min-height: 2.9rem; color: var(--color-forest); font-weight: 400; }

@@ -10,6 +10,7 @@ const user = ref<User | null>(null);
 const authStrategy = ref<AuthStrategy>('UNKNOWN');
 const mediaStrategy = ref<MediaStrategy>('UNKNOWN');
 let restorePromise: Promise<void> | undefined;
+let authConfigPromise: Promise<Exclude<AuthStrategy, 'UNKNOWN'>> | undefined;
 let onSessionExpired: (() => void) | undefined;
 
 export function setSessionExpiredHandler(handler: (() => void) | undefined) {
@@ -46,11 +47,17 @@ export function useSession() {
   }
 
   async function loadAuthStrategy() {
-    const config = await request<{strategy:string;mediaStrategy?:string}>('/auth/config');
-    if(config.strategy!=='PASSWORD'&&config.strategy!=='ACCESS_PREVIEW')throw Error('Unsupported authentication');
-    authStrategy.value=config.strategy;
-    mediaStrategy.value=config.mediaStrategy==='STATIC_ASSETS'||config.mediaStrategy==='D1_BLOB'||config.mediaStrategy==='R2'?config.mediaStrategy:'UNKNOWN';
-    return authStrategy.value;
+    if(authStrategy.value!=='UNKNOWN'&&mediaStrategy.value!=='UNKNOWN')return authStrategy.value;
+    if(!authConfigPromise){
+      authConfigPromise=request<{strategy:string;mediaStrategy?:string}>('/auth/config').then(config=>{
+        if(config.strategy!=='PASSWORD'&&config.strategy!=='ACCESS_PREVIEW')throw Error('Unsupported authentication');
+        authStrategy.value=config.strategy;
+        mediaStrategy.value=config.mediaStrategy==='STATIC_ASSETS'||config.mediaStrategy==='D1_BLOB'||config.mediaStrategy==='R2'?config.mediaStrategy:'UNKNOWN';
+        return config.strategy;
+      });
+    }
+    const pending=authConfigPromise;
+    try{return await pending;}finally{if(authConfigPromise===pending)authConfigPromise=undefined;}
   }
 
   async function authenticatePreview(role: Extract<Role,'OWNER'|'ADMIN'>) {

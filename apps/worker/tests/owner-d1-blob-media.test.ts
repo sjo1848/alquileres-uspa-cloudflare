@@ -148,10 +148,15 @@ it('merges repository and OWNER-uploaded photos in their stored position order',
   expect((await ownerRows.json() as any[]).map(row=>[row.id,row.position,row.source??'OWNER_UPLOAD'])).toEqual([
     [dynamic.id,0,'OWNER_UPLOAD'],[`static-after-upload-${lid}`,1,'STATIC_ASSET'],
   ]);
+  const tiedStaticId=`aaa-static-tie-${lid}`;
+  await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind(tiedStaticId,lid,'/media/catalog/static-tie.svg','image/svg+xml',123,0).run();
+  const expectedMixed:Array<[string,number]>=[[dynamic.id,0],[tiedStaticId,0],[`static-after-upload-${lid}`,1]].sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
+  const mixedOwner=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie});
+  expect((await mixedOwner.json() as any[]).map(row=>[row.id,row.position])).toEqual(expectedMixed);
   await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(lid).run();
   const publicListing=await request(`/public/listings/${lid}`),publicBody=await publicListing.json() as any;
   expect(publicListing.status).toBe(200);
-  expect(publicBody.images.map((row:any)=>[row.id,row.position])).toEqual([[dynamic.id,0],[`static-after-upload-${lid}`,1]]);
+  expect(publicBody.images.map((row:any)=>[row.id,row.position])).toEqual(expectedMixed);
 });
 
 it('fails closed with a migration conflict for legacy R2 rows in D1 BLOB mode',async()=>{

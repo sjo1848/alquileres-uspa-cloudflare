@@ -116,6 +116,21 @@ test('identidad OWNER local: registro, verificación MOCK, recuperación, login 
 test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad, consulta e inbox', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await login(page, 'owner.a@example.test');
+  const configRetryPage=await page.context().newPage();let configAttempts=0;
+  await configRetryPage.route('**/auth/config',async route=>{
+    configAttempts++;
+    if(configAttempts<=2)await route.fulfill({status:503,contentType:'application/json',body:'{"error":"synthetic temporary failure"}'});
+    else await route.continue();
+  });
+  await configRetryPage.goto('/owner');
+  await expect(configRetryPage).toHaveURL(/\/owner$/);
+  await configRetryPage.getByRole('button',{name:/Casa aprobada con fotos/}).click();
+  await expect(configRetryPage.getByRole('alert')).toContainText('No pudimos comprobar cómo se gestionan las fotos');
+  await configRetryPage.getByRole('button',{name:'Reintentar configuración de fotos'}).click();
+  await expect(configRetryPage.getByRole('alert')).toHaveCount(0);
+  await expect(configRetryPage.getByText(/JPEG, PNG o WebP/)).toBeVisible();
+  expect(configAttempts).toBe(3);
+  await configRetryPage.close();
   await capture(page, 'owner-dashboard-desktop-1440x1000.png');
   const approved = page.getByRole('button', { name: /Casa aprobada con fotos/ });
   await expect(approved).toBeVisible();
