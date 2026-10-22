@@ -19,7 +19,7 @@ const mediaConfigLoading=ref(false),mediaConfigError=ref('');
 const confirmReload=ref(false);
 const pendingSelection=ref<{item?:Listing}|null>(null);
 const confirmDelete=ref(false), confirmLeave=ref(false), pendingImageDelete=ref<Image|null>(null);
-const leaveDialog=ref<HTMLElement|null>(null),imageDeleteDialog=ref<HTMLElement|null>(null),listingDeleteDialog=ref<HTMLElement|null>(null);
+const leaveDialog=ref<HTMLElement|null>(null),imageDeleteDialog=ref<HTMLElement|null>(null),listingDeleteDialog=ref<HTMLElement|null>(null),selectionDialog=ref<HTMLElement|null>(null),reloadDialog=ref<HTMLElement|null>(null);
 const selectedPhoto=ref<{file:File;previewUrl:string}|null>(null);
 const statusFilter=ref<'ALL'|'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'>('ALL');
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
@@ -44,7 +44,7 @@ let pendingListingDelete:{id:string;key:string}|undefined;
 let pendingUpload:{identity:string;key:string}|undefined;
 const imageKeys=new Map<string,string>();let imageLoadVersion=0;
 let resolveLeave:((leave:boolean)=>void)|null=null;
-type DialogName='leave'|'image-delete'|'listing-delete';
+type DialogName='leave'|'image-delete'|'listing-delete'|'selection'|'reload';
 const dialogReturnFocus:Partial<Record<DialogName,HTMLElement|null>>={};
 function openDialog(name:DialogName,dialog:typeof leaveDialog,trigger?:HTMLElement|null){
   dialogReturnFocus[name]=trigger??(document.activeElement instanceof HTMLElement?document.activeElement:null);
@@ -120,16 +120,17 @@ async function loadImages(item:Listing){
   catch(e){if(version===imageLoadVersion&&selectedId.value===item.id)error.value=imageMessage(e);}
   finally{if(version===imageLoadVersion)imagesLoading.value=false;}
 }
-function requestChoose(item?:Listing){
+function requestChoose(item?:Listing,event?:MouseEvent){
   if(busy.value)return;
-  if(unsaved.value){pendingSelection.value={item};confirmReload.value=false;return;}
+  if(unsaved.value){pendingSelection.value={item};confirmReload.value=false;openDialog('selection',selectionDialog,event?.currentTarget instanceof HTMLElement?event.currentTarget:null);return;}
   choose(item);
 }
-function confirmChoose(){if(pendingSelection.value)choose(pendingSelection.value.item);}
-async function load(discardChanges=false){
+function cancelChoose(){pendingSelection.value=null;closeDialogFocus('selection');}
+function confirmChoose(){if(!pendingSelection.value)return;const item=pendingSelection.value.item;pendingSelection.value=null;choose(item);closeDialogFocus('selection');}
+async function load(discardChanges=false,trigger?:HTMLElement|null){
   if(busy.value)return;
   pendingSelection.value=null;
-  if(unsaved.value&&discardChanges!==true){confirmReload.value=true;return;}
+  if(unsaved.value&&discardChanges!==true){confirmReload.value=true;openDialog('reload',reloadDialog,trigger);return;}
   confirmReload.value=false;
   loading.value=true;error.value='';
   try{
@@ -144,6 +145,9 @@ async function load(discardChanges=false){
   catch(e){error.value=message(e);}
   finally{loading.value=false;}
 }
+function requestReload(event:MouseEvent){void load(false,event.currentTarget instanceof HTMLElement?event.currentTarget:null);}
+function cancelReload(){confirmReload.value=false;closeDialogFocus('reload');}
+async function discardAndReload(){confirmReload.value=false;closeDialogFocus('reload');await load(true);}
 async function refreshSelected(){
   const item=selected.value;if(!item||busy.value||unsaved.value)return;
   busy.value=true;error.value='';notice.value='';
@@ -288,7 +292,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
       <aside class="owner-list-panel card">
         <div class="owner-list-heading">
           <div><p class="eyebrow">Tu inventario</p><h2 id="owner-listings-title" tabindex="-1">Mis alojamientos</h2></div>
-          <button type="button" :disabled="busy||loading" @click="requestChoose()">+ Nuevo borrador</button>
+          <button type="button" :disabled="busy||loading" @click="requestChoose(undefined,$event)">+ Nuevo borrador</button>
         </div>
         <label class="owner-filter-label" for="owner-status-filter">Mostrar</label>
         <select id="owner-status-filter" v-model="statusFilter">
@@ -303,17 +307,17 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
           <span class="owner-empty-mark" aria-hidden="true">⌂</span>
           <h3>Empezá por tu primer alojamiento</h3>
           <p>Guardá un borrador y agregá fotos cuando estés listo. Nada se publica sin revisión.</p>
-          <button type="button" class="secondary" @click="requestChoose()">Crear mi primer borrador</button>
+          <button type="button" class="secondary" @click="requestChoose(undefined,$event)">Crear mi primer borrador</button>
         </div>
         <p v-else-if="!visibleListings.length" class="owner-empty">No hay alojamientos en este estado.</p>
         <div v-else class="owner-listings" role="list" aria-label="Alojamientos del propietario">
-          <button v-for="item in visibleListings" :key="item.id" type="button" class="owner-listing-row" :class="{selected:selectedId===item.id}" :aria-current="selectedId===item.id?'true':undefined" :disabled="busy" @click="requestChoose(item)">
+          <button v-for="item in visibleListings" :key="item.id" type="button" class="owner-listing-row" :class="{selected:selectedId===item.id}" :aria-current="selectedId===item.id?'true':undefined" :disabled="busy" @click="requestChoose(item,$event)">
             <span class="owner-listing-top"><strong>{{ item.title }}</strong><span class="owner-status" :class="`is-${item.status.toLowerCase()}`">{{ label(item.status) }}</span></span>
             <span class="owner-listing-location">{{ item.location }}</span>
             <span class="owner-listing-next">{{ item.status==='REJECTED'?'Necesita correcciones':item.status==='DRAFT'?'Completar y enviar':item.status==='SUBMITTED'?'Esperar revisión':item.publicationStatus==='PUBLISHED'?'Visible en catálogo':'Aprobada' }}</span>
           </button>
         </div>
-        <button type="button" class="text-button owner-refresh" :disabled="busy||loading" @click="load()">Actualizar lista</button>
+        <button type="button" class="text-button owner-refresh" :disabled="busy||loading" @click="requestReload($event)">Actualizar lista</button>
       </aside>
 
       <article class="owner-editor card" :aria-busy="busy">
@@ -330,14 +334,6 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <div><h3 id="owner-next-step-title">Próximo paso</h3><p>{{ nextStep }}</p></div>
           </section>
           <p v-if="selected?.rejectionReason" class="owner-rejection"><strong>Observación del equipo</strong><span>{{ selected.rejectionReason }}</span></p>
-          <div v-if="confirmReload" class="owner-confirmation" role="alertdialog" aria-labelledby="owner-reload-title">
-            <div><h3 id="owner-reload-title">Hay cambios sin guardar</h3><p>Al recargar vas a reemplazar lo que editaste por la última versión guardada.</p></div>
-            <div class="owner-confirm-actions"><button type="button" :disabled="busy||loading" @click="load(true)">Descartar y actualizar</button><button type="button" class="secondary" @click="confirmReload=false">Seguir editando</button></div>
-          </div>
-          <div v-if="pendingSelection" class="owner-confirmation" role="alertdialog" aria-labelledby="owner-selection-title">
-            <div><h3 id="owner-selection-title">¿Cambiar de alojamiento?</h3><p>Los cambios actuales todavía no están guardados.</p></div>
-            <div class="owner-confirm-actions"><button type="button" :disabled="busy" @click="confirmChoose">Descartar y cambiar</button><button type="button" class="secondary" @click="pendingSelection=null">Seguir editando</button></div>
-          </div>
           <section v-if="selected" class="owner-availability-card" aria-labelledby="owner-availability-title">
             <div><p class="eyebrow">Disponibilidad declarada</p><h3 id="owner-availability-title">{{ selected.availabilityStatus==='AVAILABLE'?'Disponible':'No disponible' }}</h3><p>Última confirmación: {{ confirmedLabel }}. Esto no es una reserva.</p></div>
             <div class="owner-availability-actions"><button type="button" :disabled="contactBusy!==''" @click="updateAvailability(selected.availabilityStatus==='AVAILABLE'?'UNAVAILABLE':'AVAILABLE')">{{ selected.availabilityStatus==='AVAILABLE'?'Marcar no disponible':'Marcar disponible' }}</button><button type="button" class="secondary" :disabled="contactBusy!==''" @click="reconfirmAvailability">{{ contactBusy==='availability'?'Confirmando…':'Sigue vigente' }}</button></div>
@@ -431,6 +427,18 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
       <section ref="leaveDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-leave-title" aria-describedby="owner-leave-copy" @keydown="trapDialogFocus($event,leaveDialog,()=>resolvePendingLeave(false))">
         <p class="eyebrow">Cambios pendientes</p><h2 id="owner-leave-title">¿Salir sin guardar?</h2><p id="owner-leave-copy">Los cambios que hiciste en este borrador todavía no están guardados.</p>
         <div class="owner-confirm-actions"><button type="button" @click="resolvePendingLeave(true)">Salir y descartar cambios</button><button data-dialog-initial-focus type="button" class="secondary" @click="resolvePendingLeave(false)">Seguir editando</button></div>
+      </section>
+    </div>
+    <div v-if="pendingSelection" class="owner-dialog-backdrop">
+      <section ref="selectionDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-selection-title" aria-describedby="owner-selection-copy" @keydown="trapDialogFocus($event,selectionDialog,cancelChoose)">
+        <p class="eyebrow">Cambiar de alojamiento</p><h2 id="owner-selection-title">¿Descartar tus cambios?</h2><p id="owner-selection-copy">Los cambios actuales todavía no están guardados.</p>
+        <div class="owner-confirm-actions"><button type="button" :disabled="busy" @click="confirmChoose">Descartar y cambiar</button><button data-dialog-initial-focus type="button" class="secondary" @click="cancelChoose">Seguir editando</button></div>
+      </section>
+    </div>
+    <div v-if="confirmReload" class="owner-dialog-backdrop">
+      <section ref="reloadDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-reload-title" aria-describedby="owner-reload-copy" @keydown="trapDialogFocus($event,reloadDialog,cancelReload)">
+        <p class="eyebrow">Actualizar publicaciones</p><h2 id="owner-reload-title">Hay cambios sin guardar</h2><p id="owner-reload-copy">Al actualizar vas a reemplazar lo que editaste por la última versión guardada.</p>
+        <div class="owner-confirm-actions"><button type="button" :disabled="busy||loading" @click="discardAndReload">Descartar y actualizar</button><button data-dialog-initial-focus type="button" class="secondary" @click="cancelReload">Seguir editando</button></div>
       </section>
     </div>
   </section>
