@@ -365,7 +365,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
           </form>
 
           <section v-if="selected" class="owner-photos" aria-labelledby="owner-images-title">
-          <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title" tabindex="-1">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ images.length }} / {{ MAX_IMAGES }}</span></header>
+          <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title" tabindex="-1">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ imagesLoadError?'No disponible':`${images.length} / ${MAX_IMAGES}` }}</span></header>
             <div v-if="mediaConfigError&&session.mediaStrategy.value==='UNKNOWN'" class="owner-media-config-error" role="alert"><p>{{ mediaConfigError }}</p><button type="button" class="secondary" :disabled="mediaConfigLoading" @click="loadMediaConfig">{{ mediaConfigLoading?'Comprobando…':'Reintentar configuración de fotos' }}</button></div>
             <p v-else-if="mediaConfigLoading" class="owner-section-copy" role="status">Comprobando las opciones disponibles para las fotos…</p>
             <p v-else class="owner-section-copy">{{ hasRepositoryManagedImages?'Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.':ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':session.mediaStrategy.value==='STATIC_ASSETS'?'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.':'La gestión de fotos no está habilitada en este entorno.' }}</p>
@@ -377,8 +377,8 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
               <div class="owner-image-actions"><button type="button" :disabled="busy" @click="uploadSelectedPhoto">{{ imageBusy==='upload'?'Guardando…':'Guardar foto' }}</button><button type="button" class="secondary" :disabled="busy" @click="discardSelectedPhoto">Cancelar</button></div>
             </div>
             <p v-if="imagesLoading" role="status">Cargando fotos…</p>
-            <div v-else-if="!images.length" class="owner-photo-empty"><span aria-hidden="true">▧</span><p>{{ canEdit?'Todavía no agregaste fotos.':'Esta publicación no tiene fotos guardadas.' }}</p></div>
-            <ul v-else class="owner-image-grid" :aria-busy="imageBusy!==null">
+            <div v-else-if="!imagesLoadError&&!images.length" class="owner-photo-empty"><span aria-hidden="true">▧</span><p>{{ canEdit?'Todavía no agregaste fotos.':'Esta publicación no tiene fotos guardadas.' }}</p></div>
+            <ul v-else-if="images.length" class="owner-image-grid" :aria-busy="imageBusy!==null">
               <li v-for="(image,index) in images" :key="image.id" class="owner-image-card">
                 <img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${index+1} de ${selected.title}`" width="640" height="480" loading="lazy" />
                 <div class="owner-image-meta"><span><strong>{{ index+1 }}.</strong> {{ image.originalName }}<small v-if="image.source==='STATIC_ASSET'"> · Administrada desde el repositorio</small></span><small>{{ (image.sizeBytes/1024).toFixed(0) }} KB</small></div>

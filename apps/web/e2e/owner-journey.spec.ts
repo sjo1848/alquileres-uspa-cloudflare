@@ -145,6 +145,11 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   });
   await configRetryPage.getByRole('button',{name:/Borrador con foto administrada/}).click();
   await expect(configRetryPage.locator('.owner-photos [role="alert"]')).toContainText('No pudimos confirmar si esta publicación tiene fotos administradas');
+  await expect(configRetryPage.locator('.owner-photo-count')).toHaveText('No disponible');
+  await expect(configRetryPage.getByText('Todavía no agregaste fotos.')).toHaveCount(0);
+  await expect(configRetryPage.getByText('Esta publicación no tiene fotos guardadas.')).toHaveCount(0);
+  await expect(configRetryPage.locator('.owner-photo-empty')).toHaveCount(0);
+  await expect(configRetryPage.locator('.owner-image-grid')).toHaveCount(0);
   await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(0);
   await configRetryPage.getByRole('button',{name:'Reintentar carga de fotos'}).click();
   await expect(configRetryPage.locator('.owner-photos [role="alert"]')).toHaveCount(0);
