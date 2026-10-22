@@ -46,9 +46,15 @@ async function logout() {
   loggingOut.value = true;
   logoutError.value = '';
   try {
-    await session.clear();
-    closeMenu();
     await router.push('/');
+    if (route.path !== '/') return;
+    try {
+      await session.clear();
+    } catch (error) {
+      await router.push(session.role.value === 'ADMIN' ? '/admin' : '/owner');
+      throw error;
+    }
+    closeMenu();
     focusMain();
   } catch {
     logoutError.value = 'No pudimos cerrar la sesión. Reintentá.';
@@ -62,7 +68,14 @@ async function switchDemoIdentity() {
   loggingOut.value = true;
   logoutError.value = '';
   try {
-    await session.clear();
+    await router.push('/');
+    if (route.path !== '/') return;
+    try {
+      await session.clear();
+    } catch (error) {
+      await router.push(session.role.value === 'ADMIN' ? '/admin' : '/owner');
+      throw error;
+    }
     closeMenu();
     await router.push('/login');
   } catch {

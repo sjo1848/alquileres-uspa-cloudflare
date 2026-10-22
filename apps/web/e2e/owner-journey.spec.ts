@@ -60,6 +60,16 @@ test('identidad OWNER local: registro, verificación MOCK, recuperación, login 
   await expect(page.getByRole('heading', { name: 'Tu lugar en Uspallata' })).toBeVisible();
   await capture(page, 'owner-dashboard-empty-desktop-1440x1000.png');
 
+  await page.getByRole('button', { name: '+ Nuevo borrador' }).click();
+  await page.getByLabel('Nombre del alojamiento').fill('Borrador que no debe perderse al salir');
+  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+  const logoutDialog=page.getByRole('alertdialog', { name: '¿Salir sin guardar?' });
+  await expect(logoutDialog).toBeVisible();
+  await logoutDialog.getByRole('button', { name: 'Seguir editando' }).click();
+  await expect(page).toHaveURL(/\/owner$/);
+  await expect(page.getByLabel('Nombre del alojamiento')).toHaveValue('Borrador que no debe perderse al salir');
+  expect((await page.request.get('/api/auth/me')).status()).toBe(200);
+  await page.getByLabel('Nombre del alojamiento').fill('');
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await expect(page).toHaveURL('/');
   await page.goto('/recover');
@@ -187,6 +197,17 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(localPreview).toBeVisible();
   await expect(localPreview).toHaveAttribute('src', /blob:/);
   await expect(page.getByText('Todavía no se guardó')).toBeVisible();
+  await page.getByRole('button', { name: 'Actualizar lista' }).click();
+  const photoReloadDialog=page.getByRole('alertdialog', { name: 'Hay cambios sin guardar' });
+  await expect(photoReloadDialog).toBeVisible();
+  await photoReloadDialog.getByRole('button', { name: 'Seguir editando' }).click();
+  await expect(localPreview).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Actualizar desde servidor' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Actualizar lista' }).click();
+  await page.getByRole('alertdialog', { name: 'Hay cambios sin guardar' }).getByRole('button', { name: 'Descartar y actualizar' }).click();
+  await expect(localPreview).toHaveCount(0);
+  await photoInput.setInputFiles(redPhoto);
+  await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' })).toBeVisible();
   let failUploadOnce = true;
   await page.route(`**/api/listings/${draft!.id}/images`, async route => {
     if (route.request().method() === 'POST' && failUploadOnce) {

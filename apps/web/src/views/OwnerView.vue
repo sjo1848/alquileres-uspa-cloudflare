@@ -96,7 +96,7 @@ function confirmChoose(){if(pendingSelection.value)choose(pendingSelection.value
 async function load(discardChanges=false){
   if(busy.value)return;
   pendingSelection.value=null;
-  if(dirty.value&&discardChanges!==true){confirmReload.value=true;return;}
+  if(unsaved.value&&discardChanges!==true){confirmReload.value=true;return;}
   confirmReload.value=false;
   loading.value=true;error.value='';
   try{
@@ -112,7 +112,7 @@ async function load(discardChanges=false){
   finally{loading.value=false;}
 }
 async function refreshSelected(){
-  const item=selected.value;if(!item||busy.value||dirty.value)return;
+  const item=selected.value;if(!item||busy.value||unsaved.value)return;
   busy.value=true;error.value='';notice.value='';
   try{const current=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(item.id)}`);remember(current);await loadImages(current);notice.value='Publicación actualizada.';}
   catch(e){error.value=message(e);}
@@ -211,11 +211,11 @@ async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=s
 async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
 function resolvePendingLeave(leave:boolean){const resolve=resolveLeave;resolveLeave=null;confirmLeave.value=false;resolve?.(leave);}
 onBeforeRouteLeave(()=>{
-  if(!unsaved.value||!session.isAuthenticated.value)return true;
+  if(!unsaved.value)return true;
   confirmLeave.value=true;
   return new Promise<boolean>(resolve=>{resolveLeave=resolve;});
 });
-function beforeUnload(event:BeforeUnloadEvent){if(unsaved.value&&session.isAuthenticated.value){event.preventDefault();event.returnValue='';}}
+function beforeUnload(event:BeforeUnloadEvent){if(unsaved.value){event.preventDefault();event.returnValue='';}}
 onMounted(()=>{void load();void loadContacts();window.addEventListener('beforeunload',beforeUnload);});
 onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);resolvePendingLeave(false);discardSelectedPhoto();});
 </script>
@@ -324,7 +324,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <div class="owner-form-actions">
               <button type="submit" :disabled="busy||loading||!canEdit">{{ busy?'Guardando…':selected?'Guardar cambios':'Guardar borrador' }}</button>
               <button v-if="selected && canEdit" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing">Eliminar borrador</button>
-              <button v-if="canEdit" type="button" class="secondary" :disabled="busy||loading||dirty" @click="refreshSelected">Actualizar desde servidor</button>
+              <button v-if="canEdit" type="button" class="secondary" :disabled="busy||loading||unsaved" @click="refreshSelected">Actualizar desde servidor</button>
               <button v-if="canEdit && selected" type="button" :disabled="busy||dirty||imagesLoading||selectedPhoto!==null" @click="submit">{{ busy?'Enviando…':'Enviar a revisión' }}</button>
             </div>
           </form>

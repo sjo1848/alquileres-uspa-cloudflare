@@ -9,6 +9,7 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 - OWNER abre publicación aprobada con fotos (regresión #36), las lee en modo privado, y no puede editarlas; otro OWNER no puede acceder. La API también rechaza mutaciones de fotos en estado aprobado.
 - Disponibilidad/reconfirmación y consulta real sintética en inbox; cambio leído/no leído.
 - Crear/editar borrador, error HTTP transitorio y retry preservando campos, advertencia de cambios no guardados, preview local de foto, fallo/retry de carga, orden, borrado confirmado, envío a revisión y eliminación confirmada.
+- Regresiones GitHub PR #40: cancelar logout con un formulario modificado conserva sesión y valores; una foto local previsualizada bloquea “Actualizar lista”, ofrece descartar explícitamente y no puede perderse con “Actualizar desde servidor”. E2E focalizado consolidado: 2/2 en 2.2 min sobre Workerd + D1 real local.
 - ADMIN no puede usar UI ni API OWNER; sesión expirada no muta estado (regresiones Worker).
 - Teclado/skip-link, diálogo de salida y viewports 1440, 390 y 320 px; el E2E comprobó que `scrollWidth <= viewport` en 320 px.
 
@@ -24,6 +25,8 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 | `apps/worker`: `npm run typecheck` | PASS |
 | `apps/web`: `npm run typecheck` y `npm run build` | PASS |
 | `apps/web`: `npm run test:e2e:owner` (Workerd + D1 real local) | 2/2, 2.2 min |
+| Regresión GitHub P2: cancelar logout conserva cambios y sesión | PASS, Playwright integrado |
+| Regresión GitHub P2: actualizar lista conserva/bloquea foto pendiente | PASS, Playwright integrado |
 | Consistency validator contra `origin/main` y `git diff --check` | PASS |
 
 Los tests de media se ejecutaron por archivo para aislar Workerd; el spike de 256 KiB necesitó `--testTimeout=15000` en la primera corrida concurrente. La suite final integrada pasó sin concurrencia de QA adicional.
