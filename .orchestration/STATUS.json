@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I06.4 — catálogo, filtros, ficha y consulta pública; PR #39 integrado",
   "last_completed_head": "main@48e4f5c4251fe939cb779698e4e51b16614be178",
   "work_branch": "work/i06-owner",
-  "next_action": "Publicar el candidato consolidado a PR #40; obtener checks worker/web y revisión GitHub exact-head; ejecutar Controller delegado GPT-6 Luna High read-only sobre el código exacto a39d14b; resolver hallazgos si aparecen; validar Pre-Critic/protecciones y conversaciones y fusionar protegido solo con todos los controles PASS. Luego cerrar #32/#36, actualizar Epic #25 y detener antes de #33/I06.6.",
+  "next_action": "Publicar el candidato 695992f con el estado reconciliado; esperar checks worker/web y review GitHub exact-head; ejecutar Controller separado GPT-6 Luna High read-only exacto sobre código 695992f; cerrar hilos corregidos; ejecutar validator/Pre-Critic y verificar branch protection/conversaciones; merge protegido si todo está verde. Después cerrar #32/#36 y actualizar Epic #25; detener antes de #33/I06.6.",
   "stop_reason": null,
   "event": {
-    "seq": 189,
-    "id": "CF_AU_I06_5_CONTROLLER_REWORK_MIXED_STATIC_PHOTOS",
-    "type": "CONTROLLER_REWORK_AND_REGRESSION"
+    "seq": 190,
+    "id": "CF_AU_I06_5_REWORK_GITHUB_SESSION_AND_MIXED_MEDIA",
+    "type": "CONSOLIDATED_GITHUB_REWORK"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/40",
     "branch": "work/i06-owner",
     "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
-    "executable_sha": "a39d14ba41e227a56cd9199458aca858e13990f0",
+    "executable_sha": "695992fb821dd46135797110a3c6234cb0d3d092",
     "status": "OPEN"
   },
   "issue_4": "CLOSED",
@@ -84,26 +84,26 @@
     "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
     "branch": "work/i06-owner",
     "scope": "I06.5 local synthetic OWNER and I05 mock authentication experience, integrated Vue/Worker/Hono/D1. Reconcile I06.4 post-merge state in this functional PR. No I06.6/#33, Preview/Access remote change, production, paid services, external email, R2, real data or source repository write.",
-    "code_status": "I06.5 OWNER/auth consolidado en a39d14b. Atiende P2 del Controller sobre selector de carga incompatible en borradores con Static Assets y endurece la regresión de orden empatado. P1 STATE/STATUS y P2s GitHub anteriores reconciliados/corregidos en el mismo PR. Nuevo SHA local aún no publicado; Preview intacto.",
+    "code_status": "I06.5 OWNER/auth consolidado en 695992f. Corregidos P2 Controller de upload con Static Asset y P2 GitHub 4347641100 (sesión expirada no debe ser cancelable) / 4347641116 (refresh de galería mixta tras reorder). Incluye reintento config, orden determinista y reconciliación canónica; candidata publicada pendiente de checks/reviews actualizados.",
     "local_checks": {
-      "web_typecheck": "PASS sobre a39d14b",
-      "web_build": "PASS sobre a39d14b (Worker bundle y cliente)",
+      "web_typecheck": "PASS sobre el código 695992f",
+      "web_build": "PASS sobre el código 695992f (Worker bundle y cliente)",
       "worker_owner_auth": "PASS: 5/5 local D1 tests",
       "worker_owner_lifecycle": "PASS: 5/5 local D1 tests, including expired-session no-mutation",
-      "worker_media": "PASS: owner-d1-blob-media.test.ts 13/13, incluido empate Static Asset/D1 BLOB con esperado constante",
+      "worker_media": "PASS: owner-d1-blob-media.test.ts 13/13, esperado de tie order fijo e independiente",
       "worker_contact": "PASS: 6/6 local D1 tests",
       "worker_typecheck": "PASS: apps/worker npm run typecheck",
       "playwright_owner": "PASS: 2/2 integrated local Workerd+D1 tests, 2.2m; Vue UI + real Hono APIs, synthetic rows, MOCK email",
       "screenshots": "PASS: capturas reales desktop/mobile bajo output/playwright/i06.5/; QA.md aclara que la prueba final nueva se ejecutó focalizada",
       "accessibility": "PASS: keyboard skip-link and 320 px overflow; core text token contrast >=4.68:1 against canvas",
-      "state_preflight": "PASS antes de reconciliar: python3 scripts/check_orchestration_state.py --base origin/main; git diff --check",
+      "state_preflight": "PASS: python3 scripts/check_orchestration_state.py --base origin/main; git diff --check",
       "owner_config_retry_e2e": "PASS: prueba focalizada integrada 1/1; /auth/config falla transitoriamente y la acción de fotos se recupera en reintento explícito",
       "owner_mixed_static_upload_e2e": "PASS: Playwright OWNER recorrido focalizado 1/1 (59.9 s) con D1 local re-seed y borrador sintético con Static Asset; selector no disponible y mensaje claro",
-      "git_diff_check": "PASS sobre el candidato consolidado antes de canonical state update"
+      "git_diff_check": "PASS sobre el candidato consolidado antes de canonical state update",
+      "owner_integrated_playwright": "PASS: recorrido OWNER focalizado 1/1, 52.2s Playwright; Vue + Worker/Hono + Workerd + D1 local re-seeded. Incluye config retry, DRAFT Static Asset (sin upload), mixed gallery reorder preserva 3 fotos, sesión expirada con cambios sin guardar termina en login sin exponer datos."
     },
     "controller": {
-      "verdict": "PENDING fresh review after REWORK",
-      "prior_rework": "REWORK findings on 3129ce7 corrected in a39d14b",
+      "verdict": "PENDING final exact-code review",
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
       "reasoning_effort_requested": "high",
@@ -111,19 +111,19 @@
       "cli_configuration_accepted": null,
       "cli_exit_code": null,
       "actual_backend_model_identity": "UNVERIFIED",
-      "artifact_sha": "a39d14ba41e227a56cd9199458aca858e13990f0",
-      "artifact_tree": "a1f4d00be45029ec9b29912e693082a663a07335",
+      "artifact_sha": "695992fb821dd46135797110a3c6234cb0d3d092",
+      "artifact_tree": "e881b34f7f88fa6e925a6a4d7b4b18039c893e65",
       "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
       "prior_rework_report": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-3129CE7-REWORK.md",
       "report": null
     },
-    "github_review": "PENDING: publish new candidate and request/observe exact-head automated review.",
-    "precritic": "PENDING: exact-head GitHub review/checks, fresh Controller a39d14b, resolve all material threads, final canonical validator.",
+    "github_review": "PENDING exact-head review for new checkpoint; latest prior review `868a2c7` findings 4347641100 and 4347641116 repaired in 695992f.",
+    "precritic": "PENDING: fresh Controller exact 695992f; GitHub exact-head review/checks; all threads resolved; final canonical validator.",
     "scope_limits": "Local synthetic Worker+D1 only. No Preview/Access remote change, deployment, production, real data, paid service, external email, R2, source repo write, I06.6/#33.",
-    "next_action": "Publicar el candidato consolidado a PR #40; obtener checks worker/web y revisión GitHub exact-head; ejecutar Controller delegado GPT-6 Luna High read-only sobre el código exacto a39d14b; resolver hallazgos si aparecen; validar Pre-Critic/protecciones y conversaciones y fusionar protegido solo con todos los controles PASS. Luego cerrar #32/#36, actualizar Epic #25 y detener antes de #33/I06.6.",
-    "candidate_executable_sha": "a39d14ba41e227a56cd9199458aca858e13990f0",
-    "candidate_tree_sha": "a1f4d00be45029ec9b29912e693082a663a07335",
-    "github_checks": "PENDING: 1c1f67e checks do not cover new executable a39d14b."
+    "next_action": "Publicar el candidato 695992f con el estado reconciliado; esperar checks worker/web y review GitHub exact-head; ejecutar Controller separado GPT-6 Luna High read-only exacto sobre código 695992f; cerrar hilos corregidos; ejecutar validator/Pre-Critic y verificar branch protection/conversaciones; merge protegido si todo está verde. Después cerrar #32/#36 y actualizar Epic #25; detener antes de #33/I06.6.",
+    "candidate_executable_sha": "695992fb821dd46135797110a3c6234cb0d3d092",
+    "candidate_tree_sha": "e881b34f7f88fa6e925a6a4d7b4b18039c893e65",
+    "github_checks": "PENDING for new checkpoint; prior 868a2c7 checks do not cover 695992f."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
