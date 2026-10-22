@@ -1469,3 +1469,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Capturas revisadas visualmente: login y dashboard desktop/mobile (320/390), editor desktop y fotos aprobadas en lectura. Token de texto interactivo arcilla ajustado; contraste calculado de tokens principales >=4.68:1 sobre canvas. E2E pasa skip-link por teclado y sin overflow en 320 px.
 - Consistency validator y `git diff --check` PASS. Las regresiones #35 ADMIN y #37 siguen para #33; #36 sólo se cerrará después del merge protegido con la evidencia del PR.
 - **READY_TO_RESUME:** ejecutar el preflight final y crear un commit funcional inmutable en `work/i06-owner`; publicar PR vinculado a #32; procesar checks/review exactos y Controller separado GPT-6 Luna/High/read-only. Integrar protegido, comentar/cerrar #32 y #36 y actualizar Epic #25 sólo tras todos los gates; detener antes de #33. Sin Preview, producción, costo, R2, email externo o datos reales.
+
+## Event 185 — Pre-Critic I06.5 passed to publish
+
+- Exact executable candidate `0d4f4c5074ed89483649e4de30136b507763dbd2` (tree `bdc1c8676dcac3637512e9b135083bfb75ccfe38`), ancestor base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Pre-Critic gate: PASS to publish for exact-head GitHub review/checks and one GPT-6 Luna High read-only delegated Controller review only.
+- Local tests/evidence and #36 authorization proof are enumerated in `output/playwright/i06.5/QA.md` and `.orchestration/PRECRITIC-GATE.md`. No P0/P1 is known open. GitHub/Controller results remain pending; do not merge until both PASS, checks green, conversations resolved and main protection/mergeability verified.
+- **READY_TO_RESUME:** push functional branch/create PR linked to #32 and publish nine visual captures through issue/PR links. No Preview, #33, production, paid service or source writes.
