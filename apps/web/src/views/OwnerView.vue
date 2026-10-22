@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { ApiError, apiUrl } from '../api';
 import { useSession } from '../session';
@@ -18,6 +18,7 @@ const contacts=ref<ContactEvent[]>([]), unreadContacts=ref(0), contactsLoading=r
 const confirmReload=ref(false);
 const pendingSelection=ref<{item?:Listing}|null>(null);
 const confirmDelete=ref(false), confirmLeave=ref(false), pendingImageDelete=ref<Image|null>(null);
+const leaveDialog=ref<HTMLElement|null>(null);
 const selectedPhoto=ref<{file:File;previewUrl:string}|null>(null);
 const statusFilter=ref<'ALL'|'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'>('ALL');
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
@@ -40,6 +41,7 @@ let pendingListingDelete:{id:string;key:string}|undefined;
 let pendingUpload:{identity:string;key:string}|undefined;
 const imageKeys=new Map<string,string>();let imageLoadVersion=0;
 let resolveLeave:((leave:boolean)=>void)|null=null;
+let leaveDialogReturnFocus:HTMLElement|null=null;
 function imageMutationKey(operation:string){let key=imageKeys.get(operation);if(!key){key=crypto.randomUUID();imageKeys.set(operation,key);}return key;}
 const label=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
 function message(e:unknown){
@@ -131,7 +133,7 @@ async function confirmRemoveListing(){
   busy.value=true;error.value='';notice.value='';
   try{
     await session.apiRequest<{id:string;deleted:true}>(`/listings/${encodeURIComponent(item.id)}`,{method:'DELETE',headers:{'Idempotency-Key':pendingListingDelete.key}});
-    listings.value=listings.value.filter(row=>row.id!==item.id);selectedId.value=null;creating.value=false;Object.assign(form,blank());images.value=[];pendingListingDelete=undefined;notice.value='Publicación eliminada.';
+    discardSelectedPhoto();listings.value=listings.value.filter(row=>row.id!==item.id);selectedId.value=null;creating.value=false;Object.assign(form,blank());images.value=[];pendingListingDelete=undefined;notice.value='Publicación eliminada.';
   }catch(e){error.value=message(e);}
   finally{busy.value=false;}
 }
@@ -211,10 +213,22 @@ async function setContactState(event:ContactEvent,state:'UNREAD'|'READ'){if(cont
 async function loadMoreContacts(){if(nextContactCursor.value)await loadContacts(nextContactCursor.value,true);}
 async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/availability`,{method:'PATCH',body:JSON.stringify({availabilityStatus:status})});Object.assign(item,updated);notice.value='Disponibilidad actualizada.';}catch{error.value='No pudimos actualizar la disponibilidad.';}finally{contactBusy.value='';}}
 async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
-function resolvePendingLeave(leave:boolean){const resolve=resolveLeave;resolveLeave=null;confirmLeave.value=false;resolve?.(leave);}
+function resolvePendingLeave(leave:boolean){const resolve=resolveLeave,returnFocus=leaveDialogReturnFocus;resolveLeave=null;leaveDialogReturnFocus=null;confirmLeave.value=false;resolve?.(leave);if(!leave&&returnFocus)void nextTick(()=>{if(returnFocus.isConnected)returnFocus.focus({preventScroll:true});});}
+function containLeaveDialogFocus(event:KeyboardEvent){
+  if(event.key==='Escape'){event.preventDefault();resolvePendingLeave(false);return;}
+  if(event.key!=='Tab')return;
+  const dialog=leaveDialog.value;if(!dialog)return;
+  const controls=[...dialog.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+  if(!controls.length){event.preventDefault();return;}
+  const first=controls[0],last=controls[controls.length-1],active=document.activeElement;
+  if(event.shiftKey&&(active===first||!dialog.contains(active))){event.preventDefault();last?.focus();}
+  else if(!event.shiftKey&&(active===last||!dialog.contains(active))){event.preventDefault();first.focus();}
+}
 onBeforeRouteLeave(()=>{
   if(!unsaved.value)return true;
+  leaveDialogReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
   confirmLeave.value=true;
+  void nextTick(()=>leaveDialog.value?.querySelector<HTMLButtonElement>('[data-leave-initial-focus]')?.focus());
   return new Promise<boolean>(resolve=>{resolveLeave=resolve;});
 });
 function beforeUnload(event:BeforeUnloadEvent){if(unsaved.value){event.preventDefault();event.returnValue='';}}
@@ -390,9 +404,9 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
       </section>
     </div>
     <div v-if="confirmLeave" class="owner-dialog-backdrop">
-      <section class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-leave-title" aria-describedby="owner-leave-copy">
+      <section ref="leaveDialog" class="owner-confirmation owner-dialog" role="alertdialog" aria-modal="true" aria-labelledby="owner-leave-title" aria-describedby="owner-leave-copy" @keydown="containLeaveDialogFocus">
         <p class="eyebrow">Cambios pendientes</p><h2 id="owner-leave-title">¿Salir sin guardar?</h2><p id="owner-leave-copy">Los cambios que hiciste en este borrador todavía no están guardados.</p>
-        <div class="owner-confirm-actions"><button type="button" @click="resolvePendingLeave(true)">Salir y descartar cambios</button><button type="button" class="secondary" @click="resolvePendingLeave(false)">Seguir editando</button></div>
+        <div class="owner-confirm-actions"><button type="button" @click="resolvePendingLeave(true)">Salir y descartar cambios</button><button data-leave-initial-focus type="button" class="secondary" @click="resolvePendingLeave(false)">Seguir editando</button></div>
       </section>
     </div>
   </section>

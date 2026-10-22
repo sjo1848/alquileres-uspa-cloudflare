@@ -65,8 +65,11 @@ test('identidad OWNER local: registro, verificación MOCK, recuperación, login 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   const logoutDialog=page.getByRole('alertdialog', { name: '¿Salir sin guardar?' });
   await expect(logoutDialog).toBeVisible();
-  await logoutDialog.getByRole('button', { name: 'Seguir editando' }).click();
+  const keepEditing=logoutDialog.getByRole('button', { name: 'Seguir editando' });
+  await expect(keepEditing).toBeFocused();
+  await keepEditing.click();
   await expect(page).toHaveURL(/\/owner$/);
+  await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toBeFocused();
   await expect(page.getByLabel('Nombre del alojamiento')).toHaveValue('Borrador que no debe perderse al salir');
   expect((await page.request.get('/api/auth/me')).status()).toBe(200);
   await page.getByLabel('Nombre del alojamiento').fill('');
@@ -184,7 +187,19 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.getByRole('link', { name: 'Descubrir' }).click();
   const leaveDialog = page.getByRole('alertdialog', { name: '¿Salir sin guardar?' });
   await expect(leaveDialog).toBeVisible();
-  await leaveDialog.getByRole('button', { name: 'Seguir editando' }).click();
+  const leaveButton=leaveDialog.getByRole('button', { name: 'Salir y descartar cambios' });
+  const keepEditing=leaveDialog.getByRole('button', { name: 'Seguir editando' });
+  await expect(keepEditing).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(leaveButton).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(keepEditing).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(leaveDialog).toHaveCount(0);
+  await expect(page.getByLabel('Descripción')).toHaveValue('Cambio pendiente que se debe preservar ante navegación.');
+  await page.getByRole('link', { name: 'Descubrir' }).click();
+  await expect(page.getByRole('alertdialog', { name: '¿Salir sin guardar?' }).getByRole('button', { name: 'Seguir editando' })).toBeFocused();
+  await page.getByRole('alertdialog', { name: '¿Salir sin guardar?' }).getByRole('button', { name: 'Seguir editando' }).click();
   await expect(page).toHaveURL(/\/owner$/);
   await expect(page.getByLabel('Descripción')).toHaveValue('Cambio pendiente que se debe preservar ante navegación.');
   await page.getByRole('link', { name: 'Descubrir' }).click();
@@ -263,6 +278,8 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.getByLabel('Capacidad máxima').fill('2');
   await page.getByRole('button', { name: 'Guardar borrador' }).click();
   await expect(page.getByRole('status')).toContainText('Borrador creado');
+  await photoInput.setInputFiles(redPhoto);
+  await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' })).toBeVisible();
   await page.getByRole('button', { name: 'Eliminar borrador' }).click();
   const deleteDialog = page.getByRole('alertdialog', { name: '¿Eliminar “Borrador para confirmar eliminación”?'});
   await expect(deleteDialog).toBeVisible();
@@ -271,6 +288,10 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.getByRole('button', { name: 'Eliminar borrador' }).click();
   await page.getByRole('alertdialog', { name: '¿Eliminar “Borrador para confirmar eliminación”?'}).getByRole('button', { name: 'Eliminar alojamiento' }).click();
   await expect(page.getByRole('status')).toContainText('Publicación eliminada');
+  await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Descubrir' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(page.getByRole('alertdialog', { name: '¿Salir sin guardar?' })).toHaveCount(0);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/owner');

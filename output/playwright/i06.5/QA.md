@@ -10,6 +10,7 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 - Disponibilidad/reconfirmación y consulta real sintética en inbox; cambio leído/no leído.
 - Crear/editar borrador, error HTTP transitorio y retry preservando campos, advertencia de cambios no guardados, preview local de foto, fallo/retry de carga, orden, borrado confirmado, envío a revisión y eliminación confirmada.
 - Regresiones GitHub PR #40: cancelar logout con un formulario modificado conserva sesión y valores; una foto local previsualizada bloquea “Actualizar lista”, ofrece descartar explícitamente y no puede perderse con “Actualizar desde servidor”. E2E focalizado consolidado: 2/2 en 2.2 min sobre Workerd + D1 real local.
+- Regresiones finales GitHub: al borrar el borrador se revoca y limpia una foto todavía no subida; el diálogo de salida mueve el foco a “Seguir editando”, atrapa Tab, cancela con Escape y devuelve el foco al control que inició la navegación. Playwright comprueba además que borrar el borrador no deja una confirmación invisible de cambios pendientes.
 - Regresiones del último exact-head review: OWNER puede leer Static Assets de una publicación propia en modos `STATIC_ASSETS` y `D1_BLOB`, sin ampliar mutaciones; la configuración pública de auth informa la estrategia de medios y la UI oculta acciones de subida cuando el modo es `STATIC_ASSETS`. Playwright desactiva la reutilización del servidor; dos ejecuciones completas consecutivas volvieron a seedear D1 sintética y pasaron 2/2 cada una (2.1 y 2.4 min).
 - ADMIN no puede usar UI ni API OWNER; sesión expirada no muta estado (regresiones Worker).
 - Teclado/skip-link, diálogo de salida y viewports 1440, 390 y 320 px; el E2E comprobó que `scrollWidth <= viewport` en 320 px.
@@ -27,10 +28,12 @@ Entorno reproducible: Vue/Vite + Worker/Hono en Workerd + D1 **local** aislada, 
 | `apps/worker`: `npm run test:contact-workflow` | 6/6 |
 | `apps/worker`: `npm run typecheck` | PASS |
 | `apps/web`: `npm run typecheck` y `npm run build` | PASS |
-| `apps/web`: `npm run test:e2e:owner` (Workerd + D1 real local) | 2 ejecuciones consecutivas: 2/2 (2.1m), 2/2 (2.4m), cada una con startup y re-seed propios |
+| `apps/web`: `npm run test:e2e:owner` (Workerd + D1 real local) | PASS final exact-tree: 2/2 (2.4m); antes, el re-seed determinista pasó en dos arranques consecutivos 2/2 (2.1m y 2.4m) |
+| Regresión foco/logout final (Playwright focalizado) | 1/1 (1.6m): foco inicial, cancelación y restauración al botón de logout |
 | Regresión GitHub P2: cancelar logout conserva cambios y sesión | PASS, Playwright integrado |
 | Regresión GitHub P2: actualizar lista conserva/bloquea foto pendiente | PASS, Playwright integrado |
 | GitHub P2: OWNER Static Assets y E2E state reset | PASS, tests Worker + dos arranques E2E independientes |
+| GitHub P2: foto staged al borrar + foco modal de salida | PASS, E2E final exact-tree 2/2 y foco focalizado 1/1 |
 | Consistency validator contra `origin/main` y `git diff --check` | PASS |
 
 Los tests de media se ejecutaron por archivo para aislar Workerd; el spike de 256 KiB necesitó `--testTimeout=15000` en la primera corrida concurrente. La suite final integrada pasó sin concurrencia de QA adicional.
