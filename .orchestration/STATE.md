@@ -1648,3 +1648,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Se rectifica el encabezado histórico de Event 199, que había quedado duplicado como Event 200; la secuencia ahora es única y ordenada 197–207. El hallazgo original `4362325536` ya estaba respondido/resuelto, y este checkpoint aplica efectivamente esa corrección.
 - Checks worker/web y review GitHub PASS en SHA exacto `ece5cd00f4c326bfd0c9229ccf435d3704633167`; 11 hilos, 0 pendientes. El checkpoint de estado actual cambia el SHA y exige repetir los checks/review exactos.
 - **READY_TO_RESUME:** esperar gates exact-head de este checkpoint, ejecutar Controller final GPT-6 Luna High read-only y Pre-Critic; merge protegido únicamente tras PASS. Cerrar #42/actualizar #25 y detener antes de #43.
+
+
+## Event 208 — rework de metadatos P2 del Controller
+
+- El Controller delegado separado revisó el checkpoint exacto `82edf916007eee1fb7e447c4a46ec7f54ed4453d`, tree `0280f265cce13f39d878bc287a4cc6b70b7995a8`, sobre base `b901b444b5819c1861cdfdf164d33e7ce92dff0e`. Dictamen **REWORK** exclusivamente de metadatos; la implementación D3.1 obtuvo evaluación técnica PASS sin hallazgos P0/P1/P2.
+- Se corrige la separación de artefactos: el código ejecutable sigue siendo `1f5908deb94e50f7e133b8676052210f3a819bf7` / tree `d6f8eb2cef305fe34129cabc2b989280bd47f125`; el checkpoint de estado revisado era `82edf91` / tree `0280f26`. Se registra que worker/web pasaron en `82edf91` mediante run `39998771778`, y que la review automática seguía `running` para ese SHA.
+- Reporte/provenance completa del Controller: `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-82EDF-REWORK.md`. Invocación solicitada `gpt-6-luna`/High/solo lectura; valores runtime observados no expuestos, backend UNVERIFIED. Proceso separado `codex exec`, CLI exit 0; no es subagente nativo ni revisor externo autenticado.
+- El presente commit corrige el registro y crea un checkpoint nuevo. Debe pasar worker/web, review automática exact-head y Controller final sobre el SHA exacto antes del Pre-Critic y del merge protegido. Protección observada: checks estrictos `worker`/`web`, `enforce_admins=true`, aprobaciones requeridas 0; revalidar antes del merge.
+- **READY_TO_RESUME:** verificar el validador y el nuevo HEAD, esperar sus checks y review; atender hallazgos materiales; solicitar el Controller final con el snapshot GitHub capturado por el proceso padre; aplicar Pre-Critic, integrar mediante protección, cerrar #42 y actualizar #25. Detenerse antes de #43. No Preview ni producción.
