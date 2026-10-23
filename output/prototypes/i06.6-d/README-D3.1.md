@@ -4,7 +4,8 @@ D3 sigue siendo la única base arquitectónica. Esta entrega afina su identidad 
 
 - [Prototipo navegable D3.1](d3.1-refinamiento.html)
 - [Paquete offline con imágenes sintéticas](prototipo-d3.1-refinamiento.zip)
-- [Comparación antes/después](D3.1-COMPARACION.md)
+- [Ajustes visuales P1 antes/después](D3.1-REVISION-P1.md)
+- [Comparación UX D3.1](D3.1-COMPARACION.md)
 - [QA Playwright y límites de la evidencia](D3.1-QA.md)
 
 Incluye únicamente las vistas necesarias: catálogo, editor OWNER e imágenes, moderación ADMIN y gestión asistida. Los controles son simulaciones visuales; no llaman a Vue/Worker, no escriben D1, no alteran permisos ni registran auditoría. Personas, alojamientos y fotografías son sintéticos. La nueva fotografía local se generó específicamente para este prototipo.
