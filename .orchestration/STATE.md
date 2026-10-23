@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_5_OWNER_AUTH`
-Active task: `CF-AU-I06.5 — Rediseño de identidad y panel OWNER`
+State: `IN_PROGRESS`
+Phase: `CF_AU_I06_6_P1_D31_FOUNDATIONS`
+Active task: `CF-AU-I06.6-P1 — Fundamentos visuales D3.1 (Issue #42)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1564,3 +1564,96 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Quick CI worker/web PASS on exact checkpoint ec57ef5, run `39883656818`. State validator and `git diff --check` PASS. Controller exact-delta PASS on executable 308c478; one nonblocking P3 inbox pagination retry follow-up, no P0/P1/P2.
 - Branch protection observed: strict `worker`,`web`; enforce-admins enabled; PR review rule enabled with 0 required approvals; no push restrictions. PR is mergeable and merge state CLEAN.
 - **Pre-Critic: PENDING on the final canonical evidence checkpoint until worker/web and automatic review are complete.** Controller PASS applies to unchanged executable candidate 308c478. The final evidence checkpoint must remain docs/state-only; no Controller or long-suite rerun is needed unless executable content changes. No code changes remain. If final docs-only checkpoint repeats findings, verify whether substantive and resolve with existing evidence; do not rerun Controller or full suites absent executable change. After protected merge, close #32/#36, update #25, and stop before #33/I06.6. No Preview or production action.
+
+## Event 197 — inicio de I06.6-P1 / Issue #42
+
+- Estado reconstruido desde GitHub: `main@b901b444b5819c1861cdfdf164d33e7ce92dff0e`; PR #40 está integrado. El state previo seguía mostrando PR #40 abierto/I06.5 y se reconcilia en este cambio funcional, no en un PR documental.
+- Issue #42 autoriza exclusivamente los fundamentos D3.1 (tokens, tipografía, marca, shell/nav responsive y primitivos compartidos). Catálogo, OWNER y ADMIN conservan composición, lógica, permisos, APIs y seguridad; no hay Preview ni producción.
+- Contrato activo: `.orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md`; branch `work/i06-d31-foundations`; base exacta `b901b444b5819c1861cdfdf164d33e7ce92dff0e`.
+- La implementación y QA de Issue #42 siguen IN_PROGRESS; aún no se afirma PASS de pruebas, Controller, review GitHub ni merge.
+- **READY_TO_RESUME:** terminar fundamentos compartidos, verificar captura/runtime y validaciones del contrato, completar reviews exactos, integrar por merge protegido, actualizar #42/#25 y detener antes de #43.
+- QA local final: Web typecheck, standard/build:preview compilations, foundations Playwright 1/1, public E2E 4/4, OWNER E2E 3/3, contrast + reduced-motion assertions, consistency validator and whitespace PASS. Evidence/capturas: `output/playwright/i06.6-p1/QA.md`.
+- CI exact PR head, GitHub review, Controller y Pre-Critic final siguen PENDIENTES; no se reclama PASS de revisión ni merge.
+
+## Event 198 — PR #45 publicado
+
+- PR funcional #45: `https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/45`, branch `work/i06-d31-foundations`, base `main@b901b444b5819c1861cdfdf164d33e7ce92dff0e`.
+- Commit de implementación/evidencia `efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76`; el estado canónico se actualiza dentro de este mismo PR. CI `worker`/`web`, revisión automática, Controller GPT-6 Luna High read-only y Pre-Critic final aún pendientes sobre el HEAD final.
+- **READY_TO_RESUME:** procesar checks/revisión exactos; resolver reworks materiales; ejecutar una revisión Controller del candidato final y Pre-Critic; hacer merge protegido únicamente con gates en PASS; cerrar #42 y actualizar #25, deteniéndose antes de #43. Sin Preview/producción.
+
+## Event 199 — rework de revisión P2 y evidencia visual
+
+- CI worker/web había pasado en PR HEAD `edc629390b8fe3f058fd94f6f12312a60e870b21` (run `39991453269`). La revisión automática completó sobre ese SHA y encontró un P2 en `.orchestration/STATUS.json` (`4362195163`): los `local_checks.github_checks` / `github_review` conservaban `PENDING_PR` aunque el PR estaba abierto. Se corrigió para reflejar el resultado exacto anterior y dejar explícito que el nuevo checkpoint necesita gates exactos nuevos.
+- El Controller separado revisó `edc6293` y encontró cero defectos de código P0/P1/P2, pero emitió **BLOCKED** porque su sandbox no pudo conectarse a `api.github.com`; no se convierte ni reclama PASS. Se conservarán su invocación y resultado íntegros; después de rework el Controller hará una revisión final con el output GitHub de solo lectura capturado por el proceso padre y pasado como evidencia, manteniendo el sandbox read-only.
+- Rework de QA no funcional: las nuevas capturas OWNER/ADMIN mobile se toman con el menú cerrado para mostrar la pantalla completa, mientras Playwright verifica aparte la navegación abierta/por rol; se añaden contrastes calculados para los cuatro chips OWNER, no solo colores base.
+- Evidencia íntegra/provenance del Controller BLOCKED anterior guardada en `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-EDC629-BLOCKED.*`; la respuesta al hallazgo `4362195163` se publicó como comentario `4362236110` y el thread quedó resuelto. El Controller final sigue pendiente para un SHA nuevo.
+- Capturas/E2E fundamentos actualizados pasan 1/1 sobre Worker/Hono + D1 sintética local. Tests públicos 4/4 y OWNER 3/3 del código visual siguen PASS; no hubo cambios funcionales posteriores. Build/typecheck/consistency ya PASS.
+- **READY_TO_RESUME:** publicar checkpoint funcional/QA, responder y resolver P2 `4362195163`, verificar worker/web y review automática sobre el nuevo HEAD; suministrar al Controller el snapshot GitHub exacto del proceso principal y obtener PASS/REWORK/encaminamiento claro. Aplicar Pre-Critic y merge protegido solo tras gates PASS; cerrar #42/actualizar #25 y detener antes de #43. Sin Preview/producción.
+
+
+## Event 200 — corrección de registro histórico detectada por revisión exact-head
+
+- Revisión GitHub completada sobre `16a6b17c73d71dfb25449d0680da2176c0c030f4`: hallazgo P2 `4362278641` porque PR #40 figuraba `OPEN` aunque fue integrado en `main@b901b444b5819c1861cdfdf164d33e7ce92dff0e`; también se encontraba en estado pre-merge el histórico I06.5.
+- Ambos registros ahora dicen `MERGED` / `COMPLETED_INTEGRATED` y preservan el merge commit real `b901b444b5819c1861cdfdf164d33e7ce92dff0e`. Revisión favorable sin defectos de implementación no se infiere del hecho de existir el hallazgo.
+- El siguiente checkpoint requiere repetir GitHub worker/web y review automática exact-head, responder/resolver `4362278641` y volver a pedir Controller para el SHA final.
+- **READY_TO_RESUME:** publicar esta reconciliación, comprobar gates exact-head y continuar con Controller / Pre-Critic / merge protegido de PR #45. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 201 — rework de consistencia del checkpoint de seguimiento
+
+- Revisión GitHub exact-head sobre `ce9efa206710facb9514f76b5beb894118acccab` encontró dos P2: `4362325526` (next_action aún pedía completar una corrección ya hecha) y `4362325536` (dos encabezados Event 200).
+- Se avanza `next_action` al control exact-head posterior y se restaura unicidad de la secuencia: Event 199 documenta el rework previo, Event 200 la corrección histórica PR #40 e I06.5, Event 201 este rework.
+- Controller GPT-6 Luna/High read-only, separado, sobre `ce9efa2` devolvió **REWORK** por next_action/gate fields aún stale en el HEAD inspeccionado; no encontró defectos P0/P1/P2 de implementación. Informe/provenance: `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-CE9EFA2-REWORK.*`. Este checkpoint corrige también el hallazgo del Controller y requiere revisión nueva exact-head.
+- **READY_TO_RESUME:** publicar este checkpoint, responder/resolver ambos hallazgos y repetir checks/review exact-head; obtener Controller PASS y aplicar Pre-Critic antes del merge protegido. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 202 — rework de contraste del hero de catálogo
+
+- La revisión GitHub automática de `3baaaa21ae75a1f878e1cc9fbcc895c712fb5e5b` encontró P2 `4362381543`: el texto `.catalog-intro-note` sobre el gradiente del hero medía aproximadamente 3.8:1 en desktop.
+- El P2 se corrige con superficie sólida oscura `#273584` para la nota, sin alterar la composición del catálogo. Playwright añade cálculo WCAG AA del texto `#f0eee5` sobre la superficie en los viewports 1440, 390 y 320; contraste calculado 9.37:1. Typecheck y E2E de fundamentos 1/1 PASS; se regeneraron las tres capturas públicas.
+- Typecheck y Playwright integrado de fundamentos pasan sobre el rework: 1/1 con verificación de contraste de nota en 1440/390/320 y capturas regeneradas. La respuesta al hallazgo es PR comment `4362398134` y su thread está resuelto.
+- **READY_TO_RESUME:** esperar CI/review exact-head, ejecutar Controller final y Pre-Critic; merge protegido solo con gates en PASS. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 203 — rework consolidado de contraste del sistema visual
+
+- Review GitHub de `8bfebaa032c54a15a0287f317a4fedf5b5c2c700` completada con hallazgos P2: puntero canónico aún pre-fix (`4362441626`, duplicado en `4362442961`), foco OWNER hero insuficientemente contrastado (`4362441631`), borde de controles 1.98:1 (`4362442976`) y placeholder 4.476:1 (`4362442984`).
+- Rework consolidado: surface oscura para ubicación; control border `#78869a` (3.70:1); placeholder `#626f83` (5.10:1); foco blanco contrastante en CTA OWNER (3.92:1 contra el extremo más claro del gradiente, sobre el mínimo 3:1 para indicador no textual). Playwright integrado 1/1, typecheck PASS y capturas 1440/390/320 regeneradas. `executable_sha` y sus mirrors se actualizarán en un checkpoint posterior al commit de código para apuntar al candidato con todos los fixes.
+- **READY_TO_RESUME:** terminar el pointer canónico, responder y resolver los P2, correr checks/review exact-head y obtener Controller PASS antes de Pre-Critic y merge protegido. Cerrar #42 y actualizar #25; detener antes de #43.
+
+
+## Event 204 — puntero al candidato ejecutable final
+
+- Código y regresiones consolidados en `f30f0e46013c182c9a2409cc7aa045b0f065f674`, tree `9e0406e3596cfd0e0e69cbcc384da29ad33dab1b`. `pull_request.executable_sha`, `current_functional_increment.code_sha` y tree mirrors actualizados a ese artefacto; no hay cambios ejecutables posteriores en este checkpoint.
+- Contrastes/regresiones pasan localmente: typecheck/build/build:preview; Playwright fundamentos 1/1 con placeholder 5.10:1, límite del control 3.70:1, ubicación 9.37:1 y foco OWNER 3.92:1. Capturas locales en `output/playwright/i06.6-p1/`.
+- **READY_TO_RESUME:** responder y resolver P2 `4362441626`, `4362442961`, `4362441631`, `4362442976`, `4362442984`; ejecutar CI/review exactos del checkpoint, Controller final PASS y Pre-Critic. Merge protegido después de todos los gates; cerrar #42/actualizar #25 y detener antes de #43.
+
+
+## Event 205 — rework de contraste del texto mobile del hero
+
+- Review GitHub exact-head de `fdb950f7918698b7b6bf3e0f0220c0a38c2231e5` encontró P2 `4362543307`: párrafo público normal-size con 4.2–4.4:1 sobre zonas claras del gradiente a 320px.
+- Se oscurece el extremo del gradiente a `#4d5db8` (párrafo `#f0eee5`: mínimo 5.06:1) y se posiciona la copia sobre la decoración; Playwright inspecciona el gradiente renderizado y exige >=4.5:1 contra cada color stop en desktop/390/320. Typecheck y E2E integrado 1/1 pasan; capturas regeneradas.
+- **READY_TO_RESUME:** ejecutar typecheck/build/E2E, actualizar capturas y puntero ejecutable, responder/resolver P2; repetir checks/review exactos y Controller final antes de Pre-Critic y merge protegido. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 206 — puntero al candidato ejecutable final
+
+- Contraste y regresiones consolidados en código `1f5908deb94e50f7e133b8676052210f3a819bf7`, tree `d6f8eb2cef305fe34129cabc2b989280bd47f125`; `pull_request.executable_sha` y mirrors apuntan a este commit. El checkpoint canónico que sigue no altera código.
+- Typecheck, build, build:preview y Playwright integrado 1/1 PASS. Contrastes comprobados: párrafo público mínimo 5.06:1, ubicación 9.37:1, placeholder 5.10:1, borde de control 3.70:1 y foco OWNER 3.92:1; capturas 1440/390/320 publicadas localmente.
+- **READY_TO_RESUME:** responder/resolver P2 `4362543307`, ejecutar CI/review exact-head del checkpoint, Controller final PASS y Pre-Critic. Integrar con merge protegido y solo después actualizar/cerrar #42 y actualizar #25; detener antes de #43.
+
+
+## Event 207 — cierre de unicidad del ledger
+
+- Se rectifica el encabezado histórico de Event 199, que había quedado duplicado como Event 200; la secuencia ahora es única y ordenada 197–207. El hallazgo original `4362325536` ya estaba respondido/resuelto, y este checkpoint aplica efectivamente esa corrección.
+- Checks worker/web y review GitHub PASS en SHA exacto `ece5cd00f4c326bfd0c9229ccf435d3704633167`; 11 hilos, 0 pendientes. El checkpoint de estado actual cambia el SHA y exige repetir los checks/review exactos.
+- **READY_TO_RESUME:** esperar gates exact-head de este checkpoint, ejecutar Controller final GPT-6 Luna High read-only y Pre-Critic; merge protegido únicamente tras PASS. Cerrar #42/actualizar #25 y detener antes de #43.
+
+
+## Event 208 — rework de metadatos P2 del Controller
+
+- El Controller delegado separado revisó el checkpoint exacto `82edf916007eee1fb7e447c4a46ec7f54ed4453d`, tree `0280f265cce13f39d878bc287a4cc6b70b7995a8`, sobre base `b901b444b5819c1861cdfdf164d33e7ce92dff0e`. Dictamen **REWORK** exclusivamente de metadatos; la implementación D3.1 obtuvo evaluación técnica PASS sin hallazgos P0/P1/P2.
+- Se corrige la separación de artefactos: el código ejecutable sigue siendo `1f5908deb94e50f7e133b8676052210f3a819bf7` / tree `d6f8eb2cef305fe34129cabc2b989280bd47f125`; el checkpoint de estado revisado era `82edf91` / tree `0280f26`. Se registra que worker/web pasaron en `82edf91` mediante run `39998771778`, y que la review automática seguía `running` para ese SHA.
+- Reporte/provenance completa del Controller: `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-82EDF-REWORK.md`. Invocación solicitada `gpt-6-luna`/High/solo lectura; valores runtime observados no expuestos, backend UNVERIFIED. Proceso separado `codex exec`, CLI exit 0; no es subagente nativo ni revisor externo autenticado.
+- El presente commit corrige el registro y crea un checkpoint nuevo. Debe pasar worker/web, review automática exact-head y Controller final sobre el SHA exacto antes del Pre-Critic y del merge protegido. Protección observada: checks estrictos `worker`/`web`, `enforce_admins=true`, aprobaciones requeridas 0; revalidar antes del merge.
+- **READY_TO_RESUME:** verificar el validador y el nuevo HEAD, esperar sus checks y review; atender hallazgos materiales; solicitar el Controller final con el snapshot GitHub capturado por el proceso padre; aplicar Pre-Critic, integrar mediante protección, cerrar #42 y actualizar #25. Detenerse antes de #43. No Preview ni producción.

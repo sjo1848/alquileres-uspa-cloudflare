@@ -92,8 +92,12 @@ async function switchDemoIdentity(event:MouseEvent) {
   <a class="skip-link" href="#main-content">Saltar al contenido</a>
   <header class="app-header app-shell">
     <RouterLink class="brand" to="/" aria-label="Alquileres Uspallata, inicio" @click="navigate()">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-copy"><span class="brand-name">Uspallata</span><span class="brand-caption">Alojamientos en el valle</span></span>
+      <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <path d="M5 35 18 13l7 11 5-8 13 19H5Z" fill="var(--color-clay)" />
+        <path d="m18 13 4 7-5-2-4 7 5-12Zm12 3 4 8-5-3-4 6 5-11Z" fill="var(--color-paper)" />
+        <path d="M8 39h33" stroke="var(--color-danger)" stroke-width="2.5" stroke-linecap="round" />
+      </svg>
+      <span class="brand-copy"><span class="brand-name">USPALLATA</span><span class="brand-caption">Alojamientos de montaña</span></span>
     </RouterLink>
 
     <button

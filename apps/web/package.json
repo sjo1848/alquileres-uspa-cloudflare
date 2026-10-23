@@ -10,7 +10,8 @@
     "seed:owner-e2e": "wrangler d1 migrations apply DB --local --config ../worker/wrangler.owner-e2e.runtime.jsonc --persist-to .wrangler/state && wrangler d1 execute DB --local --config ../worker/wrangler.owner-e2e.runtime.jsonc --persist-to .wrangler/state --file ../worker/tests/seed-owner-e2e.sql",
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit",
-    "build:preview": "CF_PREVIEW_CONFIG=../worker/wrangler.preview.example.jsonc vite build"
+    "build:preview": "CF_PREVIEW_CONFIG=../worker/wrangler.preview.example.jsonc vite build",
+    "test:e2e:foundations": "playwright test --config=playwright.foundations.config.ts"
   },
   "dependencies": {
     "vue": "^3.5.18",
