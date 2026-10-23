@@ -1581,7 +1581,7 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Commit de implementación/evidencia `efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76`; el estado canónico se actualiza dentro de este mismo PR. CI `worker`/`web`, revisión automática, Controller GPT-6 Luna High read-only y Pre-Critic final aún pendientes sobre el HEAD final.
 - **READY_TO_RESUME:** procesar checks/revisión exactos; resolver reworks materiales; ejecutar una revisión Controller del candidato final y Pre-Critic; hacer merge protegido únicamente con gates en PASS; cerrar #42 y actualizar #25, deteniéndose antes de #43. Sin Preview/producción.
 
-## Event 199 — rework de revisión P2 y evidencia visual
+## Event 200 — rework del estado histórico PR #40
 
 - CI worker/web había pasado en PR HEAD `edc629390b8fe3f058fd94f6f12312a60e870b21` (run `39991453269`). La revisión automática completó sobre ese SHA y encontró un P2 en `.orchestration/STATUS.json` (`4362195163`): los `local_checks.github_checks` / `github_review` conservaban `PENDING_PR` aunque el PR estaba abierto. Se corrigió para reflejar el resultado exacto anterior y dejar explícito que el nuevo checkpoint necesita gates exactos nuevos.
 - El Controller separado revisó `edc6293` y encontró cero defectos de código P0/P1/P2, pero emitió **BLOCKED** porque su sandbox no pudo conectarse a `api.github.com`; no se convierte ni reclama PASS. Se conservarán su invocación y resultado íntegros; después de rework el Controller hará una revisión final con el output GitHub de solo lectura capturado por el proceso padre y pasado como evidencia, manteniendo el sandbox read-only.
@@ -1589,3 +1589,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Evidencia íntegra/provenance del Controller BLOCKED anterior guardada en `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-EDC629-BLOCKED.*`; la respuesta al hallazgo `4362195163` se publicó como comentario `4362236110` y el thread quedó resuelto. El Controller final sigue pendiente para un SHA nuevo.
 - Capturas/E2E fundamentos actualizados pasan 1/1 sobre Worker/Hono + D1 sintética local. Tests públicos 4/4 y OWNER 3/3 del código visual siguen PASS; no hubo cambios funcionales posteriores. Build/typecheck/consistency ya PASS.
 - **READY_TO_RESUME:** publicar checkpoint funcional/QA, responder y resolver P2 `4362195163`, verificar worker/web y review automática sobre el nuevo HEAD; suministrar al Controller el snapshot GitHub exacto del proceso principal y obtener PASS/REWORK/encaminamiento claro. Aplicar Pre-Critic y merge protegido solo tras gates PASS; cerrar #42/actualizar #25 y detener antes de #43. Sin Preview/producción.
+
+
+## Event 200 — corrección de registro histórico detectada por revisión exact-head
+
+- Revisión GitHub completada sobre `16a6b17c73d71dfb25449d0680da2176c0c030f4`: hallazgo P2 `4362278641` porque PR #40 figuraba `OPEN` aunque fue integrado en `main@b901b444b5819c1861cdfdf164d33e7ce92dff0e`; también se encontraba en estado pre-merge el histórico I06.5.
+- Ambos registros ahora dicen `MERGED` / `COMPLETED_INTEGRATED` y preservan el merge commit real `b901b444b5819c1861cdfdf164d33e7ce92dff0e`. Revisión favorable sin defectos de implementación no se infiere del hecho de existir el hallazgo.
+- El siguiente checkpoint requiere repetir GitHub worker/web y review automática exact-head, responder/resolver `4362278641` y volver a pedir Controller para el SHA final.
+- **READY_TO_RESUME:** publicar esta reconciliación, comprobar gates exact-head y continuar con Controller / Pre-Critic / merge protegido de PR #45. Cerrar #42 y actualizar #25, detener antes de #43.

@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Push the consolidated screenshot/test/status rework, resolve GitHub P2 4362195163 with evidence, wait for exact-head worker/web CI and automated review, then obtain one final read-only Controller review with the raw GitHub status evidence supplied to its sandbox. Complete Pre-Critic and protected merge only after all gates pass.",
+  "next_action": "Complete the historical-state correction; then exact-head GitHub checks/review and one final read-only Controller review, Pre-Critic and protected merge for PR #45. Close #42 and update #25 only after integration; stop before #43.",
   "stop_reason": null,
   "event": {
-    "seq": 199,
-    "summary": "Rework P2 #45: nested exact-head gates; improve mobile capture and semantic contrast QA"
+    "seq": 200,
+    "summary": "Rework GitHub P2: registrar PR #40 como integrado en su merge commit real"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "executable_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
-    "status": "OPEN_REWORK_GITHUB_STATUS_SYNC"
+    "status": "OPEN_REWORK_HISTORICAL_STATUS"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -79,12 +79,12 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "PR_OPEN_REWORK_GITHUB_STATUS_SYNC",
+    "status": "PR_OPEN_REWORK_HISTORICAL_STATUS",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
     "code_status": "D3.1 shared tokens, mountain wordmark, role/session-aware responsive shell and shared control/surface/status primitives implemented. No Worker/D1/auth/permission or per-view layout changes.",
-    "next_action": "Push the consolidated screenshot/test/status rework, resolve GitHub P2 4362195163 with evidence, wait for exact-head worker/web CI and automated review, then obtain one final read-only Controller review with the raw GitHub status evidence supplied to its sandbox. Complete Pre-Critic and protected merge only after all gates pass.",
+    "next_action": "Complete the historical-state correction; then exact-head GitHub checks/review and one final read-only Controller review, Pre-Critic and protected merge for PR #45. Close #42 and update #25 only after integration; stop before #43.",
     "local_checks": {
       "web_typecheck": "PASS",
       "web_build": "PASS: standard and build:preview; build-only, no deploy",
@@ -93,8 +93,8 @@
       "playwright_owner": "PASS: 3/3 existing OWNER journey tests on final visual code",
       "orchestration_validator": "PASS against origin/main",
       "git_diff_check": "PASS",
-      "github_checks": "PASS exact prior HEAD edc629390b8fe3f058fd94f6f12312a60e870b21; run 39991453269. New status/evidence checkpoint requires exact-head checks.",
-      "github_review": "Automated review completed on edc629; P2 4362195163 found nested gate fields stale. Corrected in this checkpoint; final exact-head review pending.",
+      "github_checks": "PASS exact prior candidate 16a6b17c73d71dfb25449d0680da2176c0c030f4; run 39993235935. New canonical history correction requires exact-head checks.",
+      "github_review": "Automated review completed on 16a6b17; P2 4362278641 found PR #40 history stale. Corrected in this checkpoint; final exact-head review pending.",
       "controller": "Previous exact edc629 review returned BLOCKED because reviewer process could not reach GitHub API; no code P0/P1/P2. Fresh controller required with parent-captured exact-head review evidence."
     },
     "code_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
@@ -884,12 +884,13 @@
     "branch": "work/i06-owner",
     "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
     "executable_sha": "308c478b016985f47f5f6e33be67afa952d8247e",
-    "status": "OPEN"
+    "status": "MERGED",
+    "merge_commit": "b901b444b5819c1861cdfdf164d33e7ce92dff0e"
   },
   "historical_functional_increment_i06_5": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/32",
     "contract": ".orchestration/contracts/CF-AU-I06.5-OWNER-AUTH.md",
-    "status": "READY_FOR_PROTECTED_MERGE_AFTER_FINAL_CHECKPOINT",
+    "status": "COMPLETED_INTEGRATED",
     "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
     "branch": "work/i06-owner",
     "scope": "I06.5 local synthetic OWNER and I05 mock authentication experience, integrated Vue/Worker/Hono/D1. Reconcile I06.4 post-merge state in this functional PR. No I06.6/#33, Preview/Access remote change, production, paid services, external email, R2, real data or source repository write.",
@@ -935,7 +936,9 @@
     "candidate_executable_sha": "308c478b016985f47f5f6e33be67afa952d8247e",
     "candidate_tree_sha": "7170e54dc3d72d06dcb36fc247e468d92f57a25f",
     "github_checks": "PENDING for candidate 308c478; prior state checkpoint 8176e62 worker/web PASS but predates this functional delta.",
-    "github_automatic_review": "Completed on checkpoint ec57ef5. Two P2 findings already covered by candidate code and E2E; evidence replies posted and threads resolved. Six stale outdated threads also resolved. No unresolved review conversations."
+    "github_automatic_review": "Completed on checkpoint ec57ef5. Two P2 findings already covered by candidate code and E2E; evidence replies posted and threads resolved. Six stale outdated threads also resolved. No unresolved review conversations.",
+    "merge_commit": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
+    "integration_evidence": "PR #40 merged 2026-10-23; main merge commit b901b444b5819c1861cdfdf164d33e7ce92dff0e."
   },
   "controller_history_i06_6_edc629": {
     "artifact_sha": "edc629390b8fe3f058fd94f6f12312a60e870b21",
