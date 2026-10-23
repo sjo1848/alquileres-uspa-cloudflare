@@ -1620,3 +1620,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Review GitHub de `8bfebaa032c54a15a0287f317a4fedf5b5c2c700` completada con hallazgos P2: puntero canónico aún pre-fix (`4362441626`, duplicado en `4362442961`), foco OWNER hero insuficientemente contrastado (`4362441631`), borde de controles 1.98:1 (`4362442976`) y placeholder 4.476:1 (`4362442984`).
 - Rework consolidado: surface oscura para ubicación; control border `#78869a` (3.70:1); placeholder `#626f83` (5.10:1); foco blanco contrastante en CTA OWNER (3.92:1 contra el extremo más claro del gradiente, sobre el mínimo 3:1 para indicador no textual). Playwright integrado 1/1, typecheck PASS y capturas 1440/390/320 regeneradas. `executable_sha` y sus mirrors se actualizarán en un checkpoint posterior al commit de código para apuntar al candidato con todos los fixes.
 - **READY_TO_RESUME:** terminar el pointer canónico, responder y resolver los P2, correr checks/review exact-head y obtener Controller PASS antes de Pre-Critic y merge protegido. Cerrar #42 y actualizar #25; detener antes de #43.
+
+
+## Event 204 — puntero al candidato ejecutable final
+
+- Código y regresiones consolidados en `f30f0e46013c182c9a2409cc7aa045b0f065f674`, tree `9e0406e3596cfd0e0e69cbcc384da29ad33dab1b`. `pull_request.executable_sha`, `current_functional_increment.code_sha` y tree mirrors actualizados a ese artefacto; no hay cambios ejecutables posteriores en este checkpoint.
+- Contrastes/regresiones pasan localmente: typecheck/build/build:preview; Playwright fundamentos 1/1 con placeholder 5.10:1, límite del control 3.70:1, ubicación 9.37:1 y foco OWNER 3.92:1. Capturas locales en `output/playwright/i06.6-p1/`.
+- **READY_TO_RESUME:** responder y resolver P2 `4362441626`, `4362442961`, `4362441631`, `4362442976`, `4362442984`; ejecutar CI/review exactos del checkpoint, Controller final PASS y Pre-Critic. Merge protegido después de todos los gates; cerrar #42/actualizar #25 y detener antes de #43.
