@@ -77,3 +77,10 @@ Capturas Playwright reales (no prototipos):
 - Alta vacía desktop: [1440 × 1000](./owner-dashboard-empty-desktop-1440x1000.png)
 - Fotos aprobadas en lectura: [1440 × 1000](./owner-approved-photos-desktop-1440x1000.png)
 - Editor y fotos del borrador: [1440 × 1000](./owner-listing-editor-desktop-1440x1000.png)
+
+## Rework de estados de colección — candidato ejecutable `308c478b016985f47f5f6e33be67afa952d8247e`
+
+- Controller read-only en `ce80a9b` encontró que los 503 del GET de publicaciones y del inbox podían verse como colecciones vacías. La UI separa ahora error y vacío, ofrece reintento; además bloquea “Nuevo borrador” si no se confirmó el inventario. Las filas previas permanecen visibles si falla una actualización posterior.
+- Playwright: `npm run test:e2e:owner -- --grep 'OWNER:'` PASS 2/2 (2.2 min) en Vue + Worker/Hono + Workerd + D1 local sintética. La regresión inyecta 503 para ambos GET, comprueba que no aparece estado vacío, recupera ambas llamadas contra D1 real y confirma el vacío real del inbox después del retry. El recorrido OWNER restante pasa incluyendo retry de fotos, respuesta tardía al cambiar borrador, upload D1 BLOB, disponibilidad, inbox, permisos y expiración.
+- Web: `npm run typecheck && npm run build` PASS sobre el árbol ejecutable `7170e54dc3d72d06dcb36fc247e468d92f57a25f`. Capturas desktop/mobile se regeneraron con Playwright y están en esta carpeta.
+- El Controller anterior no se hereda como PASS: informe REWORK `CF-AU-I06.5-CONTROLLER-CE80A9B-*`. Revisión final, CI del nuevo SHA y Pre-Critic quedan pendientes.

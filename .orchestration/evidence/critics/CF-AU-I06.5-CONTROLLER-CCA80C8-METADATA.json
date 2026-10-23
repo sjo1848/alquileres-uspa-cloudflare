@@ -1,0 +1,30 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "reviewer_name": "project_controller (delegated local technical review)",
+  "artifact_sha": "cca80c871738fa229682478769ce5164ca8e6483",
+  "artifact_tree": "a95d70f42d9479044ec3a73b2a88e368466b8c31",
+  "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+  "delta_from_prior_controller_pass": "c848d8459f2aff10bb023cd4d14059d6604c2649..cca80c871738fa229682478769ce5164ca8e6483",
+  "model_requested": "gpt-6-luna",
+  "reasoning_effort_requested": "high",
+  "sandbox_requested_and_accepted": "read-only",
+  "cli_configuration_accepted": true,
+  "cli_exit_code": 0,
+  "actual_backend_model_identity": "UNVERIFIED",
+  "session_id": "01a16138-374c-7042-a4d8-4a0904c34bbf",
+  "command": "codex exec --model gpt-6-luna -c 'model_reasoning_effort=\"high\"' --sandbox read-only --json -o <report> -C <repository> - <prompt",
+  "prompt_file": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-CCA80C8-PROMPT.md",
+  "raw_final_response": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-CCA80C8-REPORT.md",
+  "transcript_metadata": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-CCA80C8-TRANSCRIPT.json",
+  "tests_run_by_controller": false,
+  "parent_tests_evidence": "output/playwright/i06.5/QA.md",
+  "controller_report_verdict": "BLOCKED_RUNTIME_EVIDENCE",
+  "technical_delta_verdict_in_report": "PASS; no P0-P3 findings",
+  "operational_v2_assessment": "QUALIFIES: parent captured the exact separate-process CLI invocation with requested model/effort/read-only flags, successful exit, thread/result, exact SHA/tree and read-only command trace. Decision DELEGATED-CONTROLLER-OPERATIONAL-VERIFICATION-V2 explicitly says unavailable backend attestation is not an automatic blocker. No unsupported-model/downgrade warning appeared. Preserve the Controller's generic BLOCKED wording as issued; distinguish it from the parent's operational adjudication.",
+  "runtime_notes": [
+    "CLI accepted --model gpt-6-luna, model_reasoning_effort=high and --sandbox read-only; exit 0.",
+    "Controller command trace contains only read operations and git identity/diff inspection; no files or refs were modified by the review process.",
+    "Configured localhost:4401 MCP transport was unavailable and emitted stderr warnings; review completed from repository inspection without that MCP.",
+    "Actual provider backend model identity remains UNVERIFIED."
+  ]
+}

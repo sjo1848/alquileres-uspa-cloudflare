@@ -1,0 +1,28 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "reviewer_name": "project_controller (delegated local technical review)",
+  "artifact_sha": "ce80a9b4facdec5a82d7a43fd133709e3d6fce0c",
+  "artifact_tree": "838c7a94cbc8b4173134889623f3e2bee9bd25c8",
+  "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+  "model_requested": "gpt-6-luna",
+  "reasoning_effort_requested": "high",
+  "sandbox_requested": "read-only",
+  "cli_configuration_accepted": true,
+  "cli_exit_code": 0,
+  "session_id": "01a16380-0f7c-7261-a564-42a304f1d100",
+  "command": "codex exec --model gpt-6-luna -c 'model_reasoning_effort=\"high\"' --sandbox read-only --json",
+  "actual_backend_model_identity": "UNVERIFIED",
+  "report_verdict": "REWORK",
+  "findings": [
+    "P2: failed OWNER listing collection fetch could present as empty inventory and allow draft creation",
+    "P2: failed OWNER contact inbox fetch could present as empty inbox"
+  ],
+  "tests_run_by_controller": false,
+  "parent_evidence": "output/playwright/i06.5/QA.md",
+  "runtime_notes": [
+    "Exact candidate ce80a9b reviewed; PR head 8176e627 was verified as a direct child with only STATE.md and STATUS.json changes.",
+    "Controller performed repository inspection; did not run tests/build or modify worktree/refs.",
+    "Localhost MCP transport emitted warnings; review completed from repository inspection.",
+    "Transcript contains the CLI event record and reviewer command output; actual provider backend model identity remains UNVERIFIED."
+  ]
+}
