@@ -24,6 +24,7 @@ const selectedPhoto=ref<{file:File;previewUrl:string}|null>(null);
 const statusFilter=ref<'ALL'|'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'>('ALL');
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive<Fields>(blank());
+const listingsLoadError=ref('');
 const selected=computed(()=>listings.value.find(x=>x.id===selectedId.value));
 const visibleListings=computed(()=>statusFilter.value==='ALL'?listings.value:listings.value.filter(item=>item.status===statusFilter.value));
 const listingCounts=computed(()=>({all:listings.value.length,drafts:listings.value.filter(item=>item.status==='DRAFT'||item.status==='REJECTED').length,review:listings.value.filter(item=>item.status==='SUBMITTED').length,published:listings.value.filter(item=>item.status==='APPROVED'&&item.publicationStatus==='PUBLISHED').length}));
@@ -132,7 +133,7 @@ async function load(discardChanges=false,trigger?:HTMLElement|null){
   if(busy.value)return;
   pendingSelection.value=null;
   if(unsaved.value&&discardChanges!==true){confirmReload.value=true;openDialog('reload',reloadDialog,trigger);return;}
-  confirmReload.value=false;
+  confirmReload.value=false;listingsLoadError.value='';
   loading.value=true;error.value='';
   try{
     const selected=selectedId.value;
@@ -143,7 +144,7 @@ async function load(discardChanges=false,trigger?:HTMLElement|null){
       if(!refreshed)notice.value='La publicación seleccionada ya no está disponible.';
     }
   }
-  catch(e){error.value=message(e);}
+  catch{listingsLoadError.value='No pudimos cargar tus alojamientos.';}
   finally{loading.value=false;}
 }
 function requestReload(event:MouseEvent){void load(false,event.currentTarget instanceof HTMLElement?event.currentTarget:null);}
@@ -243,9 +244,9 @@ async function moveImage(image:Image,delta:number){
   catch(e){error.value=imageMessage(e);}
   finally{busy.value=false;imageBusy.value=null;}
 }
-type ContactCursor={createdAt:string;id:string};const nextContactCursor=ref<ContactCursor|null>(null);
+type ContactCursor={createdAt:string;id:string};const nextContactCursor=ref<ContactCursor|null>(null),contactsLoadError=ref('');
 async function fetchContactPage(cursor:ContactCursor|null){const params=new URLSearchParams();if(cursor){params.set('afterCreatedAt',cursor.createdAt);params.set('afterId',cursor.id);}return session.apiRequest<{items:ContactEvent[];unreadCount:number;nextCursor:ContactCursor|null}>(`/owner/contact-events${params.size?`?${params}`:''}`);}
-async function loadContacts(cursor:ContactCursor|null=null,append=false){contactsLoading.value=true;try{const result=await fetchContactPage(cursor);contacts.value=append?[...contacts.value,...result.items]:result.items;unreadContacts.value=result.unreadCount;nextContactCursor.value=result.nextCursor;}catch{error.value='No pudimos cargar tus consultas.';}finally{contactsLoading.value=false;}}
+async function loadContacts(cursor:ContactCursor|null=null,append=false){contactsLoading.value=true;contactsLoadError.value='';try{const result=await fetchContactPage(cursor);contacts.value=append?[...contacts.value,...result.items]:result.items;unreadContacts.value=result.unreadCount;nextContactCursor.value=result.nextCursor;}catch{contactsLoadError.value='No pudimos cargar tus consultas.';}finally{contactsLoading.value=false;}}
 async function setContactState(event:ContactEvent,state:'UNREAD'|'READ'){if(contactBusy.value)return;contactBusy.value=event.id;error.value='';try{await session.apiRequest(`/owner/contact-events/${encodeURIComponent(event.id)}/state`,{method:'PATCH',body:JSON.stringify({state})});const loaded=contacts.value.find(item=>item.id===event.id);if(loaded&&loaded.state!==state){unreadContacts.value=Math.max(0,unreadContacts.value+(state==='UNREAD'?1:-1));loaded.state=state;}notice.value=state==='READ'?'Consulta marcada como leída.':'Consulta marcada como no leída.';try{unreadContacts.value=(await fetchContactPage(null)).unreadCount;}catch{/* Keep the confirmed local update if refreshing the aggregate count fails. */}}catch{error.value='No pudimos actualizar el estado de la consulta.';}finally{contactBusy.value='';}}
 async function loadMoreContacts(){if(nextContactCursor.value)await loadContacts(nextContactCursor.value,true);}
 async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/availability`,{method:'PATCH',body:JSON.stringify({availabilityStatus:status})});Object.assign(item,updated);notice.value='Disponibilidad actualizada.';}catch{error.value='No pudimos actualizar la disponibilidad.';}finally{contactBusy.value='';}}
@@ -293,7 +294,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
       <aside class="owner-list-panel card">
         <div class="owner-list-heading">
           <div><p class="eyebrow">Tu inventario</p><h2 id="owner-listings-title" tabindex="-1">Mis alojamientos</h2></div>
-          <button type="button" :disabled="busy||loading" @click="requestChoose(undefined,$event)">+ Nuevo borrador</button>
+          <button type="button" :disabled="busy||loading||!!listingsLoadError" @click="requestChoose(undefined,$event)">+ Nuevo borrador</button>
         </div>
         <label class="owner-filter-label" for="owner-status-filter">Mostrar</label>
         <select id="owner-status-filter" v-model="statusFilter">
@@ -304,14 +305,15 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
           <option value="APPROVED">Aprobados</option>
         </select>
         <p v-if="loading" class="owner-empty" role="status">Cargando tus alojamientos…</p>
-        <div v-else-if="!listings.length" class="owner-empty">
+        <p v-if="!loading&&listingsLoadError" class="error owner-load-error" role="alert">{{ listingsLoadError }} <button type="button" class="secondary" :disabled="loading" @click="load()">Reintentar carga de alojamientos</button></p>
+        <div v-if="!loading&&!listingsLoadError&&!listings.length" class="owner-empty">
           <span class="owner-empty-mark" aria-hidden="true">⌂</span>
           <h3>Empezá por tu primer alojamiento</h3>
           <p>Guardá un borrador y agregá fotos cuando estés listo. Nada se publica sin revisión.</p>
           <button type="button" class="secondary" @click="requestChoose(undefined,$event)">Crear mi primer borrador</button>
         </div>
-        <p v-else-if="!visibleListings.length" class="owner-empty">No hay alojamientos en este estado.</p>
-        <div v-else class="owner-listings" role="list" aria-label="Alojamientos del propietario">
+        <p v-if="!loading&&!listingsLoadError&&listings.length&&!visibleListings.length" class="owner-empty">No hay alojamientos en este estado.</p>
+        <div v-if="!loading&&visibleListings.length" class="owner-listings" role="list" aria-label="Alojamientos del propietario">
           <button v-for="item in visibleListings" :key="item.id" type="button" class="owner-listing-row" :class="{selected:selectedId===item.id}" :aria-current="selectedId===item.id?'true':undefined" :disabled="busy" @click="requestChoose(item,$event)">
             <span class="owner-listing-top"><strong>{{ item.title }}</strong><span class="owner-status" :class="`is-${item.status.toLowerCase()}`">{{ label(item.status) }}</span></span>
             <span class="owner-listing-location">{{ item.location }}</span>
@@ -401,8 +403,9 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
     <section id="owner-inbox" class="card owner-inbox" aria-labelledby="owner-inbox-title">
       <header class="owner-inbox-heading"><div><p class="eyebrow">Contacto directo</p><h2 id="owner-inbox-title">Consultas recibidas</h2><p>Mensajes de personas interesadas en tus alojamientos.</p></div><span v-if="unreadContacts" class="owner-unread-badge">{{ unreadContacts }} sin leer</span></header>
       <p v-if="contactsLoading" role="status">Cargando consultas…</p>
-      <p v-else-if="!contacts.length" class="owner-inbox-empty">Todavía no recibiste consultas. Cuando alguien escriba por un alojamiento publicado, la vas a encontrar acá.</p>
-      <ul v-else class="owner-contact-list">
+      <p v-if="contactsLoadError" class="error owner-load-error" role="alert">{{ contactsLoadError }} <button type="button" class="secondary" :disabled="contactsLoading" @click="loadContacts()">Reintentar carga de consultas</button></p>
+      <p v-if="!contactsLoading&&!contactsLoadError&&!contacts.length" class="owner-inbox-empty">Todavía no recibiste consultas. Cuando alguien escriba por un alojamiento publicado, la vas a encontrar acá.</p>
+      <ul v-else-if="contacts.length" class="owner-contact-list">
         <li v-for="event in contacts" :key="event.id" class="owner-contact-card" :class="{unread:event.state==='UNREAD'}">
           <div class="owner-contact-top"><div><span class="owner-contact-state">{{ event.state==='UNREAD'?'Nueva consulta':'Leída' }}</span><h3>{{ event.visitorName }}</h3></div><time :datetime="event.createdAt">{{ new Date(event.createdAt).toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short'}) }}</time></div>
           <p class="owner-contact-listing">{{ event.listing.title }} · {{ event.listing.location }}</p>

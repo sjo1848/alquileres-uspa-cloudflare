@@ -113,6 +113,22 @@ test('identidad OWNER local: registro, verificación MOCK, recuperación, login 
   await capture(page, 'owner-auth-mobile-320x844.png');
 });
 
+test('OWNER: los errores de carga no se muestran como colecciones vacías y se pueden reintentar',async({page})=>{
+  let failListings=true,failContacts=true;
+  await page.route('**/api/listings',async route=>{if(route.request().method()==='GET'&&failListings){failListings=false;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"synthetic listings failure"}'});return;}await route.continue();});
+  await page.route('**/api/owner/contact-events*',async route=>{if(route.request().method()==='GET'&&failContacts){failContacts=false;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"synthetic inbox failure"}'});return;}await route.continue();});
+  await login(page,'owner.a@example.test');
+  await expect(page.locator('.owner-list-panel [role="alert"]')).toContainText('No pudimos cargar tus alojamientos.');
+  await expect(page.getByRole('heading',{name:'Empezá por tu primer alojamiento'})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'+ Nuevo borrador'})).toBeDisabled();
+  await page.getByRole('button',{name:'Reintentar carga de alojamientos'}).click();
+  await expect(page.getByRole('button',{name:/Casa aprobada con fotos/})).toBeVisible();
+  await expect(page.locator('.owner-inbox [role="alert"]')).toContainText('No pudimos cargar tus consultas.');
+  await expect(page.getByText('Todavía no recibiste consultas. Cuando alguien escriba por un alojamiento publicado, la vas a encontrar acá.')).toHaveCount(0);
+  await page.getByRole('button',{name:'Reintentar carga de consultas'}).click();
+  await expect(page.getByText('Todavía no recibiste consultas. Cuando alguien escriba por un alojamiento publicado, la vas a encontrar acá.')).toBeVisible();
+});
+
 test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad, consulta e inbox', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await login(page, 'owner.a@example.test');
