@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Run exact-head worker/web CI and GitHub review on the candidate-pointer checkpoint; obtain final Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25; stop before #43.",
+  "next_action": "Wait for worker/web and automated review on this ledger-correction checkpoint; run exact-head Controller PASS and Pre-Critic, then merge protected. Close #42 and update #25; stop before #43.",
   "stop_reason": null,
   "event": {
-    "seq": 206,
-    "summary": "Puntero canónico actualizado al ejecutable con contraste responsive completo"
+    "seq": 207,
+    "summary": "Corregir Event 199 duplicado y registrar estado de gates del candidato anterior"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "executable_sha": "1f5908deb94e50f7e133b8676052210f3a819bf7",
-    "status": "OPEN_AWAITING_EXACT_HEAD_GATES",
+    "status": "OPEN_AWAITING_LEDGER_CHECKPOINT_GATES",
     "executable_tree": "d6f8eb2cef305fe34129cabc2b989280bd47f125"
   },
   "issue_4": "CLOSED",
@@ -80,12 +80,12 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "PR_OPEN_AWAITING_EXACT_HEAD_GATES",
+    "status": "PR_OPEN_AWAITING_LEDGER_CHECKPOINT_GATES",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
     "code_status": "D3.1 tokens, brand and shared responsive role shell; WCAG checks cover public hero copy, location note, placeholder, control boundary and OWNER focus across 1440/390/320. No Worker/D1/auth/permission/per-view composition changes.",
-    "next_action": "Run exact-head worker/web CI and GitHub review on the candidate-pointer checkpoint; obtain final Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25; stop before #43.",
+    "next_action": "Wait for worker/web and automated review on this ledger-correction checkpoint; run exact-head Controller PASS and Pre-Critic, then merge protected. Close #42 and update #25; stop before #43.",
     "local_checks": {
       "web_typecheck": "PASS on executable commit 1f5908deb94e50f7e133b8676052210f3a819bf7",
       "web_build": "PASS standard and build:preview on executable commit 1f5908deb94e50f7e133b8676052210f3a819bf7; build-only, no deploy",
@@ -94,9 +94,9 @@
       "playwright_owner": "PASS: 3/3 existing OWNER journey tests on final visual code",
       "orchestration_validator": "PASS after Event 205 and pointer update against origin/main",
       "git_diff_check": "PASS after all contrast fixes",
-      "github_checks": "Prior fdb950f run 39997029603 worker/web PASS; final visual fix/pointer checkpoint requires exact-head checks.",
-      "github_review": "Review on fdb950f completed with P2 4362543307: mobile hero copy contrast. Fixed by darkening endpoint to #4d5db8 and keeping copy over decoration; Playwright checks every rendered gradient stop at all three widths. Reply/resolution pending.",
-      "controller": "REWORK on ce9efa2 canonical state fixed; final Controller review pending."
+      "github_checks": "PASS exact candidate ece5cd00f4c326bfd0c9229ccf435d3704633167; run 39997959935 worker/web. New ledger-only checkpoint needs exact-head checks.",
+      "github_review": "Completed exact ece5cd00f4c326bfd0c9229ccf435d3704633167; has_any_findings=true historically but has_unresolved_findings=false; 11 threads, 0 unresolved. New ledger checkpoint requires exact-head review.",
+      "controller": "REWORK on ce9efa2 canonical gate fields fixed; final review required on the ledger-correction candidate."
     },
     "code_sha": "1f5908deb94e50f7e133b8676052210f3a819bf7",
     "code_tree": "d6f8eb2cef305fe34129cabc2b989280bd47f125",

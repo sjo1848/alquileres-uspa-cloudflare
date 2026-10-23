@@ -1581,7 +1581,7 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Commit de implementación/evidencia `efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76`; el estado canónico se actualiza dentro de este mismo PR. CI `worker`/`web`, revisión automática, Controller GPT-6 Luna High read-only y Pre-Critic final aún pendientes sobre el HEAD final.
 - **READY_TO_RESUME:** procesar checks/revisión exactos; resolver reworks materiales; ejecutar una revisión Controller del candidato final y Pre-Critic; hacer merge protegido únicamente con gates en PASS; cerrar #42 y actualizar #25, deteniéndose antes de #43. Sin Preview/producción.
 
-## Event 200 — rework del estado histórico PR #40
+## Event 199 — rework de revisión P2 y evidencia visual
 
 - CI worker/web había pasado en PR HEAD `edc629390b8fe3f058fd94f6f12312a60e870b21` (run `39991453269`). La revisión automática completó sobre ese SHA y encontró un P2 en `.orchestration/STATUS.json` (`4362195163`): los `local_checks.github_checks` / `github_review` conservaban `PENDING_PR` aunque el PR estaba abierto. Se corrigió para reflejar el resultado exacto anterior y dejar explícito que el nuevo checkpoint necesita gates exactos nuevos.
 - El Controller separado revisó `edc6293` y encontró cero defectos de código P0/P1/P2, pero emitió **BLOCKED** porque su sandbox no pudo conectarse a `api.github.com`; no se convierte ni reclama PASS. Se conservarán su invocación y resultado íntegros; después de rework el Controller hará una revisión final con el output GitHub de solo lectura capturado por el proceso padre y pasado como evidencia, manteniendo el sandbox read-only.
@@ -1641,3 +1641,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Contraste y regresiones consolidados en código `1f5908deb94e50f7e133b8676052210f3a819bf7`, tree `d6f8eb2cef305fe34129cabc2b989280bd47f125`; `pull_request.executable_sha` y mirrors apuntan a este commit. El checkpoint canónico que sigue no altera código.
 - Typecheck, build, build:preview y Playwright integrado 1/1 PASS. Contrastes comprobados: párrafo público mínimo 5.06:1, ubicación 9.37:1, placeholder 5.10:1, borde de control 3.70:1 y foco OWNER 3.92:1; capturas 1440/390/320 publicadas localmente.
 - **READY_TO_RESUME:** responder/resolver P2 `4362543307`, ejecutar CI/review exact-head del checkpoint, Controller final PASS y Pre-Critic. Integrar con merge protegido y solo después actualizar/cerrar #42 y actualizar #25; detener antes de #43.
+
+
+## Event 207 — cierre de unicidad del ledger
+
+- Se rectifica el encabezado histórico de Event 199, que había quedado duplicado como Event 200; la secuencia ahora es única y ordenada 197–207. El hallazgo original `4362325536` ya estaba respondido/resuelto, y este checkpoint aplica efectivamente esa corrección.
+- Checks worker/web y review GitHub PASS en SHA exacto `ece5cd00f4c326bfd0c9229ccf435d3704633167`; 11 hilos, 0 pendientes. El checkpoint de estado actual cambia el SHA y exige repetir los checks/review exactos.
+- **READY_TO_RESUME:** esperar gates exact-head de este checkpoint, ejecutar Controller final GPT-6 Luna High read-only y Pre-Critic; merge protegido únicamente tras PASS. Cerrar #42/actualizar #25 y detener antes de #43.
