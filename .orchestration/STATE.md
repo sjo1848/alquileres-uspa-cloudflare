@@ -1597,3 +1597,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Ambos registros ahora dicen `MERGED` / `COMPLETED_INTEGRATED` y preservan el merge commit real `b901b444b5819c1861cdfdf164d33e7ce92dff0e`. Revisión favorable sin defectos de implementación no se infiere del hecho de existir el hallazgo.
 - El siguiente checkpoint requiere repetir GitHub worker/web y review automática exact-head, responder/resolver `4362278641` y volver a pedir Controller para el SHA final.
 - **READY_TO_RESUME:** publicar esta reconciliación, comprobar gates exact-head y continuar con Controller / Pre-Critic / merge protegido de PR #45. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 201 — rework de consistencia del checkpoint de seguimiento
+
+- Revisión GitHub exact-head sobre `ce9efa206710facb9514f76b5beb894118acccab` encontró dos P2: `4362325526` (next_action aún pedía completar una corrección ya hecha) y `4362325536` (dos encabezados Event 200).
+- Se avanza `next_action` al control exact-head posterior y se restaura unicidad de la secuencia: Event 199 documenta el rework previo, Event 200 la corrección histórica PR #40 e I06.5, Event 201 este rework.
+- Controller GPT-6 Luna/High read-only, separado, sobre `ce9efa2` devolvió **REWORK** por next_action/gate fields aún stale en el HEAD inspeccionado; no encontró defectos P0/P1/P2 de implementación. Informe/provenance: `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-CE9EFA2-REWORK.*`. Este checkpoint corrige también el hallazgo del Controller y requiere revisión nueva exact-head.
+- **READY_TO_RESUME:** publicar este checkpoint, responder/resolver ambos hallazgos y repetir checks/review exact-head; obtener Controller PASS y aplicar Pre-Critic antes del merge protegido. Cerrar #42 y actualizar #25, detener antes de #43.
