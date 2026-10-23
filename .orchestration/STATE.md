@@ -1634,3 +1634,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Review GitHub exact-head de `fdb950f7918698b7b6bf3e0f0220c0a38c2231e5` encontró P2 `4362543307`: párrafo público normal-size con 4.2–4.4:1 sobre zonas claras del gradiente a 320px.
 - Se oscurece el extremo del gradiente a `#4d5db8` (párrafo `#f0eee5`: mínimo 5.06:1) y se posiciona la copia sobre la decoración; Playwright inspecciona el gradiente renderizado y exige >=4.5:1 contra cada color stop en desktop/390/320. Typecheck y E2E integrado 1/1 pasan; capturas regeneradas.
 - **READY_TO_RESUME:** ejecutar typecheck/build/E2E, actualizar capturas y puntero ejecutable, responder/resolver P2; repetir checks/review exactos y Controller final antes de Pre-Critic y merge protegido. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 206 — puntero al candidato ejecutable final
+
+- Contraste y regresiones consolidados en código `1f5908deb94e50f7e133b8676052210f3a819bf7`, tree `d6f8eb2cef305fe34129cabc2b989280bd47f125`; `pull_request.executable_sha` y mirrors apuntan a este commit. El checkpoint canónico que sigue no altera código.
+- Typecheck, build, build:preview y Playwright integrado 1/1 PASS. Contrastes comprobados: párrafo público mínimo 5.06:1, ubicación 9.37:1, placeholder 5.10:1, borde de control 3.70:1 y foco OWNER 3.92:1; capturas 1440/390/320 publicadas localmente.
+- **READY_TO_RESUME:** responder/resolver P2 `4362543307`, ejecutar CI/review exact-head del checkpoint, Controller final PASS y Pre-Critic. Integrar con merge protegido y solo después actualizar/cerrar #42 y actualizar #25; detener antes de #43.

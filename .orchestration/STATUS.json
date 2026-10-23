@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Fix the rendered hero-copy contrast at 320px and add gradient-stop regression coverage; then refresh the canonical executable pointer and repeat exact-head CI/review/Controller before Pre-Critic and protected merge.",
+  "next_action": "Run exact-head worker/web CI and GitHub review on the candidate-pointer checkpoint; obtain final Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25; stop before #43.",
   "stop_reason": null,
   "event": {
-    "seq": 205,
-    "summary": "Rework GitHub P2: contraste del párrafo del hero público a 320px"
+    "seq": 206,
+    "summary": "Puntero canónico actualizado al ejecutable con contraste responsive completo"
   },
   "external_review": null,
   "human_gate": {
@@ -27,9 +27,9 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/45",
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
-    "executable_sha": "f30f0e46013c182c9a2409cc7aa045b0f065f674",
-    "status": "OPEN_REWORK_MOBILE_HERO_CONTRAST",
-    "executable_tree": "9e0406e3596cfd0e0e69cbcc384da29ad33dab1b"
+    "executable_sha": "1f5908deb94e50f7e133b8676052210f3a819bf7",
+    "status": "OPEN_AWAITING_EXACT_HEAD_GATES",
+    "executable_tree": "d6f8eb2cef305fe34129cabc2b989280bd47f125"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -80,26 +80,26 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "PR_OPEN_REWORK_MOBILE_HERO_CONTRAST",
+    "status": "PR_OPEN_AWAITING_EXACT_HEAD_GATES",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
-    "code_status": "D3.1 shared tokens, brand and responsive role shell; contrast/focus fixes now include all text/background pairs found in GitHub review. No backend, auth, permissions, routes or per-view composition refactor.",
-    "next_action": "Fix the rendered hero-copy contrast at 320px and add gradient-stop regression coverage; then refresh the canonical executable pointer and repeat exact-head CI/review/Controller before Pre-Critic and protected merge.",
+    "code_status": "D3.1 tokens, brand and shared responsive role shell; WCAG checks cover public hero copy, location note, placeholder, control boundary and OWNER focus across 1440/390/320. No Worker/D1/auth/permission/per-view composition changes.",
+    "next_action": "Run exact-head worker/web CI and GitHub review on the candidate-pointer checkpoint; obtain final Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25; stop before #43.",
     "local_checks": {
-      "web_typecheck": "PASS after all consolidated contrast/focus fixes",
-      "web_build": "PASS standard and build:preview on f30f0e46013c182c9a2409cc7aa045b0f065f674; build only, no deploy",
-      "playwright_foundations": "PASS 1/1 integrated Worker/Hono + synthetic D1. Rendered contrast: hero copy minimum 5.06:1 across gradient stops; location note 9.37:1; placeholder 5.10:1; field boundary 3.70:1; OWNER hero focus 3.92:1. 1440/390/320 captures refreshed.",
+      "web_typecheck": "PASS on executable commit 1f5908deb94e50f7e133b8676052210f3a819bf7",
+      "web_build": "PASS standard and build:preview on executable commit 1f5908deb94e50f7e133b8676052210f3a819bf7; build-only, no deploy",
+      "playwright_foundations": "PASS 1/1 integrated Worker/Hono + synthetic D1 on 1f5908d; rendered gradient text min 5.06:1; location note 9.37:1; placeholder 5.10:1; input boundary 3.70:1; OWNER hero focus 3.92:1; 1440/390/320 captures.",
       "playwright_public": "PASS: 4/4 existing public journey tests on final visual code",
       "playwright_owner": "PASS: 3/3 existing OWNER journey tests on final visual code",
-      "orchestration_validator": "PASS after Event 205 updates against origin/main",
-      "git_diff_check": "PASS after Event 205 updates",
-      "github_checks": "Prior fdb950f checks run 39997029603 worker/web PASS; new CSS/test delta requires exact-head CI.",
-      "github_review": "Review on fdb950f P2 4362543307 addressed with darker endpoint #4d5db8, text layer above pseudo decoration, and stop-by-stop Playwright assertion; reply/resolution pending.",
-      "controller": "REWORK on ce9efa2 resolved; final exact-head Controller review pending."
+      "orchestration_validator": "PASS after Event 205 and pointer update against origin/main",
+      "git_diff_check": "PASS after all contrast fixes",
+      "github_checks": "Prior fdb950f run 39997029603 worker/web PASS; final visual fix/pointer checkpoint requires exact-head checks.",
+      "github_review": "Review on fdb950f completed with P2 4362543307: mobile hero copy contrast. Fixed by darkening endpoint to #4d5db8 and keeping copy over decoration; Playwright checks every rendered gradient stop at all three widths. Reply/resolution pending.",
+      "controller": "REWORK on ce9efa2 canonical state fixed; final Controller review pending."
     },
-    "code_sha": "f30f0e46013c182c9a2409cc7aa045b0f065f674",
-    "code_tree": "9e0406e3596cfd0e0e69cbcc384da29ad33dab1b",
+    "code_sha": "1f5908deb94e50f7e133b8676052210f3a819bf7",
+    "code_tree": "d6f8eb2cef305fe34129cabc2b989280bd47f125",
     "github_checks": "PENDING_EXACT_HEAD",
     "github_review": "PENDING_EXACT_HEAD",
     "controller": "PENDING_EXACT_HEAD"
