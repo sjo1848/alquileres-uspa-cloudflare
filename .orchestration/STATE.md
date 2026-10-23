@@ -1613,3 +1613,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - El P2 se corrige con superficie sólida oscura `#273584` para la nota, sin alterar la composición del catálogo. Playwright añade cálculo WCAG AA del texto `#f0eee5` sobre la superficie en los viewports 1440, 390 y 320; contraste calculado 9.37:1. Typecheck y E2E de fundamentos 1/1 PASS; se regeneraron las tres capturas públicas.
 - Typecheck y Playwright integrado de fundamentos pasan sobre el rework: 1/1 con verificación de contraste de nota en 1440/390/320 y capturas regeneradas. La respuesta al hallazgo es PR comment `4362398134` y su thread está resuelto.
 - **READY_TO_RESUME:** esperar CI/review exact-head, ejecutar Controller final y Pre-Critic; merge protegido solo con gates en PASS. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 203 — rework consolidado de contraste del sistema visual
+
+- Review GitHub de `8bfebaa032c54a15a0287f317a4fedf5b5c2c700` completada con hallazgos P2: puntero canónico aún pre-fix (`4362441626`, duplicado en `4362442961`), foco OWNER hero insuficientemente contrastado (`4362441631`), borde de controles 1.98:1 (`4362442976`) y placeholder 4.476:1 (`4362442984`).
+- Rework consolidado: surface oscura para ubicación; control border `#78869a` (3.70:1); placeholder `#626f83` (5.10:1); foco blanco contrastante en CTA OWNER (3.92:1 contra el extremo más claro del gradiente, sobre el mínimo 3:1 para indicador no textual). Playwright integrado 1/1, typecheck PASS y capturas 1440/390/320 regeneradas. `executable_sha` y sus mirrors se actualizarán en un checkpoint posterior al commit de código para apuntar al candidato con todos los fixes.
+- **READY_TO_RESUME:** terminar el pointer canónico, responder y resolver los P2, correr checks/review exact-head y obtener Controller PASS antes de Pre-Critic y merge protegido. Cerrar #42 y actualizar #25; detener antes de #43.

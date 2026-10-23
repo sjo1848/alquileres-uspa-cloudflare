@@ -47,6 +47,16 @@ test('D3.1 shared foundation preserves role navigation and responsive shell', as
       return { foreground: style.color, background: style.backgroundColor };
     });
     expect(contrastRatio(locationNote.foreground, locationNote.background), `catalog location note contrast at ${viewport.width}px`).toBeGreaterThanOrEqual(4.5);
+    const locationInput = await page.locator('#filter-location').evaluate(element => {
+      const control = getComputedStyle(element);
+      return {
+        placeholder: getComputedStyle(element, '::placeholder').color,
+        background: control.backgroundColor,
+        border: control.borderTopColor,
+      };
+    });
+    expect(contrastRatio(locationInput.placeholder, locationInput.background), `location placeholder contrast at ${viewport.width}px`).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(locationInput.border, locationInput.background), `location field boundary at ${viewport.width}px`).toBeGreaterThanOrEqual(3);
     await page.screenshot({ path: `../../output/playwright/i06.6-p1/catalog-${viewport.name}.png`, fullPage: viewport.width === 1440 });
 
     if (viewport.width <= 768) {
@@ -105,6 +115,16 @@ test('D3.1 shared foundation preserves role navigation and responsive shell', as
     await expect(page.getByRole('link', { name: 'Revisión', exact: true })).toHaveCount(0);
     if (viewport.width <= 768) await page.getByRole('button', { name: 'Cerrar menú' }).click();
   }
+
+  const ownerHeroLink = page.getByRole('link', { name: 'Ir a mis alojamientos' });
+  await ownerHeroLink.focus();
+  await expect(ownerHeroLink).toBeFocused();
+  const ownerFocus = await ownerHeroLink.evaluate(element => {
+    const style = getComputedStyle(element);
+    return { outline: style.outlineColor, boxShadow: style.boxShadow };
+  });
+  expect(ownerFocus.outline).toBe('rgb(255, 255, 255)');
+  expect(contrastRatio(ownerFocus.outline, '#6879dc')).toBeGreaterThanOrEqual(3);
 
   await page.context().clearCookies();
   await page.goto('/login');

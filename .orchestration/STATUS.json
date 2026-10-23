@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Wait for exact-head worker/web checks and GitHub review on the contrast-corrected candidate; then obtain a final read-only Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25 after integration; stop before #43.",
+  "next_action": "Finish the consolidated rendered contrast regressions, then update the canonical executable pointer and run exact-head CI/review and Controller before Pre-Critic and protected merge. Close #42 and update #25; stop before #43.",
   "stop_reason": null,
   "event": {
-    "seq": 202,
-    "summary": "Rework GitHub P2: contraste del texto de ubicación en el hero público"
+    "seq": 203,
+    "summary": "Rework consolidado de contraste: placeholder, límites de campos y foco OWNER sobre hero"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "executable_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
-    "status": "OPEN_AWAITING_EXACT_REVIEW_AFTER_CONTRAST_FIX"
+    "status": "OPEN_REWORK_VISUAL_CONTRASTS"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -79,23 +79,23 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "PR_OPEN_AWAITING_EXACT_REVIEW_AFTER_CONTRAST_FIX",
+    "status": "PR_OPEN_REWORK_VISUAL_CONTRASTS",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
-    "code_status": "D3.1 shared tokens, mountain wordmark, role/session-aware responsive shell and shared control/surface/status primitives implemented. No Worker/D1/auth/permission or per-view layout changes.",
-    "next_action": "Wait for exact-head worker/web checks and GitHub review on the contrast-corrected candidate; then obtain a final read-only Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25 after integration; stop before #43.",
+    "code_status": "D3.1 tokens/brand/shared role shell implemented. Contrast corrections cover location note, placeholder, input boundary and OWNER hero focus. No Worker/D1/auth/permission/per-view composition changes.",
+    "next_action": "Finish the consolidated rendered contrast regressions, then update the canonical executable pointer and run exact-head CI/review and Controller before Pre-Critic and protected merge. Close #42 and update #25; stop before #43.",
     "local_checks": {
-      "web_typecheck": "PASS after hero-note contrast repair",
+      "web_typecheck": "PASS after consolidated contrast fixes",
       "web_build": "PASS: standard and build:preview; build-only, no deploy",
-      "playwright_foundations": "PASS: integrated Worker/Hono + synthetic D1; 1/1 after contrast regression for location note at 1440,390,320; screenshots refreshed in output/playwright/i06.6-p1/",
+      "playwright_foundations": "PASS 1/1 integrated local Workerd+D1 after rendered contrast tests: hero location 9.37:1, location placeholder 5.10:1, field boundary 3.70:1, OWNER hero focus indicator 3.92:1; 1440/390/320 screenshots refreshed.",
       "playwright_public": "PASS: 4/4 existing public journey tests on final visual code",
       "playwright_owner": "PASS: 3/3 existing OWNER journey tests on final visual code",
-      "orchestration_validator": "PASS against origin/main after hero-note fix",
-      "git_diff_check": "PASS after hero-note fix",
-      "github_checks": "Prior 3baaaa2 run 39994569930 worker/web PASS. Contrast correction typecheck and Playwright PASS locally; fresh exact-head CI pending.",
-      "github_review": "Completed on 3baaaa2, P2 4362381543 fixed and thread resolved in comment 4362398134; final exact-head review pending.",
-      "controller": "REWORK on ce9efa2 canonical findings corrected and persisted; final Controller review required on consolidated candidate."
+      "orchestration_validator": "PASS against origin/main after consolidated contrast fixes",
+      "git_diff_check": "PASS after consolidated contrast fixes",
+      "github_checks": "Prior 8bfebaa checks (39995445561) worker/web PASS. Consolidated contrast fix plus candidate-pointer checkpoint need exact-head CI.",
+      "github_review": "Review on 8bfebaa completed: P2s 4362441626/4362442961 executable pointer, 4362441631 OWNER hero focus, 4362442976 control border, 4362442984 placeholder. Code fixes/tests are complete; pointer is being updated in the next canonical checkpoint.",
+      "controller": "REWORK on ce9efa2 canonical state only, no implementation defects; exact SHA pointer and final gates pending."
     },
     "code_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
     "code_tree": "2beb658426f94a46a3619d7df197f9bc5bb903d1",
