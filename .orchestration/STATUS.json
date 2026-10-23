@@ -8,12 +8,12 @@
   "last_completed_task": "CF-AU-I06.4 — catálogo, filtros, ficha y consulta pública; PR #39 integrado",
   "last_completed_head": "main@48e4f5c4251fe939cb779698e4e51b16614be178",
   "work_branch": "work/i06-owner",
-  "next_action": "Validar y publicar el checkpoint con el informe Controller sin trailing whitespace; esperar Worker/web y la revisión GitHub ya solicitada sobre el código 308c478; resolver hilos con evidencia. Después completar Pre-Critic y merge protegido sólo con controles verdes, cerrar #32/#36 y actualizar #25; detener antes de #33/I06.6.",
+  "next_action": "Publicar el checkpoint canónico de cierre (solo estado/evidencia), comprobar que CI y auto-review del nuevo HEAD concluyen sin defectos nuevos; ejecutar Pre-Critic final y verificar protecciones/mergeabilidad. Integrar PR #40 protegido; cerrar #32/#36, actualizar épica #25 y detener antes de #33/I06.6.",
   "stop_reason": null,
   "event": {
-    "seq": 195,
-    "id": "CF_AU_I06_5_REWORK_UNKNOWN_LISTINGS_AND_INBOX",
-    "type": "CONTROLLER_REWORK_RESOLVED"
+    "seq": 196,
+    "id": "CF_AU_I06_5_GITHUB_CONTROLLER_PRECRITIC_READY",
+    "type": "FINAL_REVIEW_AND_PRECRITIC"
   },
   "external_review": null,
   "human_gate": {
@@ -80,11 +80,11 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/32",
     "contract": ".orchestration/contracts/CF-AU-I06.5-OWNER-AUTH.md",
-    "status": "FINAL_GITHUB_REVIEW_AND_CONTROLLER_PENDING",
+    "status": "READY_FOR_PROTECTED_MERGE_AFTER_FINAL_CHECKPOINT",
     "base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
     "branch": "work/i06-owner",
     "scope": "I06.5 local synthetic OWNER and I05 mock authentication experience, integrated Vue/Worker/Hono/D1. Reconcile I06.4 post-merge state in this functional PR. No I06.6/#33, Preview/Access remote change, production, paid services, external email, R2, real data or source repository write.",
-    "code_status": "Candidato 308c478 incorpora los dos fixes de galería y reinicio de carga más el rework del Controller: fallos al cargar publicaciones/inbox no se representan como colecciones vacías; hay retry explícito y no se crea borrador mientras el inventario sea desconocido.",
+    "code_status": "Candidate executable 308c478; OWNER collections/photo error-vs-empty and stale-load regressions are included; no functional code changes after this SHA.",
     "local_checks": {
       "web_typecheck": "PASS sobre árbol ejecutable 7170e54 de 308c478",
       "web_build": "PASS sobre árbol ejecutable 7170e54 de 308c478",
@@ -96,16 +96,16 @@
       "playwright_owner": "PASS: 2/2 en --grep OWNER: (2.2 min) sobre Vue + Worker/Hono + Workerd + D1 re-seeded; incluye recuperación de colecciones, 503 de fotos, carga pendiente de galería, CRUD, fotos, disponibilidad, inbox y permisos.",
       "screenshots": "PASS: capturas reales sintéticas actualizadas por la ejecución focal bajo output/playwright/i06.5/ (desktop y mobile).",
       "accessibility": "PASS: keyboard skip-link and 320 px overflow; core text token contrast >=4.68:1 against canvas",
-      "state_preflight": "PENDING sobre checkpoint Event 195",
+      "state_preflight": "PASS on checkpoint ec57ef5; validator against origin/main passed.",
       "owner_config_retry_e2e": "PASS: prueba focalizada integrada 1/1; /auth/config falla transitoriamente y la acción de fotos se recupera en reintento explícito",
       "owner_mixed_static_upload_e2e": "PASS: Playwright OWNER recorrido focalizado 1/1 (59.9 s) con D1 local re-seed y borrador sintético con Static Asset; selector no disponible y mensaje claro",
-      "git_diff_check": "PENDING sobre checkpoint Event 195",
+      "git_diff_check": "PASS on checkpoint ec57ef5.",
       "owner_integrated_playwright": "PASS 1/1 focalizado (51.3s); Vue + Worker/Hono + Workerd + D1 local re-seeded, incluyendo GET imágenes 503, bloquea selector, retry carga Static Asset y conserva bloqueo; config retry seguido de carga D1 BLOB real; focus modal, mixed reorder y 401 auth.",
-      "github_checks": "PENDING sobre nuevo PR HEAD; run 39775425465 PASS sólo para el checkpoint 8176e62 previo, con Worker sin cambios después.",
+      "github_checks": "PASS worker/web exact checkpoint ec57ef52f65a2ae4e2f755da77eb6c86805f716d; run 39883656818.",
       "owner_collections_retry_e2e": "PASS: suite OWNER focal 2/2 (2.2 min); 503 sintético para GET publicaciones e inbox, se evita falso estado vacío y retry recupera desde Worker/Hono + D1 local real. El test largo de OWNER también pasa."
     },
     "controller": {
-      "verdict": "REWORK (P2) sobre ce80a9b; corregido en nuevo candidato, revisión final pendiente",
+      "verdict": "PASS",
       "reviewer_kind": "delegated_codex_separate_process",
       "model_requested": "gpt-6-luna",
       "reasoning_effort_requested": "high",
@@ -113,19 +113,20 @@
       "cli_configuration_accepted": true,
       "cli_exit_code": 0,
       "actual_backend_model_identity": "UNVERIFIED",
-      "artifact_sha": "ce80a9b4facdec5a82d7a43fd133709e3d6fce0c",
-      "artifact_tree": "838c7a94cbc8b4173134889623f3e2bee9bd25c8",
+      "artifact_sha": "308c478b016985f47f5f6e33be67afa952d8247e",
+      "artifact_tree": "7170e54dc3d72d06dcb36fc247e468d92f57a25f",
       "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
-      "prior_rework_report": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-CE80A9B-REWORK.md",
-      "report": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-CE80A9B-REWORK.md"
+      "report": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-308C478-REPORT.md",
+      "finding": "No P0/P1/P2. Nonblocking P3: retry after older inbox page load failure returns to first page while preserving already-loaded rows."
     },
-    "github_review": "PENDING exact-head automatic review on candidate 308c478 after publication; review on prior 8176e62 is stale to this functional delta.",
-    "precritic": "PENDING exact-head GitHub checks/review, final delegated Controller PASS, all conversations resolved, and validator.",
+    "github_review": "Automatic review triggered by checkpoint ec57ef5; inline comments were attached to ec57ef52f65a2ae4e2f755da77eb6c86805f716d. Two P2 comments (media config retry, expired-session edit guard) were checked against existing code/E2E and answered/resolved; six older outdated threads answered/resolved. The summary metadata reports commit_sha=null and has_unresolved_findings=true from before replies; current thread query shows zero unresolved.",
+    "precritic": "PENDING on final evidence/state-only checkpoint until worker/web and automatic review complete. Controller PASS and all functional tests remain valid for unchanged executable 308c478; branch protections were observed and must be rechecked at merge.",
     "scope_limits": "Local synthetic Worker+D1 only. No Preview/Access remote change, deployment, production, real data, paid service, external email, R2, source repo write, I06.6/#33.",
-    "next_action": "Publicar el candidato y evidencia en el PR #40; confirmar checks y revisión automática exact-head; resolver conversaciones con prueba; ejecutar Controller read-only GPT-6 Luna High sobre 308c478 y sólo su delta desde ce80a9b; completar Pre-Critic y merge protegido únicamente con controles verdes. Cerrar #32/#36 y actualizar #25; detener antes de #33/I06.6.",
+    "next_action": "Publicar el checkpoint canónico de cierre (solo estado/evidencia), comprobar que CI y auto-review del nuevo HEAD concluyen sin defectos nuevos; ejecutar Pre-Critic final y verificar protecciones/mergeabilidad. Integrar PR #40 protegido; cerrar #32/#36, actualizar épica #25 y detener antes de #33/I06.6.",
     "candidate_executable_sha": "308c478b016985f47f5f6e33be67afa952d8247e",
     "candidate_tree_sha": "7170e54dc3d72d06dcb36fc247e468d92f57a25f",
-    "github_checks": "PENDING for candidate 308c478; prior state checkpoint 8176e62 worker/web PASS but predates this functional delta."
+    "github_checks": "PENDING for candidate 308c478; prior state checkpoint 8176e62 worker/web PASS but predates this functional delta.",
+    "github_automatic_review": "Completed on checkpoint ec57ef5. Two P2 findings already covered by candidate code and E2E; evidence replies posted and threads resolved. Six stale outdated threads also resolved. No unresolved review conversations."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
