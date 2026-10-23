@@ -72,7 +72,7 @@ describe('public catalog and property details', () => {
     for(const [method,path] of [['POST','/listings/draft-hidden/images'],['PATCH','/listings/draft-hidden/images/x'],['DELETE','/listings/draft-hidden/images/x']]) {
       const response=await app.request('http://localhost'+path,{method,headers:{Authorization:'Bearer '+token}},bindings);
       expect(response.status).toBe(503);
-      expect(await response.json()).toEqual({error:'Owner image upload is not available with repository-managed media'});
+      expect(await response.json()).toEqual({error:'Owner image changes are not available for repository-managed media'});
     }
   });
 

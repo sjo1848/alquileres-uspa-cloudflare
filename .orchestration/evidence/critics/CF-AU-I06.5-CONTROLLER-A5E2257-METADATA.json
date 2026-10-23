@@ -1,0 +1,21 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "reviewer_name": "project_controller (delegated local technical Controller)",
+  "artifact_sha": "a5e2257809b5abf2cf75b6869a59de99abed3fdb",
+  "artifact_tree": "b3e69ce0eb0bda00aa2bd253ccc43331e084f1d1",
+  "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+  "model_requested": "gpt-6-luna",
+  "reasoning_effort_requested": "high",
+  "sandbox_requested": "read-only",
+  "cli_configuration_accepted": true,
+  "cli_exit_code": 0,
+  "actual_backend_model_identity": "UNVERIFIED",
+  "thread_id": "01a1636f-136f-7920-abfa-6fa06dd7ab4b",
+  "command": "codex exec --model gpt-6-luna -c 'model_reasoning_effort=\"high\"' --sandbox read-only --json -o <report> -C <repository> - <prompt>",
+  "controller_verdict": "REWORK P2: transient GET images failure made D1_BLOB upload appear eligible before static asset absence was known. Corrected in subsequent candidate by fail-closed media metadata state and retry regression.",
+  "tests_run_by_controller": false,
+  "mcp_warning": "localhost:4401 transport errors; read-only repository inspection completed",
+  "report": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-A5E2257-REWORK.md",
+  "prompt": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-A5E2257-PROMPT.md",
+  "transcript": ".orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-A5E2257-TRANSCRIPT.json"
+}

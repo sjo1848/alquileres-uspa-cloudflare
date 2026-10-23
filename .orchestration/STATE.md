@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_4_PUBLIC_JOURNEY`
-Active task: `CF-AU-I06.4 — Rediseño de catálogo, filtros, ficha y consulta pública`
+Phase: `CF_AU_I06_5_OWNER_AUTH`
+Active task: `CF-AU-I06.5 — Rediseño de identidad y panel OWNER`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1452,3 +1452,115 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Controller PASS acumulativo: revisión exacta/delta `3d0662d` cubre página+precio, más `6891e61` para capacidad; ambas con modelo GPT-6 Luna/High solicitado y sandbox read-only; backend UNVERIFIED. Informes: `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-3D0662D-PASS.md` y `.orchestration/evidence/critics/CF-AU-I06.4-CONTROLLER-6891E61-PASS.md`; PASS original `2674264` conserva el resto del candidato.
 - Pre-Critic: **PASS para merge protegido después de registrar los informes y volver a verificar checks/review del checkpoint final evidencia-only**, sin cambios ejecutables. No quedan cambios de producto/alcance pendientes en I06.4. Sin despliegue/Preview, gasto, R2, datos reales ni source repo.
 - **READY_TO_RESUME:** commit único de informes/precritic canonical, correr validador y `git diff --check`, esperar los checks/review exactos que dispare ese HEAD, verificar cero conversaciones/protección `main`, y merge protegido PR #39. Luego actualizar/cerrar #31 y comentar Epic #25. Detener antes de I06.5.
+
+
+## Event 183 — I06.4 reconciliado tras merge; I06.5 autorizado
+
+- GitHub confirma PR #39 mergeado en `main@48e4f5c4251fe939cb779698e4e51b16614be178`; Issue #31 está cerrado y Epic #25 actualizado. Checks worker/web y GitHub exact-head review pasaron; se preserva evidencia y cierre en [Issue #31](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/31#issuecomment-6328955365). No hubo Preview deployment.
+- La rama de trabajo activa parte de ese `main`; artefactos locales no rastreados preexistentes se preservan. El estado anterior de PR #39 queda como histórico, no como tarea activa.
+- Issue #32 está READY y autoriza I06.5: UX integrada de autenticación OWNER MOCK local, publicaciones, fotos D1 BLOB, disponibilidad, consultas y logout; reparar #36. Contrato: `.orchestration/contracts/CF-AU-I06.5-OWNER-AUTH.md`.
+- **READY_TO_RESUME:** auditar e implementar el recorrido en Vue + Worker/Hono + D1 local sintética; ejecutar QA integrada desktop/mobile, pruebas focales, exact-head review/Controller y merge protegido. No iniciar I06.6/#33 ni modificar Preview/Access remoto, pagos, producción, datos reales, correo externo, R2 o repositorio fuente.
+
+## Event 184 — I06.5 candidate consolidated locally
+
+- Implementación funcional OWNER/auth consolidada en la rama `work/i06-owner`; base canónica `48e4f5c4251fe939cb779698e4e51b16614be178`. Incluye estado reconciliado de PR #39, sin tocar Preview ni el repo fuente.
+- #36 corregido en backend y UI: OWNER lee metadata/BLOB privado de sus publicaciones aprobadas en modo lectura; OWNER ajeno recibe 404 y mutaciones aprobadas continúan rechazadas. E2E verifica vista de fotos; prueba Worker cubre autorización/bytes.
+- Worker local D1: OWNER lifecycle 5/5; D1 BLOB ownership 12/12; media spike 3/3; local auth 5/5; contact 6/6; Worker typecheck PASS. Vue typecheck/build PASS. Playwright integrado real con Workerd+D1, dos recorridos PASS (2/2, 2.2m), incluye auth MOCK, owner lifecycle, errores/retry, permisos, 320/390 y capturas inspeccionables en `output/playwright/i06.5/QA.md`.
+- Capturas revisadas visualmente: login y dashboard desktop/mobile (320/390), editor desktop y fotos aprobadas en lectura. Token de texto interactivo arcilla ajustado; contraste calculado de tokens principales >=4.68:1 sobre canvas. E2E pasa skip-link por teclado y sin overflow en 320 px.
+- Consistency validator y `git diff --check` PASS. Las regresiones #35 ADMIN y #37 siguen para #33; #36 sólo se cerrará después del merge protegido con la evidencia del PR.
+- **READY_TO_RESUME:** ejecutar el preflight final y crear un commit funcional inmutable en `work/i06-owner`; publicar PR vinculado a #32; procesar checks/review exactos y Controller separado GPT-6 Luna/High/read-only. Integrar protegido, comentar/cerrar #32 y #36 y actualizar Epic #25 sólo tras todos los gates; detener antes de #33. Sin Preview, producción, costo, R2, email externo o datos reales.
+
+## Event 185 — Pre-Critic I06.5 passed to publish
+
+- Exact executable candidate `0d4f4c5074ed89483649e4de30136b507763dbd2` (tree `bdc1c8676dcac3637512e9b135083bfb75ccfe38`), ancestor base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Pre-Critic gate: PASS to publish for exact-head GitHub review/checks and one GPT-6 Luna High read-only delegated Controller review only.
+- Local tests/evidence and #36 authorization proof are enumerated in `output/playwright/i06.5/QA.md` and `.orchestration/PRECRITIC-GATE.md`. No P0/P1 is known open. GitHub/Controller results remain pending; do not merge until both PASS, checks green, conversations resolved and main protection/mergeability verified.
+- **READY_TO_RESUME:** push functional branch/create PR linked to #32 and publish nine visual captures through issue/PR links. No Preview, #33, production, paid service or source writes.
+
+## Event 186 — PR #40 published
+
+- PR funcional #40: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/40, branch `work/i06-owner`, base `48e4f5c4251fe939cb779698e4e51b16614be178`. Executable candidate remains `0d4f4c5074ed89483649e4de30136b507763dbd2`; subsequent current checkpoint is state/evidence only.
+- Local verification is recorded at `output/playwright/i06.5/QA.md`. Current exact PR checks/review, Controller, final Pre-Critic and merge protection are pending. #32/#36 and Epic #25 closeout wait for protected merge.
+- **READY_TO_RESUME:** evaluate CI/GitHub review on current PR HEAD and run the required separate GPT-6 Luna High read-only Controller against exact executable candidate; repair any bounded findings autonomously. No remote deployment, Preview changes, or I06.6.
+
+## Event 187 — GitHub P2s corregidos; Controller PASS
+
+- Los P2 GitHub `4343533996` y `4343533999` se corrigieron de forma consolidada en `c848d8459f2aff10bb023cd4d14059d6604c2649` (tree `9e36b20240057093df3ebffee253a38d2c1899c0`). Logout/cambio de identidad navega primero y conserva la sesión si OWNER cancela el diálogo de cambios; la foto seleccionada cuenta como cambio sin guardar y se preserva ante actualización de lista/servidor hasta descarte explícito. Regresiones Playwright integradas: 2/2 sobre Vue + Worker/Hono + Workerd + D1 local real.
+- Web typecheck/build PASS; checks GitHub `worker` y `web` SUCCESS exactos (run `39704030419`). Se respondieron y resolvieron ambos hilos.
+- Controller PASS exacto `c848d84`, base `48e4f5c`; proceso separado solicitado GPT-6 Luna/High/read-only, CLI exit 0 y configuración aceptada; backend UNVERIFIED. Evidencia, prompt y metadatos: `.orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-C848D84-*`. El reviewer inspeccionó el delta y no ejecutó pruebas. Reportó fallos de transporte MCP localhost, sin afectar la revisión local.
+- La revisión automática GitHub exact-head de `c848d84` fue solicitada y todavía está corriendo; no se declara Pre-Critic final ni merge hasta resultado limpio del checkpoint final.
+- **READY_TO_RESUME:** esperar review exact-head; reparar hallazgos materiales si aparecen; después validator/Pre-Critic final, confirmar protección/conversaciones y merge protegido de PR #40. Cerrar #32/#36, actualizar Epic #25 y detenerse antes de #33/I06.6. Sin Preview, producción, costo, R2, correo externo, datos reales ni escritura en repo fuente.
+
+## Event 188 — rework de reintento y reconciliación del candidato I06.5
+
+- Se corrigió el P2 de GitHub `4343866111`: si `/auth/config` falla transitoriamente, OWNER ahora ve el error y puede reintentar; la configuración fallida no queda cacheada y el acceso a fotos se habilita tras una respuesta válida. Playwright integrado con Workerd+D1 sintética pasa la regresión focalizada (1/1); Web typecheck y build pasan sobre el candidato.
+- El orden combinado de imágenes Static Assets/D1 BLOB ahora tiene desempate estable por ID cuando comparten posición; el test Worker de media pasa 13/13. No se implementó R2 ni cambió el Preview.
+- Candidato ejecutable exacto: `3129ce7034a6102e1a6eeb2992b456775fab9b76`, tree `c739a8bd629fd41cd15fb6ee76a66c2d093326f8`, basado en `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Estado y STATUS reconciliados a este SHA en el checkpoint actual; validador había pasado antes de esta reconciliación.
+- Se conserva el resultado Controller PASS de `c848d84` como evidencia histórica, pero no se transfiere al código nuevo. El P1 de GitHub por estado canónico obsoleto queda corregido en este checkpoint.
+- **READY_TO_RESUME:** publicar el checkpoint; solicitar review GitHub exact-head/checks; ejecutar Controller separado GPT-6 Luna/High/read-only para `3129ce7`; resolver los hilos P1/P2 con evidencia, ejecutar validator/Pre-Critic final y merge protegido solo tras checks verdes y cero conversaciones pendientes. Luego cerrar #32/#36 y actualizar Epic #25; detener antes de I06.6/#33.
+
+## Event 189 — rework del Controller: Static Assets en borrador
+
+- Controller separado revisó exacto `3129ce7034a6102e1a6eeb2992b456775fab9b76` / tree `c739a8bd629fd41cd15fb6ee76a66c2d093326f8` y detectó que el selector de carga se ofrecía en un DRAFT con Static Assets aunque Worker respondía 409. El reporte original y su provenance están en `evidence/critics/CF-AU-I06.5-CONTROLLER-3129CE7-*`. Sus observaciones también encontraron que la prueba de desempate derivaba su esperado con el propio comparator.
+- Fix consolidado: OWNER espera a que termine la carga de metadata de imágenes y oculta cargas si hay Static Assets, mostrando una explicación; E2E usa una fila DRAFT sintética Static Asset y verifica texto/ausencia de selector. El test de orden usa ahora IDs controlados y esperado fijo independiente. No cambiaron rutas/contratos Worker ni estrategia de almacenamiento.
+- QA afectada: `owner-d1-blob-media.test.ts` 13/13; Playwright OWNER focalizado 1/1 en 59.9 s con Workerd + D1 local re-seeded; Web typecheck/build PASS. Ninguna suite completa repetida.
+- Candidato ejecutable exacto: `a39d14ba41e227a56cd9199458aca858e13990f0`, tree `a1f4d00be45029ec9b29912e693082a663a07335`, base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. P1/P2 anteriores se mantienen corregidos; controller/GitHub review y checks del nuevo SHA aún pendientes.
+- **READY_TO_RESUME:** publicar checkpoint con STATE/STATUS reconciliados, validar, obtener review/checks GitHub y Controller delegado fresco exacto `a39d14b`; reparar hallazgos materiales y ejecutar Pre-Critic/merge protegido solo cuando todo pase. Luego cerrar #32/#36 y actualizar #25. Detener antes de #33/I06.6.
+
+## Event 190 — rework GitHub: expiración y fotos mixtas
+
+- La review exact-head de PR #40 en `868a2c79cdf715816520f5c549a8086c4065f7fa` encontró P2 `4347641100` y `4347641116`; contexto y reparación: `evidence/CF-AU-I06.5-GITHUB-REWORK-4347641100-4347641116.md`.
+- Si un OWNER recibe 401 al guardar con cambios sin guardar, el guard deja de interceptar el redirect obligatorio cuando la sesión ya es anónima. E2E fuerza 401, confirma URL login por expiración y ausencia de datos OWNER privados.
+- Después del PATCH de reordenamiento de una foto D1 BLOB, Vue vuelve a cargar el GET combinado; E2E incluye DRAFT sintético con dos blobs y Static Asset, reordena y confirma que siguen las tres fotos.
+- Candidato ejecutable final consolidado al momento: `695992fb821dd46135797110a3c6234cb0d3d092`, tree `e881b34f7f88fa6e925a6a4d7b4b18039c893e65`, base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Web typecheck/build PASS; Playwright integrado focalizado 1/1 (52.2 s); Worker media 13/13 del mismo código de test ya ejecutado; validator PASS. No se ejecutaron suites largas.
+- Rework del Controller en `3129ce7` y P2s GitHub del checkpoint `868a2c7` están reparados; el Controller iniciado sobre el candidato intermedio `a39d14b` se canceló al entrar los nuevos P2 de GitHub, por lo que no se conserva ni reclama veredicto PASS de ese proceso.
+- **READY_TO_RESUME:** publicar este candidato/estado; esperar checks y review GitHub exact-head; ejecutar Controller nuevo GPT-6 Luna/High/read-only exacto `695992f`; responder/resolver los hilos reparados; validator/Pre-Critic final y merge protegido solo con todos los controles en PASS. Cerrar #32/#36, actualizar #25 y detener antes de I06.6/#33.
+
+## Event 191 — regresiones consolidadas para el candidato final I06.5
+
+- Se completó el rework de GitHub 4347641100/4347641116 en código `695992f`: redirect obligatorio de sesión expirada ante dirty form y refresh de la colección OWNER después del reorder para preservar Static Assets. El E2E ahora fuerza 401 mientras el usuario conserva un cambio sin guardar y comprueba login sin datos privados.
+- Se reforzó en el mismo test el P2 de configuración `4343866111`: tras dos 503 sintéticos y retry real, el selector permanece oculto en Static Assets y aparece en un DRAFT sin fotos de estrategia D1_BLOB. Fixture local sintético ampliado.
+- Último recorrido OWNER focalizado sobre el conjunto consolidado: 1/1 PASS (Playwright 55.7 s), re-seed real de D1 local; covers auth config retry, upload gating, mixed gallery reorder, logout/navigation, idempotencia/owner lifecycle, expiración con estado dirty, ADMIN denial. Worker media test 13/13 ya pasa; Web typecheck/build PASS sobre el código funcional sin cambios posteriores.
+- SHA ejecutable final provisional: `1374c48575296ba44431cc27c503007e3c14157e`, tree `ebf5f79415f276747db8e57ba264082f3be46e57`, base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Solo su evidence/canonical checkpoint posterior es docs-only.
+- **READY_TO_RESUME:** publicar checkpoint, nuevos checks/review exactos, Controller delegado fresh sobre `1374c48`, cerrar threads reparados, final validator/Pre-Critic y merge protegido. Cerrar #32/#36 y actualizar #25 después del merge; detener antes de #33/I06.6.
+
+## Event 192 — rework de foco en confirmaciones
+
+- GitHub P2 `4347741052` sobre `2bf85d2`: al cambiar alojamiento con edición sin guardar, la confirmación ahora es modal con foco inicial seguro, focus trap Tab/Shift+Tab, Escape y retorno al botón origen. El diálogo de actualización de publicaciones usa el mismo patrón. Regresión Playwright cubre ambos.
+- Se conservan los fixes de P2 `4347641129` (Static Asset no ofrece carga incompatible), `4347641100` (401 expulsa sin diálogo cancelable/datos privados) y `4347641116` (reorder vuelve a leer galería mixta). La regresión config retry ahora realiza una carga D1 BLOB exitosa en el mismo contexto después del reintento, cerrando la brecha P3 anotada por el Controller anterior.
+- Web typecheck/build PASS; OWNER Playwright focalizado 1/1 (52.5 s) con Worker/Hono + Workerd + D1 sintética local; Worker media 13/13 en el mismo código Worker. Sin suite completa repetida ni Preview/deployment.
+- Candidato ejecutable `a5e2257809b5abf2cf75b6869a59de99abed3fdb`, tree `b3e69ce0eb0bda00aa2bd253ccc43331e084f1d1`, base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Controller PASS `1374c48` es evidencia histórica previa y no aplica al delta accesible; se requiere revisión exacta nueva.
+- **READY_TO_RESUME:** publicar candidato y canonical state, comprobar GitHub checks/review exactos y ejecutar Controller GPT-6 Luna High read-only sobre `a5e2257`. Resolver hilos; validator/Pre-Critic y merge protegido sólo con todos los controles en PASS. Luego cerrar #32/#36 y actualizar #25; detener antes de I06.6/#33.
+
+## Event 193 — rework P2 del Controller y CI worker
+
+- Controller exact `a5e2257809b5abf2cf75b6869a59de99abed3fdb` reportó P2: si GET de fotos devuelve 503, `images=[]` no demuestra que no existan Static Assets; el selector de upload no debe aparecer. Reporte/provenance íntegros: `evidence/critics/CF-AU-I06.5-CONTROLLER-A5E2257-*`.
+- Fix: el estado `imagesLoadError` mantiene fail-closed el upload cuando metadata no está confirmada; Owner muestra motivo y retry dedicado. E2E sintético devuelve 503 al GET de un DRAFT con Static Asset, comprueba que no hay selector, reintenta y valida el asset y que la carga siga bloqueada. Los otros flujos de upload D1 válidos continúan cubiertos.
+- CI worker en HEAD `afe6143` falló en la regresión de igualdad de posición porque el id D1 se genera como UUID aleatorio y el expected hardcodeado asumía orden `aaa` antes del UUID. Se corrigió el expected con comparación `<` independiente de `localeCompare`; local `owner-d1-blob-media.test.ts` pasa 13/13. Web CI PASS en ese checkpoint. Los nuevos checks quedan pendientes.
+- QA local consolidada: Web typecheck/build PASS; Playwright OWNER 1/1 (51.3 s) con Workerd+D1 real local; cubre GET 503 + retry, uploads/config retry, mixed reorder, focus dialogs, session expiration. Sin suite completa.
+- Candidato exacto: `3c605ef18ac36c5dc53d560893c9023c3b6b8284`, tree `438e0ec63d6dacdddc15932abe594b9006fc28b8`, base `main@48e4f5c4251fe939cb779698e4e51b16614be178`; artefacto previo/PASS no se transfiere. Revisión/CI/Controller exactos pendientes.
+- **READY_TO_RESUME:** publicar candidate + estado, esperar checks y review GitHub, Controller GPT-6 Luna High read-only exacto 3c605ef, resolver hilos, Pre-Critic/validator y merge protegido solo con gates verdes. Cerrar #32/#36, actualizar #25 y detener antes de #33/I06.6.
+
+## Event 194 — fixes consolidados de galería OWNER; verificación final pendiente
+
+- Se atendió el P2 del Controller sobre metadata desconocida: ante GET de fotos 503, OWNER muestra “No disponible”, omite el contador numérico, el estado vacío y la lista vacía; mantiene bloqueada la carga y permite reintentar. Playwright verifica las cuatro condiciones y que el retry recupera la foto Static Asset.
+- La revisión GitHub previa señaló que cambiar a “Nuevo borrador” durante un GET `/images` pendiente podía dejar `imagesLoading=true`. `choose()` ahora reinicia ese estado al invalidar el request anterior. Una regresión E2E retiene la respuesta, cambia/guarda un borrador y confirma que ya puede cargar una imagen antes de liberar el request viejo; luego comprueba que la galería seleccionada no se corrompe.
+- Resultado focal final local sobre el árbol ejecutable que quedó en `ce80a9b4facdec5a82d7a43fd133709e3d6fce0c` / tree `838c7a94cbc8b4173134889623f3e2bee9bd25c8`: Playwright OWNER 1/1 (47.1 s), Web typecheck/build PASS. GitHub worker/web checks PASS en run `39775129061`; no se repitió la suite local completa. El primer intento de la regresión E2E reveló doble manejo del route al retirarlo antes de concluir la respuesta; el test se corrigió para esperar la respuesta tardía y el rerun pasó.
+- El Controller lanzado sobre `d3bc2d2` se interrumpió antes de emitir veredicto al aparecer otro P2 automático; no se reclama PASS ni REWORK de esa sesión. Los hallazgos `4347949598` y el P2 de estado de galería están corregidos en `ce80a9b`. Resta resolver conversaciones con evidencia.
+- **READY_TO_RESUME:** validar/publicar el checkpoint canónico en PR #40; obtener checks y revisión automática exact-head del checkpoint final, resolver todos los hilos, correr Controller delegado GPT-6 Luna High read-only sobre el código ejecutable `ce80a9b`, completar Pre-Critic y merge protegido sólo con PASS. Luego cerrar #32/#36 y actualizar #25; detener antes de #33/I06.6. Sin Preview remoto, producción, pago, R2, datos reales, correo externo ni escritura en repo fuente.
+
+## Event 195 — rework Controller de publicaciones e inbox cerrado en código
+
+- El Controller exacto `ce80a9b` encontró dos P2: 503 de GET `/listings` podía confundirse con inventario vacío (y permitir crear borrador), y 503 de inbox podía confundirse con ausencia de consultas. Se conserva su dictamen REWORK y evidencia íntegra en `.orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-CE80A9B-*`; no se hereda el PASS histórico.
+- Fix consolidado en `OwnerView.vue`: alertas separadas con retry para inventario e inbox; el botón de nuevo borrador queda deshabilitado si el inventario está sin confirmar; no se presenta el estado vacío hasta un GET exitoso. Filas anteriores permanecen visibles si falla una recarga. E2E inyecta 503 en ambos endpoints, confirma que no aparece vacío y que el retry consulta Worker/Hono + D1 local y llega al vacío real del inbox.
+- Candidato ejecutable `308c478b016985f47f5f6e33be67afa952d8247e`, tree `7170e54dc3d72d06dcb36fc247e468d92f57a25f`, base `main@48e4f5c4251fe939cb779698e4e51b16614be178`. Playwright integrado focal `--grep 'OWNER:'` PASS 2/2 (2.2 min); Web typecheck/build PASS. Las capturas reales desktop/mobile se regeneraron. Se evita repetir la suite local completa.
+- Controller final sobre el delta `ce80a9b..308c478`: PASS, sin P0/P1/P2. P3 no bloqueante: retry de página antigua del inbox vuelve a la primera página, sin perder filas ya cargadas. Evidencia de proceso, invocación GPT-6 Luna High read-only, transcripción y uso de tokens en `.orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-308C478-*`; backend real UNVERIFIED. No repitió pruebas.
+- Quick CI del checkpoint `e131778` dio web PASS y Worker FAIL únicamente por trailing whitespace en el informe histórico `CF-AU-I06.5-CONTROLLER-CCA80C8-REPORT.md`; se corrigió el formato. El resultado Worker debe volver a verificarse en el nuevo checkpoint.
+- **READY_TO_RESUME:** publicar esta corrección de evidencia, verificar validador y checks del nuevo HEAD, recoger el resultado de la revisión automática ya solicitada para el código 308c478 y resolver todos los hilos con evidencia. Completar Pre-Critic y merge protegido solo con controles verdes; cerrar #32/#36 y actualizar #25, luego detener antes de #33/I06.6. Sin Preview, producción, pago, R2, datos reales, correo externo ni repo fuente.
+
+## Event 196 — GitHub review reconciled; protected-merge preflight
+
+- Exact executable candidate remains `308c478b016985f47f5f6e33be67afa952d8247e` / tree `7170e54dc3d72d06dcb36fc247e468d92f57a25f`; docs/evidence checkpoint `ec57ef52f65a2ae4e2f755da77eb6c86805f716d` adds no executable changes.
+- GitHub automatic review triggered by ec57ef5 completed and surfaced two P2 comments on that SHA. Its summary has `commit_sha=null` and `has_unresolved_findings=true` as captured before replies; inline comments themselves are attached to ec57ef5. The media-config retry and expired-session guard findings are already handled in the candidate and have direct E2E regressions; replies cite code and test evidence. Six older outdated threads also received evidence replies. Current reviewThreads query: zero unresolved. The bot summary records unresolved at review time before replies; that stale snapshot is preserved, not relabeled.
+- Quick CI worker/web PASS on exact checkpoint ec57ef5, run `39883656818`. State validator and `git diff --check` PASS. Controller exact-delta PASS on executable 308c478; one nonblocking P3 inbox pagination retry follow-up, no P0/P1/P2.
+- Branch protection observed: strict `worker`,`web`; enforce-admins enabled; PR review rule enabled with 0 required approvals; no push restrictions. PR is mergeable and merge state CLEAN.
+- **Pre-Critic: PENDING on the final canonical evidence checkpoint until worker/web and automatic review are complete.** Controller PASS applies to unchanged executable candidate 308c478. The final evidence checkpoint must remain docs/state-only; no Controller or long-suite rerun is needed unless executable content changes. No code changes remain. If final docs-only checkpoint repeats findings, verify whether substantive and resolve with existing evidence; do not rerun Controller or full suites absent executable change. After protected merge, close #32/#36, update #25, and stop before #33/I06.6. No Preview or production action.

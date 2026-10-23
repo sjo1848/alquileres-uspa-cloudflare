@@ -41,14 +41,21 @@ watch(() => route.fullPath, () => {
 onMounted(() => document.addEventListener('keydown', onEscape));
 onBeforeUnmount(() => document.removeEventListener('keydown', onEscape));
 
-async function logout() {
+async function logout(event:MouseEvent) {
   if (loggingOut.value) return;
+  if(event.currentTarget instanceof HTMLElement)event.currentTarget.focus({preventScroll:true});
   loggingOut.value = true;
   logoutError.value = '';
   try {
-    await session.clear();
-    closeMenu();
     await router.push('/');
+    if (route.path !== '/') return;
+    try {
+      await session.clear();
+    } catch (error) {
+      await router.push(session.role.value === 'ADMIN' ? '/admin' : '/owner');
+      throw error;
+    }
+    closeMenu();
     focusMain();
   } catch {
     logoutError.value = 'No pudimos cerrar la sesión. Reintentá.';
@@ -57,12 +64,20 @@ async function logout() {
   }
 }
 
-async function switchDemoIdentity() {
+async function switchDemoIdentity(event:MouseEvent) {
   if (loggingOut.value) return;
+  if(event.currentTarget instanceof HTMLElement)event.currentTarget.focus({preventScroll:true});
   loggingOut.value = true;
   logoutError.value = '';
   try {
-    await session.clear();
+    await router.push('/');
+    if (route.path !== '/') return;
+    try {
+      await session.clear();
+    } catch (error) {
+      await router.push(session.role.value === 'ADMIN' ? '/admin' : '/owner');
+      throw error;
+    }
     closeMenu();
     await router.push('/login');
   } catch {
@@ -105,10 +120,9 @@ async function switchDemoIdentity() {
         <button
           v-if="session.isAuthenticated.value && session.authStrategy.value === 'ACCESS_PREVIEW'"
           class="nav-quiet"
-          :disabled="loggingOut"
-          @click="switchDemoIdentity"
+          @click="switchDemoIdentity($event)"
         >Cambiar perfil de prueba</button>
-        <button v-if="session.isAuthenticated.value" class="nav-quiet" :disabled="loggingOut" @click="logout">
+        <button v-if="session.isAuthenticated.value" class="nav-quiet" @click="logout($event)">
           {{ loggingOut ? 'Cerrando sesión…' : 'Cerrar sesión' }}
         </button>
       </div>

@@ -95,7 +95,7 @@ it('keeps private ownership, CSRF, editable status and request limits enforced',
   expect((await request(`/listings/${other}/images`,'GET',undefined,{cookie:ownerCookie})).status).toBe(404);
   expect((await upload(other,'cross-owner-1',ownerCookie)).status).toBe(404);
   await env.DB.prepare("UPDATE listings SET status='SUBMITTED' WHERE id=?").bind(lid).run();
-  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie})).status).toBe(200);
   expect((await upload(lid,'submitted-1',ownerCookie)).status).toBe(404);
 });
 
@@ -108,6 +108,16 @@ it('reorders densely and deletes with stable idempotent results while returning 
   expect((await request(`/listings/${lid}/images/${b.id}`,'DELETE',undefined,{cookie:ownerCookie,key:'delete-reordered-image'})).status).toBe(200);
   const images=await (await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie})).json() as any[];expect(images).toHaveLength(1);expect(images[0]).toMatchObject({id:a.id,position:0});
   await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(lid).run();
+  const ownerImages=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie});
+  expect(ownerImages.status).toBe(200);expect(await ownerImages.json()).toMatchObject([{id:a.id,position:0,originalName:'casa.png'}]);
+  const privateApprovedImage=await request(`/listings/${lid}/images/${a.id}`,'GET',undefined,{cookie:ownerCookie});
+  expect(privateApprovedImage.status).toBe(200);expect(privateApprovedImage.headers.get('cache-control')).toContain('private');expect(new Uint8Array(await privateApprovedImage.arrayBuffer())).toEqual(png);
+  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/${a.id}`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
+  expect((await upload(lid,'approved-image-upload',ownerCookie)).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/${a.id}`,'PATCH',JSON.stringify({position:0}),{cookie:ownerCookie,key:'approved-image-reorder',type:'application/json'})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/${a.id}`,'DELETE',undefined,{cookie:ownerCookie,key:'approved-image-delete'})).status).toBe(404);
+  expect(await env.DB.prepare('SELECT id,position FROM listing_images WHERE listing_id=?').bind(lid).all()).toMatchObject({results:[{id:a.id,position:0}]});
   const listingResponse=await request(`/public/listings/${lid}`);expect(listingResponse.status).toBe(200);expect(((await listingResponse.json() as any).images as any[]).map(x=>x.id)).toEqual([a.id]);
   const publicRead=await request(`/public/listings/${lid}/images/${a.id}`);expect(publicRead.status).toBe(200);expect(new Uint8Array(await publicRead.arrayBuffer())).toEqual(png);
 });
@@ -118,8 +128,36 @@ it('continues to expose repository-managed Static Assets when D1 BLOB is the Pre
   await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind('static-kept-'+lid,lid,'/media/catalog/synthetic.svg','image/svg+xml',123,0).run();
   const page=await request(`/public/listings/${lid}`),body=await page.json() as any;
   expect(page.status).toBe(200);expect(body.images).toEqual([{id:'static-kept-'+lid,contentType:'image/svg+xml',sizeBytes:123,position:0,url:'/media/catalog/synthetic.svg'}]);
+  const ownerImages=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie}),ownerRows=await ownerImages.json() as any[];
+  expect(ownerImages.status).toBe(200);expect(ownerRows).toEqual([{id:'static-kept-'+lid,originalName:'synthetic.svg',contentType:'image/svg+xml',sizeBytes:123,position:0,source:'STATIC_ASSET'}]);
+  const privateOwnerAsset=await request(`/listings/${lid}/images/static-kept-${lid}`,'GET',undefined,{cookie:ownerCookie});
+  expect(privateOwnerAsset.status).toBe(302);expect(privateOwnerAsset.headers.get('location')).toBe('/media/catalog/synthetic.svg');
+  expect((await request(`/listings/${lid}/images`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
+  expect((await request(`/listings/${lid}/images/static-kept-${lid}`,'GET',undefined,{cookie:otherCookie})).status).toBe(404);
   const image=await request(`/public/listings/${lid}/images/static-kept-${lid}`);
   expect(image.status).toBe(302);expect(image.headers.get('location')).toBe('/media/catalog/synthetic.svg');
+});
+
+it('merges repository and OWNER-uploaded photos in their stored position order',async()=>{
+  const lid=await listing();
+  const created=await upload(lid,`dynamic-before-static-${lid}`),dynamic=await created.json() as any;
+  expect(created.status).toBe(201);expect(dynamic.position).toBe(0);
+  await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind(`static-after-upload-${lid}`,lid,'/media/catalog/static-after-upload.svg','image/svg+xml',123,1).run();
+  const ownerRows=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie});
+  expect(ownerRows.status).toBe(200);
+  expect((await ownerRows.json() as any[]).map(row=>[row.id,row.position,row.source??'OWNER_UPLOAD'])).toEqual([
+    [dynamic.id,0,'OWNER_UPLOAD'],[`static-after-upload-${lid}`,1,'STATIC_ASSET'],
+  ]);
+  const tiedStaticId=`aaa-static-tie-${lid}`;
+  await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind(tiedStaticId,lid,'/media/catalog/static-tie.svg','image/svg+xml',123,0).run();
+  const tieOrder=dynamic.id<tiedStaticId?[dynamic.id,tiedStaticId]:[tiedStaticId,dynamic.id];
+  const expectedMixed:Array<[string,number]>=[[tieOrder[0],0],[tieOrder[1],0],[`static-after-upload-${lid}`,1]];
+  const mixedOwner=await request(`/listings/${lid}/images`,'GET',undefined,{cookie:ownerCookie});
+  expect((await mixedOwner.json() as any[]).map(row=>[row.id,row.position])).toEqual(expectedMixed);
+  await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(lid).run();
+  const publicListing=await request(`/public/listings/${lid}`),publicBody=await publicListing.json() as any;
+  expect(publicListing.status).toBe(200);
+  expect(publicBody.images.map((row:any)=>[row.id,row.position])).toEqual(expectedMixed);
 });
 
 it('fails closed with a migration conflict for legacy R2 rows in D1 BLOB mode',async()=>{

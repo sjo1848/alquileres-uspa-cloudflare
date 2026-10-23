@@ -230,3 +230,21 @@ Codex cannot use this gate to self-declare substantive PASS.
 - GitHub review exact PR head `d742712b7a05ee6d7fd1954ca3b70377c6de9ab1`: PASS/no findings/unresolved; all P2 threads resolved. Worker/Web PR run `39274582580` and merge run `39275106227` PASS.
 - Controller PASS exact startup candidate `b1fecbf`; prior auth/logout Controller PASS `8ae6186`; both requested GPT-6 Luna/High/read-only separate processes, backend identity UNVERIFIED. Clean-checkout smoke PASS, local-only.
 - **Pre-Critic: PASS; I05 closed.** No Preview deployment, no production, no I06 implementation in this increment.
+
+## CF-AU-I06.5 — consolidated local/synthetic OWNER candidate (2026-10-21)
+
+- Contract: `.orchestration/contracts/CF-AU-I06.5-OWNER-AUTH.md`; authorized Issue #32. Approved base and `origin/main` both remain `48e4f5c4251fe939cb779698e4e51b16614be178`, ancestor of candidate. Exact executable candidate `0d4f4c5074ed89483649e4de30136b507763dbd2`, tree `bdc1c8676dcac3637512e9b135083bfb75ccfe38`.
+- Scope is I06.5 local synthetic auth/OWNER UX plus required reconciliation of I06.4 PR #39 state. No I06.6/#33, Preview/Access remote, production, real data, external email, paid service, R2, or source repository changes.
+- #36 authorization boundary: only authenticated owner can GET private metadata/bytes for any owned listing status; non-owner remains 404; DRAFT/REJECTED mutation guard remains in place and APPROVED upload/reorder/delete remains 404. Worker regression also verifies D1 row and public image remain intact.
+- Local evidence is versioned at `output/playwright/i06.5/QA.md`: Worker lifecycle 5/5, D1 BLOB ownership 12/12, 256 KiB media spike 3/3, local auth 5/5, contact 6/6; Worker typecheck, Web typecheck/build; integrated Workerd+Vue+Hono+D1 Playwright 2/2 (2.2m) with synthetic identities/MOCK mail. Nine real desktop/mobile captures include 320 px, 390 px, dashboard, editor and #36 photo view. Final consistency validator and whitespace check PASS.
+- Auth API/session/CSRF/rate-limit/backend role semantics were not rewritten. Vue now presents existing local MOCK vs Access Preview distinction; OWNER/ADMIN API authorization remains in the Worker. Expired-session no-mutation and cross-owner/role denials have tests.
+- Applicable invariants 1–10, 13–16, 18, 20–23 were checked against the above proof; source is untouched, semantic scope unchanged, owner/security boundaries remain backend-enforced, no remote/cost/data boundary was crossed. Contrast calculation for core tokens on canvas is >=4.68:1; keyboard skip-link and 320 px overflow checks pass. Remaining ADMIN forms/#35 remainder and #37 are explicitly deferred to #33.
+- **Pre-Critic: PASS to publish this one consolidated candidate for exact-head GitHub review/checks and one delegated read-only GPT-6 Luna/High Controller review. This is not Controller PASS or merge authorization.** Reconcile any P0/P1 within this contract and rerun affected regressions; no Preview or production update.
+
+## CF-AU-I06.5 — rework de dos P2 / Controller PASS (2026-10-21)
+
+- Exact executable candidate `c848d8459f2aff10bb023cd4d14059d6604c2649`, tree `9e36b20240057093df3ebffee253a38d2c1899c0`, canonical base `48e4f5c4251fe939cb779698e4e51b16614be178` ancestor.
+- GitHub P2 `4343533996` fixed: logout/profile switch enters route guard before clearing auth; cancel preserves OWNER session and form. P2 `4343533999` fixed: selected local photo participates in `unsaved`, reload prompts, server refresh disables, explicit discard is required. New real D1/Workerd integrated E2E regressions pass 2/2. Web typecheck/build PASS.
+- Exact CI `worker` and `web` SUCCESS on `c848d84` (run `39704030419`). Original review threads have responses and are resolved. Final automatic GitHub review on `c848d84` has been requested; result is still pending.
+- Delegated separate-process Controller PASS on exact SHA/tree; requested GPT-6 Luna / High / read-only, accepted CLI configuration, exit 0, backend identity UNVERIFIED. No P0/P1/P2/P3 found. Report/provenance under `.orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-C848D84-*`.
+- **Pre-Critic final remains PENDING** until GitHub review completes on the exact final PR head, consistency validator passes, and no new unresolved conversations remain. No merge or Preview update before those checks.

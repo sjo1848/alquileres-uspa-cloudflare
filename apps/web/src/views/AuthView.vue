@@ -13,6 +13,8 @@ const newPassword = ref('');
 const strategy = ref<'LOADING'|'PASSWORD'|'ACCESS_PREVIEW'|'ERROR'>('LOADING');
 const session = useSession(), router = useRouter(), route = useRoute();
 const page = computed(() => route.path === '/register' ? 'register' : route.path === '/verify-email' ? 'verify' : route.path === '/recover' ? 'recover' : route.path === '/reset-password' ? 'reset' : 'login');
+const heading = computed(() => page.value==='register'?'Creá tu cuenta de propietario':page.value==='verify'?'Verificá tu correo':page.value==='recover'?'Recuperá el acceso':page.value==='reset'?'Elegí una nueva contraseña':'Ingresá a tu espacio');
+const description = computed(() => page.value==='register'?'Prepará tu alojamiento y empezá a organizar cada detalle.':page.value==='verify'?'Confirmá tu dirección con el enlace de prueba que recibiste.':page.value==='recover'?'Te enviaremos un enlace simulado si la cuenta puede recibir una recuperación.':page.value==='reset'?'El enlace de recuperación es temporal y de un solo uso.':'Gestioná tus publicaciones y consultas desde un solo lugar.');
 watch(() => route.fullPath, () => { error.value=''; notice.value=''; mockMailUrl.value=''; });
 async function loadConfig() {
   strategy.value = 'LOADING'; error.value = '';
@@ -63,40 +65,70 @@ async function submit() {
 }
 </script>
 <template>
-  <section class="card">
-    <p class="eyebrow">Acceso de propietarios</p><h1>{{ page==='register'?'Crear cuenta':page==='verify'?'Verificar correo':page==='recover'?'Recuperar contraseña':page==='reset'?'Restablecer contraseña':'Iniciar sesión' }}</h1>
-    <p v-if="route.query.reset" role="status">La contraseña fue actualizada. Iniciá sesión con la nueva contraseña.</p>
-    <p v-if="route.query.expired" class="error" role="alert">La sesión expiró. Ingresá nuevamente.</p>
-    <p v-if="route.query.unavailable" class="error" role="alert">No pudimos verificar la sesión. Podés reintentar el ingreso.</p>
-    <p v-if="error" class="error" role="alert">{{ error }}</p>
-    <p v-if="notice" role="status">{{ notice }}</p>
-    <p v-if="strategy==='LOADING'" role="status">Preparando el ingreso…</p>
-    <button v-if="strategy==='ERROR'" @click="loadConfig">Reintentar</button>
-    <form v-if="strategy==='ACCESS_PREVIEW'" @submit.prevent="submit" :aria-busy="loading">
-      <p>Ingresá con tu acceso habitual. Elegí un perfil sintético de demostración; no cambia tu rol ni tus datos de producción.</p>
-      <fieldset :disabled="loading">
-        <legend>Entrar como</legend>
-        <label><input v-model="demoRole" type="radio" name="demo-role" value="OWNER" /> Propietario (demo)</label>
-        <label><input v-model="demoRole" type="radio" name="demo-role" value="ADMIN" /> Administrador (demo)</label>
-        <button type="submit">{{ loading?'Ingresando…':demoRole==='ADMIN'?'Ingresar como administrador (demo)':'Ingresar como propietario (demo)' }}</button>
-      </fieldset>
-    </form>
-    <form v-if="strategy==='PASSWORD'&&page==='login'" @submit.prevent="submit" :aria-busy="loading">
-      <fieldset :disabled="loading">
-        <label for="email">Email</label><input id="email" v-model="email" type="email" autocomplete="email" required maxlength="254" />
-        <label for="password">Contraseña</label><input id="password" v-model="password" type="password" autocomplete="current-password" minlength="8" required />
-        <button type="submit">{{ loading ? 'Ingresando…' : 'Ingresar' }}</button>
-      </fieldset>
-    </form>
-    <form v-if="strategy==='PASSWORD'&&page==='register'" @submit.prevent="submitLocalFlow" :aria-busy="loading">
-      <fieldset :disabled="loading"><label for="email">Email sintético</label><input id="email" v-model="email" type="email" autocomplete="email" required maxlength="254" /><label for="password">Contraseña (12 caracteres mínimo)</label><input id="password" v-model="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /><button type="submit">{{ loading?'Procesando…':'Crear cuenta de propietario' }}</button></fieldset>
-    </form>
-    <form v-if="strategy==='PASSWORD'&&page==='verify'" @submit.prevent="submitLocalFlow" :aria-busy="loading"><p>Confirmá la verificación del enlace sintético.</p><button :disabled="loading||!route.query.token" type="submit">Verificar correo</button></form>
-    <form v-if="strategy==='PASSWORD'&&page==='recover'" @submit.prevent="submitLocalFlow" :aria-busy="loading"><fieldset :disabled="loading"><label for="email">Email</label><input id="email" v-model="email" type="email" autocomplete="email" required maxlength="254" /><button type="submit">Solicitar enlace de recuperación</button></fieldset></form>
-    <form v-if="strategy==='PASSWORD'&&page==='reset'" @submit.prevent="submitLocalFlow" :aria-busy="loading"><fieldset :disabled="loading"><label for="password">Nueva contraseña</label><input id="password" v-model="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /><button type="submit">Actualizar contraseña</button></fieldset></form>
-    <button v-if="strategy==='PASSWORD'&&(page==='register'||page==='recover')" type="button" @click="readLocalMailbox">Consultar correo de prueba</button>
-    <a v-if="mockMailUrl" :href="mockMailUrl">Abrir enlace recibido</a>
-    <nav v-if="strategy==='PASSWORD'" aria-label="Opciones de acceso"><RouterLink v-if="page!=='login'" to="/login">Iniciar sesión</RouterLink><RouterLink v-if="page==='login'" to="/register">Crear cuenta</RouterLink><RouterLink v-if="page==='login'" to="/recover">¿Olvidaste tu contraseña?</RouterLink></nav>
-    <RouterLink to="/">Volver al catálogo</RouterLink>
+  <section class="auth-page">
+    <aside class="auth-story" aria-label="Bienvenida al espacio de propietarios">
+      <p class="eyebrow">Uspallata · Mendoza</p>
+      <span class="auth-story-mark" aria-hidden="true">⌂</span>
+      <p class="auth-story-kicker">Hospitalidad de montaña</p>
+      <p class="auth-story-quote">Un buen lugar empieza con una historia.</p>
+      <p class="auth-story-copy">Mostrá tu alojamiento, mantené la información al día y recibí consultas en un espacio sencillo.</p>
+      <span class="auth-story-line" aria-hidden="true"></span>
+    </aside>
+    <div class="auth-content card">
+      <header class="auth-heading">
+        <p class="eyebrow">{{ strategy==='ACCESS_PREVIEW'?'Acceso protegido':'Espacio del propietario' }}</p>
+        <h1>{{ heading }}</h1>
+        <p>{{ description }}</p>
+      </header>
+      <p v-if="strategy==='PASSWORD'" class="auth-local-note" role="note"><strong>Entorno local de prueba.</strong> Las cuentas y el correo son sintéticos; no se envían mensajes reales.</p>
+      <p v-if="route.query.reset" class="auth-feedback success" role="status">La contraseña fue actualizada. Iniciá sesión con la nueva contraseña.</p>
+      <p v-if="route.query.expired" class="auth-feedback error" role="alert">La sesión expiró. Ingresá nuevamente para proteger tus cambios.</p>
+      <p v-if="route.query.unavailable" class="auth-feedback error" role="alert">No pudimos verificar la sesión. Podés reintentar el ingreso.</p>
+      <p v-if="error" class="auth-feedback error" role="alert">{{ error }}</p>
+      <p v-if="notice" class="auth-feedback success" role="status">{{ notice }}</p>
+      <p v-if="strategy==='LOADING'" class="auth-loading" role="status">Preparando el ingreso…</p>
+      <button v-if="strategy==='ERROR'" type="button" class="secondary" @click="loadConfig">Reintentar</button>
+
+      <div v-if="strategy==='ACCESS_PREVIEW'&&page!=='login'" class="auth-preview-locked" role="status">
+        <h2>El alta local no está disponible en Preview</h2>
+        <p>Este entorno requiere tu identidad de Cloudflare Access. El registro y el restablecimiento por contraseña simulados solo funcionan en el entorno local.</p>
+        <RouterLink class="button-link" to="/login">Continuar con Access</RouterLink>
+      </div>
+      <form v-if="strategy==='ACCESS_PREVIEW'&&page==='login'" class="auth-form" @submit.prevent="submit" :aria-busy="loading">
+        <p>Ingresá con tu identidad autorizada. Elegir un perfil sintético habilita solamente datos de prueba del Preview.</p>
+        <fieldset :disabled="loading">
+          <legend>Perfil de demostración</legend>
+          <label class="auth-choice"><input v-model="demoRole" type="radio" name="demo-role" value="OWNER" /> Propietario</label>
+          <label class="auth-choice"><input v-model="demoRole" type="radio" name="demo-role" value="ADMIN" /> Administrador</label>
+          <button type="submit">{{ loading?'Ingresando…':demoRole==='ADMIN'?'Continuar como administrador':'Continuar como propietario' }}</button>
+        </fieldset>
+      </form>
+
+      <form v-if="strategy==='PASSWORD'&&page==='login'" class="auth-form" @submit.prevent="submit" :aria-busy="loading">
+        <fieldset :disabled="loading">
+          <label for="email">Correo electrónico</label><input id="email" v-model="email" type="email" autocomplete="email" required maxlength="254" />
+          <label for="password">Contraseña</label><input id="password" v-model="password" type="password" autocomplete="current-password" minlength="8" required />
+          <button type="submit">{{ loading ? 'Ingresando…' : 'Ingresar' }}</button>
+        </fieldset>
+      </form>
+      <form v-if="strategy==='PASSWORD'&&page==='register'" class="auth-form" @submit.prevent="submitLocalFlow" :aria-busy="loading">
+        <fieldset :disabled="loading"><label for="email">Correo de prueba</label><input id="email" v-model="email" type="email" autocomplete="email" required maxlength="254" /><label for="password">Contraseña <span>(12 caracteres como mínimo)</span></label><input id="password" v-model="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /><button type="submit">{{ loading?'Creando cuenta…':'Crear cuenta de propietario' }}</button></fieldset>
+      </form>
+      <form v-if="strategy==='PASSWORD'&&page==='verify'" class="auth-form" @submit.prevent="submitLocalFlow" :aria-busy="loading"><p>El enlace de verificación vence y se puede usar una sola vez.</p><button :disabled="loading||!route.query.token" type="submit">{{ loading?'Verificando…':'Verificar correo de prueba' }}</button></form>
+      <form v-if="strategy==='PASSWORD'&&page==='recover'" class="auth-form" @submit.prevent="submitLocalFlow" :aria-busy="loading"><fieldset :disabled="loading"><label for="email">Correo electrónico</label><input id="email" v-model="email" type="email" autocomplete="email" required maxlength="254" /><button type="submit">{{ loading?'Preparando enlace…':'Solicitar recuperación' }}</button></fieldset><p class="auth-form-hint">La respuesta es igual para cuentas existentes y direcciones desconocidas.</p></form>
+      <form v-if="strategy==='PASSWORD'&&page==='reset'" class="auth-form" @submit.prevent="submitLocalFlow" :aria-busy="loading"><fieldset :disabled="loading"><label for="password">Nueva contraseña</label><input id="password" v-model="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /><button type="submit">{{ loading?'Actualizando…':'Guardar contraseña nueva' }}</button></fieldset></form>
+
+      <div v-if="strategy==='PASSWORD'&&(page==='register'||page==='recover')" class="auth-mailbox">
+        <button type="button" class="secondary" :disabled="loading" @click="readLocalMailbox">Consultar bandeja de prueba</button>
+        <a v-if="mockMailUrl" :href="mockMailUrl">{{ page==='recover'?'Abrir enlace de recuperación':'Abrir enlace de verificación' }}</a>
+        <p>La bandeja solo existe en este proceso local y no envía correos.</p>
+      </div>
+      <nav v-if="strategy==='PASSWORD'" class="auth-links" aria-label="Opciones de cuenta">
+        <RouterLink v-if="page!=='login'" to="/login">Volver al ingreso</RouterLink>
+        <RouterLink v-if="page==='login'" to="/register">Crear cuenta</RouterLink>
+        <RouterLink v-if="page==='login'" to="/recover">¿Olvidaste la contraseña?</RouterLink>
+      </nav>
+      <RouterLink class="auth-back-link" to="/">Volver al catálogo</RouterLink>
+    </div>
   </section>
 </template>

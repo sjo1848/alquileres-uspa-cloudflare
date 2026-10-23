@@ -1,0 +1,31 @@
+{
+  "reviewer_kind": "delegated_codex_separate_process",
+  "verdict": "PASS",
+  "model_requested": "gpt-6-luna",
+  "reasoning_effort_requested": "high",
+  "cli_configuration_accepted": true,
+  "actual_backend_model_identity": "UNVERIFIED",
+  "runtime_verification_note": "Orchestrator launched `codex exec --model gpt-6-luna -c model_reasoning_effort=\"high\" --sandbox read-only --json`; CLI v0.163.0 completed exit 0 and emitted a bounded Controller verdict. The reviewer response itself could not inspect its parent command flags; exact invocation and completion are independently recorded here. No fallback or unsupported-model error appeared. The CLI did emit an unrelated warning for a stale global config key and localhost MCP transport errors after the final verdict; recorded in STDERR. All reviewer commands visible in transcript were read-only; no tests, network/GitHub, or writes were executed.",
+  "cli_version": "codex-cli 0.163.0",
+  "cli_exit_code": 0,
+  "cli_invocation": "codex exec --model gpt-6-luna -c model_reasoning_effort=\"high\" --sandbox read-only --json -C $REPO --output-last-message /tmp/i065-controller-final-report.txt - < prompt > transcript 2> stderr",
+  "session_id": "01a16657-b9cf-70d3-959c-bcb238d2e84e",
+  "artifact_sha": "308c478b016985f47f5f6e33be67afa952d8247e",
+  "artifact_tree": "7170e54dc3d72d06dcb36fc247e468d92f57a25f",
+  "canonical_base_sha": "48e4f5c4251fe939cb779698e4e51b16614be178",
+  "review_scope": "Consolidated OWNER delta ce80a9b..308c478, targeted listings/inbox and photo gallery retry behavior.",
+  "usage": {
+    "input_tokens": 229318,
+    "cached_input_tokens": 182784,
+    "output_tokens": 5083,
+    "reasoning_output_tokens": 3059
+  },
+  "test_provenance": "Controller did not rerun tests. Recorded local evidence: OWNER E2E --grep OWNER: PASS 2/2; web typecheck/build PASS on executable tree 7170e54.",
+  "finding": "P3: Retry from a failed older inbox page reloads the first page instead of retrying the failed cursor. Existing loaded rows remain visible; user can request older pages again. No P0/P1/P2 in reviewed delta.",
+  "evidence_files": [
+    "CF-AU-I06.5-CONTROLLER-308C478-PROMPT.md",
+    "CF-AU-I06.5-CONTROLLER-308C478-REPORT.md",
+    "CF-AU-I06.5-CONTROLLER-308C478-TRANSCRIPT.jsonl",
+    "CF-AU-I06.5-CONTROLLER-308C478-STDERR.txt"
+  ]
+}
