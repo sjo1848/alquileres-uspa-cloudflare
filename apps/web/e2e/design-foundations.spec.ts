@@ -47,6 +47,15 @@ test('D3.1 shared foundation preserves role navigation and responsive shell', as
       return { foreground: style.color, background: style.backgroundColor };
     });
     expect(contrastRatio(locationNote.foreground, locationNote.background), `catalog location note contrast at ${viewport.width}px`).toBeGreaterThanOrEqual(4.5);
+    const heroCopy = await page.locator('.catalog-intro-copy > p').evaluate(element => {
+      const hero = element.closest('.catalog-intro')!;
+      const gradient = getComputedStyle(hero).backgroundImage;
+      const stops = Array.from(gradient.matchAll(/rgb\([^)]*\)/g), match => match[0]);
+      return { foreground: getComputedStyle(element).color, stops, copyLayer: getComputedStyle(element.parentElement!).zIndex };
+    });
+    expect(heroCopy.copyLayer).toBe('1');
+    expect(heroCopy.stops.length).toBeGreaterThanOrEqual(3);
+    for (const stop of heroCopy.stops) expect(contrastRatio(heroCopy.foreground, stop), `catalog hero copy contrast at ${viewport.width}px over ${stop}`).toBeGreaterThanOrEqual(4.5);
     const locationInput = await page.locator('#filter-location').evaluate(element => {
       const control = getComputedStyle(element);
       return {

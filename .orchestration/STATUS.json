@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Run exact-head worker/web CI and GitHub review on the pointer checkpoint; then obtain final read-only Controller PASS, complete Pre-Critic and protected merge. Close #42 and update #25; stop before #43.",
+  "next_action": "Fix the rendered hero-copy contrast at 320px and add gradient-stop regression coverage; then refresh the canonical executable pointer and repeat exact-head CI/review/Controller before Pre-Critic and protected merge.",
   "stop_reason": null,
   "event": {
-    "seq": 204,
-    "summary": "Actualizar el puntero canónico al candidato ejecutable con todos los fixes de accesibilidad"
+    "seq": 205,
+    "summary": "Rework GitHub P2: contraste del párrafo del hero público a 320px"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "executable_sha": "f30f0e46013c182c9a2409cc7aa045b0f065f674",
-    "status": "OPEN_AWAITING_EXACT_HEAD_GATES",
+    "status": "OPEN_REWORK_MOBILE_HERO_CONTRAST",
     "executable_tree": "9e0406e3596cfd0e0e69cbcc384da29ad33dab1b"
   },
   "issue_4": "CLOSED",
@@ -80,22 +80,22 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "PR_OPEN_AWAITING_EXACT_HEAD_GATES",
+    "status": "PR_OPEN_REWORK_MOBILE_HERO_CONTRAST",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
-    "code_status": "D3.1 tokens/brand/shared responsive role shell implemented. Contrast fixes: location note 9.37:1, placeholder 5.10:1, input boundary 3.70:1, OWNER hero focus ring 3.92:1 (>=3:1 non-text). No Worker/D1/auth/permission/per-view composition changes.",
-    "next_action": "Run exact-head worker/web CI and GitHub review on the pointer checkpoint; then obtain final read-only Controller PASS, complete Pre-Critic and protected merge. Close #42 and update #25; stop before #43.",
+    "code_status": "D3.1 shared tokens, brand and responsive role shell; contrast/focus fixes now include all text/background pairs found in GitHub review. No backend, auth, permissions, routes or per-view composition refactor.",
+    "next_action": "Fix the rendered hero-copy contrast at 320px and add gradient-stop regression coverage; then refresh the canonical executable pointer and repeat exact-head CI/review/Controller before Pre-Critic and protected merge.",
     "local_checks": {
-      "web_typecheck": "PASS on executable commit f30f0e46013c182c9a2409cc7aa045b0f065f674",
+      "web_typecheck": "PASS after all consolidated contrast/focus fixes",
       "web_build": "PASS standard and build:preview on f30f0e46013c182c9a2409cc7aa045b0f065f674; build only, no deploy",
-      "playwright_foundations": "PASS 1/1 integrated Worker/Hono + synthetic D1 on f30f0e46013c182c9a2409cc7aa045b0f065f674; actual contrasts: note 9.37:1, placeholder 5.10:1, boundary 3.70:1, OWNER hero focus 3.92:1; 1440/390/320 captures",
+      "playwright_foundations": "PASS 1/1 integrated Worker/Hono + synthetic D1. Rendered contrast: hero copy minimum 5.06:1 across gradient stops; location note 9.37:1; placeholder 5.10:1; field boundary 3.70:1; OWNER hero focus 3.92:1. 1440/390/320 captures refreshed.",
       "playwright_public": "PASS: 4/4 existing public journey tests on final visual code",
       "playwright_owner": "PASS: 3/3 existing OWNER journey tests on final visual code",
-      "orchestration_validator": "PASS on code checkpoint f30f0e4; rerun after pointer checkpoint.",
-      "git_diff_check": "PASS on code checkpoint f30f0e4; rerun after pointer checkpoint.",
-      "github_checks": "Prior 8bfebaa run 39995445561 worker/web PASS; new exact pointer checkpoint requires fresh checks.",
-      "github_review": "Review 8bfebaa completed with findings 4362441626/4362442961/4362441631/4362442976/4362442984; all corrected on executable f30f0e4, replies/resolution pending; review final pointer checkpoint pending.",
+      "orchestration_validator": "PASS after Event 205 updates against origin/main",
+      "git_diff_check": "PASS after Event 205 updates",
+      "github_checks": "Prior fdb950f checks run 39997029603 worker/web PASS; new CSS/test delta requires exact-head CI.",
+      "github_review": "Review on fdb950f P2 4362543307 addressed with darker endpoint #4d5db8, text layer above pseudo decoration, and stop-by-stop Playwright assertion; reply/resolution pending.",
       "controller": "REWORK on ce9efa2 resolved; final exact-head Controller review pending."
     },
     "code_sha": "f30f0e46013c182c9a2409cc7aa045b0f065f674",

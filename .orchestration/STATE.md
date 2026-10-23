@@ -1627,3 +1627,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Código y regresiones consolidados en `f30f0e46013c182c9a2409cc7aa045b0f065f674`, tree `9e0406e3596cfd0e0e69cbcc384da29ad33dab1b`. `pull_request.executable_sha`, `current_functional_increment.code_sha` y tree mirrors actualizados a ese artefacto; no hay cambios ejecutables posteriores en este checkpoint.
 - Contrastes/regresiones pasan localmente: typecheck/build/build:preview; Playwright fundamentos 1/1 con placeholder 5.10:1, límite del control 3.70:1, ubicación 9.37:1 y foco OWNER 3.92:1. Capturas locales en `output/playwright/i06.6-p1/`.
 - **READY_TO_RESUME:** responder y resolver P2 `4362441626`, `4362442961`, `4362441631`, `4362442976`, `4362442984`; ejecutar CI/review exactos del checkpoint, Controller final PASS y Pre-Critic. Merge protegido después de todos los gates; cerrar #42/actualizar #25 y detener antes de #43.
+
+
+## Event 205 — rework de contraste del texto mobile del hero
+
+- Review GitHub exact-head de `fdb950f7918698b7b6bf3e0f0220c0a38c2231e5` encontró P2 `4362543307`: párrafo público normal-size con 4.2–4.4:1 sobre zonas claras del gradiente a 320px.
+- Se oscurece el extremo del gradiente a `#4d5db8` (párrafo `#f0eee5`: mínimo 5.06:1) y se posiciona la copia sobre la decoración; Playwright inspecciona el gradiente renderizado y exige >=4.5:1 contra cada color stop en desktop/390/320. Typecheck y E2E integrado 1/1 pasan; capturas regeneradas.
+- **READY_TO_RESUME:** ejecutar typecheck/build/E2E, actualizar capturas y puntero ejecutable, responder/resolver P2; repetir checks/review exactos y Controller final antes de Pre-Critic y merge protegido. Cerrar #42 y actualizar #25, detener antes de #43.
