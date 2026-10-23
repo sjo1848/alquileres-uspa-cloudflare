@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Publish the consolidated canonical correction; rerun exact-head worker/web and automated review, then obtain final read-only Controller PASS and complete Pre-Critic before protected merge. Close #42 and update #25 after integration; stop before #43.",
+  "next_action": "Wait for exact-head worker/web checks and GitHub review on the contrast-corrected candidate; then obtain a final read-only Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25 after integration; stop before #43.",
   "stop_reason": null,
   "event": {
-    "seq": 201,
-    "summary": "Rework P2 GitHub: avanzar next_action y desambiguar secuencia de eventos"
+    "seq": 202,
+    "summary": "Rework GitHub P2: contraste del texto de ubicación en el hero público"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "executable_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
-    "status": "OPEN_REWORK_CANONICAL_GATES"
+    "status": "OPEN_AWAITING_EXACT_REVIEW_AFTER_CONTRAST_FIX"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -79,23 +79,23 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "PR_OPEN_REWORK_CANONICAL_GATES",
+    "status": "PR_OPEN_AWAITING_EXACT_REVIEW_AFTER_CONTRAST_FIX",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
     "code_status": "D3.1 shared tokens, mountain wordmark, role/session-aware responsive shell and shared control/surface/status primitives implemented. No Worker/D1/auth/permission or per-view layout changes.",
-    "next_action": "Publish the consolidated canonical correction; rerun exact-head worker/web and automated review, then obtain final read-only Controller PASS and complete Pre-Critic before protected merge. Close #42 and update #25 after integration; stop before #43.",
+    "next_action": "Wait for exact-head worker/web checks and GitHub review on the contrast-corrected candidate; then obtain a final read-only Controller PASS, complete Pre-Critic and merge protected. Close #42 and update #25 after integration; stop before #43.",
     "local_checks": {
-      "web_typecheck": "PASS",
+      "web_typecheck": "PASS after hero-note contrast repair",
       "web_build": "PASS: standard and build:preview; build-only, no deploy",
-      "playwright_foundations": "PASS: 1 integrated test on local Workerd+D1 synthetic; visitor/OWNER/ADMIN at 1440,390,320; role nav, keyboard focus, contrast, reduced motion, overflow; screenshots output/playwright/i06.6-p1/",
+      "playwright_foundations": "PASS: integrated Worker/Hono + synthetic D1; 1/1 after contrast regression for location note at 1440,390,320; screenshots refreshed in output/playwright/i06.6-p1/",
       "playwright_public": "PASS: 4/4 existing public journey tests on final visual code",
       "playwright_owner": "PASS: 3/3 existing OWNER journey tests on final visual code",
-      "orchestration_validator": "PASS against origin/main",
-      "git_diff_check": "PASS",
-      "github_checks": "PASS exact candidate ce9efa206710facb9514f76b5beb894118acccab; run 39993765542. New canonical-gate checkpoint requires exact-head checks.",
-      "github_review": "Completed on ce9efa2 with two P2 status findings 4362325526/4362325536; both corrected in this checkpoint and threads answered/resolved. New exact-head review pending.",
-      "controller": "Delegated GPT-6 Luna High read-only separate process returned REWORK on ce9efa2 for stale canonical next_action/gate statuses; no code P0/P1/P2. Correction in this checkpoint; final exact-head Controller required."
+      "orchestration_validator": "PASS against origin/main after hero-note fix",
+      "git_diff_check": "PASS after hero-note fix",
+      "github_checks": "Prior 3baaaa2 run 39994569930 worker/web PASS. Contrast correction typecheck and Playwright PASS locally; fresh exact-head CI pending.",
+      "github_review": "Completed on 3baaaa2, P2 4362381543 fixed and thread resolved in comment 4362398134; final exact-head review pending.",
+      "controller": "REWORK on ce9efa2 canonical findings corrected and persisted; final Controller review required on consolidated candidate."
     },
     "code_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
     "code_tree": "2beb658426f94a46a3619d7df197f9bc5bb903d1",

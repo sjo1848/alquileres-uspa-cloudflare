@@ -1605,3 +1605,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Se avanza `next_action` al control exact-head posterior y se restaura unicidad de la secuencia: Event 199 documenta el rework previo, Event 200 la corrección histórica PR #40 e I06.5, Event 201 este rework.
 - Controller GPT-6 Luna/High read-only, separado, sobre `ce9efa2` devolvió **REWORK** por next_action/gate fields aún stale en el HEAD inspeccionado; no encontró defectos P0/P1/P2 de implementación. Informe/provenance: `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-CE9EFA2-REWORK.*`. Este checkpoint corrige también el hallazgo del Controller y requiere revisión nueva exact-head.
 - **READY_TO_RESUME:** publicar este checkpoint, responder/resolver ambos hallazgos y repetir checks/review exact-head; obtener Controller PASS y aplicar Pre-Critic antes del merge protegido. Cerrar #42 y actualizar #25, detener antes de #43.
+
+
+## Event 202 — rework de contraste del hero de catálogo
+
+- La revisión GitHub automática de `3baaaa21ae75a1f878e1cc9fbcc895c712fb5e5b` encontró P2 `4362381543`: el texto `.catalog-intro-note` sobre el gradiente del hero medía aproximadamente 3.8:1 en desktop.
+- El P2 se corrige con superficie sólida oscura `#273584` para la nota, sin alterar la composición del catálogo. Playwright añade cálculo WCAG AA del texto `#f0eee5` sobre la superficie en los viewports 1440, 390 y 320; contraste calculado 9.37:1. Typecheck y E2E de fundamentos 1/1 PASS; se regeneraron las tres capturas públicas.
+- Typecheck y Playwright integrado de fundamentos pasan sobre el rework: 1/1 con verificación de contraste de nota en 1440/390/320 y capturas regeneradas. La respuesta al hallazgo es PR comment `4362398134` y su thread está resuelto.
+- **READY_TO_RESUME:** esperar CI/review exact-head, ejecutar Controller final y Pre-Critic; merge protegido solo con gates en PASS. Cerrar #42 y actualizar #25, detener antes de #43.

@@ -42,6 +42,11 @@ test('D3.1 shared foundation preserves role navigation and responsive shell', as
     expect(contrastRatio(palette['--color-forest'], palette['--color-canvas'])).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(palette['--color-muted'], palette['--color-canvas'])).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(palette['--color-paper'], palette['--color-clay'])).toBeGreaterThanOrEqual(4.5);
+    const locationNote = await page.locator('.catalog-intro-note').evaluate(element => {
+      const style = getComputedStyle(element);
+      return { foreground: style.color, background: style.backgroundColor };
+    });
+    expect(contrastRatio(locationNote.foreground, locationNote.background), `catalog location note contrast at ${viewport.width}px`).toBeGreaterThanOrEqual(4.5);
     await page.screenshot({ path: `../../output/playwright/i06.6-p1/catalog-${viewport.name}.png`, fullPage: viewport.width === 1440 });
 
     if (viewport.width <= 768) {
