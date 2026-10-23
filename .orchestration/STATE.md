@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_TO_RESUME`
-Phase: `CF_AU_I06_5_OWNER_AUTH`
-Active task: `CF-AU-I06.5 — Rediseño de identidad y panel OWNER`
+State: `IN_PROGRESS`
+Phase: `CF_AU_I06_6_P1_D31_FOUNDATIONS`
+Active task: `CF-AU-I06.6-P1 — Fundamentos visuales D3.1 (Issue #42)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1564,3 +1564,13 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Quick CI worker/web PASS on exact checkpoint ec57ef5, run `39883656818`. State validator and `git diff --check` PASS. Controller exact-delta PASS on executable 308c478; one nonblocking P3 inbox pagination retry follow-up, no P0/P1/P2.
 - Branch protection observed: strict `worker`,`web`; enforce-admins enabled; PR review rule enabled with 0 required approvals; no push restrictions. PR is mergeable and merge state CLEAN.
 - **Pre-Critic: PENDING on the final canonical evidence checkpoint until worker/web and automatic review are complete.** Controller PASS applies to unchanged executable candidate 308c478. The final evidence checkpoint must remain docs/state-only; no Controller or long-suite rerun is needed unless executable content changes. No code changes remain. If final docs-only checkpoint repeats findings, verify whether substantive and resolve with existing evidence; do not rerun Controller or full suites absent executable change. After protected merge, close #32/#36, update #25, and stop before #33/I06.6. No Preview or production action.
+
+## Event 197 — inicio de I06.6-P1 / Issue #42
+
+- Estado reconstruido desde GitHub: `main@b901b444b5819c1861cdfdf164d33e7ce92dff0e`; PR #40 está integrado. El state previo seguía mostrando PR #40 abierto/I06.5 y se reconcilia en este cambio funcional, no en un PR documental.
+- Issue #42 autoriza exclusivamente los fundamentos D3.1 (tokens, tipografía, marca, shell/nav responsive y primitivos compartidos). Catálogo, OWNER y ADMIN conservan composición, lógica, permisos, APIs y seguridad; no hay Preview ni producción.
+- Contrato activo: `.orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md`; branch `work/i06-d31-foundations`; base exacta `b901b444b5819c1861cdfdf164d33e7ce92dff0e`.
+- La implementación y QA de Issue #42 siguen IN_PROGRESS; aún no se afirma PASS de pruebas, Controller, review GitHub ni merge.
+- **READY_TO_RESUME:** terminar fundamentos compartidos, verificar captura/runtime y validaciones del contrato, completar reviews exactos, integrar por merge protegido, actualizar #42/#25 y detener antes de #43.
+- QA local final: Web typecheck, standard/build:preview compilations, foundations Playwright 1/1, public E2E 4/4, OWNER E2E 3/3, contrast + reduced-motion assertions, consistency validator and whitespace PASS. Evidence/capturas: `output/playwright/i06.6-p1/QA.md`.
+- CI exact PR head, GitHub review, Controller y Pre-Critic final siguen PENDIENTES; no se reclama PASS de revisión ni merge.
