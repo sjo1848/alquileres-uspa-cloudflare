@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Wait for worker/web CI and automated GitHub review on PR #45 exact current HEAD; process all actionable findings, then run one read-only project_controller GPT-6 Luna High review, complete Pre-Critic and protected merge only after all required controls pass. Close #42/update #25, then stop before #43.",
+  "next_action": "Push the consolidated screenshot/test/status rework, resolve GitHub P2 4362195163 with evidence, wait for exact-head worker/web CI and automated review, then obtain one final read-only Controller review with the raw GitHub status evidence supplied to its sandbox. Complete Pre-Critic and protected merge only after all gates pass.",
   "stop_reason": null,
   "event": {
-    "seq": 198,
-    "summary": "PR #45 publicado; revisión exact-head pendiente"
+    "seq": 199,
+    "summary": "Rework P2 #45: nested exact-head gates; improve mobile capture and semantic contrast QA"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "executable_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
-    "status": "OPEN_AWAITING_EXACT_HEAD_GATES"
+    "status": "OPEN_REWORK_GITHUB_STATUS_SYNC"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -79,12 +79,12 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "PR_OPEN_AWAITING_CHECKS_REVIEW_CONTROLLER",
+    "status": "PR_OPEN_REWORK_GITHUB_STATUS_SYNC",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
     "code_status": "D3.1 shared tokens, mountain wordmark, role/session-aware responsive shell and shared control/surface/status primitives implemented. No Worker/D1/auth/permission or per-view layout changes.",
-    "next_action": "Wait for worker/web CI and automated GitHub review on PR #45 exact current HEAD; process all actionable findings, then run one read-only project_controller GPT-6 Luna High review, complete Pre-Critic and protected merge only after all required controls pass. Close #42/update #25, then stop before #43.",
+    "next_action": "Push the consolidated screenshot/test/status rework, resolve GitHub P2 4362195163 with evidence, wait for exact-head worker/web CI and automated review, then obtain one final read-only Controller review with the raw GitHub status evidence supplied to its sandbox. Complete Pre-Critic and protected merge only after all gates pass.",
     "local_checks": {
       "web_typecheck": "PASS",
       "web_build": "PASS: standard and build:preview; build-only, no deploy",
@@ -93,9 +93,9 @@
       "playwright_owner": "PASS: 3/3 existing OWNER journey tests on final visual code",
       "orchestration_validator": "PASS against origin/main",
       "git_diff_check": "PASS",
-      "github_checks": "PENDING_PR",
-      "github_review": "PENDING_PR",
-      "controller": "PENDING_EXACT_PR_HEAD"
+      "github_checks": "PASS exact prior HEAD edc629390b8fe3f058fd94f6f12312a60e870b21; run 39991453269. New status/evidence checkpoint requires exact-head checks.",
+      "github_review": "Automated review completed on edc629; P2 4362195163 found nested gate fields stale. Corrected in this checkpoint; final exact-head review pending.",
+      "controller": "Previous exact edc629 review returned BLOCKED because reviewer process could not reach GitHub API; no code P0/P1/P2. Fresh controller required with parent-captured exact-head review evidence."
     },
     "code_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
     "code_tree": "2beb658426f94a46a3619d7df197f9bc5bb903d1",
@@ -936,5 +936,19 @@
     "candidate_tree_sha": "7170e54dc3d72d06dcb36fc247e468d92f57a25f",
     "github_checks": "PENDING for candidate 308c478; prior state checkpoint 8176e62 worker/web PASS but predates this functional delta.",
     "github_automatic_review": "Completed on checkpoint ec57ef5. Two P2 findings already covered by candidate code and E2E; evidence replies posted and threads resolved. Six stale outdated threads also resolved. No unresolved review conversations."
+  },
+  "controller_history_i06_6_edc629": {
+    "artifact_sha": "edc629390b8fe3f058fd94f6f12312a60e870b21",
+    "reviewer_kind": "delegated_codex_separate_process",
+    "model_requested": "gpt-6-luna",
+    "reasoning_effort_requested": "high",
+    "sandbox_requested": "read-only",
+    "actual_runtime_model_evidence": "unverified",
+    "verdict": "BLOCKED",
+    "report": ".orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-EDC629-BLOCKED.json",
+    "reason": "separate reviewer sandbox could not connect to api.github.com; parent had CI PASS and GitHub automatic review returned P2 canonical state mismatch. No implementation P0/P1/P2 defects reported. Re-review after exact-head evidence and canonical status fix.",
+    "evidence": ".orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-EDC629-BLOCKED.md",
+    "github_followup_comment": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/45#discussion_r4362236110",
+    "github_thread_status": "resolved"
   }
 }

@@ -16,7 +16,9 @@ async function expectNoHorizontalOverflow(page: import('@playwright/test').Page)
 
 function contrastRatio(foreground: string, background: string) {
   const luminance = (color: string) => {
-    const channels = color.match(/[\da-f]{2}/gi)!.slice(0, 3).map(value => parseInt(value, 16) / 255);
+    const channels = color.startsWith('rgb')
+      ? color.match(/[\d.]+/g)!.slice(0, 3).map(value => Number(value) / 255)
+      : color.match(/[\da-f]{2}/gi)!.slice(0, 3).map(value => parseInt(value, 16) / 255);
     const linear = channels.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
     return .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
   };
@@ -75,13 +77,27 @@ test('D3.1 shared foundation preserves role navigation and responsive shell', as
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.waitForURL('**/owner');
   await expect(page.getByText('Cargando tus alojamientos…')).toBeHidden();
+  const statusColors = await page.evaluate(() => {
+    const dashboard = document.querySelector('.owner-dashboard')!;
+    const samples = ['draft', 'submitted', 'rejected', 'approved'].map(status => {
+      const chip = document.createElement('span');
+      chip.className = `owner-status is-${status}`;
+      dashboard.append(chip);
+      const style = getComputedStyle(chip);
+      const colors = { foreground: style.color, background: style.backgroundColor };
+      chip.remove();
+      return colors;
+    });
+    return samples;
+  });
+  for (const colors of statusColors) expect(contrastRatio(colors.foreground, colors.background)).toBeGreaterThanOrEqual(4.5);
   for (const viewport of sizes) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({ path: `../../output/playwright/i06.6-p1/owner-${viewport.name}.png`, fullPage: viewport.width === 1440 });
     if (viewport.width <= 768) await page.getByRole('button', { name: 'Abrir menú' }).click();
     await expect(page.getByRole('link', { name: 'Mis publicaciones' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Revisión', exact: true })).toHaveCount(0);
-    await expectNoHorizontalOverflow(page);
-    await page.screenshot({ path: `../../output/playwright/i06.6-p1/owner-${viewport.name}.png`, fullPage: viewport.width === 1440 });
     if (viewport.width <= 768) await page.getByRole('button', { name: 'Cerrar menú' }).click();
   }
 
@@ -94,12 +110,12 @@ test('D3.1 shared foundation preserves role navigation and responsive shell', as
   await expect(page.getByText('Cargando publicaciones…')).toBeHidden();
   for (const viewport of sizes) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({ path: `../../output/playwright/i06.6-p1/admin-${viewport.name}.png`, fullPage: viewport.width === 1440 });
     if (viewport.width <= 768) await page.getByRole('button', { name: 'Abrir menú' }).click();
     await expect(page.getByRole('link', { name: 'Revisión', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Gestión asistida' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Mis publicaciones' })).toHaveCount(0);
-    await expectNoHorizontalOverflow(page);
-    await page.screenshot({ path: `../../output/playwright/i06.6-p1/admin-${viewport.name}.png`, fullPage: viewport.width === 1440 });
     if (viewport.width <= 768) await page.getByRole('button', { name: 'Cerrar menú' }).click();
   }
 });
