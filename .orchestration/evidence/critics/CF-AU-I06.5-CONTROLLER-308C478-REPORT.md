@@ -1,0 +1,15 @@
+## Verdict: PASS
+
+**Scope:** Consolidated OWNER delta from `ce80a9b4facdec5a82d7a43fd133709e3d6fce0c` to candidate `308c478b016985f47f5f6e33be67afa952d8247e`, tree `7170e54dc3d72d06dcb36fc247e468d92f57a25f`; canonical base `48e4f5c4251fe939cb779698e4e51b16614be178`.
+
+**Prior P2 findings are closed.** A failed listings request now gets its own alert and retry; it cannot show the first-inventory empty state, and the new-draft action is disabled while inventory is unknown. A failed inbox request likewise cannot show the genuine empty-inbox state. On failed refreshes, existing listings and contacts remain in memory and visible. The new E2E scenario injects one 503 for each GET, checks the false empty states are absent, then verifies retries recover listings and the genuinely empty inbox ([OwnerView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/OwnerView.vue:132), [E2E](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/e2e/owner-journey.spec.ts:116)).
+
+**Image behavior remains intact.** An image-list error suppresses the empty-gallery state and file upload, shows “No disponible,” and offers retry. The request-version and selected-listing checks prevent a delayed response from the prior selection from replacing the current gallery; the existing E2E covers both the 503/retry and pending-response selection change ([OwnerView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/OwnerView.vue:115), [gallery template](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/OwnerView.vue:369), [E2E](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/e2e/owner-journey.spec.ts:157)).
+
+**Finding — P3, non-blocking:** If loading an older inbox page fails, the alert’s retry button calls `loadContacts()` without the failed cursor. It reloads the first page instead of retrying that older page; already loaded contacts remain visible, and the user can request older pages again ([OwnerView.vue](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/OwnerView.vue:249), [retry button](/home/sjo1848/dev/alquileres-uspa-cloudflare/apps/web/src/views/OwnerView.vue:406)). No P0, P1, or P2 finding in the reviewed delta.
+
+**Review provenance:** `reviewer_kind=delegated_codex_separate_process`; `model_requested=gpt-6-luna`; `effort_requested=high`; actual backend model identity **UNVERIFIED**. `codex --version` reported `0.163.0`; this review environment was read-only, but I could not verify separate-process CLI model/effort flags. No files were edited and no tests were run.
+
+**Test provenance (recorded, not independently reproduced):** OWNER E2E `--grep 'OWNER:'` PASS 2/2 against local synthetic Vue + Worker/Hono + Workerd + D1; web typecheck/build PASS, per [STATE.md](/home/sjo1848/dev/alquileres-uspa-cloudflare/.orchestration/STATE.md:1553). Main CI for this candidate remains pending per [STATUS.json](/home/sjo1848/dev/alquileres-uspa-cloudflare/.orchestration/STATUS.json:122).
+
+This is a local technical PASS only, not protected release approval.
