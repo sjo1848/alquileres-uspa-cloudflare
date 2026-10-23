@@ -3,7 +3,7 @@
 - **Issue:** [#42](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42)
 - **Base canónica:** `main@b901b444b5819c1861cdfdf164d33e7ce92dff0e`
 - **Dirección aprobada:** D3.1, Issue #41; prototipo inmutable en `77c99fa445171a58548e6e06497050bf2d923305`.
-- **Estado:** IN_PROGRESS en `work/i06-d31-foundations`.
+- **Estado:** PR #45 abierto; espera checks/revisión exact-head en `work/i06-d31-foundations`.
 
 ## Alcance
 

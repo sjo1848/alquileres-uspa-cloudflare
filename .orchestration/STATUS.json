@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.5 — autenticación y experiencia OWNER; PR #40 integrado",
   "last_completed_head": "main@b901b444b5819c1861cdfdf164d33e7ce92dff0e",
   "work_branch": "work/i06-d31-foundations",
-  "next_action": "Publish the consolidated Issue #42 functional candidate and evidence, process exact-head GitHub worker/web checks and review, obtain one read-only Controller review, then merge protected only after all controls pass; close/update tracking and stop before #43.",
+  "next_action": "Wait for worker/web CI and automated GitHub review on PR #45 exact current HEAD; process all actionable findings, then run one read-only project_controller GPT-6 Luna High review, complete Pre-Critic and protected merge only after all required controls pass. Close #42/update #25, then stop before #43.",
   "stop_reason": null,
   "event": {
-    "seq": 197,
-    "summary": "Inicio de CF-AU-I06.6-P1: fundamentos visuales D3.1, Issue #42"
+    "seq": 198,
+    "summary": "PR #45 publicado; revisión exact-head pendiente"
   },
   "external_review": null,
   "human_gate": {
@@ -23,12 +23,12 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "url": null,
+    "number": 45,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/45",
     "branch": "work/i06-d31-foundations",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
-    "executable_sha": null,
-    "status": "READY_FOR_PR"
+    "executable_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
+    "status": "OPEN_AWAITING_EXACT_HEAD_GATES"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -79,12 +79,12 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/42",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P1-D31-FOUNDATIONS.md",
-    "status": "IN_PROGRESS",
+    "status": "PR_OPEN_AWAITING_CHECKS_REVIEW_CONTROLLER",
     "base_sha": "b901b444b5819c1861cdfdf164d33e7ce92dff0e",
     "branch": "work/i06-d31-foundations",
     "scope": "D3.1 tokens, brand, responsive role-aware shell/navigation and shared visual primitives only. Preserve all public/OWNER/ADMIN compositions, Worker/D1 APIs, auth and permissions. No Preview/production.",
     "code_status": "D3.1 shared tokens, mountain wordmark, role/session-aware responsive shell and shared control/surface/status primitives implemented. No Worker/D1/auth/permission or per-view layout changes.",
-    "next_action": "Commit/publish functional PR linked to #42, run exact-head worker/web CI and one GitHub review, then delegated GPT-6 Luna High read-only Controller; resolve any findings, apply final Pre-Critic and protected merge; close #42/update #25 and stop before #43.",
+    "next_action": "Wait for worker/web CI and automated GitHub review on PR #45 exact current HEAD; process all actionable findings, then run one read-only project_controller GPT-6 Luna High review, complete Pre-Critic and protected merge only after all required controls pass. Close #42/update #25, then stop before #43.",
     "local_checks": {
       "web_typecheck": "PASS",
       "web_build": "PASS: standard and build:preview; build-only, no deploy",
@@ -96,7 +96,12 @@
       "github_checks": "PENDING_PR",
       "github_review": "PENDING_PR",
       "controller": "PENDING_EXACT_PR_HEAD"
-    }
+    },
+    "code_sha": "efaca9c8dbb9fb31ddc336c9e257f5d0912b9e76",
+    "code_tree": "2beb658426f94a46a3619d7df197f9bc5bb903d1",
+    "github_checks": "PENDING_EXACT_HEAD",
+    "github_review": "PENDING_EXACT_HEAD",
+    "controller": "PENDING_EXACT_HEAD"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
