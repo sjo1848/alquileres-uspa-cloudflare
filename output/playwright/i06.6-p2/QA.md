@@ -30,4 +30,6 @@ La imagen roja de la captura de P1 era el fixture sintético OWNER `owner-approv
 
 ## Estado de revisiones
 
-Este archivo registra evidencia local. Checks GitHub, revisión automática, Controller read-only sobre SHA exacto, Pre-Critic y merge protegido quedan pendientes hasta que exista el candidato publicado. No representa aprobación de esas etapas.
+El Codex Review de PR #46 identificó P2 [4365552637](https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46#discussion_r4365552637): el CTA mobile actualizaba el hash, pero `scrollBehavior` forzaba `top: 0`, impidiendo llegar al formulario. Se corrigió el router para resolver `to.hash` al elemento con scroll inmediato y conservar la posición histórica; la regresión Playwright ahora verifica hash, aumento real de `scrollY` y que el formulario aparezca cerca del viewport. La ejecución focalizada `ficha y consulta` pasó 1/1; la suite completa se repite en el candidato final.
+
+Este archivo registra evidencia local. Los checks/review exact-head, Controller read-only final, Pre-Critic y merge protegido deben corresponder al último SHA publicado. No representa aprobación de esas etapas.

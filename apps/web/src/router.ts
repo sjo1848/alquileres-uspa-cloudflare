@@ -22,7 +22,11 @@ export const router = createRouter({
     { path: '/admin-assist', component: AdminAssistView, meta: { requiresAuth:true, role:'ADMIN' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior: (to, _from, savedPosition) => {
+    if (savedPosition) return savedPosition;
+    if (to.hash) return { el: to.hash, top: 12, behavior: 'auto' };
+    return { top: 0 };
+  },
 });
 setSessionExpiredHandler(()=>{
   const current=router.currentRoute.value;

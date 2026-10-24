@@ -200,6 +200,11 @@ test('ficha y consulta: D1 real local, reintento idempotente y regresión mobile
   await capture(page, 'listing-contact-desktop-1440x1000.png');
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('link', { name: /Consultar este alojamiento/ })).toBeVisible();
+  const scrollBeforeContact = await page.evaluate(() => window.scrollY);
+  await page.getByRole('link', { name: /Consultar este alojamiento/ }).click();
+  await expect(page).toHaveURL(/#contact-form$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(scrollBeforeContact);
+  await expect.poll(() => page.locator('#contact-form').evaluate(element => element.getBoundingClientRect().top)).toBeLessThan(220);
   await capture(page, 'listing-contact-mobile-390x844.png');
 
   for (const width of [390, 320]) {
