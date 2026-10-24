@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I06_6_P1_D31_FOUNDATIONS`
-Active task: `CF-AU-I06.6-P1 — Fundamentos visuales D3.1 (Issue #42)`
+Phase: `CF_AU_I06_6_P2_PUBLIC_CATALOG_D31`
+Active task: `CF-AU-I06.6-P2 — Catálogo, ficha y consulta pública D3.1 (Issue #43)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1657,3 +1657,62 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Reporte/provenance completa del Controller: `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-82EDF-REWORK.md`. Invocación solicitada `gpt-6-luna`/High/solo lectura; valores runtime observados no expuestos, backend UNVERIFIED. Proceso separado `codex exec`, CLI exit 0; no es subagente nativo ni revisor externo autenticado.
 - El presente commit corrige el registro y crea un checkpoint nuevo. Debe pasar worker/web, review automática exact-head y Controller final sobre el SHA exacto antes del Pre-Critic y del merge protegido. Protección observada: checks estrictos `worker`/`web`, `enforce_admins=true`, aprobaciones requeridas 0; revalidar antes del merge.
 - **READY_TO_RESUME:** verificar el validador y el nuevo HEAD, esperar sus checks y review; atender hallazgos materiales; solicitar el Controller final con el snapshot GitHub capturado por el proceso padre; aplicar Pre-Critic, integrar mediante protección, cerrar #42 y actualizar #25. Detenerse antes de #43. No Preview ni producción.
+
+
+## Event 209 — inicio de I06.6-P2 público D3.1
+
+- Estado reconstruido desde GitHub: `main@639ba0eacb02be6ed96f6ba8746959c792d57e48`, PR #45 integrado y #42 cerrado. El P1 quedó en dirección visual D3.1 aprobada; el checkpoint postmerge y su evidencia están referenciados en `STATUS.json` y en el cierre de #42.
+- Se autoriza exclusivamente Issue #43: catálogo → ficha → consulta pública. Task Contract: `.orchestration/contracts/CF-AU-I06.6-P2-PUBLIC-CATALOG-D31.md`. Branch `work/i06-d31-public-catalog`; base exacta `639ba0eacb02be6ed96f6ba8746959c792d57e48`. D3.1 de #41/commit `77c99fa445171a58548e6e06497050bf2d923305` reemplaza C (#29) como dirección vigente; el veredicto C queda preservado en el campo de historia de `STATUS.json`.
+- Se conserva la semántica/API pública, filtros/paginación, rutas de imagen Static Assets/D1 BLOB, disponibilidad/frescura, timestamp y POST de consulta idempotente. No se implementan funciones inexistentes ni se modifican OWNER/ADMIN, Preview, producción, R2, coste, datos reales o repo fuente.
+- Baseline público integrado PASS 4/4 en la base, Vue + Worker/Hono + D1 local sintética. Capturas anteriores para comparación: `output/playwright/i06.6-p2/before/` (catálogo y ficha/contacto a 1440, 390 y 320 px).
+- Investigación del bloque rojo P1: el screenshot público se ejecutó con el seed OWNER D1_BLOB; `owner-approved-photo` incluye un BLOB PNG sintético rojo de 48×48 en posición 0 y un SVG estático también en posición 0. El API combina las filas y, al desempatar por ID, el BLOB de prueba queda primero. El fixture rojo se usa intencionalmente en tests OWNER; esto no demuestra una falla de Static Assets ni de imágenes de una ficha real. El seed público usa WebP sintéticos distintos y el baseline decodificó sus imágenes. Este hallazgo queda clasificado como artefacto de fixture QA, sujeto a regresión con los datos públicos del contrato.
+- **READY_TO_RESUME:** ajustar composición de catálogo/ficha y manejo de fallos/ausencia de imágenes con datos API reales, resolver moneda/formato de precio y consulta mobile sin cambio de contrato; ejecutar Playwright integrado con D1 local, capturas comparativas 1440/390/320, typecheck/build, CI, review GitHub y Controller delegado exactos; hacer merge protegido, cerrar #43, actualizar #25 y detenerse antes de #44/#33.
+
+
+## Event 210 — implementación y QA local consolidado de I06.6-P2
+
+- Sobre base autorizada `639ba0eacb02be6ed96f6ba8746959c792d57e48` se completó la composición D3.1 de `HomeView` y `ListingView` con CSS responsive. Conserva APIs, rutas/permisos de imágenes, filtros/paginación, disponibilidad/frescura/confirmación y POST de contacto idempotente. No cambió Worker/Hono ni autenticación/OWNER/ADMIN. Precio muestra código ISO una vez y periodicidad API; ficha promueve la siguiente imagen utilizable y presenta fallback diferente para ausencia y fallo; se añadió CTA al formulario existente.
+- Capturas locales antes/después en `output/playwright/i06.6-p2/{before,after}/`, 1440×1000, 390×844 y 320×844. QA comparativa y diagnóstico del fixture rojo P1: `output/playwright/i06.6-p2/QA.md`. El rojo era PNG sintético de 48×48 del seed OWNER D1_BLOB, no falla de Static Assets; seed público sintético distinto decodifica.
+- Playwright público sobre Vue + Vite, Worker/Hono y D1 local real: **4/4 PASS**; cubre filtros, paging, carga/error/vacío/reintento, fallbacks de imagen, teclado/foco, contraste, reduced motion, overflow 320px, regresión #35 y contacto D1 `201` con clave idempotente estable tras reintento. Capturas after generadas en esta ejecución.
+- Matriz Worker de Quick checks: typecheck y ocho grupos PASS, 71 tests; `npm run typecheck`, `build` y `build:preview` web PASS; `scripts/tests` Python 25/25 PASS; validador consistency `--base origin/main` y `git diff --check` PASS. El primer diagnóstico E2E encontró que la grilla desktop del buscador había quedado aplicada a mobile; se corrigió y la suite final confirma ancho documental dentro de 320px.
+- Estado de revisiones remotas: pendiente (aún no hay commit/PR). No afirmar CI GitHub, Codex Review, Controller ni Pre-Critic.
+- **READY_TO_RESUME:** finalizar el build local iniciado después del último ajuste visual; publicar branch/PR funcional de #43, completar CI worker/web y revisión automática exact-head, corregir hallazgos materiales, ejecutar Controller separado GPT-6 Luna High read-only y Pre-Critic, integrar con protección, cerrar #43 y actualizar #25; detenerse antes de #44/#33.
+
+
+## Event 211 — PR funcional #46 publicado
+
+- Candidato ejecutable publicado: commit `92195ca856d7752379257e876132dd4839447058`, tree `805aaeed939ff688fcddc19bbc54ade1afe6c4dc`, PR #46 (`work/i06-d31-public-catalog` → `main`), base `639ba0eacb02be6ed96f6ba8746959c792d57e48`. El checkpoint de estado de PR se reconcilia en este mismo PR funcional; la revisión deberá evaluar el HEAD posterior exacto.
+- Los resultados locales y las capturas comparativas están en Event 210 y `output/playwright/i06.6-p2/QA.md`. Los controles GitHub exact-head y la revisión automática aún no tienen resultado; tampoco Controller ni Pre-Critic. No mergear hasta su PASS.
+- **READY_TO_RESUME:** identificar el HEAD exacto del PR #46 tras la reconciliación, verificar worker/web y review GitHub; corregir hallazgos materiales y rerun afectado; correr Controller separado GPT-6 Luna High read-only sobre el candidato definitivo, completar Pre-Critic y merge protegido. Cerrar #43 y actualizar #25, detenerse antes de #44/#33.
+
+
+## Event 212 — Controller REWORK de estado en PR #46; implementación aprobada técnicamente
+
+- El Controller separado revisó exacto `e8a506aaa2c7c83aeaca14ee45c8629ba372856d`, base `639ba0eacb02be6ed96f6ba8746959c792d57e48`. Resultado **REWORK P2 únicamente de estado**: `STATE.md`/`STATUS.json` decían checks/review pendientes a pesar de que el run `40049954059` y Codex Review `6378190452` ya habían terminado PASS en ese SHA. La evaluación de implementación pública fue PASS sin defectos P0/P1/P2. Informe: `.orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-E8A506-REWORK.md`.
+- Este evento persiste el hallazgo y registra con exactitud worker/web SUCCESS, GitHub Review sin hallazgos y el REWORK del Controller. Solo cambia evidencia/estado; la implementación ejecutable `92195ca856d7752379257e876132dd4839447058` / tree `805aaeed939ff688fcddc19bbc54ade1afe6c4dc` no cambia.
+- Operación Controller: proceso Codex separado `codex exec`, CLI 0.164.0, argumentos explícitos `--model gpt-6-luna`, razonamiento high y `--sandbox read-only`, exit 0 y solo lectura. Modelo/backend real UNVERIFIED; no se afirma atestación ni independencia externa. El proceso consumió 737,140 tokens de entrada (634,240 cached); no repetir lectura de historia extensa ni suites completas.
+- **READY_TO_RESUME:** publicar este checkpoint correctivo en el mismo PR #46, confirmar worker/web y Codex Review en el nuevo HEAD exacto, ejecutar Controller final acotado sobre ese HEAD; completar Pre-Critic y merge protegido; cerrar #43 y actualizar #25; detenerse antes de #44/#33.
+
+
+## Event 213 — rework GitHub P2 #4365552637: CTA consulta y scroll mobile
+
+- Codex Review completada sobre exact `1b50390b6fe841061b931a0443e46757a8c8bbf9` encontró P2 #4365552637 en `ListingView.vue`: el link `#contact-form` no llegaba confiablemente al formulario porque Vue Router siempre devolvía `{top:0}`. Informe visible en [PR #46](https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46#discussion_r4365552637).
+- Corregido en commit ejecutable `6cdb6177f81997453e301d4516827ebd1805b3a5` / tree `35b71cfbcff8a78c22b39689d096f95368780457`: `scrollBehavior` respeta `to.hash`, preserva `savedPosition`; Playwright comprueba hash, desplazamiento efectivo y formulario dentro del viewport a 390 px. La revisión focalizada del recorrido pasó 1/1; suite pública completa pasó 4/4; web typecheck/build pasó. Contacto D1 retorna 201 y retry mantiene misma idempotency key. No se cambió Worker, API, permisos o payload.
+- Capturas y QA actualizados en `output/playwright/i06.6-p2/`. La primera prueba de regresión usó un umbral vertical de 100px y falló porque el scroll está limitado al final natural del documento; se sustituyó por comprobaciones de `scrollY` creciente y visibilidad efectiva (<220px), que pasaron. No fue defecto de scroll del producto.
+- Gates remotos: worker/web SUCCESS en HEAD previo `1b50390`; ahora deben correr sobre el nuevo código y checkpoint antes de final Controller/merge. Debe responderse/resolverse el hilo P2 tras la corrección y solicitar review final exact-head. No se ha ejecutado Controller final para el fix.
+- **READY_TO_RESUME:** publicar rework funcional + reconciliación en el mismo PR #46; verificar exact-head worker/web y Codex Review; responder/resolver #4365552637; Controller delegado separado y acotado sobre el HEAD final, Pre-Critic y merge protegido; cerrar #43, actualizar #25, detener antes de #44/#33.
+
+
+## Event 214 — Codex Review final PASS en PR #46 y resolución P2
+
+- En exact HEAD `3fb6f6938f461929096d4dd6ce600a046e60b5ea`, GitHub Quick checks run `40051161666`: `worker` y `web` SUCCESS. Codex Review final exact-head comment `6378351382`: no findings / no unresolved findings. La revisión original P2 `4365552637` recibió respuesta `4365565840` documentando `6cdb6177f81997453e301d4516827ebd1805b3a5`; su hilo quedó resuelto.
+- Árbol ejecutable de la corrección sigue en `6cdb6177f81997453e301d4516827ebd1805b3a5` (`35b71cfbcff8a78c22b39689d096f95368780457`); el commit `3fb6f69` solo reconcilia estado/rework. Por ello el checkpoint necesita volver a pasar checks y Review antes del merge, aun cuando el código/rework ya tiene evidencias.
+- **READY_TO_RESUME:** verificar latest exact PR head y sus checks/review tras este checkpoint; ejecutar final Controller separado GPT-6 Luna High read-only en modo delta acotado; Pre-Critic; merge protegido y cerrar #43/actualizar #25; detenerse antes de #44/#33.
+
+
+## Event 215 — Controller REWORK P2: active GitHub gate evidence lagged exact head
+
+- El Controller separado evaluó el exact candidate `31f51931fe822321f8b05497c23c1e938638d241`, base `639ba0eacb02be6ed96f6ba8746959c792d57e48`. La implementación pública y el rework del CTA son PASS sin defectos P0/P1/P2; router y regresión Playwright verifican hash/scroll mobile.
+- **REWORK P2 de estado:** el `STATUS.json` activo seguía citando el run `40051161666` y review `6378351382` de `3fb6f69`; GitHub ya había concluido checks PASS (run `40051361555`, worker/web SUCCESS) y Codex Review sin major issues (comentario `6378377440`) sobre `31f5193`. Esta evidencia se reconcilia en este mismo PR funcional; ver reporte `.orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-31F5193-REWORK.md`.
+- Proceso: `delegated_codex_separate_process`, CLI `codex-cli 0.164.0`, solicitado `gpt-6-luna`, High, `--sandbox read-only`, exit 0, session `01a16b98-b7fc-75d0-9ac8-af2bd14b083f`; backend/provider identity **UNVERIFIED**. La revisión no ejecutó pruebas ni operaciones de escritura.
+- **READY_TO_RESUME:** publicar la reconciliación en PR #46; verificar CI y review exact-head en el checkpoint; ejecutar un único Controller final acotado con verificación GitHub en vivo; completar Pre-Critic y merge protegido; cerrar #43, actualizar #25 y detener antes de #44/#33. Sin cambios ejecutables.

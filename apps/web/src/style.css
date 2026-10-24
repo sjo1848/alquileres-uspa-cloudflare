@@ -1266,3 +1266,118 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .owner-dashboard .owner-status.is-approved { color: #14583f; background: var(--color-success-soft); }
 .owner-dashboard .owner-listing-row { background: #f7f8fb; }
 .owner-dashboard .owner-listing-row.selected { background: var(--color-sage); }
+
+/* I06.6-P2 — D3.1 public marketplace: concise discovery, real listing data. */
+.catalog-page { gap: clamp(1.15rem, 2.2vw, 1.8rem); }
+.catalog-intro {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .7rem 1.5rem;
+  padding: clamp(1.25rem, 2.7vw, 2rem) clamp(1.25rem, 3vw, 2.4rem);
+  border: 1px solid rgb(255 255 255 / 12%);
+  background: radial-gradient(ellipse at 85% 110%, rgb(115 143 255 / 35%), transparent 42%), linear-gradient(112deg, #202b59, #3448aa 64%, #4b5bc2);
+}
+.catalog-intro::after { right: 5%; bottom: -11rem; width: 23rem; height: 20rem; border-color: rgb(255 255 255 / 17%); }
+.catalog-intro .eyebrow { grid-column: 1 / -1; grid-row: 1; color: #c6d0ff; }
+.catalog-intro-copy { grid-column: 1; grid-row: 2; max-width: 54rem; }
+.catalog-intro h1 { max-width: 21ch; font-family: var(--font-body); font-size: clamp(1.8rem, 3.7vw, 3rem); font-weight: 730; letter-spacing: -.045em; line-height: 1.04; }
+.catalog-intro-copy > p { max-width: 55ch; margin-top: .5rem; font-size: clamp(.9rem, 1.15vw, 1.02rem); }
+.catalog-intro-note { grid-column: 2; grid-row: 2; align-self: end; justify-self: end; background: rgb(20 31 74 / 55%); }
+.search-panel { gap: .65rem; padding: clamp(.85rem, 1.5vw, 1.15rem); border-color: #dce1ed; box-shadow: 0 .5rem 1.7rem rgb(30 43 89 / 7%); }
+.search-panel > h2 { font-size: 1.05rem; letter-spacing: -.02em; }
+.catalog-search { grid-template-columns: minmax(14rem, 1.15fr) minmax(11rem, .75fr) auto; gap: .5rem .85rem; }
+.search-location, .advanced-filter-grid > label { color: #333e5e; font-size: .78rem; }
+.search-location input { min-height: 2.9rem; }
+.quick-availability { max-width: 100%; color: #444e69; font-size: .78rem; }
+.search-submit { min-height: 2.9rem; }
+.advanced-filters > summary { min-height: 2.45rem; color: #3d50bd; }
+.advanced-filter-grid { padding-bottom: .7rem; }
+.results-heading .eyebrow { color: #5265cb; }
+.results-heading h2 { font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: -.04em; }
+.listing-grid { gap: .9rem; }
+.listing-card { border-color: #e1e5ee; border-radius: 1rem; box-shadow: 0 .45rem 1.4rem rgb(30 43 89 / 6%); }
+.listing-card:hover { transform: translateY(-2px); box-shadow: 0 .8rem 2rem rgb(30 43 89 / 12%); }
+.listing-card-photo { aspect-ratio: 1.62; background: #e8eaf2; }
+.listing-card-photo img { transition: transform .35s ease, opacity .2s ease; }
+.listing-card-content { gap: .48rem; padding: .85rem .95rem .9rem; }
+.listing-card-content h3 { font-size: 1.08rem; letter-spacing: -.025em; }
+.listing-card-content h3 a { color: #1d294c; }
+.listing-description { min-height: 2.7em; font-size: .8rem; }
+.listing-meta { color: #515d79; }
+.listing-card-bottom { gap: .38rem; padding-top: .55rem; }
+.listing-price strong { color: #17254c; font-size: 1.15rem; }
+.availability-pill { border-color: #b6c3fb; background: #eef1ff; color: #3348aa; }
+.availability-pill.is-unavailable { border-color: #dfc6ad; background: #fff5eb; color: #7a4a20; }
+.availability-pill.availability-stale, .availability-pill.availability-unconfirmed { border-color: #e6d8a8; background: #fff8df; color: #735819; }
+.listing-freshness.freshness-stale, .listing-freshness.freshness-unconfirmed { color: #725719; }
+.listing-card-cta { color: #364bb5; }
+.listing-breadcrumb a, .detail-contact-cta { color: #364bb5; }
+.listing-detail-layout { gap: clamp(1.25rem, 2.5vw, 2.25rem); }
+.listing-detail-main { gap: 1rem; }
+.detail-heading h1 { color: #19264a; font-family: var(--font-body); font-size: clamp(2rem, 4vw, 3rem); font-weight: 730; letter-spacing: -.045em; }
+.detail-lede { margin-top: .4rem; }
+.detail-contact-cta { display: inline-flex; width: fit-content; min-height: 2.7rem; align-items: center; gap: .6rem; margin-top: .45rem; padding: .55rem .9rem; border: 1px solid #ccd3f7; border-radius: 999px; background: #f0f2ff; font-size: .85rem; font-weight: 700; text-decoration: none; }
+.detail-contact-cta:hover { border-color: #9eabef; background: #e5e9ff; }
+.detail-contact-cta:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.detail-gallery { gap: .45rem; border-radius: 1rem; }
+.detail-gallery figure { background: #e8eaf2; }
+.detail-gallery-empty { min-height: 15rem; }
+.detail-overview, .contact-panel { border-color: #e1e5ee; border-radius: 1rem; box-shadow: 0 .45rem 1.4rem rgb(30 43 89 / 6%); }
+.detail-overview-heading h2, .detail-availability h2, .contact-panel h2 { color: #1d294c; font-family: var(--font-body); letter-spacing: -.035em; }
+.availability-detail-card { border-color: #e1e5ee; }
+.contact-submit { min-height: 3.15rem; }
+@media (prefers-reduced-motion: reduce) {
+  .listing-card, .listing-card-photo img { transition: none; }
+}
+@media (max-width: 42rem) {
+  .catalog-page { gap: .85rem; }
+  .catalog-intro { grid-template-columns: minmax(0, 1fr); gap: .48rem; padding: 1rem 1.05rem; border-radius: .85rem; }
+  .catalog-intro .eyebrow { font-size: .66rem; }
+  .catalog-intro-copy, .catalog-intro h1 { min-width: 0; width: 100%; max-width: 100%; }
+  .catalog-intro h1 { font-size: clamp(1.45rem, 7.2vw, 2rem); line-height: 1.08; }
+  .catalog-intro-copy > p { max-width: 100%; margin-top: .35rem; font-size: .81rem; line-height: 1.4; }
+  .catalog-intro-note { display: none; }
+  .catalog-intro::after { right: -10rem; bottom: -14rem; }
+  .search-panel { gap: .45rem; padding: .7rem; border-radius: .85rem; }
+  .search-panel > h2 { font-size: .98rem; }
+  .catalog-search { grid-template-columns: minmax(0, 1fr) auto; gap: .4rem .55rem; }
+  .search-location input { min-height: 2.65rem; }
+  .quick-availability { min-height: 2.55rem; font-size: .7rem; }
+  .search-submit { min-height: 2.55rem; padding-inline: .55rem; font-size: .76rem; }
+  .advanced-filters > summary { min-height: 2.2rem; font-size: .82rem; }
+  .results-heading h2 { font-size: 1.22rem; }
+  .listing-grid { gap: .6rem; }
+  .listing-card { display: grid; grid-template-columns: minmax(5.4rem, 30%) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); border-radius: .8rem; }
+  .listing-card-photo { grid-column: 1; grid-row: 1; width: auto; min-width: 0; min-height: 100%; aspect-ratio: auto; }
+  .listing-card-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .listing-card-content { grid-column: 2; grid-row: 1; min-width: 0; }
+  .listing-card-content { gap: .3rem; padding: .58rem .62rem; }
+  .listing-card-content h3 { font-size: .94rem; }
+  .listing-description { font-size: .71rem; line-height: 1.35; }
+  .listing-meta { font-size: .64rem; }
+  .listing-price strong { font-size: .91rem; }
+  .listing-price > span { font-size: .67rem; }
+  .availability-pill { font-size: .62rem; }
+  .listing-freshness { font-size: .62rem; }
+  .listing-card-cta { min-height: 1.9rem; font-size: .7rem; }
+  .detail-contact-cta { min-height: 2.45rem; margin-top: .25rem; }
+  .listing-detail-layout { gap: .8rem; }
+  .detail-gallery { min-height: 12rem; }
+  .detail-gallery-single { min-height: clamp(12rem, 55vw, 17rem); }
+  .contact-panel { padding: .9rem; }
+}
+@media (max-width: 22rem) {
+  .catalog-intro { padding: .85rem; }
+  .catalog-intro h1 { font-size: clamp(1.4rem, 7vw, 1.7rem); }
+  .search-panel { padding: .6rem; }
+  .catalog-search { grid-template-columns: minmax(0, 1fr); }
+  .quick-availability, .search-submit { grid-column: 1; }
+  .search-submit { width: 100%; }
+  .quick-availability { font-size: .67rem; }
+  .listing-card { grid-template-columns: minmax(4.8rem, 28%) minmax(0, 1fr); }
+  .listing-card-content { padding: .5rem; }
+  .listing-card-content h3 { font-size: .88rem; }
+  .listing-description, .listing-meta, .listing-freshness { font-size: .61rem; }
+  .listing-price strong { font-size: .84rem; }
+  .availability-pill { white-space: normal; }
+}

@@ -146,8 +146,11 @@ function toggleAdvanced(event: Event) {
   advancedOpen.value = (event.currentTarget as HTMLDetailsElement).open;
 }
 
-function imageUrl(listing: Listing) {
-  const image = listing.images[0];
+function visibleImage(listing: Listing) {
+  return listing.images.find(image => !failedImages.value.has(image.id));
+}
+
+function imageUrl(listing: Listing, image = visibleImage(listing)) {
   return image ? image.url ?? apiUrl(`/public/listings/${listing.id}/images/${image.id}`) : '';
 }
 
@@ -157,12 +160,12 @@ function listingPath(id: string) {
 
 function priceAmount(listing: Listing) {
   if (!hasRentalDomainData(listing)) return 'Precio a consultar';
-  const amount = new Intl.NumberFormat('es-AR', { style: 'currency', currency: listing.currency, maximumFractionDigits: 0 }).format(listing.priceAmount);
+  const amount = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 }).format(listing.priceAmount);
   return `${listing.currency} ${amount}`;
 }
 
-function imageFailed(listingId: string) {
-  failedImages.value = new Set(failedImages.value).add(listingId);
+function imageFailed(imageId: string) {
+  failedImages.value = new Set(failedImages.value).add(imageId);
 }
 
 watch(() => route.query, () => {
@@ -232,8 +235,8 @@ watch(() => route.query, () => {
         <div v-if="page.items.length" class="listing-grid" :class="{ 'is-refreshing': loading }" aria-label="Resultados de alojamientos">
           <article v-for="listing in page.items" :key="listing.id" class="listing-card">
             <RouterLink class="listing-card-photo" :to="listingPath(listing.id)" :aria-label="`Ver fotos y detalles de ${listing.title}`">
-              <img v-if="imageUrl(listing) && !failedImages.has(listing.id)" :src="imageUrl(listing)" :alt="`Imagen de ${listing.title}, ${listing.location}`" loading="lazy" decoding="async" @error="imageFailed(listing.id)" />
-              <span v-else class="photo-placeholder" role="img" :aria-label="`Imagen no disponible para ${listing.title}`"><span aria-hidden="true">⌁</span><small>Uspallata</small></span>
+              <img v-if="visibleImage(listing)" :src="imageUrl(listing)" :alt="`Imagen de ${listing.title}, ${listing.location}`" loading="lazy" decoding="async" @error="imageFailed(visibleImage(listing)!.id)" />
+              <span v-else class="photo-placeholder" role="img" :aria-label="listing.images.length ? `Fotografías no disponibles para ${listing.title}` : `Sin fotografías disponibles para ${listing.title}`"><span aria-hidden="true">⌁</span><small>{{ listing.images.length ? 'No pudimos cargar las fotos' : 'Sin fotografías disponibles' }}</small></span>
               <span class="photo-location">{{ listing.location }}</span>
             </RouterLink>
             <div class="listing-card-content">
