@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6-P1 — Fundamentos D3.1; PR #45 integrado mediante merge protegido",
   "last_completed_head": "main@639ba0eacb02be6ed96f6ba8746959c792d57e48",
   "work_branch": "work/i06-d31-public-catalog",
-  "next_action": "This gate checkpoint records exact source/test commit 6cdb617 and latest verified review/checks on prior PR head 3fb6f69. After this status-only commit, query current PR exact head; wait required checks/review green; run bounded final Controller on exact current SHA; Pre-Critic, merge protected, close #43/update #25 and stop.",
+  "next_action": "Persist this bounded Controller state-evidence REWORK in PR #46; verify active exact-head checks/review after the evidence checkpoint, then run one final bounded GPT-6 Luna High read-only Controller review using live GitHub receipts, Pre-Critic, protected merge, close #43/update #25; stop before #44/#33.",
   "stop_reason": null,
   "event": {
-    "seq": 214,
-    "summary": "Reconciliar Codex Review PASS y resolver el P2 de CTA en PR #46"
+    "seq": 215,
+    "summary": "Controller REWORK P2: exact-head CI/review receipts stale in active STATUS"
   },
   "external_review": null,
   "human_gate": {
@@ -29,8 +29,10 @@
     "branch": "work/i06-d31-public-catalog",
     "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
     "executable_sha": "6cdb6177f81997453e301d4516827ebd1805b3a5",
-    "status": "OPEN_FINAL_CONTROLLER_PENDING",
-    "executable_tree": "35b71cfbcff8a78c22b39689d096f95368780457"
+    "status": "OPEN_CONTROLLER_STATE_REWORK",
+    "executable_tree": "35b71cfbcff8a78c22b39689d096f95368780457",
+    "head_sha": "31f51931fe822321f8b05497c23c1e938638d241",
+    "head_tree": "35b71cfbcff8a78c22b39689d096f95368780457"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -81,7 +83,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/43",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P2-PUBLIC-CATALOG-D31.md",
-    "status": "OPEN_FINAL_CONTROLLER_PENDING",
+    "status": "OPEN_CONTROLLER_STATE_REWORK",
     "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
     "branch": "work/i06-d31-public-catalog",
     "scope": "D3.1 public catalog, listing detail and contact only. Preserve public APIs, filtering, price/period, availability/freshness, image permissions/URLs, idempotent contact and security; no OWNER/ADMIN, Preview or production.",
@@ -100,9 +102,9 @@
       "public_e2e_after_github_p2": "PASS 4/4 en el árbol funcional 6cdb6177f81997453e301d4516827ebd1805b3a5; hash y scroll del CTA comprobados en 390px; llamada de contacto con D1 local mantiene POST 201 e idempotencia. test:e2e:public 41.9s.",
       "web_typecheck_build_after_github_p2": "PASS typecheck + build tras cambio router; build:preview se ejecuta en CI del nuevo HEAD."
     },
-    "github_checks": "PASS: run 40051161666 `worker`/`web` SUCCESS on PR #46 HEAD 3fb6f6938f461929096d4dd6ce600a046e60b5ea. Any subsequent state-only checkpoint requires fresh live checks on its exact PR head before merge.",
-    "github_review": "PASS: Codex Review comment 6378351382 on exact HEAD 3fb6f6938f461929096d4dd6ce600a046e60b5ea says no findings/unresolved. P2 #4365552637 was answered in 4365565840 and isResolved=true. A new state-only checkpoint requires fresh live review of that exact PR head.",
-    "controller": "Historical state-only REWORK on e8a506 (resolved Event212). Final bounded GPT-6 Luna High read-only Controller review PENDING on PR #46 current exact HEAD after checkpoint gate refresh."
+    "github_checks": "PASS exact PR HEAD 31f51931fe822321f8b05497c23c1e938638d241: run 40051361555, worker/web SUCCESS (https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/40051361555).",
+    "github_review": "PASS exact PR HEAD 31f51931fe822321f8b05497c23c1e938638d241: Codex Review receipt comment 6378377440, no major issues (https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46#issuecomment-6378377440); P2 #4365552637 answered and resolved.",
+    "controller": "REWORK P2 on exact HEAD 31f51931fe822321f8b05497c23c1e938638d241: implementation PASS; active STATUS had stale check/review provenance. Report: .orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-31F5193-REWORK.md"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
@@ -1038,5 +1040,20 @@
     "session_id": "01a16b88-6a2f-77b1-b8a8-e41d4db1c71f",
     "completed": "CLI exit 0; separate process; read-only; 737140 input tokens, 634240 cached, 5038 output tokens.",
     "finding_resolution": "Reconciliado por Event 212 y verificación PR; no implicó código. El nuevo Controller final inspeccionará delta acotado y fix de CTA."
-  }
+  },
+  "controller_history_i06_6_p2": [
+    {
+      "sha": "31f51931fe822321f8b05497c23c1e938638d241",
+      "verdict": "REWORK",
+      "finding": "P2 active STATUS.json omitted exact-head CI run 40051361555 and Codex Review comment 6378377440; implementation PASS, no material code findings.",
+      "provenance": "delegated_codex_separate_process",
+      "requested_model": "gpt-6-luna",
+      "requested_reasoning_effort": "high",
+      "sandbox": "read-only",
+      "cli": "codex-cli 0.164.0",
+      "session_id": "01a16b98-b7fc-75d0-9ac8-af2bd14b083f",
+      "backend_identity": "UNVERIFIED",
+      "report": ".orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-31F5193-REWORK.md"
+    }
+  ]
 }
