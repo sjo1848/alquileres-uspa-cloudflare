@@ -92,9 +92,7 @@ function imageUrl(image: Listing['images'][number]) {
 
 function detailPrice(value: Listing) {
   if (!hasRentalDomainData(value)) return 'Precio a consultar';
-  const amount = new Intl.NumberFormat('es-AR', {
-    style: 'currency', currency: value.currency, maximumFractionDigits: 0,
-  }).format(value.priceAmount);
+  const amount = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 }).format(value.priceAmount);
   return `${value.currency} ${amount} por ${pricePeriodLabel(value.pricePeriod)}`;
 }
 
@@ -130,8 +128,9 @@ async function sendContact() {
 }
 
 const freshness = computed(() => freshnessLabel(listing.value?.freshnessStatus, listing.value?.lastConfirmedAt));
-const primaryImage = computed(() => listing.value?.images[0]);
-const secondaryImages = computed(() => listing.value?.images.slice(1) ?? []);
+const availableImages = computed(() => listing.value?.images.filter(image => !failedImages.value.has(image.id)) ?? []);
+const primaryImage = computed(() => availableImages.value[0]);
+const secondaryImages = computed(() => availableImages.value.slice(1));
 
 watch(() => route.params.id, id => void load(String(id)), { immediate: true });
 </script>
@@ -151,14 +150,15 @@ watch(() => route.params.id, id => void load(String(id)), { immediate: true });
           <header class="detail-heading">
             <p class="eyebrow">{{ listing.location }}</p><h1>{{ listing.title }}</h1>
             <p class="detail-lede">Una propiedad en Uspallata para conocer con calma y consultar directamente.</p>
+            <a class="detail-contact-cta" href="#contact-form">Consultar este alojamiento <span aria-hidden="true">→</span></a>
           </header>
 
-          <section class="detail-gallery" :class="{ 'detail-gallery-single': listing.images.length < 2 }" aria-label="Fotos del alojamiento">
+          <section class="detail-gallery" :class="{ 'detail-gallery-single': availableImages.length < 2 }" aria-label="Fotos del alojamiento">
             <figure v-if="primaryImage && !failedImages.has(primaryImage.id)" class="detail-gallery-primary">
               <img :src="imageUrl(primaryImage)" :alt="`Imagen de ${listing.title}, ${listing.location}`" fetchpriority="high" @error="imageFailed(primaryImage.id)" />
               <figcaption> {{ listing.location }} </figcaption>
             </figure>
-            <div v-else class="detail-gallery-empty photo-placeholder" role="img" :aria-label="primaryImage ? `Imagen no disponible para ${listing.title}` : `Sin fotografías disponibles para ${listing.title}`"><span aria-hidden="true">⌁</span><small>{{ primaryImage ? 'La imagen no está disponible' : 'Sin fotografías disponibles' }}</small></div>
+            <div v-else class="detail-gallery-empty photo-placeholder" role="img" :aria-label="listing.images.length ? `Fotografías no disponibles para ${listing.title}` : `Sin fotografías disponibles para ${listing.title}`"><span aria-hidden="true">⌁</span><small>{{ listing.images.length ? 'No pudimos cargar las fotos' : 'Sin fotografías disponibles' }}</small></div>
             <figure v-for="image in secondaryImages" :key="image.id" class="detail-gallery-secondary">
               <img v-if="!failedImages.has(image.id)" :src="imageUrl(image)" :alt="`Vista adicional de ${listing.title}, ${listing.location}`" loading="lazy" decoding="async" @error="imageFailed(image.id)" />
               <div v-else class="photo-placeholder" role="img" :aria-label="`Imagen no disponible para ${listing.title}`"><span aria-hidden="true">⌁</span><small>{{ listing.location }}</small></div>

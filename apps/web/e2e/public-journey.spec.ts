@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const evidence = resolve(process.cwd(), '../../output/playwright/i06.4');
+const evidence = resolve(process.cwd(), '../../output/playwright/i06.6-p2/after');
 async function capture(page: import('@playwright/test').Page, name: string) {
   await mkdir(evidence, { recursive: true });
   await page.locator('img').evaluateAll(images => { for (const image of images) (image as HTMLImageElement).loading = 'eager'; });
@@ -26,6 +26,10 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
   await expect(page.getByRole('heading', { name: 'Alojamientos para explorar' })).toBeVisible();
   await expect(page.locator('.listing-card')).toHaveCount(6);
   await expect(page.locator('.listing-card').first()).toContainText('ARS');
+  await expect(page.locator('.listing-card').first().locator('.listing-price')).toContainText('ARS 45.000');
+  await expect(page.locator('.listing-card').first().locator('.listing-price')).not.toContainText('$');
+  await expect(page.locator('.listing-card').filter({ hasText: 'Cabaña del Valle Alto' }).locator('.listing-price')).toContainText('USD 580');
+  await expect(page.locator('.listing-card').filter({ hasText: 'Cabaña del Valle Alto' }).locator('.listing-price')).not.toContainText('US$');
   const incompleteRentalCard = page.locator('.listing-card').filter({
     has: page.getByRole('heading', { name: 'Refugio de Muestra' }),
   });
@@ -50,6 +54,9 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
     });
   });
   for (const color of contrast) expect(color.ratio, `${color.selector} contrast`).toBeGreaterThanOrEqual(4.5);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(parseFloat(await page.locator('.listing-card').first().evaluate(card => getComputedStyle(card).transitionDuration))).toBeLessThan(.001);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await capture(page, 'catalog-desktop-1440x1000.png');
 
   await page.keyboard.press('Tab');
@@ -156,7 +163,11 @@ test('catálogo: error recuperable, ausencia de resultados e imagen rota', async
   await page.route('**/media/catalog/cabana-sintetica.webp', route => route.abort('failed'));
   await page.goto('/listings/synthetic-cabana-cerro');
   await expect(page.getByRole('heading', { name: 'Cabaña del cerro' })).toBeVisible();
-  await expect(page.getByRole('img', { name: 'Imagen no disponible para Cabaña del cerro' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Fotografías no disponibles para Cabaña del cerro' })).toBeVisible();
+  await page.unroute('**/media/catalog/cabana-sintetica.webp');
+  await page.route('**/media/catalog/valle-sintetico.webp', route => route.abort('failed'));
+  await page.goto('/');
+  await expect(page.getByRole('img', { name: 'Fotografías no disponibles para Casa junto al arroyo' })).toBeVisible();
 
   await page.goto('/');
   await page.getByLabel('Ubicación').fill('Pueblo sintético inexistente');
@@ -183,10 +194,12 @@ test('ficha y consulta: D1 real local, reintento idempotente y regresión mobile
   await page.goto('/listings/synthetic-casa-rio');
   await expect(page.getByRole('heading', { name: 'Casa junto al arroyo' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Disponibilidad' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Consultar este alojamiento/ })).toBeVisible();
   const detailPhoto = page.locator('.detail-gallery-primary img');
   await expect.poll(() => detailPhoto.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   await capture(page, 'listing-contact-desktop-1440x1000.png');
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('link', { name: /Consultar este alojamiento/ })).toBeVisible();
   await capture(page, 'listing-contact-mobile-390x844.png');
 
   for (const width of [390, 320]) {

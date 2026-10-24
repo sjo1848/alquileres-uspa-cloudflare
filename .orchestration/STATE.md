@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I06_6_P1_D31_FOUNDATIONS`
-Active task: `CF-AU-I06.6-P1 — Fundamentos visuales D3.1 (Issue #42)`
+Phase: `CF_AU_I06_6_P2_PUBLIC_CATALOG_D31`
+Active task: `CF-AU-I06.6-P2 — Catálogo, ficha y consulta pública D3.1 (Issue #43)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1657,3 +1657,23 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Reporte/provenance completa del Controller: `.orchestration/evidence/critics/CF-AU-I06.6-P1-CONTROLLER-82EDF-REWORK.md`. Invocación solicitada `gpt-6-luna`/High/solo lectura; valores runtime observados no expuestos, backend UNVERIFIED. Proceso separado `codex exec`, CLI exit 0; no es subagente nativo ni revisor externo autenticado.
 - El presente commit corrige el registro y crea un checkpoint nuevo. Debe pasar worker/web, review automática exact-head y Controller final sobre el SHA exacto antes del Pre-Critic y del merge protegido. Protección observada: checks estrictos `worker`/`web`, `enforce_admins=true`, aprobaciones requeridas 0; revalidar antes del merge.
 - **READY_TO_RESUME:** verificar el validador y el nuevo HEAD, esperar sus checks y review; atender hallazgos materiales; solicitar el Controller final con el snapshot GitHub capturado por el proceso padre; aplicar Pre-Critic, integrar mediante protección, cerrar #42 y actualizar #25. Detenerse antes de #43. No Preview ni producción.
+
+
+## Event 209 — inicio de I06.6-P2 público D3.1
+
+- Estado reconstruido desde GitHub: `main@639ba0eacb02be6ed96f6ba8746959c792d57e48`, PR #45 integrado y #42 cerrado. El P1 quedó en dirección visual D3.1 aprobada; el checkpoint postmerge y su evidencia están referenciados en `STATUS.json` y en el cierre de #42.
+- Se autoriza exclusivamente Issue #43: catálogo → ficha → consulta pública. Task Contract: `.orchestration/contracts/CF-AU-I06.6-P2-PUBLIC-CATALOG-D31.md`. Branch `work/i06-d31-public-catalog`; base exacta `639ba0eacb02be6ed96f6ba8746959c792d57e48`. D3.1 de #41/commit `77c99fa445171a58548e6e06497050bf2d923305` reemplaza C (#29) como dirección vigente; el veredicto C queda preservado en el campo de historia de `STATUS.json`.
+- Se conserva la semántica/API pública, filtros/paginación, rutas de imagen Static Assets/D1 BLOB, disponibilidad/frescura, timestamp y POST de consulta idempotente. No se implementan funciones inexistentes ni se modifican OWNER/ADMIN, Preview, producción, R2, coste, datos reales o repo fuente.
+- Baseline público integrado PASS 4/4 en la base, Vue + Worker/Hono + D1 local sintética. Capturas anteriores para comparación: `output/playwright/i06.6-p2/before/` (catálogo y ficha/contacto a 1440, 390 y 320 px).
+- Investigación del bloque rojo P1: el screenshot público se ejecutó con el seed OWNER D1_BLOB; `owner-approved-photo` incluye un BLOB PNG sintético rojo de 48×48 en posición 0 y un SVG estático también en posición 0. El API combina las filas y, al desempatar por ID, el BLOB de prueba queda primero. El fixture rojo se usa intencionalmente en tests OWNER; esto no demuestra una falla de Static Assets ni de imágenes de una ficha real. El seed público usa WebP sintéticos distintos y el baseline decodificó sus imágenes. Este hallazgo queda clasificado como artefacto de fixture QA, sujeto a regresión con los datos públicos del contrato.
+- **READY_TO_RESUME:** ajustar composición de catálogo/ficha y manejo de fallos/ausencia de imágenes con datos API reales, resolver moneda/formato de precio y consulta mobile sin cambio de contrato; ejecutar Playwright integrado con D1 local, capturas comparativas 1440/390/320, typecheck/build, CI, review GitHub y Controller delegado exactos; hacer merge protegido, cerrar #43, actualizar #25 y detenerse antes de #44/#33.
+
+
+## Event 210 — implementación y QA local consolidado de I06.6-P2
+
+- Sobre base autorizada `639ba0eacb02be6ed96f6ba8746959c792d57e48` se completó la composición D3.1 de `HomeView` y `ListingView` con CSS responsive. Conserva APIs, rutas/permisos de imágenes, filtros/paginación, disponibilidad/frescura/confirmación y POST de contacto idempotente. No cambió Worker/Hono ni autenticación/OWNER/ADMIN. Precio muestra código ISO una vez y periodicidad API; ficha promueve la siguiente imagen utilizable y presenta fallback diferente para ausencia y fallo; se añadió CTA al formulario existente.
+- Capturas locales antes/después en `output/playwright/i06.6-p2/{before,after}/`, 1440×1000, 390×844 y 320×844. QA comparativa y diagnóstico del fixture rojo P1: `output/playwright/i06.6-p2/QA.md`. El rojo era PNG sintético de 48×48 del seed OWNER D1_BLOB, no falla de Static Assets; seed público sintético distinto decodifica.
+- Playwright público sobre Vue + Vite, Worker/Hono y D1 local real: **4/4 PASS**; cubre filtros, paging, carga/error/vacío/reintento, fallbacks de imagen, teclado/foco, contraste, reduced motion, overflow 320px, regresión #35 y contacto D1 `201` con clave idempotente estable tras reintento. Capturas after generadas en esta ejecución.
+- Matriz Worker de Quick checks: typecheck y ocho grupos PASS, 71 tests; `npm run typecheck`, `build` y `build:preview` web PASS; `scripts/tests` Python 25/25 PASS; validador consistency `--base origin/main` y `git diff --check` PASS. El primer diagnóstico E2E encontró que la grilla desktop del buscador había quedado aplicada a mobile; se corrigió y la suite final confirma ancho documental dentro de 320px.
+- Estado de revisiones remotas: pendiente (aún no hay commit/PR). No afirmar CI GitHub, Codex Review, Controller ni Pre-Critic.
+- **READY_TO_RESUME:** finalizar el build local iniciado después del último ajuste visual; publicar branch/PR funcional de #43, completar CI worker/web y revisión automática exact-head, corregir hallazgos materiales, ejecutar Controller separado GPT-6 Luna High read-only y Pre-Critic, integrar con protección, cerrar #43 y actualizar #25; detenerse antes de #44/#33.
