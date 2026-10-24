@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6-P1 — Fundamentos D3.1; PR #45 integrado mediante merge protegido",
   "last_completed_head": "main@639ba0eacb02be6ed96f6ba8746959c792d57e48",
   "work_branch": "work/i06-d31-public-catalog",
-  "next_action": "Commit the state-only reconciliation of completed gates and Controller REWORK in functional PR #46; verify worker/web and Codex Review on the new exact HEAD; run final bounded Controller GPT-6 Luna High read-only review, Pre-Critic, merge protected, close #43/update #25 and stop before #44/#33.",
+  "next_action": "Publicar rework del CTA y el checkpoint de estado en PR #46; esperar checks/review exact-head y resolver P2 #4365552637; solicitar una revisión Controller separada, compacta, sobre el SHA final; Pre-Critic y merge protegido, cerrar #43/actualizar #25, detenerse antes de #44/#33.",
   "stop_reason": null,
   "event": {
-    "seq": 212,
-    "summary": "Registrar Controller REWORK P2 de estado; código PASS; reconciliar gates de PR #46"
+    "seq": 213,
+    "summary": "Resolver P2 GitHub de CTA: fragment navigation al formulario y regresión mobile en PR #46"
   },
   "external_review": null,
   "human_gate": {
@@ -28,9 +28,9 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46",
     "branch": "work/i06-d31-public-catalog",
     "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
-    "executable_sha": "92195ca856d7752379257e876132dd4839447058",
-    "status": "OPEN_CONTROLLER_STATE_REWORK",
-    "executable_tree": "805aaeed939ff688fcddc19bbc54ade1afe6c4dc"
+    "executable_sha": "6cdb6177f81997453e301d4516827ebd1805b3a5",
+    "status": "OPEN_FINAL_REWORK_CHECKS_PENDING",
+    "executable_tree": "35b71cfbcff8a78c22b39689d096f95368780457"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -81,13 +81,13 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/43",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P2-PUBLIC-CATALOG-D31.md",
-    "status": "OPEN_CONTROLLER_STATE_REWORK",
+    "status": "OPEN_FINAL_REWORK_CHECKS_PENDING",
     "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
     "branch": "work/i06-d31-public-catalog",
     "scope": "D3.1 public catalog, listing detail and contact only. Preserve public APIs, filtering, price/period, availability/freshness, image permissions/URLs, idempotent contact and security; no OWNER/ADMIN, Preview or production.",
     "direction": "D3.1 approved in #41, commit 77c99fa445171a58548e6e06497050bf2d923305; C from #29 is historical only.",
-    "code_status": "D3.1 catálogo, detalle y formulario conservados sobre APIs existentes; formato de precio ISO explícito, promoción de la siguiente foto válida, fallbacks distintos para ausencia/fallo y CTA a consulta. Ningún cambio Worker/API.",
-    "next_action": "Reconcile the canonical checkpoint with the exact-head GitHub PASS and Controller state-only REWORK; publish this state correction in PR #46; wait worker/web and Codex Review on new exact HEAD; then run one final bounded delegated Controller review on that latest exact SHA, Pre-Critic, protected merge, close #43/update #25 and stop before #44/#33.",
+    "code_status": "El CTA de consulta ahora respeta el fragmento y scrollBehavior mueve el formulario al viewport; historial de scroll se conserva. Regresión E2E nueva. Sin cambio Worker/API ni contratos de idempotencia/permisos.",
+    "next_action": "Publicar el rework 6cdb617 y este checkpoint en PR #46; verificar worker/web y Codex Review final sobre su HEAD exacto, responder/resolver #4365552637; Controller separado acotado al delta/state anterior y fix, Pre-Critic, merge protegido, cerrar #43/actualizar #25 y detenerse antes de #44/#33.",
     "local_checks": {
       "baseline_public_e2e": "PASS 4/4 sobre main@639ba0e con Vue + Worker/Hono + D1 local sintética; capturas antes preservadas.",
       "baseline_capture": "output/playwright/i06.6-p2/before/ catálogo y ficha/contacto en 1440, 390 y 320 px.",
@@ -96,11 +96,13 @@
       "public_e2e": "PASS 4/4; recorrido local Vue + Worker/Hono + D1; contacto 201 e idempotency-key estable; fallbacks de foto; 1440/390/320 capturas after.",
       "worker_ci_matrix": "PASS typecheck + catalog 7 + media 16 + owner 6 + owner-auth 5 + admin 12 + preview-auth 6 + contact-workflow 6 + management 13 = 71 tests.",
       "web_builds": "PASS typecheck, build, build:preview (local build only; sin deploy).",
-      "repository_checks": "PASS Python 25/25, consistency validator --base origin/main, git diff --check."
+      "repository_checks": "PASS Python 25/25, consistency validator --base origin/main, git diff --check.",
+      "public_e2e_after_github_p2": "PASS 4/4 en el árbol funcional 6cdb6177f81997453e301d4516827ebd1805b3a5; hash y scroll del CTA comprobados en 390px; llamada de contacto con D1 local mantiene POST 201 e idempotencia. test:e2e:public 41.9s.",
+      "web_typecheck_build_after_github_p2": "PASS typecheck + build tras cambio router; build:preview se ejecuta en CI del nuevo HEAD."
     },
-    "github_checks": "PASS on exact reviewed PR HEAD e8a506aaa2c7c83aeaca14ee45c8629ba372856d; Quick checks run 40049954059, worker/web SUCCESS.",
-    "github_review": "PASS on exact reviewed PR HEAD e8a506aaa2c7c83aeaca14ee45c8629ba372856d; Codex Review comment 6378190452 reports no findings/unresolved findings.",
-    "controller": "REWORK P2 on exact HEAD e8a506aaa2c7c83aeaca14ee45c8629ba372856d: checkpoint said CI/review pending despite completed PASS evidence. Implementation itself passed; report .orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-E8A506-REWORK.md."
+    "github_checks": "Los checks worker/web fueron PASS en 1b50390b6fe841061b931a0443e46757a8c8bbf9. El nuevo código 6cdb6177f81997453e301d4516827ebd1805b3a5 y el checkpoint siguiente requieren verificar los contextos del HEAD actual en vivo antes del Controller/merge.",
+    "github_review": "Codex Review completada en 1b50390b6fe841061b931a0443e46757a8c8bbf9 con P2 #4365552637 sobre CTA de consulta/hash. Corregido en 6cdb6177f81997453e301d4516827ebd1805b3a5; thread pendiente de respuesta/resolución y review exact-head fresco.",
+    "controller": "Histórico exact e8a506: REWORK P2 de estado, reconciliado en 1b50390; el código recibió evaluación técnica PASS. Controller final sobre SHA exacto posterior a #4365552637 queda PENDING."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
@@ -1034,6 +1036,7 @@
     "cli_configuration_accepted": true,
     "actual_backend_model_identity": "UNVERIFIED",
     "session_id": "01a16b88-6a2f-77b1-b8a8-e41d4db1c71f",
-    "completed": "CLI exit 0; separate process; read-only; 737140 input tokens, 634240 cached, 5038 output tokens."
+    "completed": "CLI exit 0; separate process; read-only; 737140 input tokens, 634240 cached, 5038 output tokens.",
+    "finding_resolution": "Reconciliado por Event 212 y verificación PR; no implicó código. El nuevo Controller final inspeccionará delta acotado y fix de CTA."
   }
 }
