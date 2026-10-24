@@ -1701,3 +1701,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Capturas y QA actualizados en `output/playwright/i06.6-p2/`. La primera prueba de regresión usó un umbral vertical de 100px y falló porque el scroll está limitado al final natural del documento; se sustituyó por comprobaciones de `scrollY` creciente y visibilidad efectiva (<220px), que pasaron. No fue defecto de scroll del producto.
 - Gates remotos: worker/web SUCCESS en HEAD previo `1b50390`; ahora deben correr sobre el nuevo código y checkpoint antes de final Controller/merge. Debe responderse/resolverse el hilo P2 tras la corrección y solicitar review final exact-head. No se ha ejecutado Controller final para el fix.
 - **READY_TO_RESUME:** publicar rework funcional + reconciliación en el mismo PR #46; verificar exact-head worker/web y Codex Review; responder/resolver #4365552637; Controller delegado separado y acotado sobre el HEAD final, Pre-Critic y merge protegido; cerrar #43, actualizar #25, detener antes de #44/#33.
+
+
+## Event 214 — Codex Review final PASS en PR #46 y resolución P2
+
+- En exact HEAD `3fb6f6938f461929096d4dd6ce600a046e60b5ea`, GitHub Quick checks run `40051161666`: `worker` y `web` SUCCESS. Codex Review final exact-head comment `6378351382`: no findings / no unresolved findings. La revisión original P2 `4365552637` recibió respuesta `4365565840` documentando `6cdb6177f81997453e301d4516827ebd1805b3a5`; su hilo quedó resuelto.
+- Árbol ejecutable de la corrección sigue en `6cdb6177f81997453e301d4516827ebd1805b3a5` (`35b71cfbcff8a78c22b39689d096f95368780457`); el commit `3fb6f69` solo reconcilia estado/rework. Por ello el checkpoint necesita volver a pasar checks y Review antes del merge, aun cuando el código/rework ya tiene evidencias.
+- **READY_TO_RESUME:** verificar latest exact PR head y sus checks/review tras este checkpoint; ejecutar final Controller separado GPT-6 Luna High read-only en modo delta acotado; Pre-Critic; merge protegido y cerrar #43/actualizar #25; detenerse antes de #44/#33.
