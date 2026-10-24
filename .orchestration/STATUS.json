@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6-P1 — Fundamentos D3.1; PR #45 integrado mediante merge protegido",
   "last_completed_head": "main@639ba0eacb02be6ed96f6ba8746959c792d57e48",
   "work_branch": "work/i06-d31-public-catalog",
-  "next_action": "Validar build final; registrar evidencia/estado del candidato, publicar work/i06-d31-public-catalog y abrir un PR funcional enlazado a #43. Luego completar CI worker/web, review GitHub exact-head, Controller GPT-6 Luna High read-only separado, Pre-Critic y merge protegido; cerrar #43 y actualizar #25; detenerse antes de #44/#33.",
+  "next_action": "Completar checks worker/web y Codex Review automático de PR #46 en el HEAD exacto; procesar hallazgos materiales; Controller delegado separado GPT-6 Luna High read-only sobre SHA final; Pre-Critic, merge protegido, cierre #43 y actualización #25; detenerse antes de #44/#33.",
   "stop_reason": null,
   "event": {
-    "seq": 210,
-    "summary": "Consolidar implementación pública D3.1 y QA local integrado; preparar PR funcional #43"
+    "seq": 211,
+    "summary": "Publicar candidato funcional en PR #46 y reconciliar el checkpoint con la rama activa"
   },
   "external_review": null,
   "human_gate": {
@@ -24,13 +24,13 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "url": null,
+    "number": 46,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46",
     "branch": "work/i06-d31-public-catalog",
     "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
-    "executable_sha": null,
-    "status": "IMPLEMENTING_LOCAL",
-    "executable_tree": null
+    "executable_sha": "92195ca856d7752379257e876132dd4839447058",
+    "status": "OPEN_CHECKS_AND_REVIEW_PENDING",
+    "executable_tree": "805aaeed939ff688fcddc19bbc54ade1afe6c4dc"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -81,13 +81,13 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/43",
     "contract": ".orchestration/contracts/CF-AU-I06.6-P2-PUBLIC-CATALOG-D31.md",
-    "status": "IMPLEMENTING_LOCAL",
+    "status": "PR_OPEN_CHECKS_AND_REVIEW_PENDING",
     "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
     "branch": "work/i06-d31-public-catalog",
     "scope": "D3.1 public catalog, listing detail and contact only. Preserve public APIs, filtering, price/period, availability/freshness, image permissions/URLs, idempotent contact and security; no OWNER/ADMIN, Preview or production.",
     "direction": "D3.1 approved in #41, commit 77c99fa445171a58548e6e06497050bf2d923305; C from #29 is historical only.",
     "code_status": "D3.1 catálogo, detalle y formulario conservados sobre APIs existentes; formato de precio ISO explícito, promoción de la siguiente foto válida, fallbacks distintos para ausencia/fallo y CTA a consulta. Ningún cambio Worker/API.",
-    "next_action": "Validar el candidato consolidado; publicar branch/PR #43 y obtener worker/web CI + GitHub review exact-head; corregir solo hallazgos materiales y revisar Controller separado read-only sobre el SHA definitivo; Pre-Critic y merge protegido; actualizar #43/#25 y detenerse antes de #44/#33.",
+    "next_action": "Esperar CI worker/web y Codex Review de PR #46 sobre el HEAD actual; resolver hallazgos materiales; Controller final read-only sobre SHA exacto; Pre-Critic y merge protegido; cerrar #43/actualizar #25 y detenerse.",
     "local_checks": {
       "baseline_public_e2e": "PASS 4/4 sobre main@639ba0e con Vue + Worker/Hono + D1 local sintética; capturas antes preservadas.",
       "baseline_capture": "output/playwright/i06.6-p2/before/ catálogo y ficha/contacto en 1440, 390 y 320 px.",
@@ -98,9 +98,9 @@
       "web_builds": "PASS typecheck, build, build:preview (local build only; sin deploy).",
       "repository_checks": "PASS Python 25/25, consistency validator --base origin/main, git diff --check."
     },
-    "github_checks": "PENDING",
-    "github_review": "PENDING",
-    "controller": "PENDING"
+    "github_checks": "PENDING exact current PR head after state/PR reconciliation commit",
+    "github_review": "PENDING automatic Codex Review on exact current PR head",
+    "controller": "PENDING delegated separate codex exec GPT-6 Luna High read-only on exact final SHA"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

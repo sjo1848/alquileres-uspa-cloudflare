@@ -1677,3 +1677,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Matriz Worker de Quick checks: typecheck y ocho grupos PASS, 71 tests; `npm run typecheck`, `build` y `build:preview` web PASS; `scripts/tests` Python 25/25 PASS; validador consistency `--base origin/main` y `git diff --check` PASS. El primer diagnóstico E2E encontró que la grilla desktop del buscador había quedado aplicada a mobile; se corrigió y la suite final confirma ancho documental dentro de 320px.
 - Estado de revisiones remotas: pendiente (aún no hay commit/PR). No afirmar CI GitHub, Codex Review, Controller ni Pre-Critic.
 - **READY_TO_RESUME:** finalizar el build local iniciado después del último ajuste visual; publicar branch/PR funcional de #43, completar CI worker/web y revisión automática exact-head, corregir hallazgos materiales, ejecutar Controller separado GPT-6 Luna High read-only y Pre-Critic, integrar con protección, cerrar #43 y actualizar #25; detenerse antes de #44/#33.
+
+
+## Event 211 — PR funcional #46 publicado
+
+- Candidato ejecutable publicado: commit `92195ca856d7752379257e876132dd4839447058`, tree `805aaeed939ff688fcddc19bbc54ade1afe6c4dc`, PR #46 (`work/i06-d31-public-catalog` → `main`), base `639ba0eacb02be6ed96f6ba8746959c792d57e48`. El checkpoint de estado de PR se reconcilia en este mismo PR funcional; la revisión deberá evaluar el HEAD posterior exacto.
+- Los resultados locales y las capturas comparativas están en Event 210 y `output/playwright/i06.6-p2/QA.md`. Los controles GitHub exact-head y la revisión automática aún no tienen resultado; tampoco Controller ni Pre-Critic. No mergear hasta su PASS.
+- **READY_TO_RESUME:** identificar el HEAD exacto del PR #46 tras la reconciliación, verificar worker/web y review GitHub; corregir hallazgos materiales y rerun afectado; correr Controller separado GPT-6 Luna High read-only sobre el candidato definitivo, completar Pre-Critic y merge protegido. Cerrar #43 y actualizar #25, detenerse antes de #44/#33.
