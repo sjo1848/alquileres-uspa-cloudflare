@@ -370,6 +370,12 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - **Pre-Critic: PASS para publicar el candidato consolidado y renovar exact-head CI/review y Controller.** No equivale a aprobación de merge. Worker/web y review de GitHub en `65a59e8` están supersedidos y deben renovarse en el nuevo PR HEAD; Controller de ese SHA fue REWORK, corregido en el código consolidado.
 - Merge requiere nuevo `worker`/`web` PASS, review automática sin hallazgos en HEAD exacto, Controller calificado GPT-6 Luna/High/solo lectura sobre exact artifact, validador, conversaciones resueltas y protecciones de `main`. No cambiar Preview/CD/Access ni datos remotos.
 
+## I07 — GitHub review REWORK OWNER-create/assisted-delete
+
+- La review automática de commit previo `a90f202` señaló que la auditoría de borrado asistido no acreditaba el ID de un alojamiento creado por OWNER si luego desaparecía su fila. Reparado en código `f30d201`: audit exacto `ADMIN_ASSISTED_LISTING_DELETED` con ADMIN sintético y OWNER target da procedencia al ID; discrepancias, target ausente y eventos huérfanos no relacionados siguen bloqueados.
+- Evidencia: `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-A90F202.md`; pruebas focalizadas 25/25 y Python suite 50/50 PASS.
+- No hay Pre-Critic PASS final aún. El tracking checkpoint debe publicarse; después se requieren checks worker/web, review exacta, Controller final sobre ejecutable exacto y gate de integración.
+
 ## I07 — tercera Controller REWORK: relaciones OWNER/ADMIN reparadas
 
 - Controller separado cualificado en exact artifact `a69f6de` encontró P1: guard aceptaba listing propiedad de ADMIN, audit actor OWNER, target ADMIN o mismatch entre target y listing owner. Mismo informe propuso hardening P2 del parser JSONL (UUID canónico y orden único envelope→preview). Evidencia completa y provenance: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-A69F6DE.md` y su salida redacted.
