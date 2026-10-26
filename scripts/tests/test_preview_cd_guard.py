@@ -117,13 +117,13 @@ class PreviewCdGuardTests(unittest.TestCase):
         snapshot["listings"] = snapshot["listings"][1:]
         guard.validate_synthetic_provenance(snapshot, manifest)
 
-    def test_provenance_allows_audit_for_deleted_synthetic_listing_and_null_target(self):
+    def test_provenance_allows_audit_for_deleted_synthetic_listing(self):
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["audit_events"].append({
             "id": "audit-after-synthetic-delete",
             "listing_id": "synthetic-casa-rio",
             "actor_id": "synthetic-catalog-admin",
-            "target_owner_id": None,
+            "target_owner_id": "synthetic-catalog-owner",
             "action": "ADMIN_LISTING_DELETED",
             "created_at": "2026-10-27T12:02:00Z",
         })
@@ -171,6 +171,28 @@ class PreviewCdGuardTests(unittest.TestCase):
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["listings"][0].update(status="APPROVED", publication_status="PUBLISHED")
         guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_role_and_listing_owner_mismatches(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"].append({"id": "admin-owned-listing", "owner_id": "synthetic-catalog-admin", "status": "DRAFT", "publication_status": "UNPUBLISHED", "created_at": "2026-10-27T12:00:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "must have the OWNER role"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({"id": "owner-actor", "listing_id": "synthetic-casa-rio", "actor_id": "synthetic-catalog-owner", "target_owner_id": "synthetic-catalog-owner", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "actor must have the ADMIN role"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({"id": "admin-target", "listing_id": "synthetic-casa-rio", "actor_id": "synthetic-catalog-admin", "target_owner_id": "synthetic-catalog-admin", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "target identity must have the OWNER role"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"].append({"id": "different-synthetic-owner", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 1})
+        snapshot["audit_events"].append({"id": "owner-mismatch", "listing_id": "synthetic-casa-rio", "actor_id": "synthetic-catalog-admin", "target_owner_id": "different-synthetic-owner", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "does not match the listing owner"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
 
     def test_provenance_rejects_unverified_audit_actors_and_invalid_states(self):
         manifest, snapshot = self._synthetic_snapshot()
@@ -230,6 +252,11 @@ class PreviewCdGuardTests(unittest.TestCase):
             path = Path(directory) / "output.json"
             path.write_text(json.dumps(payload))
             stable, immutable, returned_id = guard.parse_deploy_output(path)
+            for bad_id in ("12345678--1234-1234-1234-1234567890ab", "123456781234123412341234567890ab", "12345678-1234-1234-1234-1234567890zz"):
+                invalid = {**payload, "deployment_id": bad_id, "deployment_urls": [f"https://{bad_id[:8]}-alquileres-uspa-lab.sjo1848.workers.dev"]}
+                path.write_text(json.dumps(invalid))
+                with self.assertRaisesRegex(guard.PolicyError, "expected stable URL and deployment identifier"):
+                    guard.parse_deploy_output(path)
         self.assertEqual(stable, guard.TARGET["stable_url"])
         self.assertEqual(returned_id, deployment_id)
         self.assertTrue(immutable.endswith(".workers.dev"))
@@ -255,10 +282,17 @@ class PreviewCdGuardTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "output.jsonl"
             path.write_text(json.dumps(preview) + "\n" + json.dumps(preview) + "\n")
-            with self.assertRaisesRegex(guard.PolicyError, "one Preview record"):
+            with self.assertRaisesRegex(guard.PolicyError, "one Preview"):
                 guard.parse_deploy_output(path)
             path.write_text(json.dumps({"type": "unexpected"}) + "\n" + json.dumps(preview) + "\n")
-            with self.assertRaisesRegex(guard.PolicyError, "known session records"):
+            with self.assertRaisesRegex(guard.PolicyError, "one Preview"):
+                guard.parse_deploy_output(path)
+            session = {"type": "wrangler-session", "version": 1}
+            path.write_text(json.dumps(session) + "\n" + json.dumps(session) + "\n" + json.dumps(preview) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "optionally preceded"):
+                guard.parse_deploy_output(path)
+            path.write_text(json.dumps(preview) + "\n" + json.dumps(session) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "optionally preceded"):
                 guard.parse_deploy_output(path)
 
     def test_deployment_output_rejects_unexpected_worker_or_url(self):

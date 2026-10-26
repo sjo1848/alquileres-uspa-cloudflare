@@ -17,6 +17,7 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "apps/worker"
+CANONICAL_UUID = re.compile(r"^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$")
 PROVENANCE = ROOT / ".orchestration/evidence/CF-AU-PREVIEW-D1-PROVENANCE.json"
 MIGRATIONS = ROOT / ".orchestration/evidence/preview-migration-allowlist.json"
 TARGET = {
@@ -228,11 +229,20 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
             raise PolicyError("reviewed synthetic listing identity anchors changed")
     valid_statuses = {"DRAFT", "REJECTED", "SUBMITTED", "APPROVED"}
     valid_publication = {"UNPUBLISHED", "PUBLISHED"}
+    synthetic_listing_owners = {
+        listing_id: row.get("owner_id")
+        for listing_id, row in listings_by_id.items()
+    }
+    for listing_id, baseline in expected_listings.items():
+        synthetic_listing_owners.setdefault(listing_id, baseline.get("owner_id"))
     for row in listings:
         status = row.get("status")
         publication_status = row.get("publication_status")
-        if row.get("owner_id") not in synthetic_user_ids:
+        owner_id = row.get("owner_id")
+        if owner_id not in synthetic_user_ids:
             raise PolicyError("a listing is not owned by a verified synthetic identity")
+        if synthetic_user_roles.get(owner_id) != "OWNER":
+            raise PolicyError("a listing owner identity must have the OWNER role")
         if status not in valid_statuses or publication_status not in valid_publication:
             raise PolicyError("a listing has an unrecognized workflow state")
         if publication_status == "PUBLISHED" and status != "APPROVED":
@@ -246,20 +256,29 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
     for event_id, baseline in expected_audit.items():
         if any(audit_by_id[event_id].get(field) != baseline.get(field) for field in immutable_audit_fields):
             raise PolicyError("reviewed synthetic audit identity anchors changed")
-    synthetic_listing_ids = set(listings_by_id) | set(expected_listings)
     for row in audit_events:
+        actor_id = row.get("actor_id")
         target_owner_id = row.get("target_owner_id")
-        if row.get("actor_id") not in synthetic_user_ids or (target_owner_id is not None and target_owner_id not in synthetic_user_ids):
+        listing_id = row.get("listing_id")
+        if actor_id not in synthetic_user_ids or (target_owner_id is not None and target_owner_id not in synthetic_user_ids):
             raise PolicyError("an audit event refers to a non-synthetic identity")
-        if (
-            row.get("action") == "ADMIN_ASSISTED_LISTING_CREATED"
-            and row.get("listing_id")
-            and synthetic_user_roles.get(row.get("actor_id")) == "ADMIN"
-            and synthetic_user_roles.get(target_owner_id) == "OWNER"
-        ):
-            synthetic_listing_ids.add(row["listing_id"])
-    if any(row.get("listing_id") is not None and row.get("listing_id") not in synthetic_listing_ids for row in audit_events):
-        raise PolicyError("an audit event refers to a listing without synthetic provenance")
+        if synthetic_user_roles.get(actor_id) != "ADMIN":
+            raise PolicyError("an audit event actor must have the ADMIN role")
+        if target_owner_id is not None and synthetic_user_roles.get(target_owner_id) != "OWNER":
+            raise PolicyError("an audit target identity must have the OWNER role")
+        if row.get("action") == "ADMIN_ASSISTED_LISTING_CREATED" and listing_id:
+            if target_owner_id is None:
+                raise PolicyError("an assisted-create audit event must identify its OWNER target")
+            known_owner = synthetic_listing_owners.get(listing_id)
+            if known_owner is not None and known_owner != target_owner_id:
+                raise PolicyError("an audit target does not match the listing owner")
+            synthetic_listing_owners[listing_id] = target_owner_id
+        if listing_id is not None:
+            expected_owner_id = synthetic_listing_owners.get(listing_id)
+            if expected_owner_id is None:
+                raise PolicyError("an audit event refers to a listing without synthetic provenance")
+            if target_owner_id != expected_owner_id:
+                raise PolicyError("an audit target does not match the listing owner")
 
     if observed.get("counts", {}).get("non_synthetic_user_email_count") != 0:
         raise PolicyError("D1 contains a user with a non-synthetic email domain")
@@ -362,7 +381,7 @@ def current_preview() -> tuple[str, str, str]:
     deployment = _cloudflare_get(base + "/deployments/latest")
     deployment_id = deployment.get("id")
     deployment_urls = deployment.get("urls", [])
-    if not isinstance(deployment_id, str) or not re.fullmatch(r"[0-9a-f-]{36}", deployment_id):
+    if not isinstance(deployment_id, str) or not CANONICAL_UUID.fullmatch(deployment_id):
         raise PolicyError("latest Preview deployment has no valid deployment ID")
     expected_immutable = f"https://{deployment_id[:8]}-{TARGET['worker_name']}.sjo1848.workers.dev"
     if deployment_urls != [expected_immutable]:
@@ -396,10 +415,10 @@ def _preview_object_from_output(path: Path) -> dict:
         records.append(record)
     if not records:
         raise PolicyError("Wrangler Preview output has no JSON records")
-    previews = [record for record in records if record.get("type") == "preview"]
-    if len(previews) != 1 or any(record.get("type") not in {"preview", "wrangler-session"} for record in records):
-        raise PolicyError("Wrangler Preview JSONL output must contain one Preview record and known session records only")
-    return previews[0]
+    record_types = [record.get("type") for record in records]
+    if record_types not in (["preview"], ["wrangler-session", "preview"]):
+        raise PolicyError("Wrangler Preview JSONL records must be one Preview, optionally preceded by one session record")
+    return records[-1]
 
 
 def parse_deploy_output(path: Path) -> tuple[str, str, str]:
