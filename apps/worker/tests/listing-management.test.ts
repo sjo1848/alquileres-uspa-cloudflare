@@ -141,9 +141,9 @@ describe('ADMIN-assisted lifecycle',()=>{
     expect(await (await request(`/admin/listings/assisted/${created.id}`,'PATCH',patch,adminCookie,'assisted-update-mgmt')).json()).toEqual(updatedBody);
     expect((await request(`/admin/listings/assisted/${created.id}`,'PATCH',{...patch,title:'Key reutilizada'},adminCookie,'assisted-update-mgmt')).status).toBe(409);
     const unavailable=await request(`/admin/listings/assisted/${created.id}/availability`,'PATCH',{availabilityStatus:'UNAVAILABLE'},adminCookie,'assisted-availability-mgmt');
-    expect(unavailable.status).toBe(200);expect(await unavailable.json()).toMatchObject({availabilityStatus:'UNAVAILABLE',lastConfirmedAt:expect.any(String)});
+    expect(unavailable.status).toBe(200);expect(await unavailable.json()).toMatchObject({availabilityStatus:'UNAVAILABLE',freshnessStatus:'FRESH',lastConfirmedAt:expect.any(String)});
     const reconfirm=await request(`/admin/listings/assisted/${created.id}/reconfirm`,'POST',undefined,adminCookie,'assisted-reconfirm-mgmt');
-    expect(reconfirm.status).toBe(200);expect(await reconfirm.json()).toMatchObject({availabilityStatus:'UNAVAILABLE',lastConfirmedAt:expect.any(String)});
+    expect(reconfirm.status).toBe(200);expect(await reconfirm.json()).toMatchObject({availabilityStatus:'UNAVAILABLE',freshnessStatus:'FRESH',lastConfirmedAt:expect.any(String)});
     const submitted=await request(`/admin/listings/assisted/${created.id}/submit`,'POST',undefined,adminCookie,'assisted-submit-mgmt');
     expect(submitted.status).toBe(200);const submittedBody=await submitted.json();expect(submittedBody).toMatchObject({status:'SUBMITTED',publicationStatus:'UNPUBLISHED'});
     expect(await (await request(`/admin/listings/assisted/${created.id}/submit`,'POST',undefined,adminCookie,'assisted-submit-mgmt')).json()).toEqual(submittedBody);

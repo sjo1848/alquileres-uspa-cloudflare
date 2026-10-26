@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { apiUrl, ApiError } from '../api';
 import { useSession } from '../session';
+import { availabilityLabel, freshnessLabel, type FreshnessStatus } from './availability-helpers';
 import { adminActionLabel, adminDurationLabel, formatAdminPrice, formatAdminTimestamp } from './admin-display';
 
 type ReviewItem = {
@@ -9,6 +10,7 @@ type ReviewItem = {
   priceAmount: number | null; pricePeriod: string | null; currency: string | null;
   rentalDuration: string | null; maxOccupants: number | null;
   availabilityStatus: 'AVAILABLE' | 'UNAVAILABLE' | null; lastConfirmedAt: string | null;
+  freshnessStatus: FreshnessStatus;
   createdAt: string; updatedAt: string; rejectionReason: string | null;
   status: 'SUBMITTED' | 'APPROVED' | 'REJECTED';
   publicationStatus: 'UNPUBLISHED' | 'PUBLISHED'; requiresMediaRecovery: boolean;
@@ -25,6 +27,7 @@ const nextCursor = ref<ReviewCursor | null>(null);
 const selectedId = ref(''), reason = ref(''), busy = ref(false), loading = ref(true), auditLoading = ref(false);
 const error = ref(''), auditError = ref(''), notice = ref(''), compact = ref(false), mobileDetailOpen = ref(false);
 const queueButtonRefs = new Map<string, HTMLButtonElement>();
+const detailBackButton = ref<HTMLButtonElement | null>(null);
 let mediaQuery: MediaQueryList | null = null;
 let requestGeneration = 0;
 const selected = computed(() => queue.value.find(item => item.id === selectedId.value) ?? null);
@@ -74,11 +77,16 @@ async function load(append = false) {
 }
 async function refresh() { await Promise.all([load(false), loadAudit()]); }
 async function loadMore() { if (!loading.value && nextCursor.value) await load(true); }
-function selectListing(id: string) {
+async function selectListing(id: string) {
   if (busy.value) return;
   if (compact.value) mobileDetailOpen.value = true;
-  if (id === selectedId.value) return;
-  selectedId.value = id; reason.value = ''; error.value = ''; notice.value = '';
+  if (id !== selectedId.value) {
+    selectedId.value = id; reason.value = ''; error.value = ''; notice.value = '';
+  }
+  if (compact.value) {
+    await nextTick();
+    detailBackButton.value?.focus();
+  }
 }
 async function backToQueue() {
   mobileDetailOpen.value = false;
@@ -160,7 +168,7 @@ onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
 
       <article class="admin-detail-panel" :class="{ 'is-mobile-hidden': compact && !mobileDetailOpen }" aria-labelledby="admin-detail-title">
         <template v-if="selected">
-          <button v-if="compact" class="admin-back-button" type="button" @click="backToQueue">← Volver a la lista</button>
+          <button v-if="compact" ref="detailBackButton" class="admin-back-button" type="button" @click="backToQueue">← Volver a la lista</button>
           <header class="admin-detail-heading">
             <div><p class="admin-eyebrow">Detalle para decisión</p><h2 id="admin-detail-title">{{ selected.title || 'Alojamiento sin título' }}</h2></div>
             <span class="admin-status-pill" :class="statusClass(selected)">{{ statusLabel(selected) }}</span>
@@ -171,7 +179,7 @@ onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
             <div><span>Precio</span><strong>{{ formatAdminPrice(selected.priceAmount, selected.currency, selected.pricePeriod) }}</strong></div>
             <div><span>Estadía</span><strong>{{ adminDurationLabel(selected.rentalDuration) }}</strong></div>
             <div><span>Capacidad</span><strong>{{ selected.maxOccupants ? `Hasta ${selected.maxOccupants} personas` : 'No informada' }}</strong></div>
-            <div><span>Disponibilidad declarada</span><strong>{{ selected.availabilityStatus === 'AVAILABLE' ? 'Disponible' : selected.availabilityStatus === 'UNAVAILABLE' ? 'No disponible' : 'No informada' }}</strong></div>
+            <div><span>Disponibilidad declarada</span><strong>{{ selected.availabilityStatus ? availabilityLabel(selected.availabilityStatus, selected.freshnessStatus) : 'No informada' }}</strong><small>{{ freshnessLabel(selected.freshnessStatus, selected.lastConfirmedAt) }}</small></div>
             <div><span>Última confirmación</span><strong>{{ formatAdminTimestamp(selected.lastConfirmedAt) }} <small>· hora de Mendoza</small></strong></div>
           </section>
           <section v-if="incompleteFields.length" class="admin-data-warning" aria-label="Datos no informados">
