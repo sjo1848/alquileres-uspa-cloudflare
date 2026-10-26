@@ -12,15 +12,15 @@
 | ADMIN | moderación, publicación, recorrido de publicación al catálogo; gestión asistida persistida, auditoría, fecha Mendoza | PASS 2/2 |
 | Sistema compartido | shell/navegación D3.1, teclado, foco visible y contraste base | PASS 1/1 |
 | HTTP/API y fallos | `apps/worker npm test`: claves idempotentes, ciclo HTTP, límites/fallas de medios, concurrencia, compensación y recuperación local | PASS; HTTP concluyó 285.0 s |
-| Parser JSONL y procedencia | `python3 -m unittest scripts.tests.test_preview_cd_guard -v` | PASS 22/22 |
-| Guard/script suite | `python3 -m unittest discover -s scripts/tests` | PASS 47/47 |
+| Parser JSONL y procedencia | `python3 -m unittest scripts.tests.test_preview_cd_guard -v` | PASS 26/26 |
+| Guard/script suite | `python3 -m unittest discover -s scripts/tests` | PASS 51/51 |
 | Static checks | Worker typecheck; Web typecheck + build + build:preview | PASS |
 | Rendimiento local | 25 lecturas secuenciales a `/api/public/listings?page=1` | p50 21.4 ms; p95 35.5 ms; máx. 92.8 ms. Solo Workerd+D1 local; no representa capacidad Cloudflare. |
 
 ## Cambios de QA incluidos
 
 - Imágenes positivas menores a 1 KiB muestran bytes, nunca `0 KB`; 1 KiB muestra `1.0 KB`. Se usa un formatter compartido por OWNER, revisión ADMIN y asistencia ADMIN. Regresión incluida para 69, 1023, 1024 y 12 KiB, además de tamaño no finito. La ejecución OWNER también confirma que un BLOB sintético de 124 bytes se muestra como `124 bytes`; ADMIN verifica ese tamaño en moderación y asistencia.
-- El parser trata la salida JSONL de Wrangler registro por registro, admite el envelope conocido `wrangler-session` y exactamente un registro `preview`; rechaza JSON malformado, duplicados y tipos no reconocidos.
+- El parser trata la salida JSONL de Wrangler registro por registro, admite el envelope conocido `wrangler-session` y exactamente un registro `preview`; rechaza JSON malformado, duplicados y tipos no reconocidos. Ambos formatos de deployment output exigen un UUID canónico; la regresión incluye segmentos incorrectos de 36 caracteres.
 - Tras los REWORK del Controller en `0a5a83d`, `65a59e8` y `a69f6de`, el guard conserva fail-closed: mantiene identidades/anclas auditadas, requiere usuarios/listings sintéticos y estados válidos; exige listing owner OWNER, actor ADMIN y target OWNER coincidente. Permite cambios legítimos de workflow, fechas, conteos y medios. Una creación asistida ADMIN→OWNER acredita listings nuevos; una eliminación asistida ADMIN→OWNER preserva evidencia de un listing creado por OWNER que luego se borró, incluso para sus eventos previos. Auditorías huérfanas con otras acciones o target distinto se rechazan. No selecciona textos, direcciones, emails en claro, nombres de archivo, bytes de imágenes ni contenido de consultas. La regresión cubre explícitamente OWNER-create → revisión → assisted-delete y el target discrepante.
 - Regresiones del harness arreglan una consulta SQL de fault injection que no reconocía `session_version`, prueba el acceso de lectura de fotos OWN después de submit (con mutación todavía prohibida) y ejecuta el límite de subida con una sesión válida después de logout.
 - Ajuste de aserción obsoleta en D3.1 foundations: valida el enlace OWNER existente, teclado, foco y contraste, sin exigir un CTA que no forma parte del shell actual.
@@ -46,7 +46,7 @@ Las capturas públicas fueron emitidas por `npm run test:e2e:public` en I07 y tr
 
 ## Límites y resultados aún no acreditados
 
-- GitHub `worker`/`web` y revisión automática pasaron sin hallazgos en `65a59e8`, pero ese SHA no incluye el arreglo posterior de combinaciones de estado/publicación. Deben renovarse en el nuevo HEAD. La revisión Controller de `65a59e8` fue REWORK; no hay Controller PASS.
+- Los checks de GitHub para `720bf0a` y review automática se iniciaron, pero cambios posteriores del guard invalidan esos resultados para el candidato actual. Se deben repetir sobre el HEAD consolidado. Las reviews previas encontraron REWORKs corregidos; no hay Controller PASS final todavía.
 - No hubo E2E remoto autenticado ni una nueva verificación de Access: no hay sesión remota autorizada en este proceso y I07 no autoriza desplegar.
 - El smoke de 25 requests es local y sintético. No mide límites reales ni carga concurrente de Cloudflare.
 - Pruebas automatizadas de teclado/foco ejecutadas; no se afirma certificación WCAG ni evaluación con lector de pantalla.

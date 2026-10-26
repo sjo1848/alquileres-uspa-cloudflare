@@ -270,9 +270,12 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
             raise PolicyError("an audit event actor must have the ADMIN role")
         if target_owner_id is not None and synthetic_user_roles.get(target_owner_id) != "OWNER":
             raise PolicyError("an audit target identity must have the OWNER role")
-        if row.get("action") == "ADMIN_ASSISTED_LISTING_DELETED" and listing_id:
+        if row.get("action") in {"ADMIN_ASSISTED_LISTING_CREATED", "ADMIN_ASSISTED_LISTING_DELETED"}:
+            if not isinstance(listing_id, str) or not listing_id:
+                raise PolicyError("an assisted listing audit event must reference a listing")
             if target_owner_id is None:
-                raise PolicyError("an assisted-delete audit event must identify its OWNER target")
+                raise PolicyError("an assisted listing audit event must identify its OWNER target")
+        if row.get("action") == "ADMIN_ASSISTED_LISTING_DELETED":
             known_owner = synthetic_listing_owners.get(listing_id)
             if known_owner is not None and known_owner != target_owner_id:
                 raise PolicyError("an audit target does not match the listing owner")
@@ -443,7 +446,7 @@ def parse_deploy_output(path: Path) -> tuple[str, str, str]:
     stable_urls = payload.get("preview_urls", [])
     immutable_urls = payload.get("deployment_urls", [])
     deployment_id = payload.get("deployment_id")
-    if stable_urls != [TARGET["stable_url"]] or not isinstance(deployment_id, str) or not re.fullmatch(r"[0-9a-f-]{36}", deployment_id):
+    if stable_urls != [TARGET["stable_url"]] or not isinstance(deployment_id, str) or not CANONICAL_UUID.fullmatch(deployment_id):
         raise PolicyError("Wrangler did not return the expected stable URL and deployment identifier")
     immutable = f"https://{deployment_id[:8]}-{TARGET['worker_name']}.sjo1848.workers.dev"
     if immutable_urls != [immutable]:

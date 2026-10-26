@@ -165,6 +165,24 @@ class PreviewCdGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(guard.PolicyError, "does not match the listing owner"):
             guard.validate_synthetic_provenance(snapshot, manifest)
 
+    def test_provenance_rejects_assisted_listing_audit_without_listing_or_target(self):
+        cases = [
+            ({"listing_id": None, "target_owner_id": None}, "must reference a listing"),
+            ({"listing_id": "new-assisted-delete", "target_owner_id": None}, "must identify its OWNER target"),
+            ({"listing_id": "", "target_owner_id": "synthetic-catalog-owner"}, "must reference a listing"),
+        ]
+        for fields, message in cases:
+            manifest, snapshot = self._synthetic_snapshot()
+            snapshot["audit_events"].append({
+                "id": "incomplete-assisted-delete",
+                "actor_id": "synthetic-catalog-admin",
+                "action": "ADMIN_ASSISTED_LISTING_DELETED",
+                "created_at": "2026-10-27T12:02:00Z",
+                **fields,
+            })
+            with self.subTest(fields=fields), self.assertRaisesRegex(guard.PolicyError, message):
+                guard.validate_synthetic_provenance(snapshot, manifest)
+
     def test_provenance_allows_new_assisted_creation_and_rejects_unknown_audit_listing(self):
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["audit_events"].append({
@@ -288,7 +306,7 @@ class PreviewCdGuardTests(unittest.TestCase):
             path = Path(directory) / "output.json"
             path.write_text(json.dumps(payload))
             stable, immutable, returned_id = guard.parse_deploy_output(path)
-            for bad_id in ("12345678--1234-1234-1234-1234567890ab", "123456781234123412341234567890ab", "12345678-1234-1234-1234-1234567890zz"):
+            for bad_id in ("12345678--123-1234-1234-1234567890ab", "12345678--1234-1234-1234-1234567890ab", "123456781234123412341234567890ab", "12345678-1234-1234-1234-1234567890zz"):
                 invalid = {**payload, "deployment_id": bad_id, "deployment_urls": [f"https://{bad_id[:8]}-alquileres-uspa-lab.sjo1848.workers.dev"]}
                 path.write_text(json.dumps(invalid))
                 with self.assertRaisesRegex(guard.PolicyError, "expected stable URL and deployment identifier"):
