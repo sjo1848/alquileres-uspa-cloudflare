@@ -8,11 +8,11 @@
   "last_completed_task": "I06.6 ADMIN D3.1 — PR #52 mergeado protegido; CI worker/web PASS",
   "last_completed_head": "main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
   "work_branch": "work/i07-integral-qa",
-  "next_action": "Publish this checkpoint with code artifact a133282a8ab985d57ee8846a743e4a4396817006; derive live PR #53 HEAD, wait exact-head worker/web and automatic review, then run one qualified read-only Controller on the exact final code SHA. Repair material findings and affected checks, verify main protection, and merge only after all PASS. Keep #26 open for Human Product Acceptance and stop before I08/#27.",
+  "next_action": "Publish this checkpoint with executable artifact 9310509a9c5168cfbbee0c7097c9718662f13c6e; derive the new PR #53 HEAD from GitHub, wait exact-head worker/web and automatic review, then run one qualified read-only Controller on that complete tracking SHA. Repair any material findings, verify protections and merge only after all PASS. Keep #26 open for Human Product Acceptance and stop before I08/#27.",
   "stop_reason": null,
   "event": {
-    "seq": 242,
-    "summary": "GitHub P2 fixed: verify OWNER delete receipt to preserve rejected listing provenance"
+    "seq": 243,
+    "summary": "Controller P2 fixed: assisted-delete audit now requires committed ADMIN receipt; tracking head reconciled"
   },
   "external_review": null,
   "human_gate": null,
@@ -22,13 +22,13 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/53",
     "branch": "work/i07-integral-qa",
     "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
-    "executable_sha": "a133282a8ab985d57ee8846a743e4a4396817006",
-    "executable_tree": "4b12e82a66a94c9b54f3581251975d3d085dafe7",
+    "executable_sha": "9310509a9c5168cfbbee0c7097c9718662f13c6e",
+    "executable_tree": "223a994df7a2b9cb6ffa4eebc415f6f12e156f68",
     "state": "OPEN",
-    "status": "GitHub OWNER-delete provenance P2 repaired in code artifact a133282; guard 27/27 and Python 52/52 PASS; exact-head CI/review/Controller pending.",
-    "last_observed_head_sha": "dfb26fbf85c0a6ae50a5d29e37333c765c38e763",
-    "last_observed_head_tree": "3a9da2c25f0a73d2e13a14896441988a6e5cd6af",
-    "live_head_source": "State checkpoint will follow code artifact a133282; derive live HEAD from GitHub after push."
+    "status": "OWNER and assisted deletion provenance P2s repaired in code artifact 9310509; guard 27/27 and Python 52/52 PASS; exact-head CI/review/Controller pending.",
+    "last_observed_head_sha": "9310509a9c5168cfbbee0c7097c9718662f13c6e",
+    "last_observed_head_tree": "223a994df7a2b9cb6ffa4eebc415f6f12e156f68",
+    "live_head_source": "This records the PR head observed immediately before this tracking checkpoint. The checkpoint cannot embed its own SHA; derive the complete current PR head from GitHub after push. The executable tree is unchanged by the tracking commit."
   },
   "issue_4": "CLOSED",
   "review_authority": {
@@ -98,17 +98,17 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/26",
     "contract": ".orchestration/contracts/CF-AU-I07-INTEGRAL-QA.md",
-    "status": "GITHUB_REVIEW_P2_REPAIRED_LOCAL_TESTS_PASS; NEW_EXACT_HEAD_PENDING",
+    "status": "CONTROLLER_P2_REPAIRED_LOCAL_TESTS_PASS; NEW_EXACT_HEAD_PENDING",
     "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
     "branch": "work/i07-integral-qa",
     "scope": "Integrated local/synthetic QA of public, OWNER and ADMIN workflows; fix confirmed sub-KB image display, Wrangler JSONL parser and mutable D1 synthetic-provenance guard. No Preview/CD/remote D1/Access/production/real data/R2 resource changes.",
     "evidence": "output/playwright/i07/QA.md; real local Vue+Worker/Hono+Workerd+D1 Playwright, HTTP fault/concurrency suite, static checks and Python guard regressions.",
     "local_results": "Public 5/5; OWNER 5/5 including 124-byte BLOB rendered as bytes; ADMIN 2/2 including 124-byte image in moderation and assisted management; foundations 1/1; Worker HTTP/fault/idempotency/concurrency/recovery PASS (285.0 s); guard 27/27 and scripts 52/52; Worker typecheck and Web typecheck/build/build:preview PASS; new I07 screenshots public/OWNER/ADMIN at 1440/390/320 where recorded; local catalog smoke p50 21.4 ms, p95 35.5 ms, max 92.8 ms (not Cloudflare capacity).",
-    "remaining": "Need publish the consolidated functional fix, exact-head CI worker/web and automatic review, delegated read-only Controller on exact SHA, resolve material findings and protected merge. No remote authenticated E2E; no deployment authorized.",
-    "next_action": "Publish the state checkpoint for code SHA a133282a8ab985d57ee8846a743e4a4396817006, derive live PR #53 HEAD, wait exact-head worker/web and automatic review, then run one qualified read-only Controller on the exact final code SHA. Repair material findings and affected checks, verify main protection, and merge only after all PASS. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
-    "github_checks": "worker/web passed on efa0d54, superseded by the OWNER-delete provenance fix; refresh exact-head checks after push.",
-    "github_review": "Review on efa0d54 found OWNER-delete-after-rejection provenance P2, fixed in a133282 using the committed OWNER delete receipt; re-review exact candidate required.",
-    "controller": "PASS on executable 7869af8, now superseded by the OWNER delete receipt path; fresh qualified exact-SHA read-only review required. Local guard 27/27 and Python suite 52/52.",
+    "remaining": "Need publish the tracking checkpoint, exact-head CI worker/web and automatic review, final delegated read-only Controller on complete tracking SHA, then protected merge. No remote authenticated E2E; no deployment authorized.",
+    "next_action": "Publish the state checkpoint for executable code SHA 9310509a9c5168cfbbee0c7097c9718662f13c6e, derive complete PR #53 HEAD from GitHub and review that exact tracking SHA. Wait exact worker/web and automatic review; repair material findings and affected checks, verify protection and merge only after all PASS. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
+    "github_checks": "worker/web passed on 2d2a1a3, but that candidate predates the assisted-delete receipt fix; refresh exact-head checks.",
+    "github_review": "Review on 2d2a1a3 found standalone assisted-delete audit provenance and stale last-observed HEAD. Fixed by requiring committed ADMIN assisted-delete receipt matching actor/resource; tracking metadata now records parent HEAD and avoids self-reference. New exact-head review pending.",
+    "controller": "REWORK on 2d2a1a3 found standalone assisted-delete audit acceptance and stale STATUS last_observed_head. Fixed in 9310509 + checkpoint; guard 27/27 and Python 52/52; final qualified exact tracking-SHA review required.",
     "precritic": "Pending fresh exact-head controls and qualified Controller review; do not merge.",
     "remote_authenticated_e2e": "BLOCKED_AUTH / not run; no authorized session in this process and no remote deployment in scope.",
     "production_readiness": "NOT READY / I07 is not go-live authorization."

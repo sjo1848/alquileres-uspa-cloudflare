@@ -388,6 +388,12 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Pruebas locales: guard 27/27, scripts 52/52 PASS. Informe `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-EFA0D54.md`.
 - Controller PASS de `7869af8` queda superseded por esta reparación; no Pre-Critic PASS final hasta review read-only exacta y GitHub exact-head controls.
 
+## I07 — Controller REWORK 2d2a1a3 cerrado localmente
+
+- Controller encontró dos P2: audit de assisted delete no requería recibo de idempotencia; `STATUS.json` señalaba `dfb26fb` en lugar del HEAD observado `2d2a1a3`. Ver `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-2D2A1A3.md`.
+- Reparación: snapshot mínimo consulta recibos `OWNER_LISTING_DELETE` y `ADMIN_ASSISTED_DELETE`; cada ruta exige `COMMITTED`, scope/resource y actor/rol exactos. Audit ADMIN assisted deletion debe coincidir con recibo comprometido, actor y target OWNER. Se agregó regresión para audit huérfano sin recibo. Estado anota el parent observado y explica self-reference tras push.
+- Resultados locales: guard 27/27, scripts 52/52. El candidato `9310509` y su checkpoint requieren nueva CI, GitHub review y Controller sobre el SHA completo de seguimiento. No PASS final todavía.
+
 ## I07 — tercera Controller REWORK: relaciones OWNER/ADMIN reparadas
 
 - Controller separado cualificado en exact artifact `a69f6de` encontró P1: guard aceptaba listing propiedad de ADMIN, audit actor OWNER, target ADMIN o mismatch entre target y listing owner. Mismo informe propuso hardening P2 del parser JSONL (UUID canónico y orden único envelope→preview). Evidencia completa y provenance: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-A69F6DE.md` y su salida redacted.
