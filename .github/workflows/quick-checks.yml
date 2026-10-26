@@ -10,8 +10,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: quick-checks-${{ github.ref }}
-  cancel-in-progress: true
+  group: quick-checks-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  # PR checks may be superseded; never cancel an in-flight main migration/deploy.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   worker:
@@ -71,3 +72,145 @@ jobs:
         working-directory: apps/web
       - run: npm run build:preview
         working-directory: apps/web
+
+  staging-private:
+    name: staging-private
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [worker, web]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: alquileres-uspa-private-preview
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fail-closed release gate
+        id: gate
+        env:
+          CF_PREVIEW_CD_ENABLED: ${{ vars.CF_PREVIEW_CD_ENABLED }}
+          CF_PREVIEW_D1_PROVENANCE: ${{ vars.CF_PREVIEW_D1_PROVENANCE }}
+          CF_PREVIEW_PLAN_STATUS: ${{ vars.CF_PREVIEW_PLAN_STATUS }}
+          CF_PREVIEW_ACCESS_STATUS: ${{ vars.CF_PREVIEW_ACCESS_STATUS }}
+          CF_PREVIEW_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: |
+          args=(gate --event "$GITHUB_EVENT_NAME" --ref "$GITHUB_REF" \
+            --enabled "$CF_PREVIEW_CD_ENABLED" \
+            --provenance "$CF_PREVIEW_D1_PROVENANCE" \
+            --plan-status "$CF_PREVIEW_PLAN_STATUS" \
+            --access-status "$CF_PREVIEW_ACCESS_STATUS")
+          if [[ -n "$CF_PREVIEW_API_TOKEN" ]]; then args+=(--token-present); fi
+          python3 scripts/preview_cd_guard.py "${args[@]}"
+      - name: Set up Node
+        if: steps.gate.outputs.deploy == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install web and Worker dependencies
+        if: steps.gate.outputs.deploy == 'true'
+        run: |
+          npm ci --prefix apps/web
+          npm ci --prefix apps/worker
+      - name: Build D3.1 against the pinned Preview runtime
+        if: steps.gate.outputs.deploy == 'true'
+        run: npm --prefix apps/web run build:preview
+      - name: Validate exact Preview target and generated build config
+        if: steps.gate.outputs.deploy == 'true'
+        run: python3 scripts/preview_cd_guard.py target --generated apps/web/dist/alquileres_uspa_lab/wrangler.json
+      - name: Read the existing private Preview and its latest immutable deployment
+        id: before
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CF_PREVIEW_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: python3 scripts/preview_cd_guard.py current-preview
+      - name: Verify anonymous Access denial before migration
+        if: steps.gate.outputs.deploy == 'true'
+        run: python3 scripts/preview_cd_guard.py smoke "${{ steps.before.outputs.stable_url }}" "${{ steps.before.outputs.immutable_url }}"
+      - name: Verify the current Preview JWT secret exists without reading its value
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        working-directory: apps/web
+        run: python3 ../../scripts/preview_cd_guard.py preview-secret
+      - name: Verify the source is current protected main
+        if: steps.gate.outputs.deploy == 'true'
+        run: python3 scripts/preview_cd_guard.py latest-main --sha "$GITHUB_SHA"
+      - name: Verify the synthetic D1 provenance baseline
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: python3 scripts/preview_cd_guard.py provenance
+      - name: Verify only reviewed migrations are pending
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: python3 scripts/preview_cd_guard.py migrations
+      - name: Backup the D1 and rehearse pending migrations locally
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: |
+          python3 scripts/preview_cd_guard.py rehearse \
+            --backup "$RUNNER_TEMP/alquileres-uspa-preview-pre-migration.sql" \
+            --persist-to "$RUNNER_TEMP/alquileres-uspa-preview-local-d1"
+      - name: Recheck main before remote migration
+        if: steps.gate.outputs.deploy == 'true'
+        run: python3 scripts/preview_cd_guard.py latest-main --sha "$GITHUB_SHA"
+      - name: Apply only the reviewed migration allowlist to the existing Preview D1
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: python3 scripts/preview_cd_guard.py apply-remote
+      - name: Verify remote D1 after migration
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: |
+          python3 scripts/preview_cd_guard.py provenance
+          python3 scripts/preview_cd_guard.py migrations
+      - name: Recheck main before Preview publication
+        if: steps.gate.outputs.deploy == 'true'
+        run: python3 scripts/preview_cd_guard.py latest-main --sha "$GITHUB_SHA"
+      - name: Update only the existing private Preview
+        id: deploy
+        if: steps.gate.outputs.deploy == 'true'
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          npx --no-install wrangler preview --name private --worker-name alquileres-uspa-lab \
+            --config dist/alquileres_uspa_lab/wrangler.json \
+            --message "main ${GITHUB_SHA}" --json > "$RUNNER_TEMP/preview-result.json"
+          python3 ../../scripts/preview_cd_guard.py deploy-output \
+            --file "$RUNNER_TEMP/preview-result.json" >> "$GITHUB_OUTPUT"
+      - name: Verify the JWT secret remains available on the updated Preview
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        working-directory: apps/web
+        run: python3 ../../scripts/preview_cd_guard.py preview-secret
+      - name: Verify Access still blocks the stable and immutable URLs
+        id: smoke
+        if: steps.gate.outputs.deploy == 'true'
+        run: python3 scripts/preview_cd_guard.py smoke https://private-alquileres-uspa-lab.sjo1848.workers.dev "${{ steps.deploy.outputs.immutable_url }}"
+      - name: Record verified Preview release
+        if: steps.gate.outputs.deploy == 'true' && steps.smoke.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          STABLE_URL: ${{ steps.deploy.outputs.stable_url }}
+          IMMUTABLE_URL: ${{ steps.deploy.outputs.immutable_url }}
+          DEPLOYMENT_ID: ${{ steps.deploy.outputs.deployment_id }}
+        run: |
+          set -euo pipefail
+          body=$(printf 'Automated private Preview release\n\n- Source SHA: `%s`\n- Deployment ID: `%s`\n- Stable URL: %s\n- Immutable URL: %s\n- Anonymous Access checks: 12/12 denied before application access.\n- Remote authenticated browser journeys: BLOCKED_AUTH (no Access session in CI).\n- D1: existing synthetic Preview database; reviewed migration allowlist only.\n- No production, Access policy changes, R2, resource creation, seed, or external data.' "$SOURCE_SHA" "$DEPLOYMENT_ID" "$STABLE_URL" "$IMMUTABLE_URL")
+          gh issue comment 48 --repo "$GITHUB_REPOSITORY" --body "$body"
+          gh issue comment 25 --repo "$GITHUB_REPOSITORY" --body "$body"

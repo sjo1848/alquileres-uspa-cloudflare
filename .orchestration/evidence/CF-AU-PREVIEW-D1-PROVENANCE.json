@@ -1,0 +1,92 @@
+{
+  "observed_at": "2026-10-26",
+  "database_name": "alquileres-uspa-preview-synthetic",
+  "classification": "synthetic_test_data_supported_by_owner_and_admin_audit_timeline",
+  "content_read": false,
+  "users": [
+    {
+      "id": "synthetic-catalog-admin",
+      "role": "ADMIN",
+      "created_at": "2026-10-18T00:00:00.000Z",
+      "updated_at": "2026-10-18T00:00:00.000Z"
+    },
+    {
+      "id": "synthetic-catalog-owner",
+      "role": "OWNER",
+      "created_at": "2026-10-16T00:00:00.000Z",
+      "updated_at": "2026-10-16T00:00:00.000Z"
+    }
+  ],
+  "listings": [
+    {
+      "id": "synthetic-cabana-cerro",
+      "owner_id": "synthetic-catalog-owner",
+      "status": "APPROVED",
+      "publication_status": "PUBLISHED",
+      "created_at": "2026-10-14T12:00:00.000Z",
+      "updated_at": "2026-10-18T19:15:06.906Z",
+      "static_image_count": 1,
+      "d1_blob_image_count": 0,
+      "d1_blob_first_created_at": null,
+      "d1_blob_last_created_at": null,
+      "d1_blob_total_bytes": 0
+    },
+    {
+      "id": "synthetic-casa-rio",
+      "owner_id": "synthetic-catalog-owner",
+      "status": "APPROVED",
+      "publication_status": "PUBLISHED",
+      "created_at": "2026-10-15T12:00:00.000Z",
+      "updated_at": "2026-10-18T19:15:29.179Z",
+      "static_image_count": 1,
+      "d1_blob_image_count": 0,
+      "d1_blob_first_created_at": null,
+      "d1_blob_last_created_at": null,
+      "d1_blob_total_bytes": 0
+    },
+    {
+      "id": "dcc5b72f-c0ff-43c8-a952-fae5c7415013",
+      "owner_id": "synthetic-catalog-owner",
+      "status": "APPROVED",
+      "publication_status": "PUBLISHED",
+      "created_at": "2026-10-17T01:15:04.158Z",
+      "updated_at": "2026-10-18T19:15:32.294Z",
+      "static_image_count": 0,
+      "d1_blob_image_count": 2,
+      "d1_blob_first_created_at": "2026-10-17T01:17:07.642Z",
+      "d1_blob_last_created_at": "2026-10-17T01:17:19.804Z",
+      "d1_blob_total_bytes": 21015
+    }
+  ],
+  "audit_events": [
+    {
+      "id": "770c1052-d18f-420e-96be-b04e65145184",
+      "listing_id": "dcc5b72f-c0ff-43c8-a952-fae5c7415013",
+      "actor_id": "synthetic-catalog-admin",
+      "target_owner_id": "synthetic-catalog-owner",
+      "action": "ADMIN_LISTING_APPROVED",
+      "created_at": "2026-10-18T18:59:16.870Z"
+    },
+    {
+      "id": "1176c954-a0d5-4345-b144-6bfdfa233370",
+      "listing_id": "dcc5b72f-c0ff-43c8-a952-fae5c7415013",
+      "actor_id": "synthetic-catalog-admin",
+      "target_owner_id": "synthetic-catalog-owner",
+      "action": "ADMIN_LISTING_PUBLISHED",
+      "created_at": "2026-10-18T19:00:43.185Z"
+    }
+  ],
+  "counts": {
+    "contact_events": 0,
+    "non_synthetic_user_email_count": 0,
+    "idempotency_records": 3,
+    "image_operations": 0,
+    "image_reorder_operations": 0,
+    "static_listing_images": 2,
+    "users": 2,
+    "listings": 3,
+    "admin_audit_events": 2,
+    "listing_images": 2
+  },
+  "applied_migrations_through": "0012_contact_submission_idempotency.sql"
+}

@@ -1,0 +1,11 @@
+{
+  "migrations": [
+    {
+      "name": "0013_owner_auth_local.sql",
+      "sha256": "2a9f66ad40672313fad191372402ee0178a82cf6f19578e79e39943c12482908",
+      "approved_by_issue": 49,
+      "change_class": "additive_with_explicit_synthetic_user_backfill",
+      "allow_update": true
+    }
+  ]
+}

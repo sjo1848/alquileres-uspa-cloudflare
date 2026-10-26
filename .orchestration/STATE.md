@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I06_6_P3_OWNER_D31`
-Active task: `CF-AU-I06.6-P3 — OWNER D3.1 (Issue #44)`
+Phase: `CF_AU_I06_6_PREVIEW_CI_CD`
+Active task: `CF-AU-I06.6 — CI/CD al Preview privado (Issue #49)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1731,3 +1731,14 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Regresiones runtime en `apps/web/e2e/owner-journey.spec.ts`: sección/teclado/mobile, sesiones revocadas contra D1, retries, fotos D1 BLOB/Static Asset, envío/reconfirmación, inbox, acciones destructivas y permisos. Playwright OWNER completo 4/4 (3.2m); después, focales D3.1 1/1 (incluye capturas de dashboard 320 y fotos 390) y el flujo completo D1 1/1 PASS. Público 4/4 (1.7m), typecheck/build PASS.
 - Capturas auténticas antes/después 1440/390/320 y recorrido de fotos/disponibilidad en `output/playwright/i06.6-p3/`; sintéticas locales y correo MOCK. Informe verificable `output/playwright/i06.6-p3/QA.md`. Sin Preview/prod/remoto/costos/datos reales.
 - **READY_TO_RESUME:** cerrar el registro QA/Pre-Critic y validador; consolidar un commit funcional en `work/i06-d31-owner`, subir PR enlazado a #44 y esperar checks `worker`/`web` más review exact-head. Después Controller `gpt-6-luna` High solo lectura sobre SHA final, procesar rework si existe, Pre-Critic final y merge protegido; actualizar #44/#25 y detener antes de #33/#34. No Preview ni producción.
+
+
+## Event 218 — Issue #49: procedencia cotejada; candidato CI/CD local
+
+- Estado canónico reconstruido desde GitHub: `main@6863bc02c8db45aae3cd231c349ecf069bcd72c5`; PR #47 está integrado y #44 cerrado. I06.6-P3 OWNER D3.1 queda registrado en `STATUS.json` como incremento completado.
+- Se compararon únicamente metadatos mínimos de la tercera publicación con el recorrido OWNER del 16/10 y el checkpoint/auditoría ADMIN sintéticos del 18/10. ID/owner/fechas/estados, dos filas de imagen D1 BLOB con fuente/fecha/tamaño y los dos eventos ADMIN sobre el mismo ID apoyan el origen como prueba sintética. Procedencia: **SUPPORTED**, sin inspeccionar direcciones, descripciones, nombres/bytes de imágenes o consultas. Evidencia: Issue #49 comment `6416495157`; manifest sin contenido en `.orchestration/evidence/CF-AU-PREVIEW-D1-PROVENANCE.json`.
+- Tras el cotejo se respaldó el D1 existente en almacenamiento local privado (no Git, no comentario), se importó a un D1 local aislado y se ensayó `0013_owner_auth_local.sql`; metadatos y conteos se conservaron y no quedan migraciones pendientes en la copia. El D1 remoto sigue intacto con `0013` pendiente.
+- Se implementó localmente un job `staging-private` solo para push exitoso a `main`, después de worker/web, serializado y gated; PRs nunca ejecutan migraciones/despliegue. Valida destino exacto existente, baseline sintético, allowlist/hash de migración, backup + ensayo local, SHA protegido actual, secret y Access antes/después. Solo usa `wrangler preview --name private`; no R2 ni `wrangler deploy`.
+- Tests guard 13/13, Python total 38/38, Web typecheck/build:preview, actionlint v1.7.7 y smoke anónimo de Access 12/12 PASS. No hubo escritura remota; Preview actual observado continúa en deployment `c652ceb4-01aa-408c-8a3f-4abbb91b4ca7`, sin autenticación E2E desde runner.
+- GitHub no tiene configurado `CF_PREVIEW_API_TOKEN` ni variables CD. El job pasa a **SAFE SKIP** sin llamadas remotas si falta cualquier gate. No se publicará el token local de alcance amplio en Actions.
+- **READY_TO_RESUME:** completar preflight determinista y publicar un PR funcional enlazado a #49; revisar CI exact-head, GitHub review y Controller sobre el candidato consolidado; merge solo con los controles y protección vigentes. Luego observar el resultado real de CD. Si falta la credencial estrecha de Actions, mantener D1/Preview sin cambios y pedir únicamente esa provisión; no afirmar CI/CD operativo, migración o nueva URL. #33 no iniciado.
