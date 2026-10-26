@@ -48,6 +48,7 @@ class PreviewCdGuardTests(unittest.TestCase):
         self.assertIn("--name private --worker-name alquileres-uspa-lab", staging)
         self.assertIn("wrangler preview", staging)
         self.assertNotIn("wrangler deploy", staging)
+        self.assertIn("WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/preview-result.json", staging)
         self.assertIn("deploy-output", staging)
         self.assertIn('--file "$RUNNER_TEMP/preview-result.json"', staging)
         self.assertNotIn('>> "$GITHUB_OUTPUT"', staging)
@@ -117,6 +118,7 @@ class PreviewCdGuardTests(unittest.TestCase):
             "preview_urls": [guard.TARGET["stable_url"]],
             "deployment_id": deployment_id,
             "deployment_urls": [f"https://{deployment_id[:8]}-alquileres-uspa-lab.sjo1848.workers.dev"],
+            "timestamp": "2026-10-26T13:30:00.000Z",
         }
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "output.json"

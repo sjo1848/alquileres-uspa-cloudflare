@@ -184,11 +184,12 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/preview-result.json
         run: |
           set -euo pipefail
           npx --no-install wrangler preview --name private --worker-name alquileres-uspa-lab \
             --config dist/alquileres_uspa_lab/wrangler.json \
-            --message "main ${GITHUB_SHA}" --json > "$RUNNER_TEMP/preview-result.json"
+            --message "main ${GITHUB_SHA}" --json
           python3 ../../scripts/preview_cd_guard.py deploy-output \
             --file "$RUNNER_TEMP/preview-result.json"
       - name: Verify the JWT secret remains available on the updated Preview
