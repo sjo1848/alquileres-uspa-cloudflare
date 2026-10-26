@@ -185,6 +185,7 @@ test('OWNER D3.1: editor por secciones, teclado y navegación mobile lista → d
   await page.getByRole('button',{name:/Casa aprobada con fotos/}).click();
   await expect(page.getByRole('button',{name:'Mis alojamientos'})).toBeVisible();
   await page.getByRole('tab',{name:/Fotografías/}).click();
+  await expect(page.locator('.owner-image-card').first()).toContainText('124 bytes');
   const photoFrame=page.locator('.owner-image-frame').first();
   await expect(photoFrame.locator('img')).toBeVisible();
   const photoSizing=await photoFrame.evaluate(frame=>{

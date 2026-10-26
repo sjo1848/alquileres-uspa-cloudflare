@@ -356,3 +356,9 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Reparación local: auditorías se ligan a listados sintéticos activos, baseline, o una creación asistida con actor ADMIN y dueño OWNER sintéticos. Prueba negativa de ID desconocido y positivas de baseline eliminado/creación asistida agregadas. Guard 21/21 y scripts 46/46 PASS.
 - Preflight local de reparación: PASS en diff/consistencia; pendiente publicar nueva cabeza. Para merge se requiere exact-head `worker`/`web`, review GitHub sin hallazgos materiales, proceso separado de Controller que acepte explícitamente GPT-6 Luna/High/`--sandbox read-only` según v2, ausencia de conversaciones sin resolver, protección de main y Pre-Critic final. Backend identity sigue UNVERIFIED si no hay metadata verificable.
 - Sin activación de CD/Preview, cambios remotos, migraciones o datos reales. Issue #26 permanece abierto para Product Acceptance; no iniciar I08/#27.
+
+## I07 — second Controller REWORK reparado localmente
+
+- Separate-process review of `65a59e81f7f3021ae9f21107de1b2c5e4c0c3460` found P1: the provenance guard allowed `DRAFT/PUBLISHED`, `SUBMITTED/PUBLISHED`, and `REJECTED/PUBLISHED`, despite Worker publishing only `APPROVED`. It also found stale reported test counts and missing capture provenance. Full findings/runtime evidence: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-65A59E8.md`.
+- Repair in current local tree rejects `PUBLISHED` unless state is `APPROVED`; regression checks all three invalid combinations and confirms `APPROVED/PUBLISHED` remains valid. Local guard suite 22/22 and full Python suite 47/47 pass. QA.md reconciles totals and identifies fresh public captures versus reused I06 OWNER/ADMIN captures.
+- Prior exact-head GitHub checks/review on 65a59e8 passed but predate this repair; no PASS is claimed for the new tree. Fresh exact-head checks/review and qualified separate read-only Controller are required. No merge until those pass.

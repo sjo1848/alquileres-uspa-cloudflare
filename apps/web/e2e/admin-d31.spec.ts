@@ -1,10 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { formatAdminTimestamp } from '../src/views/admin-display';
 import { formatImageSize } from '../src/views/image-size';
 
 const origin = 'http://127.0.0.1:5176';
 const password = 'synthetic-owner-password-1';
+const evidence = resolve(process.cwd(), process.env.ADMIN_EVIDENCE_DIR ?? '../../output/playwright/i06.6-admin/after');
+async function capture(page: Page, name: string) {
+  await mkdir(evidence, { recursive: true });
+  await page.screenshot({ path: resolve(evidence, name), fullPage: true });
+}
 
 async function login(page: Page, email: string) {
   await page.goto('/login');
@@ -44,7 +50,7 @@ test('ADMIN D3.1 runtime captures from real local Worker and synthetic D1', asyn
   await expect(page.getByText('42.000 ARS / semana').first()).toBeVisible();
   await expect(page.getByText('Hasta 4 personas')).toBeVisible();
   await expect(page.getByText('Disponibilidad aún no confirmada')).toBeVisible();
-  await page.screenshot({ path: '../../output/playwright/i06.6-admin/after/admin-moderation-desktop-1440x1000.png', fullPage: true });
+  await capture(page, 'admin-moderation-desktop-1440x1000.png');
 
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
@@ -62,14 +68,14 @@ test('ADMIN D3.1 runtime captures from real local Worker and synthetic D1', asyn
     await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: '← Volver a la lista' })).toBeVisible();
     expect(await page.locator('body').evaluate(el => el.scrollWidth)).toBeLessThanOrEqual(width);
-    await page.screenshot({ path: `../../output/playwright/i06.6-admin/after/admin-moderation-mobile-${width}x844.png`, fullPage: true });
+    await capture(page, `admin-moderation-mobile-${width}x844.png`);
   }
 
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/admin-assist');
   await expect(page.getByRole('heading', { name: 'Gestión asistida' })).toBeVisible();
   await page.locator('.admin-assist-sidebar select').first().waitFor();
-  await page.screenshot({ path: '../../output/playwright/i06.6-admin/after/admin-assist-desktop-1440x1000.png', fullPage: true });
+  await capture(page, 'admin-assist-desktop-1440x1000.png');
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
     await page.reload();
@@ -80,7 +86,7 @@ test('ADMIN D3.1 runtime captures from real local Worker and synthetic D1', asyn
       return !control || control.getBoundingClientRect().top >= label.getBoundingClientRect().top + 16;
     }));
     expect(aligned).toBe(true);
-    await page.screenshot({ path: `../../output/playwright/i06.6-admin/after/admin-assist-mobile-${width}x844.png`, fullPage: true });
+    await capture(page, `admin-assist-mobile-${width}x844.png`);
   }
 });
 

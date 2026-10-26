@@ -229,10 +229,14 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
     valid_statuses = {"DRAFT", "REJECTED", "SUBMITTED", "APPROVED"}
     valid_publication = {"UNPUBLISHED", "PUBLISHED"}
     for row in listings:
+        status = row.get("status")
+        publication_status = row.get("publication_status")
         if row.get("owner_id") not in synthetic_user_ids:
             raise PolicyError("a listing is not owned by a verified synthetic identity")
-        if row.get("status") not in valid_statuses or row.get("publication_status") not in valid_publication:
+        if status not in valid_statuses or publication_status not in valid_publication:
             raise PolicyError("a listing has an unrecognized workflow state")
+        if publication_status == "PUBLISHED" and status != "APPROVED":
+            raise PolicyError("only an approved listing may be published")
     audit_events = observed.get("audit_events", [])
     audit_by_id = {row.get("id"): row for row in audit_events}
     expected_audit = {row.get("id"): row for row in manifest.get("audit_events", [])}

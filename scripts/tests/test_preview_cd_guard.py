@@ -161,6 +161,17 @@ class PreviewCdGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(guard.PolicyError, "without synthetic provenance"):
             guard.validate_synthetic_provenance(snapshot, manifest)
 
+    def test_provenance_rejects_published_nonapproved_states_and_accepts_approved(self):
+        for status in ("DRAFT", "SUBMITTED", "REJECTED"):
+            manifest, snapshot = self._synthetic_snapshot()
+            snapshot["listings"][0].update(status=status, publication_status="PUBLISHED")
+            with self.subTest(status=status), self.assertRaisesRegex(guard.PolicyError, "only an approved listing may be published"):
+                guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"][0].update(status="APPROVED", publication_status="PUBLISHED")
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
     def test_provenance_rejects_unverified_audit_actors_and_invalid_states(self):
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["audit_events"].append({"id": "new-event", "listing_id": None, "actor_id": "unknown", "target_owner_id": "synthetic-catalog-owner", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})

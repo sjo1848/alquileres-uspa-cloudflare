@@ -8,11 +8,11 @@
   "last_completed_task": "I06.6 ADMIN D3.1 — PR #52 mergeado protegido; CI worker/web PASS",
   "last_completed_head": "main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
   "work_branch": "work/i07-integral-qa",
-  "next_action": "Commit and push the audited listing_id provenance repair with its tests and REWORK evidence. Then derive the current PR #53 SHA; ensure its exact-head worker/web checks and GitHub review complete; run a qualified separate Codex project_controller process with GPT-6 Luna High and --sandbox read-only per operational verification v2. Resolve any material findings, validate state and protection, and protected-merge only when all gates pass. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
+  "next_action": "Commit and push the publication-state invariant, corrected evidence provenance, and Controller REWORK record; derive the new exact PR #53 HEAD and wait for worker/web plus automatic review. Then run one qualified read-only Controller process with GPT-6 Luna High on the exact final SHA, with captured CLI/session evidence; repair any material finding and rerun only affected checks. Verify current main protection and merge only if all final gates pass. Keep #26 open for Human Product Acceptance and stop before I08/#27.",
   "stop_reason": null,
   "event": {
-    "seq": 235,
-    "summary": "Controller REWORK on unverified audit listing_id fixed with fail-closed provenance and regression"
+    "seq": 236,
+    "summary": "Second Controller REWORK fixed: enforce listing status/publication invariant and correct evidence provenance"
   },
   "external_review": null,
   "human_gate": null,
@@ -25,10 +25,10 @@
     "executable_sha": "8adb1649220ae388ec7c59f531a27865f6a29c66",
     "executable_tree": "212d0c3b254164a295947bd17ce10e44c5337610",
     "state": "OPEN",
-    "status": "Controller REWORK from prior runtime was fixed locally; new exact-head checks, GitHub review and qualified read-only Controller are pending.",
-    "last_observed_head_sha": "0a5a83d7a262a8bdde0860b10d745fd4e9944f3f",
-    "last_observed_head_tree": "212d0c3b254164a295947bd17ce10e44c5337610",
-    "live_head_source": "The repair/state commit changes live PR HEAD; query GitHub after push."
+    "status": "Checks/review PASS on 65a59e8, but Controller REWORK found a workflow-state invariant P1; repaired locally and all exact-head controls must be refreshed.",
+    "last_observed_head_sha": "65a59e81f7f3021ae9f21107de1b2c5e4c0c3460",
+    "last_observed_head_tree": "249fa4455a59a2c5b9aaaac175943b2cf768adfb",
+    "live_head_source": "The next repair/evidence commit changes PR HEAD; query GitHub after push."
   },
   "issue_4": "CLOSED",
   "review_authority": {
@@ -98,17 +98,17 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/26",
     "contract": ".orchestration/contracts/CF-AU-I07-INTEGRAL-QA.md",
-    "status": "CONTROLLER_REWORK_REPAIRED_LOCAL_REVALIDATION_PENDING",
+    "status": "LOCAL_REWORKS_COMPLETE_EXACT_HEAD_CONTROLS_PENDING",
     "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
     "branch": "work/i07-integral-qa",
     "scope": "Integrated local/synthetic QA of public, OWNER and ADMIN workflows; fix confirmed sub-KB image display, Wrangler JSONL parser and mutable D1 synthetic-provenance guard. No Preview/CD/remote D1/Access/production/real data/R2 resource changes.",
     "evidence": "output/playwright/i07/QA.md; real local Vue+Worker/Hono+Workerd+D1 Playwright, HTTP fault/concurrency suite, static checks and Python guard regressions.",
     "local_results": "Public 5/5; OWNER 5/5; ADMIN 2/2; foundations 1/1; Worker HTTP/fault/idempotency suite PASS (285.0 s); Python 45/45; Worker/Web typecheck, Web build and preview build PASS; local catalog 25-request p50 21.4 ms, p95 35.5 ms, max 92.8 ms (not Cloudflare capacity).",
     "remaining": "Need commit/publish functional PR, exact-head CI worker/web, GitHub automatic review, delegated read-only Controller on exact SHA, resolve material findings and protected merge. No remote authenticated E2E; no deployment authorized.",
-    "next_action": "Commit and push the audited listing_id provenance repair with its tests and REWORK evidence. Then derive the current PR #53 SHA; ensure its exact-head worker/web checks and GitHub review complete; run a qualified separate Codex project_controller process with GPT-6 Luna High and --sandbox read-only per operational verification v2. Resolve any material findings, validate state and protection, and protected-merge only when all gates pass. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
-    "github_checks": "Pending final repaired HEAD",
-    "github_review": "Pending final repaired HEAD",
-    "controller": "REWORK finding repaired; first runtime did not verify read-only confinement; fresh qualified exact-sha review still required.",
+    "next_action": "Commit and push the publication-state invariant, corrected evidence provenance, and Controller REWORK record; derive the new exact PR #53 HEAD and wait for worker/web plus automatic review. Then run one qualified read-only Controller process with GPT-6 Luna High on the exact final SHA, with captured CLI/session evidence; repair any material finding and rerun only affected checks. Verify current main protection and merge only if all final gates pass. Keep #26 open for Human Product Acceptance and stop before I08/#27.",
+    "github_checks": "worker/web PASS on 65a59e8, superseded by current repair; new exact-head run required",
+    "github_review": "No findings on 65a59e8, superseded by current repair; new exact-head review required",
+    "controller": "Two REWORKs persisted and repaired; last separate process inspected 65a59e8 but found P1; new qualified read-only exact-sha PASS remains required.",
     "precritic": "PASS to publish one consolidated PR; final merge controls pending",
     "remote_authenticated_e2e": "BLOCKED_AUTH / not run; no authorized session in this process and no remote deployment in scope.",
     "production_readiness": "NOT READY / I07 is not go-live authorization."
@@ -1176,5 +1176,23 @@
     "finding": "Audit events could refer to an unverified listing_id because the guard did not check that field and migration 0009 has no FK; prior deleted-listing test used an arbitrary ID.",
     "repair": "Require listing id to be current, reviewed baseline, or established by ADMIN_ASSISTED_LISTING_CREATED from synthetic ADMIN to synthetic OWNER; add valid-delete/create-delete positive cases and unknown-id negative test.",
     "report": ".orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-0A5A83D.md"
+  },
+  "historical_controller_rework_i07_65a59e8": {
+    "reviewer_kind": "delegated_codex_separate_process",
+    "verdict": "REWORK",
+    "artifact_sha": "65a59e81f7f3021ae9f21107de1b2c5e4c0c3460",
+    "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
+    "model_requested": "gpt-6-luna",
+    "effort_requested": "high",
+    "cli_version": "codex-cli 0.164.0",
+    "cli_invocation": "codex exec --json --model gpt-6-luna -c model_reasoning_effort=\"high\" --sandbox read-only --ephemeral",
+    "cli_exit_code": 0,
+    "session_id": "01a17a01-126d-7573-b5cb-a461e31117c1",
+    "actual_backend_model_identity": "UNVERIFIED",
+    "read_only": "requested explicitly; captured tool calls were inspection-only; source/main/external state untouched",
+    "finding": "P1: status and publication were independently validated; DRAFT/SUBMITTED/REJECTED could be PUBLISHED although only APPROVED can be published. QA counts and screenshot provenance also needed correction.",
+    "repair": "Require APPROVED for PUBLISHED; negative regressions for invalid combinations and positive approved/published case; QA updated to 22/22 and 47/47 and states public captures from I07 vs reused OWNER/ADMIN I06 captures.",
+    "report": ".orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-65A59E8.md",
+    "github_at_review": "worker/web PASS and GitHub automatic review no findings on reviewed SHA; those predate current repair."
   }
 }
