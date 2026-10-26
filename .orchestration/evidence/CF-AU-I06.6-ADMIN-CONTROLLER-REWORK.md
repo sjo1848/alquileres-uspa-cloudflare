@@ -7,3 +7,9 @@
 - Controller no emitió PASS sobre el código modificado. Requiere una nueva revisión read-only sobre el SHA final consolidado después de GitHub CI/review; el veredicto REWORK queda preservado como evidencia histórica.
 
 - GitHub Review en `d268668` halló P2 por respuestas de auditoría fuera de orden. Corregido en el incremento siguiente con `auditRequestGeneration`, filtro por listing ID y regresión Playwright que retrasa la consulta D1 real; E2E 2/2, typecheck y build PASS. Revisión y Controller deben actualizarse para el nuevo candidato consolidado.
+
+## GitHub P2 follow-up after prior Controller PASS
+
+- GitHub automatic review of `d268668e23319958c6686c6eb5d1e26b6b8ce6f4` found audit response race between listings. This supersedes the prior Controller PASS as final approval.
+- Fixed and reproduced in final executable `59a60c576fbd71e36f6292ebf9a02e8529ac094e` / tree `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`: old response is delayed against the real local Worker/D1 endpoint; audit events from the prior listing do not overwrite the selected listing. ADMIN E2E 2/2, web typecheck/build PASS.
+- GitHub automatic review and Controller final re-run are pending on the exact live PR HEAD after state checkpoint.

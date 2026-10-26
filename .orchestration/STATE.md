@@ -1842,3 +1842,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Regresión `npm run test:e2e:admin`: 2/2 PASS sobre el código `8522f3529aaa91c861f44f1d5936a49122674583`, tree `6aee9257a90a04ed2d31e21b943efdc677fb227a`; se conserva el código de fixes de `00f8f88` y los checkpoints no ejecutables. `QA.md` registra la comprobación.
 - `STATUS.json` actualiza el SHA ejecutable y describe el HEAD observado antes del checkpoint; el nuevo checkpoint se volverá el HEAD del PR y no se auto-referenciará.
 - **READY_TO_RESUME:** consultar GitHub después del checkpoint, confirmar worker/web, GitHub review y Controller read-only sobre el SHA actual. Resolver hallazgos y repetir sólo las pruebas afectadas; ejecutar Pre-Critic final, verificar protección/conversaciones y merge protegido. Cerrar #33/#35/#37 sólo con evidencia; actualizar #25 y parar antes de #34/I07.
+
+
+## Event 231 — carrera de auditoría corregida tras GitHub P2
+
+- Review automática de GitHub sobre `d268668e23319958c6686c6eb5d1e26b6b8ce6f4` detectó una carrera P2: respuesta audit lenta para una publicación podía mostrarse en otra ficha asistida.
+- Corregido con token de generación + ID de publicación vigente, limpieza al cambiar de ficha/OWNER, borrar, crear nuevo y desmontar. La respuesta de D1 se conserva real; Playwright retrasa una petición de auditoría real y confirma que no filtra eventos entre publicaciones.
+- Código final de este rework: `59a60c576fbd71e36f6292ebf9a02e8529ac094e`, árbol `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`. Web typecheck/build y Playwright ADMIN 2/2 PASS. Las capturas se regeneraron como efecto de la misma suite.
+- El Controller PASS anterior de `d268668` queda superado por el hallazgo GitHub; no se presenta como veredicto del rework. Falta una revisión exacta nueva.
+- **READY_TO_RESUME:** actualizar este checkpoint, consultar HEAD vivo/checks/review, confirmar threads resueltos y pedir Controller read-only exacto; después final Pre-Critic/merge protegido. No Preview/CD, recursos remotos, #34/I07.

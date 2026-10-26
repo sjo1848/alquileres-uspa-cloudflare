@@ -330,3 +330,8 @@ Codex cannot use this gate to self-declare substantive PASS.
 ### Cobertura integrada de catálogo tras publicación
 
 El recorrido ADMIN ahora ejecuta también la comprobación Playwright anónima de catálogo (tarjeta y precio visibles tras publicar), además de la regresión Worker de GET público 404→200. La suite ADMIN focalizada pasó 2/2 en código `8522f3529aaa91c861f44f1d5936a49122674583`; reporte `.orchestration/evidence/CF-AU-I06.6-ADMIN-CONTROLLER-REWORK.md` y `output/playwright/i06.6-admin/QA.md`. Esto atiende el alcance del contrato, no amplía funcionalidad. Publicado; exact-head CI/reviews/Controller aún pendientes.
+
+
+### GitHub P2 — aislamiento de respuestas de auditoría
+
+Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre listados. Rework `59a60c576fbd71e36f6292ebf9a02e8529ac094e` invalida requests previas por generation+listing ID; test real retrasa response Worker/D1 y verifica que eventos de A nunca aparezcan en B. ADMIN Playwright 2/2, web typecheck/build PASS. El anterior Controller PASS de d268 está invalidado como cierre final por el nuevo P2; se requiere Controller final sobre el candidato actual.
