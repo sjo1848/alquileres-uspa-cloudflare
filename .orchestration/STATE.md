@@ -1851,3 +1851,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Código final de este rework: `59a60c576fbd71e36f6292ebf9a02e8529ac094e`, árbol `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`. Web typecheck/build y Playwright ADMIN 2/2 PASS. Las capturas se regeneraron como efecto de la misma suite.
 - El Controller PASS anterior de `d268668` queda superado por el hallazgo GitHub; no se presenta como veredicto del rework. Falta una revisión exacta nueva.
 - **READY_TO_RESUME:** actualizar este checkpoint, consultar HEAD vivo/checks/review, confirmar threads resueltos y pedir Controller read-only exacto; después final Pre-Critic/merge protegido. No Preview/CD, recursos remotos, #34/I07.
+
+
+## Event 232 — Controller PASS / cierre técnico del candidato ADMIN
+
+- `project_controller` (`delegated_codex_subagent`) revisó el exact artifact `4a043b77122abd056353a3b173718584d3f8607e`, base `0eff7358006a7e6e207387380ecc7bdd27615fb5`; **PASS acotado local**. Código ejecutable `59a60c576fbd71e36f6292ebf9a02e8529ac094e`, tree `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`. Informe: `.orchestration/evidence/critics/CF-AU-I06.6-ADMIN-D31-CONTROLLER-PASS.md`.
+- No P0/P1/P2. Confirmada carrera de auditoría protegida; hallazgos previos corregidos; criterios de seguridad/permisos y alcance intactos. Modelo solicitado/configurado GPT-6 Luna/High, read-only; identidad backend y aislamiento estructural no verificables, indicados expresamente.
+- En el artifact `4a043b7`: GitHub `worker`/`web` PASS, `staging-private` SAFE SKIP; revisión automática completada sin hallazgos; tres hilos P2 respondidos y resueltos; PR CLEAN/MERGEABLE.
+- Este evento y el reporte forman un commit de estado/evidencia que cambiará el live PR HEAD. No se autorreferencia: se registran el último HEAD observado y los SHA ejecutables; el nuevo HEAD debe derivarse de GitHub y tener checks/review actualizados antes de merge.
+- **READY_TO_RESUME:** actualizar/publicar estado+reporte, reconsultar el HEAD, esperar worker/web y revisión automática, validar no threads/mergeability/protección; completar Pre-Critic final y merge protegido. Después actualizar Issue #33/#35/#37/#25 con evidencia y detener antes de #34/I07. Sin Preview/CD/producción/R2/costos.

@@ -335,3 +335,9 @@ El recorrido ADMIN ahora ejecuta también la comprobación Playwright anónima d
 ### GitHub P2 — aislamiento de respuestas de auditoría
 
 Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre listados. Rework `59a60c576fbd71e36f6292ebf9a02e8529ac094e` invalida requests previas por generation+listing ID; test real retrasa response Worker/D1 y verifica que eventos de A nunca aparezcan en B. ADMIN Playwright 2/2, web typecheck/build PASS. El anterior Controller PASS de d268 está invalidado como cierre final por el nuevo P2; se requiere Controller final sobre el candidato actual.
+
+
+## Issue #33 — Pre-Critic de integración
+
+- Code artifact `59a60c576fbd71e36f6292ebf9a02e8529ac094e` / tree `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`, PR artifact HEAD `4a043b77122abd056353a3b173718584d3f8607e`. Local tests, evidence and consistency pass. Delegated Controller exact-artifact PASS: `.orchestration/evidence/critics/CF-AU-I06.6-ADMIN-D31-CONTROLLER-PASS.md`. GitHub review no findings; 3 threads resolved; worker/web pass; staging-private skipped.
+- **Pre-Critic result: PASS for the consolidated code artifact.** This status/evidence commit changes the PR head. Before merge, derive the new live HEAD from GitHub and verify new exact-head required checks/review, no unresolved threads, clean mergeability, and main protection. No code delta after 59a60c5 means only affected/deterministic checks should be repeated by CI.
