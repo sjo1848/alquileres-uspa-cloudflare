@@ -1895,3 +1895,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Reparación local: `PUBLISHED` requiere `APPROVED`. Regresión cubre los tres estados incompatibles y control positivo `APPROVED/PUBLISHED`. Guard 22/22, Python 47/47. QA actualiza conteos y aclara que catálogo/contacto son capturas nuevas del E2E de I07 mientras OWNER/ADMIN reutilizan evidencia I06 con jornadas vueltas a ejecutar.
 - Exact-head `worker`/`web` PASS y review sin hallazgos sobre 65a59e8 son históricos para el código anterior y no cubren este arreglo. Se requiere renovar en PR #53. No existe Controller PASS.
 - **READY_TO_RESUME:** commit/push de la reparación y estado, derivar el SHA vivo, renovar CI/review, ejecutar una única revisión separada GPT-6 Luna High solo lectura exacta con provenance de CLI/sesión y resolver defectos materiales. Merge protegido solo al pasar. Sin mutaciones remotas ni CD. Issue #26 abierto para aceptación humana; detenerse antes de I08/#27.
+
+
+## Event 237 — candidato I07 reparado consolidado
+
+- Código/tests/evidencia locales consolidados en `a69f6de128b374a7063a8ebe679f19d1665e9e17`, tree `124c60175d39426412f14b68995caba45c30d99a`, sobre base main `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`. Incluye las dos REWORK de procedencia corregidas; la revisión P1 de estados ahora rechaza DRAFT/SUBMITTED/REJECTED publicados y acepta APPROVED/PUBLISHED.
+- Regresiones verificadas después de la reparación: guard 22/22; scripts 47/47; OWNER Playwright 5/5 con BLOB real local de 124 bytes comprobado visualmente; ADMIN Playwright 2/2 con 124 bytes en moderación y asistencia. Capturas OWNER/ADMIN se regeneraron en I07 a 1440/390/320. E2E público 5/5, foundations 1/1, HTTP/fault suite 285.0 s, typecheck/build y smoke 25 requests mantienen evidencia de candidate previo con código API sin cambios.
+- Check/review GitHub y Controller en `65a59e8` no cubren estos cambios y no se reutilizan.
+- **READY_TO_RESUME:** publicar el tracking checkpoint y renovar exact-head checks/review; ejecutar qualified `codex exec` Controller sobre código `a69f6de` con Luna/High/read-only; resolver materialidad, validar protección y merge solo tras PASS. No modificar remoto; conservar #26 abierto para Product Acceptance y detenerse antes de I08/#27.

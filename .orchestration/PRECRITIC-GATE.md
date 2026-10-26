@@ -362,3 +362,10 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Separate-process review of `65a59e81f7f3021ae9f21107de1b2c5e4c0c3460` found P1: the provenance guard allowed `DRAFT/PUBLISHED`, `SUBMITTED/PUBLISHED`, and `REJECTED/PUBLISHED`, despite Worker publishing only `APPROVED`. It also found stale reported test counts and missing capture provenance. Full findings/runtime evidence: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-65A59E8.md`.
 - Repair in current local tree rejects `PUBLISHED` unless state is `APPROVED`; regression checks all three invalid combinations and confirms `APPROVED/PUBLISHED` remains valid. Local guard suite 22/22 and full Python suite 47/47 pass. QA.md reconciles totals and identifies fresh public captures versus reused I06 OWNER/ADMIN captures.
 - Prior exact-head GitHub checks/review on 65a59e8 passed but predate this repair; no PASS is claimed for the new tree. Fresh exact-head checks/review and qualified separate read-only Controller are required. No merge until those pass.
+
+## I07 — candidato reparado consolidado
+
+- Código artifact local `a69f6de128b374a7063a8ebe679f19d1665e9e17`, tree `124c60175d39426412f14b68995caba45c30d99a`; base `main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412`.
+- Corrige ambos hallazgos de procedencia del Controller, añade invariantes de workflow-state, test de OWNER visible `124 bytes`, y captura de navegador nueva para catálogo/contacto/OWNER/ADMIN. QA refleja 22/22 guard, 47/47 scripts, Owner 5/5, Admin 2/2; detalles y limitaciones en `output/playwright/i07/QA.md`.
+- **Pre-Critic: PASS para publicar el candidato consolidado y renovar exact-head CI/review y Controller.** No equivale a aprobación de merge. Worker/web y review de GitHub en `65a59e8` están supersedidos y deben renovarse en el nuevo PR HEAD; Controller de ese SHA fue REWORK, corregido en el código consolidado.
+- Merge requiere nuevo `worker`/`web` PASS, review automática sin hallazgos en HEAD exacto, Controller calificado GPT-6 Luna/High/solo lectura sobre exact artifact, validador, conversaciones resueltas y protecciones de `main`. No cambiar Preview/CD/Access ni datos remotos.
