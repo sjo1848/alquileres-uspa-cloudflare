@@ -1834,3 +1834,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Se elimina la afirmación mutable `pull_request.head_sha/head_tree` de `STATUS.json`. El SHA ejecutable inmutable sigue siendo `00f8f88b91155c8c7ed51d893b32d3f3deb824ac` y su tree `5a4842353e101bab418945123de884d0e0e68462`; el último HEAD observado antes de este estado fue `a52caef53eaf389ccc1218a6ee50e9f3972c479f` / tree `51a5eb09569d034b77f81268434c7a6cf744e35b`. El HEAD vivo siempre se obtiene de GitHub **después** del checkpoint, ya que el commit que contiene el estado se convierte en el nuevo HEAD.
 - El valor anterior queda registrado como `last_observed_head_sha`, no como HEAD actual. La nueva acción exacta exige consultar PR #52 y correr checks/review/Controller sobre el HEAD derivado.
 - **READY_TO_RESUME:** tras publicar este checkpoint, resolver controles exactos del nuevo HEAD; comprobar que el árbol ejecutable es igual a 00f8f88; completar Controller PASS y Pre-Critic; merge protegido si todo queda conforme. No tocar Preview/CD/remote D1/Access ni iniciar #34/I07.
+
+
+## Event 230 — E2E catálogo público incorporado al flujo ADMIN
+
+- Se respondió al Controller sobre la cobertura explícita de contrato: el E2E ADMIN publicado en #52 ahora valida que, después de publicar, la ruta pública anónima muestra la tarjeta y el precio `ARS 52.000`. Worker/Hono+D1 local real; captura/evidencia sintética solamente.
+- Regresión `npm run test:e2e:admin`: 2/2 PASS sobre el código `8522f3529aaa91c861f44f1d5936a49122674583`, tree `6aee9257a90a04ed2d31e21b943efdc677fb227a`; se conserva el código de fixes de `00f8f88` y los checkpoints no ejecutables. `QA.md` registra la comprobación.
+- `STATUS.json` actualiza el SHA ejecutable y describe el HEAD observado antes del checkpoint; el nuevo checkpoint se volverá el HEAD del PR y no se auto-referenciará.
+- **READY_TO_RESUME:** consultar GitHub después del checkpoint, confirmar worker/web, GitHub review y Controller read-only sobre el SHA actual. Resolver hallazgos y repetir sólo las pruebas afectadas; ejecutar Pre-Critic final, verificar protección/conversaciones y merge protegido. Cerrar #33/#35/#37 sólo con evidencia; actualizar #25 y parar antes de #34/I07.

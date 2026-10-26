@@ -325,3 +325,8 @@ Codex cannot use this gate to self-declare substantive PASS.
 ### Seguimiento canónico del HEAD del PR (rework exacto)
 
 `STATUS.json` registra el SHA/tree ejecutable inmutable por separado. El HEAD del PR es una observación derivada de GitHub, no se escribe como si el commit que contiene el estado pudiera referenciarse a sí mismo. `last_observed_head_sha` conserva el anterior HEAD `a52caef`; acción obligatoria tras este checkpoint: consultar PR #52 live HEAD y sus checks. Controller observó correctamente que Event 228 había dejado el antiguo campo como si fuera current; esta modificación corrige esa ambigüedad.
+
+
+### Cobertura integrada de catálogo tras publicación
+
+El recorrido ADMIN ahora ejecuta también la comprobación Playwright anónima de catálogo (tarjeta y precio visibles tras publicar), además de la regresión Worker de GET público 404→200. La suite ADMIN focalizada pasó 2/2 en código `8522f3529aaa91c861f44f1d5936a49122674583`; reporte `.orchestration/evidence/CF-AU-I06.6-ADMIN-CONTROLLER-REWORK.md` y `output/playwright/i06.6-admin/QA.md`. Esto atiende el alcance del contrato, no amplía funcionalidad. Publicado; exact-head CI/reviews/Controller aún pendientes.
