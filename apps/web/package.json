@@ -11,7 +11,8 @@
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit",
     "build:preview": "CF_PREVIEW_CONFIG=../worker/wrangler.preview-ci.jsonc vite build",
-    "test:e2e:foundations": "playwright test --config=playwright.foundations.config.ts"
+    "test:e2e:foundations": "playwright test --config=playwright.foundations.config.ts",
+    "test:e2e:admin": "playwright test --config=playwright.admin.config.ts"
   },
   "dependencies": {
     "vue": "^3.5.18",

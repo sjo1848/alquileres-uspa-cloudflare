@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "CF_AU_I06_6_PREVIEW_CI_CD",
+  "phase": "CF_AU_I06_6_ADMIN_D31",
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
-  "active_task": "CF-AU-I06.6 — CI/CD al Preview privado (Issue #49)",
-  "last_completed_task": "Protected Preview D3.1 publication after supported D1 provenance (Issue #48); CD implementation PR #50 integrated",
-  "last_completed_head": "main@e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f",
-  "work_branch": "work/issue-49-wrangler-output",
-  "next_action": "Wait for the existing exact-code-SHA GitHub review to finish; then resolve findings if any, complete Pre-Critic and branch-protection checks, and protected-merge PR #51. Post-merge confirm main CI safe-skips remote staging without the scoped Actions token/variables. Do not redeploy; leave the existing private Preview ready for Product Owner visual evaluation.",
+  "active_task": "CF-AU-I06.6 — ADMIN D3.1 (Issue #33)",
+  "last_completed_task": "CF-AU-I06.6 — CI/CD fail-closed implementation and D3.1 private Preview publication (Issue #49; PRs #50/#51 protected-merged); Product Owner visually approved Preview #48",
+  "last_completed_head": "main@0eff7358006a7e6e207387380ecc7bdd27615fb5",
+  "work_branch": "work/i06-d31-admin",
+  "next_action": "Commit the consolidated local D3.1 ADMIN candidate and its test/capture evidence; publish one functional PR for Issue #33, wait for exact-head worker/web CI and GitHub review, then request one GPT-6 Luna High read-only Controller review. Resolve material findings, refresh canonical PR/head fields and Pre-Critic, verify protected mergeability, merge, close #33/#35/#37 only with evidence, update #25, and stop before #34/I07. Do not touch Preview/CD/remote D1/Access.",
   "stop_reason": null,
   "event": {
-    "seq": 224,
-    "summary": "PR #51 published; exact-head worker/web PASS, GitHub review running; canonical PR checkpoint reconciled"
+    "seq": 226,
+    "summary": "ADMIN D3.1 implementation and synthetic local QA consolidated; preflight PASS to publish for exact-head reviews"
   },
   "external_review": null,
   "human_gate": {
@@ -24,16 +24,16 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": 51,
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/51",
-    "branch": "work/issue-49-wrangler-output",
-    "base_sha": "e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f",
-    "executable_sha": "a0a759ccecda7bdea5893446923ad4e48b43aa4a",
-    "executable_tree": "b97e9fbc69fd4688dfaf8a517ab8199717cee2dd",
-    "head_sha": "a0a759ccecda7bdea5893446923ad4e48b43aa4a",
-    "head_tree": "b97e9fbc69fd4688dfaf8a517ab8199717cee2dd",
-    "state": "OPEN",
-    "status": "PR #51 exact-head worker/web PASS; staging-private skipped safely; GitHub review running"
+    "number": null,
+    "url": null,
+    "branch": "work/i06-d31-admin",
+    "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
+    "executable_sha": null,
+    "executable_tree": null,
+    "head_sha": null,
+    "head_tree": null,
+    "state": "NOT_PUBLISHED",
+    "status": "Consolidated candidate locally; preflight passed; ready to publish functional PR"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -87,38 +87,20 @@
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
-    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/49",
-    "contract": ".orchestration/contracts/CF-AU-I06.6-CI-CD-PREVIEW.md",
-    "status": "IN_PROGRESS; authorized D3.1 private Preview publication completed; PR #51 output-capture fix awaiting review and protected merge",
-    "base_sha": "e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f",
-    "branch": "work/issue-49-wrangler-output",
-    "scope": "CI/CD for only the existing protected private Preview and synthetic D1; repair structured Wrangler output capture. No resources, Access changes, paid service, R2, production, real data, source repo or ADMIN #33.",
-    "provenance": "SUPPORTED; metadata-only comparison, no addresses/descriptions/image names/bytes/contact content read. Issue #49 comment 6416495157.",
-    "manual_preview_release": {
-      "source_sha": "e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f",
-      "deployment_id": "7f9cc4a7-9a96-477e-8e34-77594fe5df53",
-      "stable_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
-      "immutable_url": "https://7f9cc4a7-alquileres-uspa-lab.sjo1848.workers.dev",
-      "migration_0013": "APPLIED; metadata/provenance verified; 0 pending",
-      "access": "12/12 anonymous routes denied before/after; Access unchanged",
-      "jwt_secret": "PRESENT; value not read",
-      "remote_authenticated_e2e": "BLOCKED_AUTH"
-    },
-    "code_status": "PR #50 pipeline merged protected and one-off D3.1 publication completed. Follow-up corrects Wrangler 4.151 structured output capture via WRANGLER_OUTPUT_FILE_PATH; no second deployment.",
-    "deployment_prerequisite": "GitHub has no CF_PREVIEW_API_TOKEN secret or Preview variables; do not copy the local broad token into Actions.",
-    "local_checks": {
-      "preview_guard": "PASS 13/13 including Wrangler timestamp/output-file regression",
-      "python_suite": "PASS 38/38",
-      "actionlint": "PASS v1.7.7",
-      "consistency": "PASS on PR #51 exact HEAD",
-      "web_typecheck_build_preview": "PASS on exact merged main tree e1f319b",
-      "remote_release": "PASS existing Preview updated once; deployment verified through latest API, post-deploy secret and Access checks",
-      "authenticated_remote_e2e": "BLOCKED_AUTH; no session in executor"
-    },
-    "github_checks": "PASS exact head a0a759c; worker/web success; staging-private skipped (no token/vars)",
-    "github_review": "RUNNING on exact code SHA a0a759c",
-    "controller": "Prior PR #50 Controller PASS was on ffb0402; not a review of the new output-path correction.",
-    "next_action": "Wait for the existing exact-code-SHA GitHub review to finish; then resolve findings if any, complete Pre-Critic and branch-protection checks, and protected-merge PR #51. Post-merge confirm main CI safe-skips remote staging without the scoped Actions token/variables. Do not redeploy; leave the existing private Preview ready for Product Owner visual evaluation."
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/33",
+    "contract": ".orchestration/contracts/CF-AU-I06.6-ADMIN-D31.md",
+    "status": "IN_PROGRESS",
+    "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
+    "branch": "work/i06-d31-admin",
+    "scope": "D3.1 ADMIN moderation and assisted owner/listing management in local synthetic Vue + Worker/Hono + D1; fix #35 ADMIN mobile form overlap and #37 unambiguous time. No Preview/CD/remote D1/Access changes, #34 or I07.",
+    "visual_reference": "Issue #41 D3.1 approved; commit 77c99fa445171a58548e6e06497050bf2d923305. The implemented structure is desktop queue+contextual detail and mobile list→detail; assisted sections align with one D3.1 system.",
+    "prior_scope_reconciliation": "PR #51 merged 0eff735; PR #50/#51 CI and Preview publication facts preserved under historical_status_issue49_postmerge. Main still runs D3.1 from e1f319b; no update in this issue.",
+    "cd_guard_note": "Remain disabled. Mutable D1 provenance guard observation is Issue #49 comment 6418504412 and out of scope; do not weaken or activate CD.",
+    "next_action": "Commit the consolidated local D3.1 ADMIN candidate and its test/capture evidence; publish one functional PR for Issue #33, wait for exact-head worker/web CI and GitHub review, then request one GPT-6 Luna High read-only Controller review. Resolve material findings, refresh canonical PR/head fields and Pre-Critic, verify protected mergeability, merge, close #33/#35/#37 only with evidence, update #25, and stop before #34/I07. Do not touch Preview/CD/remote D1/Access.",
+    "github_checks": "PENDING exact PR head",
+    "github_review": "PENDING exact PR head",
+    "controller": "PENDING one final consolidated candidate",
+    "precritic": "PASS to publish candidate for exact-head checks/review; merge gate remains pending"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
@@ -1126,5 +1108,17 @@
     "precritic": "PASS; PR comment 6378434736",
     "issue_43": "CLOSED; comment 6378438739",
     "epic_25": "UPDATED; comment 6378439296"
+  },
+  "historical_status_issue49_postmerge": {
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/49",
+    "pr50_merge": "e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f",
+    "pr51_reviewed_head": "4fa00e47ea1e694b5a5adbc52e797cbdd5b4619b",
+    "pr51_merge": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
+    "main_checks_run": 40332978431,
+    "main_checks": "worker/web PASS; staging-private SAFE SKIP because CD enablement/secret variables are absent",
+    "preview_source": "e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f",
+    "preview_deployment_id": "7f9cc4a7-9a96-477e-8e34-77594fe5df53",
+    "remote_changes_in_i06_6_admin": "none",
+    "cd_provenance_guard_followup": "separately recorded at Issue #49 comment 6418504412; out of scope and must be corrected before any future activation"
   }
 }

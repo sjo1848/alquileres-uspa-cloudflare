@@ -297,3 +297,19 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Focused local gate PASS: Python 38/38 (preview guard 13/13), actionlint 1.7.7, canonical consistency/diff; Web build/typecheck are unchanged from exact main tree and already passed.
 - Current published Preview `7f9cc4a7-9a96-477e-8e34-77594fe5df53` is verified separately by Cloudflare latest-deployment API, JWT secret presence and Access 12/12; report `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`.
 - **Pre-Critic PASS to publish one focused functional PR for exact-head GitHub CI/review only.** No merge until fresh checks/review and protected-branch validation. No new deploy is part of this fix.
+
+## I06.6 ADMIN D3.1 — active functional increment #33
+
+- Authorized exact base: `main@0eff7358006a7e6e207387380ecc7bdd27615fb5`, protected merge of PR #51. Task Contract: `.orchestration/contracts/CF-AU-I06.6-ADMIN-D31.md`.
+- Approved D3.1 identity: Issue #41, reference commit `77c99fa445171a58548e6e06497050bf2d923305`; Product Owner visually accepted the existing Preview in #48. ADMIN #33 only; #34 and I07 excluded.
+- Must preserve API/authz/state/audit/idempotency/concurrency/media contracts; no unsupported photo mutations. Fix #35 ADMIN mobile form overlap and #37 timestamp rendering with deterministic tests. Preserve public/OWNER regressions.
+- Local synthetic D1/Worker/Hono + Vue Playwright at 1440/390/320 and keyboard/accessibility evidence required. Exact-head GitHub worker/web, review, separate GPT-6 Luna High read-only Controller, canonical consistency and final protected merge required.
+- PR #51 post-merge main CI: worker/web PASS, staging-private SAFE SKIP; prior Preview remains source `e1f319b` at deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`. **No Preview, D1 remote, Access, or CD mutations in #33.** CD provenance guard finding remains deferred until before activation (Issue #49 comment `6418504412`).
+- **Pre-Critic currently NOT YET ASSESSED.** No implementation candidate or tests exist on this increment's branch at task start. Run only after code, local regressions, browser evidence, and Integration Review are consolidated.
+
+## I06.6 ADMIN D3.1 — local preflight to publish (2026-10-26)
+
+- Scope: authorized Issue #33 only; D3.1 Admin moderation and assisted management. No backend, auth, database, Preview, CD, Access, resource or source-repository changes.
+- Integration Review: existing `/admin` review/publish APIs and `/admin/listings/assisted` mutation/idempotency/audit contracts remain in place; existing photo GET is read-only; role denial checked in browser; owner/public regressions rerun. #35 public contact regression and ADMIN responsive geometry are captured; fresh baseline no longer reproduced the historically reported ADMIN overlap. #37 time zone display is fixed at presentation only.
+- Evidence: `output/playwright/i06.6-admin/QA.md`; before/after screenshots, 1440/390/320 integrated ADMIN Playwright, D1 synthetic runtime. Worker `test:admin` 12/12, `test:management` 13/13, Worker typecheck, Web typecheck/build, ADMIN E2E 2/2, public E2E 4/4, OWNER E2E 5/5 all PASS. Consistency validator and diff check PASS.
+- **Pre-Critic PASS to publish one consolidated functional PR for exact-head worker/web CI and GitHub review, followed by one `project_controller` GPT-6 Luna High read-only review of the final PR SHA.** This is not final approval to merge. Merge requires exact-head required checks, GitHub review/no material unresolved threads, Controller PASS, final canonical validation and protected-branch verification. No staging CD or Preview update.
