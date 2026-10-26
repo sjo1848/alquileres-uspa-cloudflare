@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6 — CI/CD fail-closed implementation and D3.1 private Preview publication (Issue #49; PRs #50/#51 protected-merged); Product Owner visually approved Preview #48",
   "last_completed_head": "main@0eff7358006a7e6e207387380ecc7bdd27615fb5",
   "work_branch": "work/i06-d31-admin",
-  "next_action": "After this non-executable state checkpoint, read PR #52 exact current head and checks; request the automatic GitHub review and one delegated read-only project_controller GPT-6 Luna High review on that exact SHA. Repair any material finding, rerun only affected tests and refresh PR/status; merge only after all required controls and protected-branch verification.",
+  "next_action": "Refresh PR #52 exact HEAD/checks after the canonical checkpoint push, request GitHub automatic review and one delegated GPT-6 Luna High read-only Controller review on that exact SHA; repair material findings, then final Pre-Critic and protected merge only when all controls are green.",
   "stop_reason": null,
   "event": {
-    "seq": 227,
-    "summary": "Functional PR #52 published from consolidated D3.1 ADMIN candidate; exact-head CI pending"
+    "seq": 228,
+    "summary": "PR #52 reworked after exact read-only Controller findings; targeted regressions pass; refreshed exact-head controls pending"
   },
   "external_review": null,
   "human_gate": {
@@ -28,12 +28,12 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/52",
     "branch": "work/i06-d31-admin",
     "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
-    "executable_sha": "56e6050e8bcd71902248c0c2976c87b8d075df06",
-    "executable_tree": "1872b3edbe49be7efd9fc256d706af4a0c92c7b4",
-    "head_sha": "56e6050e8bcd71902248c0c2976c87b8d075df06",
-    "head_tree": "1872b3edbe49be7efd9fc256d706af4a0c92c7b4",
+    "executable_sha": "00f8f88b91155c8c7ed51d893b32d3f3deb824ac",
+    "executable_tree": "5a4842353e101bab418945123de884d0e0e68462",
+    "head_sha": "00f8f88b91155c8c7ed51d893b32d3f3deb824ac",
+    "head_tree": "5a4842353e101bab418945123de884d0e0e68462",
     "state": "OPEN",
-    "status": "PR #52 published. Exact-head worker/web are running. This canonical tracking commit is non-executable and will supersede the push SHA; request/review checks against the resulting PR head."
+    "status": "Controller REWORK findings fixed in executable commit 00f8f88; exact-head CI/review pending. A non-executable state checkpoint follows and will become the live PR HEAD."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -89,7 +89,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/33",
     "contract": ".orchestration/contracts/CF-AU-I06.6-ADMIN-D31.md",
-    "status": "PR_OPEN_CHECKS_RUNNING",
+    "status": "PR_OPEN_REWORK_CONTROLS_PENDING",
     "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
     "branch": "work/i06-d31-admin",
     "scope": "D3.1 ADMIN moderation and assisted owner/listing management in local synthetic Vue + Worker/Hono + D1; fix #35 ADMIN mobile form overlap and #37 unambiguous time. No Preview/CD/remote D1/Access changes, #34 or I07.",
@@ -97,10 +97,10 @@
     "prior_scope_reconciliation": "PR #51 merged 0eff735; PR #50/#51 CI and Preview publication facts preserved under historical_status_issue49_postmerge. Main still runs D3.1 from e1f319b; no update in this issue.",
     "cd_guard_note": "Remain disabled. Mutable D1 provenance guard observation is Issue #49 comment 6418504412 and out of scope; do not weaken or activate CD.",
     "next_action": "After this non-executable state checkpoint, read PR #52 exact current head and checks; request the automatic GitHub review and one delegated read-only project_controller GPT-6 Luna High review on that exact SHA. Repair any material finding, rerun only affected tests and refresh PR/status; merge only after all required controls and protected-branch verification.",
-    "github_checks": "PENDING exact PR head",
+    "github_checks": "PENDING refreshed exact PR head after rework",
     "github_review": "PENDING exact PR head",
-    "controller": "PENDING one final consolidated candidate",
-    "precritic": "PASS to publish candidate for exact-head checks/review; merge gate remains pending",
+    "controller": "REWORK on de88b48; fixes committed in executable 00f8f88; final exact-head review pending",
+    "precritic": "PASS to publish bounded rework and obtain exact-head controls; merge gate pending",
     "pr_number": 52,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/52"
   },
