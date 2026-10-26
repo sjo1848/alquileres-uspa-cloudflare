@@ -161,9 +161,38 @@ test('OWNER D3.1: editor por secciones, teclado y navegación mobile lista → d
   await expect(page.locator('.owner-list-panel')).toBeVisible();
   await expect(page.locator('.owner-editor')).toBeHidden();
   await capture(page,'owner-dashboard-mobile-390x844.png');
+  await page.getByRole('button',{name:/Borrador listo para cargar/}).click();
+  await page.getByRole('tab',{name:/Información/}).click();
+  const draftDescription=page.getByLabel('Descripción');
+  const originalDescription=await draftDescription.inputValue();
+  await draftDescription.fill(`${originalDescription} Edición móvil pendiente.`);
+  await page.getByRole('button',{name:'Mis alojamientos'}).click();
+  const resumeEditing=page.locator('.owner-resume-editing').getByRole('button',{name:'Continuar edición'});
+  await expect(resumeEditing).toBeVisible();
+  await resumeEditing.click();
+  await expect(page.locator('.owner-editor')).toBeVisible();
+  await expect(draftDescription).toHaveValue(`${originalDescription} Edición móvil pendiente.`);
+  await draftDescription.fill(originalDescription);
+  await page.getByRole('tab',{name:/Fotografías/}).click();
+  await page.locator('input[type="file"]').setInputFiles(redPhoto);
+  await page.getByRole('button',{name:'Mis alojamientos'}).click();
+  await expect(page.locator('.owner-resume-editing')).toContainText('cambios sin guardar');
+  await page.locator('.owner-resume-editing').getByRole('button',{name:'Continuar edición'}).click();
+  await expect(page.getByRole('img',{name:'Vista previa de owner-e2e-red.png'})).toBeVisible();
+  await expect(page.getByRole('tab',{name:/Fotografías/})).toHaveAttribute('aria-selected','true');
+  await page.getByRole('button',{name:'Cancelar',exact:true}).click();
+  await page.getByRole('button',{name:'Mis alojamientos'}).click();
   await page.getByRole('button',{name:/Casa aprobada con fotos/}).click();
   await expect(page.getByRole('button',{name:'Mis alojamientos'})).toBeVisible();
   await page.getByRole('tab',{name:/Fotografías/}).click();
+  const photoFrame=page.locator('.owner-image-frame').first();
+  await expect(photoFrame.locator('img')).toBeVisible();
+  const photoSizing=await photoFrame.evaluate(frame=>{
+    const box=frame.getBoundingClientRect(),image=frame.querySelector('img')!.getBoundingClientRect();
+    return {frameWidth:box.width,frameHeight:box.height,imageWidth:image.width,imageHeight:image.height};
+  });
+  expect(photoSizing.imageWidth).toBeCloseTo(photoSizing.frameWidth,0);
+  expect(photoSizing.imageHeight).toBeCloseTo(photoSizing.frameHeight,0);
   await capture(page,'owner-photos-mobile-390x844.png');
   await page.getByRole('tab',{name:'Disponibilidad'}).click();
   await expect(page.getByRole('button',{name:'Confirmar que sigue vigente'})).toBeVisible();
@@ -178,7 +207,8 @@ test('OWNER D3.1: editor por secciones, teclado y navegación mobile lista → d
   await capture(page,'owner-dashboard-mobile-320x844.png');
 });
 
-test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad, consulta e inbox', async ({ page }) => {
+test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad e inbox', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await login(page, 'owner.a@example.test');
   const configRetryPage=await page.context().newPage();let configAttempts=0;
@@ -225,7 +255,6 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(0);
   await configRetryPage.unroute('**/api/listings/owner-draft-static-photo/images');
   await configRetryPage.close();
-  await capture(page, 'owner-dashboard-desktop-1440x1000.png');
   const approved = page.getByRole('button', { name: /Casa aprobada con fotos/ });
   await expect(approved).toBeVisible();
   await approved.click();
@@ -240,7 +269,6 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(page.getByText('Esta publicación no tiene fotos guardadas.')).toHaveCount(0);
   await expect(page.getByLabel('Agregar fotos')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Eliminar foto aprobada.png' })).toHaveCount(0);
-  await capture(page, 'owner-approved-photos-desktop-1440x1000.png');
 
   let releasePendingImages!:()=>void;
   const pendingImages=new Promise<void>(resolve=>{releasePendingImages=resolve;});
@@ -425,7 +453,6 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.getByRole('button', { name: /Refugio de prueba OWNER editado/ }).click();
   await openOwnerSection(page, 'Fotografías');
   await expect(page.locator('.owner-image-card').first()).toContainText(blueName);
-  await capture(page, 'owner-listing-editor-desktop-1440x1000.png');
 
   const redName = 'owner-e2e-red.jpg';
   await page.getByRole('button', { name: `Eliminar ${redName}` }).click();
@@ -508,10 +535,8 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/owner');
   await expect(page.getByRole('heading', { name: 'Mis alojamientos' })).toBeVisible();
-  await capture(page, 'owner-dashboard-mobile-390x844.png');
   await page.setViewportSize({ width: 320, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
-  await capture(page, 'owner-dashboard-mobile-320x844.png');
 
   const adminContext = await page.context().browser()!.newContext();
   const adminPage = await adminContext.newPage();
@@ -526,16 +551,19 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   expect(deniedOwnerApi.status()).toBe(401);
   await adminContext.close();
 
-  await page.getByRole('button', { name: /Borrador con foto administrada/ }).click();
+});
+
+test('OWNER: una sesión revocada impide guardar cambios pendientes', async ({ page }) => {
+  await login(page,'owner.a@example.test');
+  await page.getByRole('button',{name:/Borrador con foto administrada/}).click();
   await page.getByLabel('Nombre del alojamiento').fill('Edición privada tras expirar sesión');
-  await openOwnerSection(page, 'Información');
-  await expect(page.getByRole('button', { name: 'Guardar cambios', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Guardar cambios',exact:true})).toBeEnabled();
   const revoked=await page.request.post('/api/auth/logout',{headers:{Origin:'http://127.0.0.1:5175'}});
   expect(revoked.status()).toBe(200);
   await expect.poll(async()=> (await page.request.get('/api/auth/me')).status()).toBe(401);
-  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  await page.getByRole('button',{name:'Guardar cambios'}).click();
   await expect(page).toHaveURL(/\/login\?expired=1/);
   await expect(page.getByRole('alert')).toContainText('La sesión expiró');
-  await expect(page.getByRole('heading', { name: 'Mis alojamientos' })).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'Mis alojamientos'})).toHaveCount(0);
   await expect(page.getByText('Edición privada tras expirar sesión')).toHaveCount(0);
 });

@@ -16,8 +16,8 @@ Capturas adicionales del editor responsive: [Información mobile 390](after/owne
 
 ## Verificaciones locales
 
-- Playwright OWNER completo: **4/4 PASS**, 3.2 min, Worker/Hono + D1 local sintética, correo MOCK. Incluye registro/login/logout, retries, estado de fichas, D1 BLOB y Static Assets, carga/reordenamiento/eliminación, envío a revisión, disponibilidad, inbox READ/UNREAD, sesión revocada, permisos ADMIN→OWNER, diálogos/teclado y recorrido responsive. Luego se añadieron solo capturas de dashboard 320 y fotografías 390; D3.1 focalizado sobre la versión final de las pruebas: **1/1 PASS**.
-- Playwright OWNER D3.1 focalizado: **1/1 PASS**, editor Información/Fotografías/Disponibilidad, teclado, regreso lista→detalle, 390/320 px, sin overflow.
+- Playwright OWNER local: **5/5 escenarios PASS** en ejecuciones focalizadas con Worker/Hono + D1 sintética y correo MOCK. Incluye registro/login/logout y recuperación; reintentos de carga; D1 BLOB y Static Assets; alta, edición, fotos, orden, borrado, revisión, disponibilidad, inbox READ/UNREAD, permisos ADMIN→OWNER, sesión revocada y navegación responsive. El flujo integrado extendido pasó con timeout de 180 s; las capturas repetidas se retiraron de ese flujo porque el escenario D3.1 ya genera evidencia visual dedicada.
+- Playwright OWNER D3.1 final: **1/1 PASS**, editor Información/Fotografías/Disponibilidad, navegación por teclado, retomar cambios de texto y foto sin descartarlos, imágenes ajustadas al marco, lista→detalle, 390/320 px y sin overflow. Capturas posteriores actualizadas en `after/`.
 - Playwright público: **4/4 PASS**, 1.7 min; filtros/paginación, errores/fallbacks, ficha, contacto D1 e idempotencia, regresión #35 a mobile.
 - `npm run typecheck`: **PASS**.
 - `npm run build`: **PASS** (Worker y cliente web local; sin despliegue).

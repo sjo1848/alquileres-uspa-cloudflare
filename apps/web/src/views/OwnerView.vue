@@ -120,6 +120,12 @@ function choose(item?:Listing){
   if(item)void loadImages(item);
 }
 function returnToInventory(){mobilePane.value='inventory';void nextTick(()=>document.getElementById('owner-listings-title')?.focus({preventScroll:true}));}
+function resumeEditing(){
+  if(!unsaved.value)return;
+  mobilePane.value='detail';
+  if(selectedPhoto.value)activeOwnerSection.value='photographs';
+  void nextTick(()=>document.querySelector<HTMLElement>('.owner-editor [role="tabpanel"]')?.focus({preventScroll:true}));
+}
 const ownerSections:OwnerSection[]=['information','photographs','availability'];
 function selectOwnerSection(section:OwnerSection){if(section!=='information'&&!selected.value)return;activeOwnerSection.value=section;}
 function onOwnerSectionKeydown(event:KeyboardEvent,current:OwnerSection){
@@ -333,6 +339,10 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <span class="owner-listing-price">{{ formatRentalPrice(item) }}</span>
             <span class="owner-listing-next">{{ item.status==='REJECTED'?'Corregir y reenviar':item.status==='DRAFT'?'Completar publicación':item.status==='SUBMITTED'?'En revisión':item.publicationStatus==='PUBLISHED'?'Visible en catálogo':'Aprobada · pendiente de publicar' }}</span>
           </button>
+        </div>
+        <div v-if="mobilePane==='inventory'&&unsaved" class="owner-resume-editing" role="status">
+          <span>Tenés cambios sin guardar en {{ creating ? 'un nuevo borrador' : selected?.title || 'esta publicación' }}.</span>
+          <button type="button" class="secondary" @click="resumeEditing">Continuar edición</button>
         </div>
         <button type="button" class="text-button owner-refresh" :disabled="busy||loading" @click="requestReload($event)">Actualizar lista</button>
       </aside>
