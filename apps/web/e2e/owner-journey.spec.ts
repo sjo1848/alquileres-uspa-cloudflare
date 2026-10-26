@@ -2,11 +2,13 @@ import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const evidence = resolve(process.cwd(), '../../output/playwright/i06.5');
+const evidence = resolve(process.cwd(), process.env.OWNER_EVIDENCE_DIR ?? '../../output/playwright/i06.5');
 const redPhoto = resolve(process.cwd(), 'e2e/fixtures/owner-e2e-red.png');
 const bluePhoto = resolve(process.cwd(), 'e2e/fixtures/owner-e2e-blue.png');
 async function capture(page: import('@playwright/test').Page, name: string) {
   await mkdir(evidence, { recursive: true });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(80);
   await page.locator('img').evaluateAll(images => { for (const image of images) (image as HTMLImageElement).loading = 'eager'; });
   await page.locator('img').evaluateAll(images => Promise.all(images.map(image => (image as HTMLImageElement).decode().catch(() => undefined))));
   await page.screenshot({ path: resolve(evidence, name), fullPage: true });
@@ -17,7 +19,10 @@ async function login(page: import('@playwright/test').Page, email: string, passw
   await page.getByLabel('Contraseña').fill(password);
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await expect(page).toHaveURL(/\/owner$/);
-  await expect(page.getByRole('heading', { name: 'Tu lugar en Uspallata' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mis alojamientos' })).toBeVisible();
+}
+async function openOwnerSection(page: import('@playwright/test').Page, section: 'Información'|'Fotografías'|'Disponibilidad') {
+  await page.getByRole('tab', { name: new RegExp(section) }).click();
 }
 
 test('identidad OWNER local: registro, verificación MOCK, recuperación, login y logout', async ({ page }) => {
@@ -57,10 +62,10 @@ test('identidad OWNER local: registro, verificación MOCK, recuperación, login 
   await page.getByLabel('Contraseña').fill(password);
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await expect(page).toHaveURL(/\/owner$/);
-  await expect(page.getByRole('heading', { name: 'Tu lugar en Uspallata' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mis alojamientos' })).toBeVisible();
   await capture(page, 'owner-dashboard-empty-desktop-1440x1000.png');
 
-  await page.getByRole('button', { name: '+ Nuevo borrador' }).click();
+  await page.getByRole('button', { name: '+ Nuevo alojamiento' }).click();
   await page.getByLabel('Nombre del alojamiento').fill('Borrador que no debe perderse al salir');
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   const logoutDialog=page.getByRole('alertdialog', { name: '¿Salir sin guardar?' });
@@ -102,8 +107,7 @@ test('identidad OWNER local: registro, verificación MOCK, recuperación, login 
   await expect(page).toHaveURL(/\/owner$/);
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await expect(page).toHaveURL('/');
-  const sessionAfterLogout = await page.request.get('/api/auth/me');
-  expect(sessionAfterLogout.status()).toBe(401);
+  await expect.poll(async()=> (await page.request.get('/api/auth/me')).status()).toBe(401);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/login');
@@ -120,13 +124,58 @@ test('OWNER: los errores de carga no se muestran como colecciones vacías y se p
   await login(page,'owner.a@example.test');
   await expect(page.locator('.owner-list-panel [role="alert"]')).toContainText('No pudimos cargar tus alojamientos.');
   await expect(page.getByRole('heading',{name:'Empezá por tu primer alojamiento'})).toHaveCount(0);
-  await expect(page.getByRole('button',{name:'+ Nuevo borrador'})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'+ Nuevo alojamiento'})).toBeDisabled();
   await page.getByRole('button',{name:'Reintentar carga de alojamientos'}).click();
   await expect(page.getByRole('button',{name:/Casa aprobada con fotos/})).toBeVisible();
   await expect(page.locator('.owner-inbox [role="alert"]')).toContainText('No pudimos cargar tus consultas.');
   await expect(page.getByText('Todavía no recibiste consultas. Cuando alguien escriba por un alojamiento publicado, la vas a encontrar acá.')).toHaveCount(0);
   await page.getByRole('button',{name:'Reintentar carga de consultas'}).click();
   await expect(page.getByText('Todavía no recibiste consultas. Cuando alguien escriba por un alojamiento publicado, la vas a encontrar acá.')).toBeVisible();
+});
+
+test('OWNER D3.1: editor por secciones, teclado y navegación mobile lista → detalle',async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});
+  await login(page,'owner.a@example.test');
+  await capture(page,'owner-dashboard-desktop-1440x1000.png');
+  const listing=page.getByRole('button',{name:/Casa aprobada con fotos/});
+  await listing.click();
+  await expect(page.getByRole('tab',{name:/Información/})).toHaveAttribute('aria-selected','true');
+  await capture(page,'owner-editor-desktop-1440x1000.png');
+  const info=page.getByRole('tab',{name:/Información/});
+  await info.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab',{name:/Fotografías/})).toHaveAttribute('aria-selected','true');
+  await expect(page.getByRole('heading',{name:'Mostrá los detalles del lugar'})).toBeVisible();
+  await capture(page,'owner-photos-desktop-1440x1000.png');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab',{name:'Disponibilidad'})).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('.owner-availability-summary time')).toHaveAttribute('datetime',/Z$/);
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.getByRole('tab',{name:/Fotografías/})).toHaveAttribute('aria-selected','true');
+
+  await page.setViewportSize({width:390,height:844});
+  await expect(page.locator('.owner-list-panel')).toBeHidden();
+  await expect(page.locator('.owner-editor')).toBeVisible();
+  await capture(page,'owner-editor-mobile-390x844.png');
+  await page.getByRole('button',{name:'Mis alojamientos'}).click();
+  await expect(page.locator('.owner-list-panel')).toBeVisible();
+  await expect(page.locator('.owner-editor')).toBeHidden();
+  await capture(page,'owner-dashboard-mobile-390x844.png');
+  await page.getByRole('button',{name:/Casa aprobada con fotos/}).click();
+  await expect(page.getByRole('button',{name:'Mis alojamientos'})).toBeVisible();
+  await page.getByRole('tab',{name:/Fotografías/}).click();
+  await capture(page,'owner-photos-mobile-390x844.png');
+  await page.getByRole('tab',{name:'Disponibilidad'}).click();
+  await expect(page.getByRole('button',{name:'Confirmar que sigue vigente'})).toBeVisible();
+  await capture(page,'owner-availability-mobile-390x844.png');
+
+  await page.setViewportSize({width:320,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await capture(page,'owner-availability-mobile-320x844.png');
+  await page.getByRole('button',{name:'Mis alojamientos'}).click();
+  await expect(page.locator('.owner-list-panel')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await capture(page,'owner-dashboard-mobile-320x844.png');
 });
 
 test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad, consulta e inbox', async ({ page }) => {
@@ -141,17 +190,19 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await configRetryPage.goto('/owner');
   await expect(configRetryPage).toHaveURL(/\/owner$/);
   await configRetryPage.getByRole('button',{name:/Casa aprobada con fotos/}).click();
+  await openOwnerSection(configRetryPage, 'Fotografías');
   await expect(configRetryPage.getByRole('alert')).toContainText('No pudimos comprobar cómo se gestionan las fotos');
   await configRetryPage.getByRole('button',{name:'Reintentar configuración de fotos'}).click();
   await expect(configRetryPage.getByRole('alert')).toHaveCount(0);
   await expect(configRetryPage.getByText(/no se pueden combinar con nuevas cargas/)).toBeVisible();
   await expect(configRetryPage.locator('input[type="file"]')).toHaveCount(0);
   await configRetryPage.getByRole('button',{name:/Borrador listo para cargar/}).click();
+  await openOwnerSection(configRetryPage, 'Fotografías');
   const recoveredUpload=configRetryPage.locator('input[type="file"]');
   await expect(recoveredUpload).toHaveCount(1);
   await recoveredUpload.setInputFiles(redPhoto);
   await configRetryPage.getByRole('button',{name:'Guardar foto'}).click();
-  await expect(configRetryPage.getByRole('status')).toContainText('Imagen guardada');
+  await expect(configRetryPage.locator('.owner-feedback[role="status"]')).toContainText('Imagen guardada');
   await expect(configRetryPage.locator('.owner-image-card')).toContainText('owner-e2e-red.jpg');
   expect(configAttempts).toBe(3);
   let failStaticImagesOnce=true;
@@ -160,8 +211,9 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
     await route.continue();
   });
   await configRetryPage.getByRole('button',{name:/Borrador con foto administrada/}).click();
+  await openOwnerSection(configRetryPage, 'Fotografías');
   await expect(configRetryPage.locator('.owner-photos [role="alert"]')).toContainText('No pudimos confirmar si esta publicación tiene fotos administradas');
-  await expect(configRetryPage.locator('.owner-photo-count')).toHaveText('No disponible');
+  await expect(configRetryPage.locator('.owner-photo-count')).toHaveText('—');
   await expect(configRetryPage.getByText('Todavía no agregaste fotos.')).toHaveCount(0);
   await expect(configRetryPage.getByText('Esta publicación no tiene fotos guardadas.')).toHaveCount(0);
   await expect(configRetryPage.locator('.owner-photo-empty')).toHaveCount(0);
@@ -177,13 +229,14 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   const approved = page.getByRole('button', { name: /Casa aprobada con fotos/ });
   await expect(approved).toBeVisible();
   await approved.click();
+  await openOwnerSection(page, 'Fotografías');
   const approvedStaticPhoto = page.getByRole('img', { name: 'Foto 1 de Casa aprobada con fotos' });
   await expect(approvedStaticPhoto).toBeVisible();
   await expect.poll(() => approvedStaticPhoto.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   const approvedPhoto = page.getByRole('img', { name: 'Foto 2 de Casa aprobada con fotos' });
   await expect(approvedPhoto).toBeVisible();
   await expect.poll(() => approvedPhoto.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
-  await expect(page.getByText('Las fotos de una publicación aprobada se muestran en modo lectura.')).toBeVisible();
+  await expect(page.getByText('Las fotografías de una publicación aprobada se muestran en modo lectura.')).toBeVisible();
   await expect(page.getByText('Esta publicación no tiene fotos guardadas.')).toHaveCount(0);
   await expect(page.getByLabel('Agregar fotos')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Eliminar foto aprobada.png' })).toHaveCount(0);
@@ -193,14 +246,16 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   const pendingImages=new Promise<void>(resolve=>{releasePendingImages=resolve;});
   await page.route('**/api/listings/owner-draft-static-photo/images',async route=>{await pendingImages;await route.continue();});
   await page.getByRole('button',{name:/Borrador con foto administrada/}).click();
+  await openOwnerSection(page, 'Fotografías');
   await expect(page.getByText('Cargando fotos…')).toBeVisible();
   const pendingImageResponse=page.waitForResponse(response=>response.request().method()==='GET'&&response.url().includes('/api/listings/owner-draft-static-photo/images'));
-  await page.getByRole('button',{name:'+ Nuevo borrador'}).click();
+  await page.getByRole('button',{name:'+ Nuevo alojamiento'}).click();
   await expect(page.getByText('Cargando fotos…')).toHaveCount(0);
   await page.getByLabel('Nombre del alojamiento').fill('Borrador nuevo con galería disponible');
   await page.getByLabel('Ubicación').fill('Uspallata, Mendoza');
   await page.getByRole('button',{name:'Guardar borrador'}).click();
-  await expect(page.getByRole('status')).toContainText('Borrador creado.');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Borrador creado.');
+  await openOwnerSection(page, 'Fotografías');
   await expect(page.getByText('Cargando fotos…')).toHaveCount(0);
   await expect(page.locator('input[type="file"]')).toHaveCount(1);
   releasePendingImages();
@@ -208,22 +263,25 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.unroute('**/api/listings/owner-draft-static-photo/images');
 
   await page.getByRole('button', { name: /Borrador con foto administrada/ }).click();
+  await openOwnerSection(page, 'Fotografías');
   await expect(page.getByText('Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.')).toBeVisible();
   await expect(page.locator('input[type="file"]')).toHaveCount(0);
   await page.getByRole('button', { name: /Borrador mixto con foto del repositorio/ }).click();
+  await openOwnerSection(page, 'Fotografías');
   await expect(page.locator('.owner-image-card')).toHaveCount(3);
   await page.getByRole('button', { name: 'Mover mezcla-b.png hacia arriba' }).click();
-  await expect(page.getByRole('status')).toContainText('Orden de imágenes actualizado');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Orden de imágenes actualizado');
   await expect(page.locator('.owner-image-card')).toHaveCount(3);
   await expect(page.locator('.owner-image-card').nth(0)).toContainText('mezcla-b.png');
   await expect(page.locator('.owner-image-card').nth(2)).toContainText('cabana-cerro.svg');
   await page.getByRole('button', { name: /Casa aprobada con fotos/ }).click();
-
+  await openOwnerSection(page, 'Disponibilidad');
   await page.getByRole('button', { name: 'Marcar no disponible' }).click();
-  await expect(page.locator('.owner-availability-card h3')).toHaveText('No disponible');
-  await expect(page.locator('.owner-availability-card')).not.toContainText('Todavía no confirmaste');
-  await page.getByRole('button', { name: 'Sigue vigente' }).click();
-  await expect(page.getByRole('status')).toContainText('Disponibilidad confirmada');
+  await expect(page.locator('.owner-availability-summary h3')).toHaveText('No disponible');
+  await expect(page.locator('.owner-availability-summary')).not.toContainText('Todavía no confirmaste');
+  await expect(page.locator('.owner-availability-summary time')).toHaveAttribute('datetime', /Z$/);
+  await page.getByRole('button', { name: 'Confirmar que sigue vigente' }).click();
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Disponibilidad confirmada');
 
   const contact = await page.request.post('/api/public/listings/owner-approved-photo/contact', {
     data: { visitorName: 'Consulta sintética', visitorEmail: 'visitante@example.test', message: '¿Sigue disponible para febrero?' },
@@ -236,10 +294,10 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(inbox.getByText('Consulta sintética')).toBeVisible();
   await expect(inbox.getByText('1 sin leer')).toBeVisible();
   await inbox.getByRole('button', { name: 'Marcar leída' }).click();
-  await expect(page.getByRole('status')).toContainText(/consulta/i);
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText(/consulta/i);
   await expect(inbox.getByText('0 sin leer')).toHaveCount(0);
 
-  await page.getByRole('button', { name: '+ Nuevo borrador' }).click();
+  await page.getByRole('button', { name: '+ Nuevo alojamiento' }).click();
   await page.getByLabel('Nombre del alojamiento').fill('Refugio de prueba OWNER');
   await page.getByLabel('Descripción').fill('Un lugar sintético para probar la experiencia completa del propietario.');
   await page.getByLabel('Ubicación').fill('Uspallata, Mendoza');
@@ -248,7 +306,7 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.getByLabel('Duración').selectOption('FLEXIBLE');
   await page.getByLabel('Capacidad máxima').fill('3');
   await page.getByRole('button', { name: 'Guardar borrador' }).click();
-  await expect(page.getByRole('status')).toContainText('Borrador creado');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Borrador creado');
   const draftsResponse = await page.request.get('/api/listings');
   const draft = (await draftsResponse.json() as Array<{id:string;title:string}>).find(item => item.title === 'Refugio de prueba OWNER');
   expect(draft?.id).toBeTruthy();
@@ -267,7 +325,7 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(page.getByRole('alert')).toContainText('No pudimos confirmar');
   await expect(page.getByLabel('Nombre del alojamiento')).toHaveValue('Refugio de prueba OWNER editado');
   await page.getByRole('button', { name: 'Guardar cambios' }).click();
-  await expect(page.getByRole('status')).toContainText('Cambios guardados');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Cambios guardados');
   await page.unroute(`**/api/listings/${draft!.id}`);
 
   await page.getByLabel('Descripción').fill('Cambio pendiente que se debe preservar ante navegación.');
@@ -308,15 +366,16 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.getByRole('alertdialog', { name: '¿Salir sin guardar?' }).getByRole('button', { name: 'Salir y descartar cambios' }).click();
   await expect(page).toHaveURL('/');
   await page.goto('/owner');
-  await expect(page.getByRole('heading', { name: 'Tu lugar en Uspallata' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mis alojamientos' })).toBeVisible();
   await page.getByRole('button', { name: /Refugio de prueba OWNER editado/ }).click();
+  await openOwnerSection(page, 'Fotografías');
 
   const photoInput = page.locator('input[type="file"]');
   await photoInput.setInputFiles(redPhoto);
   const localPreview = page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' });
   await expect(localPreview).toBeVisible();
   await expect(localPreview).toHaveAttribute('src', /blob:/);
-  await expect(page.getByText('Todavía no se guardó')).toBeVisible();
+  await expect(page.getByText(/todavía no guardada/i)).toBeVisible();
   const refreshList=page.getByRole('button', { name: 'Actualizar lista' });
   await refreshList.click();
   const photoReloadDialog=page.getByRole('alertdialog', { name: 'Hay cambios sin guardar' });
@@ -329,10 +388,13 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(photoReloadDialog).toHaveCount(0);
   await expect(refreshList).toBeFocused();
   await expect(localPreview).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Actualizar desde servidor' })).toBeDisabled();
+  await openOwnerSection(page, 'Información');
+  await expect(page.getByRole('button', { name: 'Actualizar', exact: true })).toBeDisabled();
+  await openOwnerSection(page, 'Fotografías');
   await page.getByRole('button', { name: 'Actualizar lista' }).click();
   await page.getByRole('alertdialog', { name: 'Hay cambios sin guardar' }).getByRole('button', { name: 'Descartar y actualizar' }).click();
   await expect(localPreview).toHaveCount(0);
+  await openOwnerSection(page, 'Fotografías');
   await photoInput.setInputFiles(redPhoto);
   await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' })).toBeVisible();
   let failUploadOnce = true;
@@ -348,19 +410,20 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(page.getByRole('alert')).toContainText('No pudimos confirmar');
   await expect(localPreview).toBeVisible();
   await page.getByRole('button', { name: 'Guardar foto' }).click();
-  await expect(page.getByRole('status')).toContainText('Imagen guardada');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Imagen guardada');
   await page.unroute(`**/api/listings/${draft!.id}/images`);
 
   await photoInput.setInputFiles(bluePhoto);
   await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-blue.png' })).toBeVisible();
   await page.getByRole('button', { name: 'Guardar foto' }).click();
-  await expect(page.getByRole('status')).toContainText('Imagen guardada');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Imagen guardada');
   const blueName = 'owner-e2e-blue.jpg';
   await page.getByRole('button', { name: `Mover ${blueName} hacia arriba` }).click();
-  await expect(page.getByRole('status')).toContainText('Orden de imágenes actualizado');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Orden de imágenes actualizado');
   await expect(page.locator('.owner-image-card').first()).toContainText(blueName);
   await page.reload();
   await page.getByRole('button', { name: /Refugio de prueba OWNER editado/ }).click();
+  await openOwnerSection(page, 'Fotografías');
   await expect(page.locator('.owner-image-card').first()).toContainText(blueName);
   await capture(page, 'owner-listing-editor-desktop-1440x1000.png');
 
@@ -388,24 +451,31 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(page.locator('.owner-image-card')).toHaveCount(2);
   await photoDeleteTrigger.click();
   await page.getByRole('alertdialog', { name: `¿Quitar “${redName}”?` }).getByRole('button', { name: 'Eliminar foto' }).click();
-  await expect(page.getByRole('status')).toContainText('Imagen eliminada');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Imagen eliminada');
   await expect(page.locator('#owner-images-title')).toBeFocused();
   await expect(page.locator('.owner-image-card')).toHaveCount(1);
 
+  await openOwnerSection(page, 'Información');
   await page.getByRole('button', { name: 'Enviar a revisión' }).click();
-  await expect(page.getByRole('status')).toContainText('enviada a revisión');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('enviada a revisión');
   await expect(page.getByRole('button', { name: /Refugio de prueba OWNER editado/ })).toContainText('En revisión');
   await expect(page.getByRole('button', { name: 'Guardar cambios' })).toBeDisabled();
+  await openOwnerSection(page, 'Disponibilidad');
+  await expect(page.getByRole('button', { name: 'Confirmar que sigue vigente' })).toBeVisible();
+  await page.getByRole('button', { name: 'Confirmar que sigue vigente' }).click();
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Disponibilidad confirmada');
 
-  await page.getByRole('button', { name: '+ Nuevo borrador' }).click();
+  await page.getByRole('button', { name: '+ Nuevo alojamiento' }).click();
   await page.getByLabel('Nombre del alojamiento').fill('Borrador para confirmar eliminación');
   await page.getByLabel('Descripción').fill('Borrador sintético de eliminación segura.');
   await page.getByLabel('Precio de referencia').fill('12000');
   await page.getByLabel('Capacidad máxima').fill('2');
   await page.getByRole('button', { name: 'Guardar borrador' }).click();
-  await expect(page.getByRole('status')).toContainText('Borrador creado');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Borrador creado');
+  await openOwnerSection(page, 'Fotografías');
   await photoInput.setInputFiles(redPhoto);
   await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' })).toBeVisible();
+  await openOwnerSection(page, 'Información');
   const listingDeleteTrigger=page.getByRole('button', { name: 'Eliminar borrador' });
   await listingDeleteTrigger.click();
   const deleteDialog = page.getByRole('alertdialog', { name: '¿Eliminar “Borrador para confirmar eliminación”?'});
@@ -419,7 +489,7 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await page.keyboard.press('Escape');
   await expect(deleteDialog).toHaveCount(0);
   await expect(listingDeleteTrigger).toBeFocused();
-  await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' })).toBeVisible();
+  await expect(page.locator('.owner-pending-photo')).toContainText('todavía no se guardó');
   await listingDeleteTrigger.click();
   const reopenedDeleteDialog=page.getByRole('alertdialog', { name: '¿Eliminar “Borrador para confirmar eliminación”?' });
   await expect(reopenedDeleteDialog.getByRole('button', { name: 'Conservar borrador' })).toBeFocused();
@@ -428,7 +498,7 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
   await expect(page.getByRole('heading', { name: 'Borrador para confirmar eliminación' })).toBeVisible();
   await listingDeleteTrigger.click();
   await page.getByRole('alertdialog', { name: '¿Eliminar “Borrador para confirmar eliminación”?'}).getByRole('button', { name: 'Eliminar alojamiento' }).click();
-  await expect(page.getByRole('status')).toContainText('Publicación eliminada');
+  await expect(page.locator('.owner-feedback[role="status"]')).toContainText('Publicación eliminada');
   await expect(page.locator('#owner-listings-title')).toBeFocused();
   await expect(page.getByRole('img', { name: 'Vista previa de owner-e2e-red.png' })).toHaveCount(0);
   await page.getByRole('link', { name: 'Descubrir' }).click();
@@ -437,7 +507,7 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/owner');
-  await expect(page.getByRole('heading', { name: 'Tu lugar en Uspallata' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mis alojamientos' })).toBeVisible();
   await capture(page, 'owner-dashboard-mobile-390x844.png');
   await page.setViewportSize({ width: 320, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
@@ -458,13 +528,14 @@ test('OWNER: fotos aprobadas, edición segura, imágenes D1 BLOB, disponibilidad
 
   await page.getByRole('button', { name: /Borrador con foto administrada/ }).click();
   await page.getByLabel('Nombre del alojamiento').fill('Edición privada tras expirar sesión');
-  await page.route('**/api/listings/owner-draft-static-photo', async route => {
-    if (route.request().method() === 'PATCH') await route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: 'expired session' }) });
-    else await route.continue();
-  });
+  await openOwnerSection(page, 'Información');
+  await expect(page.getByRole('button', { name: 'Guardar cambios', exact: true })).toBeEnabled();
+  const revoked=await page.request.post('/api/auth/logout',{headers:{Origin:'http://127.0.0.1:5175'}});
+  expect(revoked.status()).toBe(200);
+  await expect.poll(async()=> (await page.request.get('/api/auth/me')).status()).toBe(401);
   await page.getByRole('button', { name: 'Guardar cambios' }).click();
   await expect(page).toHaveURL(/\/login\?expired=1/);
   await expect(page.getByRole('alert')).toContainText('La sesión expiró');
-  await expect(page.getByRole('heading', { name: 'Tu lugar en Uspallata' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Mis alojamientos' })).toHaveCount(0);
   await expect(page.getByText('Edición privada tras expirar sesión')).toHaveCount(0);
 });

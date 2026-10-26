@@ -8,6 +8,7 @@ type Fields = { title:string; description:string; location:string; priceAmount:n
 type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null };
 type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt?:string; source?:'STATIC_ASSET'|'OWNER_UPLOAD' };
 type ContactEvent = { id:string; state:'UNREAD'|'READ'; visitorName:string; visitorEmail:string; message:string; createdAt:string; listing:{id:string;title:string;location:string} };
+type OwnerSection = 'information'|'photographs'|'availability';
 const MAX_IMAGE_BYTES=1_800_000, MAX_IMAGES=20;
 const MAX_IMAGE_WIDTH=640,MAX_IMAGE_HEIGHT=480;
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
@@ -22,6 +23,8 @@ const confirmDelete=ref(false), confirmLeave=ref(false), pendingImageDelete=ref<
 const leaveDialog=ref<HTMLElement|null>(null),imageDeleteDialog=ref<HTMLElement|null>(null),listingDeleteDialog=ref<HTMLElement|null>(null),selectionDialog=ref<HTMLElement|null>(null),reloadDialog=ref<HTMLElement|null>(null);
 const selectedPhoto=ref<{file:File;previewUrl:string}|null>(null);
 const statusFilter=ref<'ALL'|'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'>('ALL');
+const activeOwnerSection=ref<OwnerSection>('information');
+const mobilePane=ref<'inventory'|'detail'>('inventory');
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive<Fields>(blank());
 const listingsLoadError=ref('');
@@ -29,7 +32,7 @@ const selected=computed(()=>listings.value.find(x=>x.id===selectedId.value));
 const visibleListings=computed(()=>statusFilter.value==='ALL'?listings.value:listings.value.filter(item=>item.status===statusFilter.value));
 const listingCounts=computed(()=>({all:listings.value.length,drafts:listings.value.filter(item=>item.status==='DRAFT'||item.status==='REJECTED').length,review:listings.value.filter(item=>item.status==='SUBMITTED').length,published:listings.value.filter(item=>item.status==='APPROVED'&&item.publicationStatus==='PUBLISHED').length}));
 const nextStep=computed(()=>{if(!selected.value)return 'Elegí una publicación o empezá un nuevo borrador.';if(selected.value.status==='REJECTED')return 'Revisá el motivo, corregí los datos y volvé a enviarla.';if(selected.value.status==='DRAFT')return dirty.value?'Guardá tus cambios para continuar.':'Completá la publicación y enviála a revisión cuando esté lista.';if(selected.value.status==='SUBMITTED')return 'El equipo está revisando esta publicación. Te avisaremos cuando cambie.';if(selected.value.publicationStatus==='PUBLISHED')return 'Tu alojamiento está publicado. Revisá la disponibilidad cuando cambie.';return 'La publicación fue aprobada y está pendiente de publicación.';});
-const confirmedLabel=computed(()=>selected.value?.lastConfirmedAt?new Date(selected.value.lastConfirmedAt).toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short'}):'Todavía no confirmaste la disponibilidad.');
+const confirmedLabel=computed(()=>selected.value?.lastConfirmedAt?new Date(selected.value.lastConfirmedAt).toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Argentina/Mendoza'}):'Todavía no confirmaste la disponibilidad.');
 const canEdit=computed(()=>!selected.value||['DRAFT','REJECTED'].includes(selected.value.status));
 const ownerUploadsEnabled=computed(()=>session.mediaStrategy.value==='D1_BLOB');
 const hasRepositoryManagedImages=computed(()=>images.value.some(image=>image.source==='STATIC_ASSET'));
@@ -106,6 +109,7 @@ function choose(item?:Listing){
   if(busy.value)return;
   discardSelectedPhoto();pendingImageDelete.value=null;
   creating.value=!item;
+  activeOwnerSection.value='information';mobilePane.value='detail';
   selectedId.value=item?.id??null;
   Object.assign(form,item?Object.fromEntries(Object.keys(blank()).map(key=>[key,item[key as keyof Fields]])):blank());
   error.value='';notice.value='';pendingCreate=undefined;
@@ -114,6 +118,14 @@ function choose(item?:Listing){
   confirmDelete.value=false;
   images.value=[];imagesLoading.value=false;imagesLoadError.value='';imageLoadVersion++;
   if(item)void loadImages(item);
+}
+function returnToInventory(){mobilePane.value='inventory';void nextTick(()=>document.getElementById('owner-listings-title')?.focus({preventScroll:true}));}
+const ownerSections:OwnerSection[]=['information','photographs','availability'];
+function selectOwnerSection(section:OwnerSection){if(section!=='information'&&!selected.value)return;activeOwnerSection.value=section;}
+function onOwnerSectionKeydown(event:KeyboardEvent,current:OwnerSection){
+  const target=event.key==='ArrowRight'?ownerSections[(ownerSections.indexOf(current)+1)%ownerSections.length]:event.key==='ArrowLeft'?ownerSections[(ownerSections.indexOf(current)+ownerSections.length-1)%ownerSections.length]:event.key==='Home'?ownerSections[0]:event.key==='End'?ownerSections[ownerSections.length-1]:undefined;
+  if(!target||((target==='photographs'||target==='availability')&&!selected.value))return;
+  event.preventDefault();selectOwnerSection(target);void nextTick(()=>document.querySelector<HTMLButtonElement>(`[data-owner-section="${target}"]`)?.focus());
 }
 async function loadImages(item:Listing){
   const version=++imageLoadVersion,previousError=imagesLoadError.value;imagesLoading.value=true;imagesLoadError.value='';if(previousError&&error.value===previousError)error.value='';
@@ -169,7 +181,7 @@ async function confirmRemoveListing(){
   busy.value=true;error.value='';notice.value='';
   try{
     await session.apiRequest<{id:string;deleted:true}>(`/listings/${encodeURIComponent(item.id)}`,{method:'DELETE',headers:{'Idempotency-Key':pendingListingDelete.key}});
-    discardSelectedPhoto();listings.value=listings.value.filter(row=>row.id!==item.id);selectedId.value=null;creating.value=false;Object.assign(form,blank());images.value=[];pendingListingDelete=undefined;notice.value='Publicación eliminada.';closeDialogFocus('listing-delete','owner-listings-title',true);
+    discardSelectedPhoto();listings.value=listings.value.filter(row=>row.id!==item.id);selectedId.value=null;creating.value=false;activeOwnerSection.value='information';mobilePane.value='inventory';Object.assign(form,blank());images.value=[];pendingListingDelete=undefined;notice.value='Publicación eliminada.';closeDialogFocus('listing-delete','owner-listings-title',true);
   }catch(e){error.value=message(e);closeDialogFocus('listing-delete');}
   finally{busy.value=false;}
 }
@@ -264,26 +276,28 @@ onMounted(()=>{void load();void loadContacts();if(session.mediaStrategy.value===
 onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);resolvePendingLeave(false);discardSelectedPhoto();});
 </script>
 <template>
-  <section class="owner-dashboard">
-    <header class="owner-hero">
-      <div>
-        <p class="eyebrow">Espacio del propietario</p>
-        <h1>Tu lugar en Uspallata</h1>
-        <p class="owner-hero-copy">Administrá tus alojamientos, respondé consultas y mantené actualizada la disponibilidad.</p>
-        <p v-if="session.user.value?.email" class="owner-account">Sesión de {{ session.user.value.email }}</p>
+  <section class="owner-dashboard" :class="{ 'showing-detail-mobile': mobilePane==='detail' }">
+    <header class="owner-workspace-header">
+      <div class="owner-workspace-title">
+        <p class="eyebrow">PANEL DEL PROPIETARIO</p>
+        <h1>Mis alojamientos</h1>
+        <p>Gestioná tus publicaciones y mantené la disponibilidad al día.</p>
       </div>
-      <a class="owner-hero-link" href="#owner-listings">Ir a mis alojamientos <span aria-hidden="true">↓</span></a>
+      <div class="owner-header-actions">
+        <span v-if="session.user.value?.email" class="owner-account">{{ session.user.value.email }}</span>
+        <button type="button" :disabled="busy||loading||!!listingsLoadError" @click="requestChoose(undefined,$event)">+ Nuevo alojamiento</button>
+      </div>
     </header>
 
     <nav class="owner-section-nav" aria-label="Secciones del panel OWNER">
-      <a href="#owner-listings">Mis alojamientos <span>{{ listingCounts.all }}</span></a>
-      <a href="#owner-inbox">Consultas <span>{{ unreadContacts ? `${unreadContacts} sin leer` : 'inbox' }}</span></a>
+      <a href="#owner-listings"><span aria-hidden="true">⌂</span>Alojamientos <span>{{ listingCounts.all }}</span></a>
+      <a href="#owner-inbox"><span aria-hidden="true">✉</span>Consultas <span>{{ unreadContacts ? `${unreadContacts} sin leer` : 'Bandeja' }}</span></a>
     </nav>
 
     <div class="owner-metrics" aria-label="Resumen de publicaciones">
-      <article><span>En total</span><strong>{{ listingCounts.all }}</strong><small>tus alojamientos</small></article>
-      <article><span>Necesitan acción</span><strong>{{ listingCounts.drafts }}</strong><small>borradores o correcciones</small></article>
-      <article><span>En revisión</span><strong>{{ listingCounts.review }}</strong><small>pendientes del equipo</small></article>
+      <article><span>Total</span><strong>{{ listingCounts.all }}</strong><small>alojamientos</small></article>
+      <article class="needs-action"><span>Próxima acción</span><strong>{{ listingCounts.drafts }}</strong><small>borradores o correcciones</small></article>
+      <article><span>En revisión</span><strong>{{ listingCounts.review }}</strong><small>esperando al equipo</small></article>
       <article><span>Publicados</span><strong>{{ listingCounts.published }}</strong><small>visibles en el catálogo</small></article>
     </div>
 
@@ -293,8 +307,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
     <section id="owner-listings" class="owner-workspace" aria-labelledby="owner-listings-title">
       <aside class="owner-list-panel card">
         <div class="owner-list-heading">
-          <div><p class="eyebrow">Tu inventario</p><h2 id="owner-listings-title" tabindex="-1">Mis alojamientos</h2></div>
-          <button type="button" :disabled="busy||loading||!!listingsLoadError" @click="requestChoose(undefined,$event)">+ Nuevo borrador</button>
+          <div><p class="eyebrow">INVENTARIO</p><h2 id="owner-listings-title" tabindex="-1">Tus publicaciones <span>{{ visibleListings.length }}</span></h2></div>
         </div>
         <label class="owner-filter-label" for="owner-status-filter">Mostrar</label>
         <select id="owner-status-filter" v-model="statusFilter">
@@ -317,7 +330,8 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
           <button v-for="item in visibleListings" :key="item.id" type="button" class="owner-listing-row" :class="{selected:selectedId===item.id}" :aria-current="selectedId===item.id?'true':undefined" :disabled="busy" @click="requestChoose(item,$event)">
             <span class="owner-listing-top"><strong>{{ item.title }}</strong><span class="owner-status" :class="`is-${item.status.toLowerCase()}`">{{ label(item.status) }}</span></span>
             <span class="owner-listing-location">{{ item.location }}</span>
-            <span class="owner-listing-next">{{ item.status==='REJECTED'?'Necesita correcciones':item.status==='DRAFT'?'Completar y enviar':item.status==='SUBMITTED'?'Esperar revisión':item.publicationStatus==='PUBLISHED'?'Visible en catálogo':'Aprobada' }}</span>
+            <span class="owner-listing-price">{{ formatRentalPrice(item) }}</span>
+            <span class="owner-listing-next">{{ item.status==='REJECTED'?'Corregir y reenviar':item.status==='DRAFT'?'Completar publicación':item.status==='SUBMITTED'?'En revisión':item.publicationStatus==='PUBLISHED'?'Visible en catálogo':'Aprobada · pendiente de publicar' }}</span>
           </button>
         </div>
         <button type="button" class="text-button owner-refresh" :disabled="busy||loading" @click="requestReload($event)">Actualizar lista</button>
@@ -326,29 +340,39 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
       <article class="owner-editor card" :aria-busy="busy">
         <template v-if="selected || creating">
           <header class="owner-editor-heading">
-            <div>
-              <p class="eyebrow">{{ selected ? 'Ficha de alojamiento' : 'Nuevo alojamiento' }}</p>
+            <button type="button" class="owner-mobile-back" @click="returnToInventory"><span aria-hidden="true">←</span> Mis alojamientos</button>
+            <div class="owner-editor-title">
+              <p class="eyebrow">{{ selected ? 'GESTIÓN DEL ALOJAMIENTO' : 'NUEVA PUBLICACIÓN' }}</p>
               <h2>{{ selected?.title || 'Contanos sobre tu lugar' }}</h2>
+              <p v-if="selected" class="owner-editor-subtitle">{{ selected.location }} <span aria-hidden="true">·</span> {{ formatRentalPrice(selected) }}</p>
             </div>
             <span v-if="selected" class="owner-status owner-status-large" :class="`is-${selected.status.toLowerCase()}`">{{ label(selected.status) }}</span>
           </header>
           <section v-if="selected" class="owner-next-step" aria-labelledby="owner-next-step-title">
-            <span class="owner-next-icon" aria-hidden="true">✦</span>
-            <div><h3 id="owner-next-step-title">Próximo paso</h3><p>{{ nextStep }}</p></div>
+            <span class="owner-next-icon" aria-hidden="true">→</span>
+            <div><h3 id="owner-next-step-title">Siguiente paso</h3><p>{{ nextStep }}</p></div>
           </section>
           <p v-if="selected?.rejectionReason" class="owner-rejection"><strong>Observación del equipo</strong><span>{{ selected.rejectionReason }}</span></p>
-          <section v-if="selected" class="owner-availability-card" aria-labelledby="owner-availability-title">
-            <div><p class="eyebrow">Disponibilidad declarada</p><h3 id="owner-availability-title">{{ selected.availabilityStatus==='AVAILABLE'?'Disponible':'No disponible' }}</h3><p>Última confirmación: {{ confirmedLabel }}. Esto no es una reserva.</p></div>
-            <div class="owner-availability-actions"><button type="button" :disabled="contactBusy!==''" @click="updateAvailability(selected.availabilityStatus==='AVAILABLE'?'UNAVAILABLE':'AVAILABLE')">{{ selected.availabilityStatus==='AVAILABLE'?'Marcar no disponible':'Marcar disponible' }}</button><button type="button" class="secondary" :disabled="contactBusy!==''" @click="reconfirmAvailability">{{ contactBusy==='availability'?'Confirmando…':'Sigue vigente' }}</button></div>
-          </section>
+          <p v-if="selectedPhoto" class="owner-pending-photo" role="status">Hay una foto seleccionada que todavía no se guardó. <button type="button" class="text-button" @click="selectOwnerSection('photographs')">Ir a fotografías</button></p>
 
-          <form class="owner-listing-form" @submit.prevent="save" :aria-busy="busy">
+          <nav class="owner-editor-sections" role="tablist" aria-label="Secciones del alojamiento">
+            <button id="owner-tab-information" data-owner-section="information" type="button" role="tab" :aria-selected="activeOwnerSection==='information'" aria-controls="owner-editor-panel" @click="selectOwnerSection('information')" @keydown="onOwnerSectionKeydown($event,'information')">Información</button>
+            <button v-if="selected" id="owner-tab-photographs" data-owner-section="photographs" type="button" role="tab" :aria-selected="activeOwnerSection==='photographs'" aria-controls="owner-editor-panel" @click="selectOwnerSection('photographs')" @keydown="onOwnerSectionKeydown($event,'photographs')">Fotografías <span>{{ imagesLoadError?'—':images.length }}</span></button>
+            <button v-if="selected" id="owner-tab-availability" data-owner-section="availability" type="button" role="tab" :aria-selected="activeOwnerSection==='availability'" aria-controls="owner-editor-panel" @click="selectOwnerSection('availability')" @keydown="onOwnerSectionKeydown($event,'availability')">Disponibilidad</button>
+          </nav>
+
+          <form v-if="activeOwnerSection==='information'" id="owner-editor-panel" class="owner-listing-form owner-tab-panel" role="tabpanel" aria-labelledby="owner-tab-information" tabindex="0" @submit.prevent="save" :aria-busy="busy">
             <fieldset :disabled="busy||!canEdit">
-              <legend>Datos del alojamiento</legend>
+              <legend>El alojamiento</legend>
               <div class="owner-form-grid">
                 <label class="owner-field-wide">Nombre del alojamiento<input v-model="form.title" name="title" required maxlength="120" autocomplete="off" placeholder="Ej. Casa de piedra junto al arroyo" /></label>
                 <label class="owner-field-wide">Descripción<textarea v-model="form.description" name="description" maxlength="5000" rows="4" placeholder="¿Qué hace especial a este lugar?" /></label>
                 <label class="owner-field-wide">Ubicación<input v-model="form.location" name="location" required maxlength="240" autocomplete="address-level2" /></label>
+              </div>
+            </fieldset>
+            <fieldset :disabled="busy||!canEdit">
+              <legend>Precio y huéspedes</legend>
+              <div class="owner-form-grid owner-form-grid-compact">
                 <label>Precio de referencia<input v-model.number="form.priceAmount" name="priceAmount" type="number" min="0" max="2147483647" step="1" required inputmode="numeric" /></label>
                 <label>Moneda<select v-model="form.currency" name="currency"><option v-for="o in currencyOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></label>
                 <label>Periodicidad<select v-model="form.pricePeriod" name="pricePeriod"><option v-for="o in pricePeriodOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></label>
@@ -357,37 +381,45 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
               </div>
             </fieldset>
             <p v-if="selected && canEdit && dirty" class="owner-unsaved" role="status">Tenés cambios sin guardar. Guardalos antes de enviarlos a revisión o salir.</p>
-            <p v-if="selected && canEdit && !dirty" class="owner-save-hint">{{ formatRentalPrice(selected) }}</p>
+            <p v-else-if="selected && !canEdit" class="owner-save-hint">La información queda en modo lectura mientras el equipo revisa o publica este alojamiento.</p>
+            <p v-else-if="selected && canEdit" class="owner-save-hint">{{ formatRentalPrice(selected) }}</p>
+            <div v-if="creating" class="owner-save-hint">Guardá el borrador para habilitar las secciones de fotografías y disponibilidad.</div>
             <div class="owner-form-actions">
               <button type="submit" :disabled="busy||loading||!canEdit">{{ busy?'Guardando…':selected?'Guardar cambios':'Guardar borrador' }}</button>
               <button v-if="selected && canEdit" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing($event)">Eliminar borrador</button>
-              <button v-if="canEdit" type="button" class="secondary" :disabled="busy||loading||unsaved" @click="refreshSelected">Actualizar desde servidor</button>
+              <button v-if="canEdit && selected" type="button" class="secondary" :disabled="busy||loading||unsaved" @click="refreshSelected">Actualizar</button>
               <button v-if="canEdit && selected" type="button" :disabled="busy||dirty||imagesLoading||selectedPhoto!==null" @click="submit">{{ busy?'Enviando…':'Enviar a revisión' }}</button>
             </div>
           </form>
 
-          <section v-if="selected" class="owner-photos" aria-labelledby="owner-images-title">
-          <header><div><p class="eyebrow">Fotos</p><h3 id="owner-images-title" tabindex="-1">Mostrá tu alojamiento</h3></div><span class="owner-photo-count">{{ imagesLoadError?'No disponible':`${images.length} / ${MAX_IMAGES}` }}</span></header>
+          <section v-else-if="activeOwnerSection==='photographs' && selected" id="owner-editor-panel" class="owner-photos owner-tab-panel" role="tabpanel" aria-labelledby="owner-tab-photographs" tabindex="0">
+            <header class="owner-photos-heading"><div><p class="eyebrow">FOTOGRAFÍAS</p><h3 id="owner-images-title" tabindex="-1">Mostrá los detalles del lugar</h3><p class="owner-section-copy">Las fotos se guardan aparte de los cambios del alojamiento.</p></div><span class="owner-photo-count">{{ imagesLoadError?'—':`${images.length} / ${MAX_IMAGES}` }}</span></header>
             <div v-if="mediaConfigError&&session.mediaStrategy.value==='UNKNOWN'" class="owner-media-config-error" role="alert"><p>{{ mediaConfigError }}</p><button type="button" class="secondary" :disabled="mediaConfigLoading" @click="loadMediaConfig">{{ mediaConfigLoading?'Comprobando…':'Reintentar configuración de fotos' }}</button></div>
             <p v-else-if="mediaConfigLoading" class="owner-section-copy" role="status">Comprobando las opciones disponibles para las fotos…</p>
             <p v-else class="owner-section-copy">{{ hasRepositoryManagedImages?'Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.':ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':session.mediaStrategy.value==='STATIC_ASSETS'?'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.':'La gestión de fotos no está habilitada en este entorno.' }}</p>
             <p v-if="imagesLoadError" class="error" role="alert">{{ imagesLoadError }} <button type="button" class="secondary" :disabled="imagesLoading" @click="retryLoadImages">Reintentar carga de fotos</button></p>
-            <label v-if="canEdit&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Elegir una foto<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
+            <label v-if="canEdit&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Agregar fotografías<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
               <img :src="selectedPhoto.previewUrl" :alt="`Vista previa de ${selectedPhoto.file.name}`" width="640" height="480" />
-              <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ (selectedPhoto.file.size/1024).toFixed(0) }} KB · Todavía no se guardó</small></div>
+              <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ (selectedPhoto.file.size/1024).toFixed(0) }} KB · Vista previa, todavía no guardada</small></div>
               <div class="owner-image-actions"><button type="button" :disabled="busy" @click="uploadSelectedPhoto">{{ imageBusy==='upload'?'Guardando…':'Guardar foto' }}</button><button type="button" class="secondary" :disabled="busy" @click="discardSelectedPhoto">Cancelar</button></div>
             </div>
             <p v-if="imagesLoading" role="status">Cargando fotos…</p>
-            <div v-else-if="!imagesLoadError&&!images.length" class="owner-photo-empty"><span aria-hidden="true">▧</span><p>{{ canEdit?'Todavía no agregaste fotos.':'Esta publicación no tiene fotos guardadas.' }}</p></div>
+            <div v-else-if="!imagesLoadError&&!images.length" class="owner-photo-empty"><span aria-hidden="true">▧</span><div><strong>Todavía no hay fotografías</strong><p>{{ canEdit?'Elegí una foto para mostrar mejor tu alojamiento.':'Esta publicación no tiene fotos guardadas.' }}</p></div></div>
             <ul v-else-if="images.length" class="owner-image-grid" :aria-busy="imageBusy!==null">
-              <li v-for="(image,index) in images" :key="image.id" class="owner-image-card">
-                <img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${index+1} de ${selected.title}`" width="640" height="480" loading="lazy" />
-                <div class="owner-image-meta"><span><strong>{{ index+1 }}.</strong> {{ image.originalName }}<small v-if="image.source==='STATIC_ASSET'"> · Administrada desde el repositorio</small></span><small>{{ (image.sizeBytes/1024).toFixed(0) }} KB</small></div>
-                <div v-if="canEdit&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image,$event)">Eliminar</button></div>
+              <li v-for="(image,index) in images" :key="image.id" class="owner-image-card" :class="{ 'is-cover':index===0 }">
+                <div class="owner-image-frame"><img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${index+1} de ${selected.title}`" width="640" height="480" loading="lazy" /><span v-if="index===0" class="owner-cover-label">Portada</span></div>
+                <div class="owner-image-meta"><span><strong>{{ image.originalName }}</strong><small>{{ index+1 }} de {{ images.length }}<template v-if="image.source==='STATIC_ASSET'"> · Gestionada desde el repositorio</template></small></span><small>{{ (image.sizeBytes/1024).toFixed(0) }} KB</small></div>
+                <div v-if="canEdit&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image,$event)">Quitar</button></div>
               </li>
             </ul>
-            <p v-if="selected.status==='APPROVED'&&images.length" class="owner-readonly-note">Las fotos de una publicación aprobada se muestran en modo lectura.</p>
+            <p v-if="selected.status==='APPROVED'&&images.length" class="owner-readonly-note">Las fotografías de una publicación aprobada se muestran en modo lectura.</p>
+          </section>
+
+          <section v-else-if="activeOwnerSection==='availability' && selected" id="owner-editor-panel" class="owner-availability-panel owner-tab-panel" role="tabpanel" aria-labelledby="owner-tab-availability" tabindex="0">
+            <div class="owner-availability-summary"><span class="owner-availability-icon" aria-hidden="true">◷</span><div><p class="eyebrow">DISPONIBILIDAD DECLARADA</p><h3>{{ selected.availabilityStatus==='AVAILABLE'?'Disponible':'No disponible' }}</h3><p v-if="selected.lastConfirmedAt">Última confirmación <time :datetime="selected.lastConfirmedAt">{{ confirmedLabel }}</time> · hora local de Mendoza.</p><p v-else>{{ confirmedLabel }}</p></div></div>
+            <div class="owner-availability-actions"><button type="button" :disabled="contactBusy!==''" @click="updateAvailability(selected.availabilityStatus==='AVAILABLE'?'UNAVAILABLE':'AVAILABLE')">{{ selected.availabilityStatus==='AVAILABLE'?'Marcar no disponible':'Marcar disponible' }}</button><button type="button" class="secondary" :disabled="contactBusy!==''" @click="reconfirmAvailability">{{ contactBusy==='availability'?'Confirmando…':'Confirmar que sigue vigente' }}</button></div>
+            <p class="owner-availability-disclaimer">Es la última información que compartiste. Puede cambiar y no representa una reserva.</p>
           </section>
 
           <footer v-if="selected" class="owner-status-footer">
