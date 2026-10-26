@@ -8,11 +8,11 @@
   "last_completed_task": "I06.6 ADMIN D3.1 — PR #52 mergeado protegido; CI worker/web PASS",
   "last_completed_head": "main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
   "work_branch": "work/i07-integral-qa",
-  "next_action": "Publish this tracking checkpoint and push the consolidated repair. Derive the live PR #53 HEAD from GitHub; wait for exact-head worker/web and automatic review. Run one qualified separate Codex Controller on exact code artifact a69f6de with GPT-6 Luna High and --sandbox read-only, recording CLI/session evidence. Repair any material findings and affected checks. Verify merge protection and merge only after every final gate passes. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
+  "next_action": "Publish this tracking checkpoint with code artifact b32649f33508aaa899de99c92ad87eb315c77795; derive live PR #53 HEAD, wait exact-head worker/web and automatic review, then run one qualified read-only Controller on the exact final code SHA. Repair material findings and affected checks, verify main protection, and merge only after all PASS. Keep #26 open for Human Product Acceptance and stop before I08/#27.",
   "stop_reason": null,
   "event": {
-    "seq": 237,
-    "summary": "I07 repaired candidate a69f6de consolidated with new end-to-end photo-size assertions and I07 screenshots"
+    "seq": 239,
+    "summary": "Third Controller REWORK consolidated in code artifact b32649f; local checks pass, exact-head reviews pending"
   },
   "external_review": null,
   "human_gate": null,
@@ -22,13 +22,13 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/53",
     "branch": "work/i07-integral-qa",
     "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
-    "executable_sha": "a69f6de128b374a7063a8ebe679f19d1665e9e17",
-    "executable_tree": "124c60175d39426412f14b68995caba45c30d99a",
+    "executable_sha": "b32649f33508aaa899de99c92ad87eb315c77795",
+    "executable_tree": "f83bbaf8ae3272bcd6b39598d832ff742d1c1617",
     "state": "OPEN",
-    "status": "Consolidated local repaired candidate a69f6de; local checks PASS, prior GitHub controls on 65a59e8 are superseded, and PR exact-head checks/review plus qualified Controller remain pending.",
-    "last_observed_head_sha": "65a59e81f7f3021ae9f21107de1b2c5e4c0c3460",
-    "last_observed_head_tree": "249fa4455a59a2c5b9aaaac175943b2cf768adfb",
-    "live_head_source": "This state-only checkpoint will be pushed with code artifact a69f6de; derive current PR HEAD from GitHub after push."
+    "status": "Third Controller REWORK repaired in code artifact b32649f; local parser/provenance suites PASS, exact-head CI/review/Controller pending.",
+    "last_observed_head_sha": "a90f202b513eabaccd48b9b5109cda8a8dec05f0",
+    "last_observed_head_tree": "b497a3ee8c90d9d883dd1627993fc7ffb7e192ad",
+    "live_head_source": "State checkpoint will follow code artifact b32649f; derive live HEAD from GitHub after push."
   },
   "issue_4": "CLOSED",
   "review_authority": {
@@ -98,18 +98,18 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/26",
     "contract": ".orchestration/contracts/CF-AU-I07-INTEGRAL-QA.md",
-    "status": "CONSOLIDATED_REPAIR_LOCAL_PASS_EXACT_HEAD_REFRESH_PENDING",
+    "status": "THIRD_CONTROLLER_REWORK_REPAIRED_LOCAL_TESTS_PASS; NEW_EXACT_HEAD_PENDING",
     "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
     "branch": "work/i07-integral-qa",
     "scope": "Integrated local/synthetic QA of public, OWNER and ADMIN workflows; fix confirmed sub-KB image display, Wrangler JSONL parser and mutable D1 synthetic-provenance guard. No Preview/CD/remote D1/Access/production/real data/R2 resource changes.",
     "evidence": "output/playwright/i07/QA.md; real local Vue+Worker/Hono+Workerd+D1 Playwright, HTTP fault/concurrency suite, static checks and Python guard regressions.",
-    "local_results": "Public 5/5; OWNER 5/5 including 124-byte BLOB rendered as bytes; ADMIN 2/2 including 124-byte image in moderation and assisted management; foundations 1/1; Worker HTTP/fault/idempotency/concurrency/recovery PASS (285.0 s); guard 22/22 and scripts 47/47; Worker typecheck and Web typecheck/build/build:preview PASS; new I07 screenshots public/OWNER/ADMIN at 1440/390/320 where recorded; local catalog smoke p50 21.4 ms, p95 35.5 ms, max 92.8 ms (not Cloudflare capacity).",
+    "local_results": "Public 5/5; OWNER 5/5 including 124-byte BLOB rendered as bytes; ADMIN 2/2 including 124-byte image in moderation and assisted management; foundations 1/1; Worker HTTP/fault/idempotency/concurrency/recovery PASS (285.0 s); guard 23/23 and scripts 48/48; Worker typecheck and Web typecheck/build/build:preview PASS; new I07 screenshots public/OWNER/ADMIN at 1440/390/320 where recorded; local catalog smoke p50 21.4 ms, p95 35.5 ms, max 92.8 ms (not Cloudflare capacity).",
     "remaining": "Need commit/publish functional PR, exact-head CI worker/web, GitHub automatic review, delegated read-only Controller on exact SHA, resolve material findings and protected merge. No remote authenticated E2E; no deployment authorized.",
-    "next_action": "Publish this tracking checkpoint and push the consolidated repair. Derive the live PR #53 HEAD from GitHub; wait for exact-head worker/web and automatic review. Run one qualified separate Codex Controller on exact code artifact a69f6de with GPT-6 Luna High and --sandbox read-only, recording CLI/session evidence. Repair any material findings and affected checks. Verify merge protection and merge only after every final gate passes. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
-    "github_checks": "worker/web PASS on 65a59e8 only; new candidate a69f6de is not yet on GitHub",
-    "github_review": "No findings on 65a59e8 only; new candidate a69f6de is not yet on GitHub",
-    "controller": "REWORK findings on 0a5a83d and 65a59e8 repaired; no qualified final PASS yet. Separate read-only process required on exact final code SHA.",
-    "precritic": "Local pass to publish the consolidated a69f6de candidate; exact-head controls pending.",
+    "next_action": "Publish the state checkpoint for code SHA b32649f33508aaa899de99c92ad87eb315c77795, derive live PR #53 HEAD, wait exact-head worker/web and automatic review, then run one qualified read-only Controller on the exact final code SHA. Repair material findings and affected checks, verify main protection, and merge only after all PASS. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
+    "github_checks": "Exact-head check state on a90f202 is superseded by current local role/JSONL fixes; refresh after push.",
+    "github_review": "Review on a90f202 cannot cover current local role/JSONL fixes; refresh after push.",
+    "controller": "REWORK on a69f6de identified OWNER/ADMIN relationship gaps; repaired locally and affected guard suite 23/23, scripts 48/48; fresh qualified exact SHA review required.",
+    "precritic": "Pending fresh exact-head controls and qualified Controller review; do not merge.",
     "remote_authenticated_e2e": "BLOCKED_AUTH / not run; no authorized session in this process and no remote deployment in scope.",
     "production_readiness": "NOT READY / I07 is not go-live authorization."
   },
@@ -1194,5 +1194,25 @@
     "repair": "Require APPROVED for PUBLISHED; negative regressions for invalid combinations and positive approved/published case; QA updated to 22/22 and 47/47 and states public captures from I07 vs reused OWNER/ADMIN I06 captures.",
     "report": ".orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-65A59E8.md",
     "github_at_review": "worker/web PASS and GitHub automatic review no findings on reviewed SHA; those predate current repair."
+  },
+  "historical_controller_rework_i07_a69f6de": {
+    "reviewer_kind": "delegated_codex_separate_process",
+    "verdict": "REWORK",
+    "artifact_sha": "a69f6de128b374a7063a8ebe679f19d1665e9e17",
+    "artifact_tree": "124c60175d39426412f14b68995caba45c30d99a",
+    "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
+    "model_requested": "gpt-6-luna",
+    "effort_requested": "high",
+    "cli_version": "codex-cli 0.164.0",
+    "cli_invocation": "codex exec --json --model gpt-6-luna -c model_reasoning_effort=\"high\" --sandbox read-only --ephemeral",
+    "cli_exit_code": 0,
+    "session_id": "01a17a0a-8c29-76f0-98f6-5b5929a61922",
+    "cli_configuration_accepted": true,
+    "actual_backend_model_identity": "UNVERIFIED",
+    "read_only": "explicitly requested; captured tool calls were read-only inspection; no external changes",
+    "finding": "P1: current listings did not require OWNER role; audit events did not require ADMIN actor, OWNER target, or target matching known listing owner.",
+    "repair": "Require OWNER listing owner, ADMIN audit actor, OWNER target, listing ID to be current/reviewed/assisted-create provenance, and target matches listing owner; test role/mismatch cases. Also harden JSONL with canonical UUID and exact session-before-preview ordering.",
+    "report": ".orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-A69F6DE.md",
+    "raw_report": ".orchestration/evidence/critics/CF-AU-I07-CONTROLLER-RAW-REWORK-A69F6DE.md"
   }
 }
