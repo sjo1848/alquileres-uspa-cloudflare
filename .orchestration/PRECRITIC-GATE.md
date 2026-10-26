@@ -320,3 +320,8 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Controller exacto de referencia: `de88b480151a1ab97f7c654c62fcd653b41d2863`, veredicto `REWORK`; no P0/P1. Sus cinco P2 funcionales se repararon en `00f8f88b91155c8c7ed51d893b32d3f3deb824ac` y el sexto hallazgo de estado se reconciliará aquí con el nuevo HEAD, separando SHA ejecutable y checkpoint.
 - Pruebas afectadas: Worker moderation 12/12, management 13/13, Worker typecheck PASS; Web ADMIN E2E 2/2 con Worker/Hono+D1 sintética, Web typecheck/build PASS. Incluye imagen D1 BLOB en administración asistida, dirty-beforeunload, borrado/baseline, foco mobile y frescura de disponibilidad. `QA.md` documenta primer timeout por aceptación tardía de diálogo nativo; la ejecución corregida final pasó 2/2.
 - **Pre-Critic de rework: PASS para publicar y renovar exact-head CI/review y Controller final.** No equivale a PASS de integración. Requiere CI worker/web en HEAD final, review automática sin hallazgos materiales, Controller PASS exacto, validador final, conversaciones resueltas y branch protection antes del merge.
+
+
+### Seguimiento canónico del HEAD del PR (rework exacto)
+
+`STATUS.json` registra el SHA/tree ejecutable inmutable por separado. El HEAD del PR es una observación derivada de GitHub, no se escribe como si el commit que contiene el estado pudiera referenciarse a sí mismo. `last_observed_head_sha` conserva el anterior HEAD `a52caef`; acción obligatoria tras este checkpoint: consultar PR #52 live HEAD y sus checks. Controller observó correctamente que Event 228 había dejado el antiguo campo como si fuera current; esta modificación corrige esa ambigüedad.

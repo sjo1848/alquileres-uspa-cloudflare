@@ -1826,3 +1826,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Corrección ejecutable consolidada y publicada en PR #52: `00f8f88b91155c8c7ed51d893b32d3f3deb824ac`, árbol `5a4842353e101bab418945123de884d0e0e68462`; base conserva `main@0eff7358006a7e6e207387380ecc7bdd27615fb5`. La corrida exacta de CI/review debe renovarse.
 - Estado canónico versionado en el checkpoint siguiente: distingue `executable_sha` de PR HEAD y registra rework; al empujarlo el HEAD del PR cambiará sin alterar el árbol ejecutable.
 - **READY_TO_RESUME:** consultar el nuevo PR HEAD/checks, solicitar una review GitHub sobre ese HEAD y el Controller read-only final sobre el SHA exacto; resolver materialidad, actualizar evidencia y ejecutar Pre-Critic final. Merge sólo mediante protecciones tras todos los PASS. No Preview/CD/remote D1/Access, #34 ni I07.
+
+
+## Event 229 — SHA ejecutable separado del HEAD derivado de GitHub
+
+- Corrección de seguimiento solicitada por Controller: el checkpoint de Event 228 conservó `head_sha=00f8f88` aunque su propio commit pasó a ser el HEAD `a52caef`.
+- Se elimina la afirmación mutable `pull_request.head_sha/head_tree` de `STATUS.json`. El SHA ejecutable inmutable sigue siendo `00f8f88b91155c8c7ed51d893b32d3f3deb824ac` y su tree `5a4842353e101bab418945123de884d0e0e68462`; el último HEAD observado antes de este estado fue `a52caef53eaf389ccc1218a6ee50e9f3972c479f` / tree `51a5eb09569d034b77f81268434c7a6cf744e35b`. El HEAD vivo siempre se obtiene de GitHub **después** del checkpoint, ya que el commit que contiene el estado se convierte en el nuevo HEAD.
+- El valor anterior queda registrado como `last_observed_head_sha`, no como HEAD actual. La nueva acción exacta exige consultar PR #52 y correr checks/review/Controller sobre el HEAD derivado.
+- **READY_TO_RESUME:** tras publicar este checkpoint, resolver controles exactos del nuevo HEAD; comprobar que el árbol ejecutable es igual a 00f8f88; completar Controller PASS y Pre-Critic; merge protegido si todo queda conforme. No tocar Preview/CD/remote D1/Access ni iniciar #34/I07.

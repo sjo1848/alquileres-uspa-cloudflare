@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6 — CI/CD fail-closed implementation and D3.1 private Preview publication (Issue #49; PRs #50/#51 protected-merged); Product Owner visually approved Preview #48",
   "last_completed_head": "main@0eff7358006a7e6e207387380ecc7bdd27615fb5",
   "work_branch": "work/i06-d31-admin",
-  "next_action": "Refresh PR #52 exact HEAD/checks after the canonical checkpoint push, request GitHub automatic review and one delegated GPT-6 Luna High read-only Controller review on that exact SHA; repair material findings, then final Pre-Critic and protected merge only when all controls are green.",
+  "next_action": "After this state-only checkpoint lands, query GitHub PR #52 for its live HEAD and checks, wait for required CI and automatic review, then obtain final Controller verdict on the exact live HEAD (verify executable tree equals 00f8f88); fix any material finding and merge only after final Pre-Critic and branch protection.",
   "stop_reason": null,
   "event": {
-    "seq": 228,
-    "summary": "PR #52 reworked after exact read-only Controller findings; targeted regressions pass; refreshed exact-head controls pending"
+    "seq": 229,
+    "summary": "Canonical tracking separates immutable executable SHA from derived live GitHub PR HEAD"
   },
   "external_review": null,
   "human_gate": {
@@ -30,10 +30,11 @@
     "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
     "executable_sha": "00f8f88b91155c8c7ed51d893b32d3f3deb824ac",
     "executable_tree": "5a4842353e101bab418945123de884d0e0e68462",
-    "head_sha": "00f8f88b91155c8c7ed51d893b32d3f3deb824ac",
-    "head_tree": "5a4842353e101bab418945123de884d0e0e68462",
     "state": "OPEN",
-    "status": "Controller REWORK findings fixed in executable commit 00f8f88; exact-head CI/review pending. A non-executable state checkpoint follows and will become the live PR HEAD."
+    "status": "Executable candidate 00f8f88 is unchanged by this state-only checkpoint; query GitHub for the live PR HEAD and exact-head controls.",
+    "last_observed_head_sha": "a52caef53eaf389ccc1218a6ee50e9f3972c479f",
+    "last_observed_head_tree": "51a5eb09569d034b77f81268434c7a6cf744e35b",
+    "live_head_source": "Query GitHub PR #52 after this state checkpoint; this commit itself changes PR HEAD. Do not represent the containing state commit SHA inside itself."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -96,9 +97,9 @@
     "visual_reference": "Issue #41 D3.1 approved; commit 77c99fa445171a58548e6e06497050bf2d923305. The implemented structure is desktop queue+contextual detail and mobile list→detail; assisted sections align with one D3.1 system.",
     "prior_scope_reconciliation": "PR #51 merged 0eff735; PR #50/#51 CI and Preview publication facts preserved under historical_status_issue49_postmerge. Main still runs D3.1 from e1f319b; no update in this issue.",
     "cd_guard_note": "Remain disabled. Mutable D1 provenance guard observation is Issue #49 comment 6418504412 and out of scope; do not weaken or activate CD.",
-    "next_action": "After this non-executable state checkpoint, read PR #52 exact current head and checks; request the automatic GitHub review and one delegated read-only project_controller GPT-6 Luna High review on that exact SHA. Repair any material finding, rerun only affected tests and refresh PR/status; merge only after all required controls and protected-branch verification.",
-    "github_checks": "PENDING refreshed exact PR head after rework",
-    "github_review": "PENDING exact PR head",
+    "next_action": "After this state-only checkpoint lands, query GitHub PR #52 for its live HEAD and checks, wait for required CI and automatic review, then obtain final Controller verdict on the exact live HEAD (verify executable tree equals 00f8f88); fix any material finding and merge only after final Pre-Critic and branch protection.",
+    "github_checks": "PENDING on live PR head derived from GitHub after checkpoint",
+    "github_review": "PENDING on live PR head derived from GitHub after checkpoint",
     "controller": "REWORK on de88b48; fixes committed in executable 00f8f88; final exact-head review pending",
     "precritic": "PASS to publish bounded rework and obtain exact-head controls; merge gate pending",
     "pr_number": 52,
