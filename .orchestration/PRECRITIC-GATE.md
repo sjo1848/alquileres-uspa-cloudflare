@@ -376,6 +376,12 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Evidencia: `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-A90F202.md`; pruebas focalizadas 25/25 y Python suite 50/50 PASS.
 - No hay Pre-Critic PASS final aún. El tracking checkpoint debe publicarse; después se requieren checks worker/web, review exacta, Controller final sobre ejecutable exacto y gate de integración.
 
+## I07 — Controller REWORK f30d201 cerrado localmente
+
+- Controller encontró P2 por campos faltantes en auditoría assisted, validación UUID no canónica en `parse_deploy_output` y totales QA obsoletos. Reparado en `7869af8`: exige listing ID/OWNER target para assisted create/delete; aplica UUID canónico a ambos caminos; QA marca 26/26 y 51/51.
+- Evidencia: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-F30D201.md`. Regresiones focalizadas 26/26 y suite 51/51 PASS.
+- No PASS final aún. El nuevo ejecutable necesita GitHub CI/review actualizados y Controller exacto; sólo entonces revisar Pre-Critic final, protección y merge.
+
 ## I07 — tercera Controller REWORK: relaciones OWNER/ADMIN reparadas
 
 - Controller separado cualificado en exact artifact `a69f6de` encontró P1: guard aceptaba listing propiedad de ADMIN, audit actor OWNER, target ADMIN o mismatch entre target y listing owner. Mismo informe propuso hardening P2 del parser JSONL (UUID canónico y orden único envelope→preview). Evidencia completa y provenance: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-A69F6DE.md` y su salida redacted.
