@@ -190,7 +190,7 @@ jobs:
             --config dist/alquileres_uspa_lab/wrangler.json \
             --message "main ${GITHUB_SHA}" --json > "$RUNNER_TEMP/preview-result.json"
           python3 ../../scripts/preview_cd_guard.py deploy-output \
-            --file "$RUNNER_TEMP/preview-result.json" >> "$GITHUB_OUTPUT"
+            --file "$RUNNER_TEMP/preview-result.json"
       - name: Verify the JWT secret remains available on the updated Preview
         if: steps.gate.outputs.deploy == 'true'
         env:

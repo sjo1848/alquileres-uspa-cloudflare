@@ -48,6 +48,9 @@ class PreviewCdGuardTests(unittest.TestCase):
         self.assertIn("--name private --worker-name alquileres-uspa-lab", staging)
         self.assertIn("wrangler preview", staging)
         self.assertNotIn("wrangler deploy", staging)
+        self.assertIn("deploy-output", staging)
+        self.assertIn('--file "$RUNNER_TEMP/preview-result.json"', staging)
+        self.assertNotIn('>> "$GITHUB_OUTPUT"', staging)
 
     def test_exact_target_configs_pass(self):
         guard.verify_target(
