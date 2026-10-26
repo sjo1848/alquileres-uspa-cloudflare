@@ -1872,3 +1872,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Worker local corre R2 solo en emulador preexistente de la suite de regresión. No se tocó R2 remoto, D1 remoto, Preview, Access ni producción; no se activó CD. Cloudflare Free limits se documentan en QA con fuentes oficiales, pero no se midió uso de cuenta. Sin E2E remoto autenticado ni evaluación WCAG/lector de pantalla.
 - **Pre-Critic local: PASS para publicar una única PR funcional y obtener CI/review/Controller exactos; no autoriza merge todavía.**
 - **READY_TO_RESUME:** completar canonical consistency/diff preflight, publicar PR funcional #26, ejecutar checks `worker`/`web` y una review GitHub exact-head, obtener `project_controller` GPT-6 Luna High read-only exacto, reparar hallazgos materiales y merge solo protegido. Después registrar resultados en #26/#25 y detenerse para aceptación humana; dejar #26 abierto y no iniciar I08/#27. Sin despliegue remoto.
+
+
+## Event 234 — PR funcional #53 publicado
+
+- PR #53: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/53, base `main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412`. SHA ejecutable `8adb1649220ae388ec7c59f531a27865f6a29c66`, tree `212d0c3b254164a295947bd17ce10e44c5337610`.
+- El PR contiene correcciones funcionales acotadas y QA/evidencia. Local preflight PASS, pero `worker`/`web`, review automática y Controller aún están pendientes del HEAD final. El siguiente checkpoint de estado cambia el HEAD; no se reutilizarán checks/reviews anteriores.
+- **READY_TO_RESUME:** después de publicar el checkpoint, leer el HEAD vivo de PR #53 en GitHub; verificar CI worker/web y review exact-head, invocar `project_controller` read-only GPT-6 Luna High sobre SHA exacto, reparar P0/P1 y hallazgos materiales, repetir checks afectados, validar preflight/protección de main y hacer merge protegido solo con controles conformes. Dejar #26 abierto para aceptación humana; detenerse antes de I08/#27. Sin Preview, migraciones remotas, CD, Access, recursos, producción o datos reales.
