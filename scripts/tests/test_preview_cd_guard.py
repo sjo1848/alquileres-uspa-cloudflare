@@ -121,13 +121,45 @@ class PreviewCdGuardTests(unittest.TestCase):
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["audit_events"].append({
             "id": "audit-after-synthetic-delete",
-            "listing_id": "deleted-synthetic-listing",
+            "listing_id": "synthetic-casa-rio",
             "actor_id": "synthetic-catalog-admin",
             "target_owner_id": None,
             "action": "ADMIN_LISTING_DELETED",
             "created_at": "2026-10-27T12:02:00Z",
         })
         guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_allows_new_assisted_creation_and_rejects_unknown_audit_listing(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({
+            "id": "new-assisted-create",
+            "listing_id": "new-synthetic-assisted-listing",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_ASSISTED_LISTING_CREATED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        snapshot["audit_events"].append({
+            "id": "new-assisted-delete",
+            "listing_id": "new-synthetic-assisted-listing",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
+            "created_at": "2026-10-27T12:03:00Z",
+        })
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({
+            "id": "orphan-event",
+            "listing_id": "unverified-listing-id",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_LISTING_PUBLISHED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        with self.assertRaisesRegex(guard.PolicyError, "without synthetic provenance"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
 
     def test_provenance_rejects_unverified_audit_actors_and_invalid_states(self):
         manifest, snapshot = self._synthetic_snapshot()

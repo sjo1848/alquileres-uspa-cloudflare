@@ -213,6 +213,7 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
     if any(row.get("is_synthetic") != 1 or row.get("role") not in {"OWNER", "ADMIN"} for row in users):
         raise PolicyError("D1 contains a non-synthetic or unrecognized user identity")
     synthetic_user_ids = set(users_by_id)
+    synthetic_user_roles = {user_id: row.get("role") for user_id, row in users_by_id.items()}
 
     listings = observed.get("listings", [])
     listings_by_id = {row.get("id"): row for row in listings}
@@ -241,10 +242,20 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
     for event_id, baseline in expected_audit.items():
         if any(audit_by_id[event_id].get(field) != baseline.get(field) for field in immutable_audit_fields):
             raise PolicyError("reviewed synthetic audit identity anchors changed")
+    synthetic_listing_ids = set(listings_by_id) | set(expected_listings)
     for row in audit_events:
         target_owner_id = row.get("target_owner_id")
         if row.get("actor_id") not in synthetic_user_ids or (target_owner_id is not None and target_owner_id not in synthetic_user_ids):
             raise PolicyError("an audit event refers to a non-synthetic identity")
+        if (
+            row.get("action") == "ADMIN_ASSISTED_LISTING_CREATED"
+            and row.get("listing_id")
+            and synthetic_user_roles.get(row.get("actor_id")) == "ADMIN"
+            and synthetic_user_roles.get(target_owner_id) == "OWNER"
+        ):
+            synthetic_listing_ids.add(row["listing_id"])
+    if any(row.get("listing_id") is not None and row.get("listing_id") not in synthetic_listing_ids for row in audit_events):
+        raise PolicyError("an audit event refers to a listing without synthetic provenance")
 
     if observed.get("counts", {}).get("non_synthetic_user_email_count") != 0:
         raise PolicyError("D1 contains a user with a non-synthetic email domain")

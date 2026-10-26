@@ -349,3 +349,10 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Cambios en alcance: salida de tamaño sub-KB; parser JSONL estricto Wrangler; procedencia sintética que acepta cambios mutables y borrados sintéticos legítimos sin relajar identidades; harness de fault injection corregido. Sin código de producción remota/Preview/CD/R2.
 - Este Pre-Critic solo autoriza publicar y procesar CI `worker`/`web`, GitHub Review y una revisión de `project_controller` sobre SHA exacto. **No es autorización final de merge.** Merge requiere hallazgos materiales resueltos, checks exact-head verdes, Controller PASS, validador canónico, protección de `main` y conversaciones resueltas.
 - No se ejecutó E2E remoto autenticado ni se actualizó Preview. Issue #26 queda abierto para Product Acceptance; detenerse antes de I08/#27.
+
+## I07 — Controller REWORK reparado; controles finales pendientes
+
+- La primera revisión delegada del PR #53 encontró un evento de auditoría con `listing_id` no validado (artifact `0a5a83d7a262a8bdde0860b10d745fd4e9944f3f`). Hallazgo y límites de runtime: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-0A5A83D.md`. Este resultado invalida cualquier PASS de Controller para esa versión.
+- Reparación local: auditorías se ligan a listados sintéticos activos, baseline, o una creación asistida con actor ADMIN y dueño OWNER sintéticos. Prueba negativa de ID desconocido y positivas de baseline eliminado/creación asistida agregadas. Guard 21/21 y scripts 46/46 PASS.
+- Preflight local de reparación: PASS en diff/consistencia; pendiente publicar nueva cabeza. Para merge se requiere exact-head `worker`/`web`, review GitHub sin hallazgos materiales, proceso separado de Controller que acepte explícitamente GPT-6 Luna/High/`--sandbox read-only` según v2, ausencia de conversaciones sin resolver, protección de main y Pre-Critic final. Backend identity sigue UNVERIFIED si no hay metadata verificable.
+- Sin activación de CD/Preview, cambios remotos, migraciones o datos reales. Issue #26 permanece abierto para Product Acceptance; no iniciar I08/#27.
