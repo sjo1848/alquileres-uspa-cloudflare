@@ -256,6 +256,10 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
     for event_id, baseline in expected_audit.items():
         if any(audit_by_id[event_id].get(field) != baseline.get(field) for field in immutable_audit_fields):
             raise PolicyError("reviewed synthetic audit identity anchors changed")
+    # Assisted deletion is the durable audit proof for a synthetic listing created
+    # through the OWNER route and later removed. OWNER creation has no audit row;
+    # the delete audit is inserted only after a successful DELETE in one D1 batch.
+    # Use its role-checked target to retain provenance for the whole audit history.
     for row in audit_events:
         actor_id = row.get("actor_id")
         target_owner_id = row.get("target_owner_id")
@@ -266,6 +270,17 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
             raise PolicyError("an audit event actor must have the ADMIN role")
         if target_owner_id is not None and synthetic_user_roles.get(target_owner_id) != "OWNER":
             raise PolicyError("an audit target identity must have the OWNER role")
+        if row.get("action") == "ADMIN_ASSISTED_LISTING_DELETED" and listing_id:
+            if target_owner_id is None:
+                raise PolicyError("an assisted-delete audit event must identify its OWNER target")
+            known_owner = synthetic_listing_owners.get(listing_id)
+            if known_owner is not None and known_owner != target_owner_id:
+                raise PolicyError("an audit target does not match the listing owner")
+            synthetic_listing_owners[listing_id] = target_owner_id
+
+    for row in audit_events:
+        target_owner_id = row.get("target_owner_id")
+        listing_id = row.get("listing_id")
         if row.get("action") == "ADMIN_ASSISTED_LISTING_CREATED" and listing_id:
             if target_owner_id is None:
                 raise PolicyError("an assisted-create audit event must identify its OWNER target")

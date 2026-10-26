@@ -117,17 +117,53 @@ class PreviewCdGuardTests(unittest.TestCase):
         snapshot["listings"] = snapshot["listings"][1:]
         guard.validate_synthetic_provenance(snapshot, manifest)
 
-    def test_provenance_allows_audit_for_deleted_synthetic_listing(self):
+    def test_provenance_allows_assisted_delete_audit_for_reviewed_synthetic_listing(self):
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["audit_events"].append({
             "id": "audit-after-synthetic-delete",
             "listing_id": "synthetic-casa-rio",
             "actor_id": "synthetic-catalog-admin",
             "target_owner_id": "synthetic-catalog-owner",
-            "action": "ADMIN_LISTING_DELETED",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
             "created_at": "2026-10-27T12:02:00Z",
         })
         guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_retains_owner_created_listing_after_assisted_delete(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].extend([
+            {
+                "id": "owner-created-review",
+                "listing_id": "owner-created-then-deleted",
+                "actor_id": "synthetic-catalog-admin",
+                "target_owner_id": "synthetic-catalog-owner",
+                "action": "ADMIN_LISTING_REJECTED",
+                "created_at": "2026-10-27T12:02:00Z",
+            },
+            {
+                "id": "owner-created-delete",
+                "listing_id": "owner-created-then-deleted",
+                "actor_id": "synthetic-catalog-admin",
+                "target_owner_id": "synthetic-catalog-owner",
+                "action": "ADMIN_ASSISTED_LISTING_DELETED",
+                "created_at": "2026-10-27T12:03:00Z",
+            },
+        ])
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_assisted_delete_with_wrong_owner(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"].append({"id": "another-synthetic-owner", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 1})
+        snapshot["audit_events"].append({
+            "id": "wrong-owner-delete",
+            "listing_id": "synthetic-casa-rio",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "another-synthetic-owner",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        with self.assertRaisesRegex(guard.PolicyError, "does not match the listing owner"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
 
     def test_provenance_allows_new_assisted_creation_and_rejects_unknown_audit_listing(self):
         manifest, snapshot = self._synthetic_snapshot()
