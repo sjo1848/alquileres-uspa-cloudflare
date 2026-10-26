@@ -257,3 +257,13 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Exact CI `worker` and `web` SUCCESS on `c848d84` (run `39704030419`). Original review threads have responses and are resolved. Final automatic GitHub review on `c848d84` has been requested; result is still pending.
 - Delegated separate-process Controller PASS on exact SHA/tree; requested GPT-6 Luna / High / read-only, accepted CLI configuration, exit 0, backend identity UNVERIFIED. No P0/P1/P2/P3 found. Report/provenance under `.orchestration/evidence/critics/CF-AU-I06.5-CONTROLLER-C848D84-*`.
 - **Pre-Critic final remains PENDING** until GitHub review completes on the exact final PR head, consistency validator passes, and no new unresolved conversations remain. No merge or Preview update before those checks.
+
+
+## Issue #49 — CI/CD Preview fail-closed candidate `ffb0402`
+
+- Base: `6863bc02c8db45aae3cd231c349ecf069bcd72c5`; executable SHA `ffb040244cbb2cad78b460cc7a02a9609f9a11c5`, tree `d7ed682aa55f817ac2d6c84c77e13893cea1433c`.
+- Scope is restricted to protected-main CI/CD for the existing private Preview and the existing synthetic D1; no production, resources, Access edits, paid services, R2, source writes or ADMIN #33. D1 provenance is supported from the permitted metadata comparison; content was not inspected. Remote migration has not been applied.
+- Local proof: preview guard 13/13, Python suite 38/38, web typecheck/build:preview PASS, actionlint PASS, metadata comparison and private backup/local 0013 rehearsal PASS, Access anonymous smoke 12/12 PASS. Exact details are in `.orchestration/evidence/CF-AU-I06.6-CI-CD-LOCAL-VALIDATION.md`.
+- Delegated technical Controller PASS on exact executable SHA: `.orchestration/evidence/critics/CF-AU-I06.6-CD-CONTROLLER-FFB0402-PASS.md`; separate-process model/effort/sandbox requested GPT-6 Luna/High/read-only, backend identity UNVERIFIED.
+- The `staging-private` job is push-main-only after successful `worker` and `web`, serialized, and fails closed unless explicit variables and a scoped Actions secret exist. Current GitHub configuration lacks that secret/variables, so the job cannot mutate Cloudflare on merge in this state.
+- **Pre-Critic PASS to publish this single functional PR and obtain exact-head GitHub checks/review only.** Merge requires fresh exact-head CI/review, no unresolved material conversations, consistency validation and enforced protection. Preview update/migration remains pending until the CI credential prerequisite is safely configured and workflow actually succeeds.
