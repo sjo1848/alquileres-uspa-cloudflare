@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "CF_AU_I06_6_P2_PUBLIC_CATALOG_D31",
+  "phase": "CF_AU_I06_6_P3_OWNER_D31",
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
-  "active_task": "CF-AU-I06.6-P2 — Catálogo, ficha y consulta pública D3.1 (Issue #43)",
-  "last_completed_task": "CF-AU-I06.6-P1 — Fundamentos D3.1; PR #45 integrado mediante merge protegido",
-  "last_completed_head": "main@639ba0eacb02be6ed96f6ba8746959c792d57e48",
-  "work_branch": "work/i06-d31-public-catalog",
-  "next_action": "Persist this bounded Controller state-evidence REWORK in PR #46; verify active exact-head checks/review after the evidence checkpoint, then run one final bounded GPT-6 Luna High read-only Controller review using live GitHub receipts, Pre-Critic, protected merge, close #43/update #25; stop before #44/#33.",
+  "active_task": "CF-AU-I06.6-P3 — OWNER D3.1 (Issue #44)",
+  "last_completed_task": "CF-AU-I06.6-P2 — Catálogo, ficha y consulta pública D3.1 (Issue #43), integrado mediante PR #46",
+  "last_completed_head": "main@ec58cd9e2d702afe57d0d6a4ebb4f159bd831f8d",
+  "work_branch": "work/i06-d31-owner",
+  "next_action": "Finalize QA/pre-critic and deterministic consistency preflight; consolidate the D3.1 OWNER candidate on work/i06-d31-owner, publish one functional PR linked to Issue #44, and wait for exact-head worker/web checks plus GitHub review. Then run the required read-only GPT-6 Luna High Controller on that exact SHA, process any bounded rework, complete final Pre-Critic and merge through enforced main protection; close #44/update #25 and stop before #33/#34.",
   "stop_reason": null,
   "event": {
-    "seq": 215,
-    "summary": "Controller REWORK P2: exact-head CI/review receipts stale in active STATUS"
+    "seq": 217,
+    "summary": "I06.6-P3 OWNER D3.1 implemented; local candidate validated"
   },
   "external_review": null,
   "human_gate": {
@@ -24,15 +24,15 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": 46,
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46",
-    "branch": "work/i06-d31-public-catalog",
-    "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
-    "executable_sha": "6cdb6177f81997453e301d4516827ebd1805b3a5",
-    "status": "OPEN_CONTROLLER_STATE_REWORK",
-    "executable_tree": "35b71cfbcff8a78c22b39689d096f95368780457",
-    "head_sha": "31f51931fe822321f8b05497c23c1e938638d241",
-    "head_tree": "35b71cfbcff8a78c22b39689d096f95368780457"
+    "number": null,
+    "url": null,
+    "branch": "work/i06-d31-owner",
+    "base_sha": "ec58cd9e2d702afe57d0d6a4ebb4f159bd831f8d",
+    "executable_sha": null,
+    "executable_tree": null,
+    "head_sha": null,
+    "head_tree": null,
+    "status": "NOT_PUBLISHED"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -81,30 +81,29 @@
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
-    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/43",
-    "contract": ".orchestration/contracts/CF-AU-I06.6-P2-PUBLIC-CATALOG-D31.md",
-    "status": "OPEN_CONTROLLER_STATE_REWORK",
-    "base_sha": "639ba0eacb02be6ed96f6ba8746959c792d57e48",
-    "branch": "work/i06-d31-public-catalog",
-    "scope": "D3.1 public catalog, listing detail and contact only. Preserve public APIs, filtering, price/period, availability/freshness, image permissions/URLs, idempotent contact and security; no OWNER/ADMIN, Preview or production.",
-    "direction": "D3.1 approved in #41, commit 77c99fa445171a58548e6e06497050bf2d923305; C from #29 is historical only.",
-    "code_status": "El CTA de consulta ahora respeta el fragmento y scrollBehavior mueve el formulario al viewport; historial de scroll se conserva. Regresión E2E nueva. Sin cambio Worker/API ni contratos de idempotencia/permisos.",
-    "next_action": "This gate checkpoint records exact source/test commit 6cdb617 and latest verified review/checks on prior PR head 3fb6f69. After this status-only commit, query current PR exact head; wait required checks/review green; run bounded final Controller on exact current SHA; Pre-Critic, merge protected, close #43/update #25 and stop.",
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/44",
+    "contract": ".orchestration/contracts/CF-AU-I06.6-P3-OWNER-D31.md",
+    "status": "IN_PROGRESS",
+    "base_sha": "ec58cd9e2d702afe57d0d6a4ebb4f159bd831f8d",
+    "branch": "work/i06-d31-owner",
+    "scope": "D3.1 OWNER dashboard/editor only: listing inventory, info/photos/availability, inbox and safe workflows; preserve current auth/API/backend contracts. No ADMIN #33, Product Acceptance #34, Preview, production, paid services, real data or source repo writes.",
+    "direction": "D3.1 approved in Issue #41, immutable reference 77c99fa445171a58548e6e06497050bf2d923305.",
+    "code_status": "D3.1 OWNER workspace/editor implemented in Vue; no Worker/API/auth changes. Actions reflect API/media contracts: DRAFT/REJECTED editing, submitted review state, approved photo read-only, Static Assets versus D1 BLOB, real availability updates/reconfirmation and READ/UNREAD inbox. Pending photos stay visible as an unsaved state across section changes. Mobile uses list→detail and editor tabs support arrow/Home/End keyboard navigation.",
+    "next_action": "Finalize current after-captures and QA note; run consistency validator and diff whitespace gate on exact staged candidate, commit once, publish functional PR #44 and process exact-head CI/review/Controller, then merge protected and close/update Issues #44/#25.",
+    "baseline": "Playwright OWNER suite on exact main base ec58cd9: 3/3 PASS in 3.8m using Vue/Vite, Worker/Hono Workerd, isolated local D1 and synthetic OWNER identities/MOCK email. Prior screenshots in output/playwright/i06.5; frozen comparison copies in output/playwright/i06.6-p3/before.",
     "local_checks": {
-      "baseline_public_e2e": "PASS 4/4 sobre main@639ba0e con Vue + Worker/Hono + D1 local sintética; capturas antes preservadas.",
-      "baseline_capture": "output/playwright/i06.6-p2/before/ catálogo y ficha/contacto en 1440, 390 y 320 px.",
-      "p1_red_image_investigation": "The P1 foundation screenshot used seed-owner-e2e.sql under D1_BLOB: owner-approved-photo has a 48x48 solid-red synthetic BLOB at position 0 and a repository SVG at position 0. publicImages merges/sorts them by position then id, so the tiny test BLOB was first. This is a synthetic fixture artifact, not evidence that public static assets or production photo delivery fail. P2 catalog seed uses distinct repository-managed synthetic WebP files; public baseline test verifies decode.",
-      "implementation": "HomeView y ListingView D3.1; filtros, paginación, frescura y consulta idempotente/API sin cambios; CSS mobile overflow corregido y probado a 320px.",
-      "public_e2e": "PASS 4/4; recorrido local Vue + Worker/Hono + D1; contacto 201 e idempotency-key estable; fallbacks de foto; 1440/390/320 capturas after.",
-      "worker_ci_matrix": "PASS typecheck + catalog 7 + media 16 + owner 6 + owner-auth 5 + admin 12 + preview-auth 6 + contact-workflow 6 + management 13 = 71 tests.",
-      "web_builds": "PASS typecheck, build, build:preview (local build only; sin deploy).",
-      "repository_checks": "PASS Python 25/25, consistency validator --base origin/main, git diff --check.",
-      "public_e2e_after_github_p2": "PASS 4/4 en el árbol funcional 6cdb6177f81997453e301d4516827ebd1805b3a5; hash y scroll del CTA comprobados en 390px; llamada de contacto con D1 local mantiene POST 201 e idempotencia. test:e2e:public 41.9s.",
-      "web_typecheck_build_after_github_p2": "PASS typecheck + build tras cambio router; build:preview se ejecuta en CI del nuevo HEAD."
+      "baseline_owner_e2e": "PASS 3/3 in 3.8m on exact main base ec58cd9: registration/MOCK verification/reset/login/logout; load retry; D1 BLOB/static images; owner permissions; availability/inbox; edit/upload/reorder/delete/review; session expiry and dirty-state protection.",
+      "baseline_capture": "Real Playwright baseline 1440/390/320 frozen in output/playwright/i06.6-p3/before/.",
+      "owner_e2e_final": "PASS 4/4 in 3.2m on consolidated D3.1 app: auth/MOCK; error retry; keyboard and responsive list→detail; D1 BLOB/static media; save/review, upload/retry/reorder/delete, availability/reconfirm while SUBMITTED, inbox READ/UNREAD, admin denial, real local D1 session revocation and expired-session redirect.",
+      "owner_e2e_visual_capture_followup": "PASS focused OWNER D3.1 1/1 on final capture spec; includes dashboard 320×844 and photographs 390×844; output/playwright/i06.6-p3/after/.",
+      "public_e2e_final": "PASS 4/4 in 1.7m with Worker/Hono+D1 local: filters/pagination, recoverable errors/fallbacks, detail/contact D1 and stable idempotent retry, mobile #35 regression.",
+      "web_typecheck_build": "PASS npm run typecheck && npm run build; local builds only, no deployment.",
+      "evidence_report": "output/playwright/i06.6-p3/QA.md",
+      "prepublish_preflight": "PENDING final consistency validator and git diff --check after canonical/evidence updates."
     },
-    "github_checks": "PASS exact PR HEAD 31f51931fe822321f8b05497c23c1e938638d241: run 40051361555, worker/web SUCCESS (https://github.com/sjo1848/alquileres-uspa-cloudflare/actions/runs/40051361555).",
-    "github_review": "PASS exact PR HEAD 31f51931fe822321f8b05497c23c1e938638d241: Codex Review receipt comment 6378377440, no major issues (https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46#issuecomment-6378377440); P2 #4365552637 answered and resolved.",
-    "controller": "REWORK P2 on exact HEAD 31f51931fe822321f8b05497c23c1e938638d241: implementation PASS; active STATUS had stale check/review provenance. Report: .orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-31F5193-REWORK.md"
+    "github_checks": "PENDING candidate",
+    "github_review": "PENDING candidate",
+    "controller": "PENDING candidate"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
@@ -1055,5 +1054,17 @@
       "backend_identity": "UNVERIFIED",
       "report": ".orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-31F5193-REWORK.md"
     }
-  ]
+  ],
+  "historical_pull_request_i06_6_p2": {
+    "number": 46,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/46",
+    "status": "MERGED",
+    "merge_commit": "ec58cd9e2d702afe57d0d6a4ebb4f159bd831f8d",
+    "candidate_sha": "793a43778329a19dc46bcf87ab9b1fbe7475ef27",
+    "github_review": "PASS exact candidate; no major issues; comment 6378413829",
+    "controller": "PASS exact candidate 793a437; delegated separate process read-only; backend identity UNVERIFIED",
+    "precritic": "PASS; PR comment 6378434736",
+    "issue_43": "CLOSED; comment 6378438739",
+    "epic_25": "UPDATED; comment 6378439296"
+  }
 }

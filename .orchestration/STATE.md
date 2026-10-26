@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I06_6_P2_PUBLIC_CATALOG_D31`
-Active task: `CF-AU-I06.6-P2 — Catálogo, ficha y consulta pública D3.1 (Issue #43)`
+Phase: `CF_AU_I06_6_P3_OWNER_D31`
+Active task: `CF-AU-I06.6-P3 — OWNER D3.1 (Issue #44)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1716,3 +1716,18 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - **REWORK P2 de estado:** el `STATUS.json` activo seguía citando el run `40051161666` y review `6378351382` de `3fb6f69`; GitHub ya había concluido checks PASS (run `40051361555`, worker/web SUCCESS) y Codex Review sin major issues (comentario `6378377440`) sobre `31f5193`. Esta evidencia se reconcilia en este mismo PR funcional; ver reporte `.orchestration/evidence/critics/CF-AU-I06.6-P2-CONTROLLER-31F5193-REWORK.md`.
 - Proceso: `delegated_codex_separate_process`, CLI `codex-cli 0.164.0`, solicitado `gpt-6-luna`, High, `--sandbox read-only`, exit 0, session `01a16b98-b7fc-75d0-9ac8-af2bd14b083f`; backend/provider identity **UNVERIFIED**. La revisión no ejecutó pruebas ni operaciones de escritura.
 - **READY_TO_RESUME:** publicar la reconciliación en PR #46; verificar CI y review exact-head en el checkpoint; ejecutar un único Controller final acotado con verificación GitHub en vivo; completar Pre-Critic y merge protegido; cerrar #43, actualizar #25 y detener antes de #44/#33. Sin cambios ejecutables.
+
+
+## Event 216 — I06.6-P2 integrado; inicio autorizado de I06.6-P3 OWNER
+
+- GitHub confirma PR #46 integrado mediante merge protegido en `main@ec58cd9e2d702afe57d0d6a4ebb4f159bd831f8d`; Issue #43 cerrado y Epic #25 actualizado. Evidencia de cierre #43: comment `6378438739`; merge commit conserva candidate `793a437`. I06.6-P2 queda cerrado aquí; su historial, veredictos, reworks y pruebas permanecen preservados en Events 209–215 y el historial activo pasa a `historical_pull_request_i06_6_p2` en STATUS.
+- Issue #44 abre I06.6-P3 OWNER con base exacta `ec58cd9e2d702afe57d0d6a4ebb4f159bd831f8d` y D3.1 de #41 commit `77c99fa445171a58548e6e06497050bf2d923305`. Contrato: `.orchestration/contracts/CF-AU-I06.6-P3-OWNER-D31.md`. La orden humana específica autoriza el incremento pese a la nota histórica “requiere instrucción”. ADMIN #33 y Product Acceptance #34 quedan fuera.
+- Se preservan los artefactos no rastreados preexistentes. Capturas OWNER before existentes fueron generadas por Playwright en `output/playwright/i06.5/`; copia comparativa congelada en `output/playwright/i06.6-p3/before/`.
+- **READY_TO_RESUME:** transformar OWNER con dashboard operativo D3.1, inventario contextual y editor por secciones Información/Fotografías/Disponibilidad, sin alterar contratos; añadir regresiones/capturas before-after 1440/390/320; probar Vue+Worker/Hono+D1 sintética, regresiones públicas/OWNER, typecheck/build, CI/review/Controller/Pre-Critic; integrar con protección, cerrar #44, actualizar #25 y detener antes de #33/#34. No Preview, producción, gastos, datos reales, R2, autenticación ni repo fuente.
+
+## Event 217 — OWNER D3.1 implementado; candidato local validado
+
+- Panel OWNER reestructurado como workspace D3.1 con resumen, siguiente acción, inventario contextual, editor Información/Fotografías/Disponibilidad, lista→detalle mobile, teclado en pestañas, fecha local explícita de Mendoza, estado resumido de foto pendiente y acciones existentes para estados/fuentes de media. No hubo Worker/backend/auth/API changes. Disponibilidad conserva la capacidad autorizada por el endpoint también cuando el listing está SUBMITTED.
+- Regresiones runtime en `apps/web/e2e/owner-journey.spec.ts`: sección/teclado/mobile, sesiones revocadas contra D1, retries, fotos D1 BLOB/Static Asset, envío/reconfirmación, inbox, acciones destructivas y permisos. Playwright OWNER completo 4/4 (3.2m); después, focales D3.1 1/1 (incluye capturas de dashboard 320 y fotos 390) y el flujo completo D1 1/1 PASS. Público 4/4 (1.7m), typecheck/build PASS.
+- Capturas auténticas antes/después 1440/390/320 y recorrido de fotos/disponibilidad en `output/playwright/i06.6-p3/`; sintéticas locales y correo MOCK. Informe verificable `output/playwright/i06.6-p3/QA.md`. Sin Preview/prod/remoto/costos/datos reales.
+- **READY_TO_RESUME:** cerrar el registro QA/Pre-Critic y validador; consolidar un commit funcional en `work/i06-d31-owner`, subir PR enlazado a #44 y esperar checks `worker`/`web` más review exact-head. Después Controller `gpt-6-luna` High solo lectura sobre SHA final, procesar rework si existe, Pre-Critic final y merge protegido; actualizar #44/#25 y detener antes de #33/#34. No Preview ni producción.
