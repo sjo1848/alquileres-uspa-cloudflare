@@ -17,6 +17,7 @@ const session=useSession(),owners=ref<Owner[]>([]),drafts=ref<DraftSummary[]>([]
 const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
 const form=reactive({...blank(),ownerId:''});
 let draftsRequestGeneration=0;
+let auditRequestGeneration=0;
 let pendingCreate:{fingerprint:string;key:string}|null=null;
 let pendingMutation:{action:string;fingerprint:string;key:string}|null=null;
 const editable=()=>!created.value||['DRAFT','REJECTED'].includes(created.value.status);
@@ -24,11 +25,12 @@ const listingFields=(value:Fields)=>({title:value.title,description:value.descri
 const originalFields=ref<string>(JSON.stringify(blank()));
 const hasUnsavedChanges=computed(()=>editable()&&JSON.stringify(listingFields(form))!==originalFields.value);
 const statusLabel=(status:string)=>({DRAFT:'Borrador',REJECTED:'Rechazada',SUBMITTED:'En revisión',APPROVED:'Aprobada'}[status]??status);
-function assignListing(item:Listing,resetSection=true){created.value=item;staleDraft.value=false;form.ownerId=item.owner.id;Object.assign(form,{title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,currency:item.currency,pricePeriod:item.pricePeriod,rentalDuration:item.rentalDuration,maxOccupants:item.maxOccupants});originalFields.value=JSON.stringify(listingFields(form));if(resetSection)section.value='details';void loadAudit(item.id);}
+function resetAudit(){auditRequestGeneration++;audit.value=[];auditLoading.value=false;}
+function assignListing(item:Listing,resetSection=true){created.value=item;resetAudit();staleDraft.value=false;form.ownerId=item.owner.id;Object.assign(form,{title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,currency:item.currency,pricePeriod:item.pricePeriod,rentalDuration:item.rentalDuration,maxOccupants:item.maxOccupants});originalFields.value=JSON.stringify(listingFields(form));if(resetSection)section.value='details';void loadAudit(item.id);}
 function imageSrc(url?:string){return !url?'':url.startsWith('/media/catalog/')?url:apiUrl(url);}
 function protectUnsavedBeforeUnload(event:BeforeUnloadEvent){if(!hasUnsavedChanges.value)return;event.preventDefault();event.returnValue='';}
-async function loadAudit(listingId=created.value?.id){if(!listingId){audit.value=[];return;}auditLoading.value=true;try{audit.value=await session.apiRequest<Audit[]>(`/admin/listings/audit?limit=30&listingId=${encodeURIComponent(listingId)}`);}catch{audit.value=[];}finally{auditLoading.value=false;}}
-function selectOwner(event:Event){const next=(event.target as HTMLSelectElement).value;if(next===form.ownerId)return;if(hasUnsavedChanges.value&&!window.confirm('Hay cambios sin guardar. ¿Descartarlos y cambiar de propietario?')){(event.target as HTMLSelectElement).value=form.ownerId;return;}form.ownerId=next;created.value=null;staleDraft.value=false;Object.assign(form,blank(),{ownerId:next});originalFields.value=JSON.stringify(listingFields(form));}
+async function loadAudit(listingId=created.value?.id){const generation=++auditRequestGeneration;if(!listingId){audit.value=[];auditLoading.value=false;return;}auditLoading.value=true;try{const result=await session.apiRequest<Audit[]>(`/admin/listings/audit?limit=30&listingId=${encodeURIComponent(listingId)}`);if(generation===auditRequestGeneration&&created.value?.id===listingId)audit.value=result;}catch{if(generation===auditRequestGeneration&&created.value?.id===listingId)audit.value=[];}finally{if(generation===auditRequestGeneration)auditLoading.value=false;}}
+function selectOwner(event:Event){const next=(event.target as HTMLSelectElement).value;if(next===form.ownerId)return;if(hasUnsavedChanges.value&&!window.confirm('Hay cambios sin guardar. ¿Descartarlos y cambiar de propietario?')){(event.target as HTMLSelectElement).value=form.ownerId;return;}form.ownerId=next;created.value=null;resetAudit();staleDraft.value=false;Object.assign(form,blank(),{ownerId:next});originalFields.value=JSON.stringify(listingFields(form));}
 async function loadDrafts(append=false){
   const ownerId=form.ownerId,cursor=append?draftsNextCursor.value:null;
   if(!ownerId||append&&!cursor){drafts.value=[];draftsNextCursor.value=null;return;}
@@ -55,8 +57,8 @@ async function searchOwners(){
 watch(()=>form.ownerId,()=>{draftsRequestGeneration++;created.value=null;drafts.value=[];draftsNextCursor.value=null;void loadDrafts();});
 onBeforeRouteLeave(()=>{if(!hasUnsavedChanges.value)return true;return window.confirm('Tenés cambios sin guardar. ¿Salir y descartarlos?');});
 onMounted(()=>{window.addEventListener('beforeunload',protectUnsavedBeforeUnload);void searchOwners();});
-onBeforeUnmount(()=>window.removeEventListener('beforeunload',protectUnsavedBeforeUnload));
-function newDraft(){if(hasUnsavedChanges.value&&!window.confirm('Hay cambios sin guardar. ¿Descartarlos y crear otro borrador?'))return;created.value=null;staleDraft.value=false;Object.assign(form,blank(),{ownerId:form.ownerId});originalFields.value=JSON.stringify(listingFields(form));section.value='details';pendingMutation=null;pendingCreate=null;notice.value='';error.value='';}
+onBeforeUnmount(()=>{window.removeEventListener('beforeunload',protectUnsavedBeforeUnload);resetAudit();});
+function newDraft(){if(hasUnsavedChanges.value&&!window.confirm('Hay cambios sin guardar. ¿Descartarlos y crear otro borrador?'))return;created.value=null;resetAudit();staleDraft.value=false;Object.assign(form,blank(),{ownerId:form.ownerId});originalFields.value=JSON.stringify(listingFields(form));section.value='details';pendingMutation=null;pendingCreate=null;notice.value='';error.value='';}
 async function create(){
   if(busy.value||!form.ownerId)return;
   busy.value=true;error.value='';notice.value='';
@@ -79,7 +81,7 @@ async function mutate(action:string,path:string,method:string,body?:unknown){
   const listingId=created.value.id,payload=body===undefined?null:body,fingerprint=JSON.stringify({listingId,payload});
   if(pendingMutation?.action!==action||pendingMutation.fingerprint!==fingerprint)pendingMutation={action,fingerprint,key:crypto.randomUUID()};
   busy.value=true;error.value='';notice.value='';
-  try{const item=await session.apiRequest<Listing>(path,{method,...(body===undefined?{}:{body:JSON.stringify(body)}),headers:{'Idempotency-Key':pendingMutation.key}});pendingMutation=null;if(action==='delete'){created.value=null;Object.assign(form,blank(),{ownerId:form.ownerId});originalFields.value=JSON.stringify(listingFields(form));audit.value=[];section.value='details';}else assignListing(item,false);await loadDrafts();notice.value=action==='edit'?'Cambios guardados y auditados.':action==='availability'?'Disponibilidad actualizada y auditada.':action==='reconfirm'?'Disponibilidad reconfirmada y auditada.':action==='submit'?'Publicación enviada a revisión y auditada.':'Borrador eliminado y auditado.';}
+  try{const item=await session.apiRequest<Listing>(path,{method,...(body===undefined?{}:{body:JSON.stringify(body)}),headers:{'Idempotency-Key':pendingMutation.key}});pendingMutation=null;if(action==='delete'){created.value=null;resetAudit();Object.assign(form,blank(),{ownerId:form.ownerId});originalFields.value=JSON.stringify(listingFields(form));section.value='details';}else assignListing(item,false);await loadDrafts();notice.value=action==='edit'?'Cambios guardados y auditados.':action==='availability'?'Disponibilidad actualizada y auditada.':action==='reconfirm'?'Disponibilidad reconfirmada y auditada.':action==='submit'?'Publicación enviada a revisión y auditada.': 'Borrador eliminado y auditado.';}
   catch(e){if(action==='edit'&&e instanceof ApiError&&e.status===409)staleDraft.value=true;error.value=e instanceof ApiError&&e.status===409?'La publicación cambió o la acción no está permitida. Recargá la versión actual antes de continuar.':e instanceof Error?e.message:'No se pudo confirmar la operación.';}
   finally{busy.value=false;}
 }

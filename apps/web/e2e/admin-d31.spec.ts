@@ -156,7 +156,13 @@ test('ADMIN decisions, assisted persistence, audit and Mendoza timestamp regress
   await page.getByLabel('Descripción', { exact: true }).fill('Descripción sintética guardada por ADMIN.');
   await page.getByLabel('Ubicación', { exact: true }).fill('Uspallata, Mendoza');
   await page.getByLabel('Importe', { exact: true }).fill('31000');
+  const firstAssistCreatePromise = page.waitForResponse(response =>
+    response.url().endsWith('/api/admin/listings/assisted') && response.request().method() === 'POST',
+  );
   await page.getByRole('button', { name: 'Crear borrador asistido' }).click();
+  const firstAssistCreateResponse = await firstAssistCreatePromise;
+  expect(firstAssistCreateResponse.status()).toBe(201);
+  const firstAssist = await firstAssistCreateResponse.json();
   await expect(page.getByRole('heading', { name: 'Borrador asistido de prueba' })).toBeVisible();
   const titleField = page.getByLabel('Título', { exact: true });
   await titleField.fill('Cambio temporal sin guardar');
@@ -172,6 +178,45 @@ test('ADMIN decisions, assisted persistence, audit and Mendoza timestamp regress
   await expect(page.getByRole('heading', { name: 'Borrador asistido persistido' })).toBeVisible();
   await page.getByRole('button', { name: 'Auditoría', exact: true }).click();
   await expect(page.getByText(/Creó un borrador asistido|Editó los datos del borrador/).first()).toBeVisible();
+  await expect(page.getByText('Editó los datos del borrador')).toBeVisible();
+  await page.getByRole('button', { name: 'Crear otro borrador' }).click();
+  await page.getByLabel('Título', { exact: true }).fill('Segundo borrador para carrera de auditoría');
+  await page.getByLabel('Descripción', { exact: true }).fill('Segundo registro sintético para la regresión de carrera.');
+  await page.getByLabel('Importe', { exact: true }).fill('29000');
+  const secondAssistCreatePromise = page.waitForResponse(response =>
+    response.url().endsWith('/api/admin/listings/assisted') && response.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Crear borrador asistido' }).click();
+  const secondAssistCreateResponse = await secondAssistCreatePromise;
+  expect(secondAssistCreateResponse.status()).toBe(201);
+  const secondAssist = await secondAssistCreateResponse.json();
+  let delayedAuditReleased = false;
+  await page.route('**/api/admin/listings/audit?**', async route => {
+    const url = new URL(route.request().url());
+    if (url.searchParams.get('listingId') === firstAssist.id && !delayedAuditReleased) {
+      delayedAuditReleased = true;
+      await new Promise(resolve => setTimeout(resolve, 400));
+    }
+    await route.continue();
+  });
+  const firstAuditRequest = page.waitForRequest(request =>
+    request.url().includes('/api/admin/listings/audit?') && new URL(request.url()).searchParams.get('listingId') === firstAssist.id,
+  );
+  const delayedAuditResponse = page.waitForResponse(response =>
+    response.url().includes('/api/admin/listings/audit?') && new URL(response.url()).searchParams.get('listingId') === firstAssist.id,
+  );
+  await page.locator('.admin-assist-sidebar select').nth(1).selectOption({ label: 'Borrador asistido persistido · Borrador' });
+  await firstAuditRequest;
+  await expect(page.getByRole('heading', { name: 'Borrador asistido persistido' })).toBeVisible();
+  await page.locator('.admin-assist-sidebar select').nth(1).selectOption({ label: 'Segundo borrador para carrera de auditoría · Borrador' });
+  await expect(page.getByRole('heading', { name: 'Segundo borrador para carrera de auditoría' })).toBeVisible();
+  await page.getByRole('button', { name: 'Auditoría', exact: true }).click();
+  await expect(page.getByText('Creó un borrador asistido')).toBeVisible();
+  await expect(page.getByText('Editó los datos del borrador')).toHaveCount(0);
+  await delayedAuditResponse;
+  await expect(page.getByText('Editó los datos del borrador')).toHaveCount(0);
+  await page.locator('.admin-assist-sidebar select').nth(1).selectOption({ label: 'Borrador asistido persistido · Borrador' });
+  await expect(page.getByRole('heading', { name: 'Borrador asistido persistido' })).toBeVisible();
   await page.getByRole('button', { name: 'Disponibilidad', exact: true }).click();
   await page.getByRole('button', { name: 'Marcar no disponible' }).click();
   await expect(page.locator('.admin-availability-card strong')).toHaveText('No disponible');

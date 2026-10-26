@@ -25,6 +25,7 @@ La captura móvil de moderación muestra el detalle; Playwright también prueba 
 
 - Se cerraron los hallazgos P2: protección ante recarga/cierre, reinicio del baseline tras eliminar, URL de imagen D1 BLOB bajo `/api`, frescura en moderación/gestión, movimiento de foco al entrar al detalle y distinción entre SHA ejecutable y HEAD del PR.
 - Durante la regresión E2E se detectó además un DTO obsoleto que conservaba frescura `UNCONFIRMED` después de cambiar disponibilidad. Worker usa `publicFreshness()` existente al formar ambas respuestas; los tests Worker y Playwright verifican el contrato actualizado.
+- GitHub Review en `d268668` detectó una carrera P2 entre dos consultas de auditoría. La vista invalida respuestas antiguas por generación + listing ID y limpia actividad anterior al cambiar ficha; Playwright reproduce la respuesta fuera de orden contra el Worker local.
 - Un intento E2E quedó bloqueado al aceptar el `confirm` nativo de eliminación después de `click`; el test se corrigió para instalar el listener/aceptación antes del click. Ejecución final focalizada: 2/2 PASS. No se interpreta el timeout de prueba como defecto de producto.
 
 ## Alcance de medios y seguridad
