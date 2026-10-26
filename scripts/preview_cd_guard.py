@@ -166,9 +166,10 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
         local,
         persist_to,
     )
-    owner_listing_deletions = _wrangler_query(
+    listing_deletion_receipts = _wrangler_query(
         "SELECT owner_id,scope,resource_id,state FROM idempotency_records "
-        "WHERE scope LIKE 'OWNER_LISTING_DELETE:%' ORDER BY created_at,owner_id,scope",
+        "WHERE scope LIKE 'OWNER_LISTING_DELETE:%' OR scope LIKE 'ADMIN_ASSISTED_DELETE:%' "
+        "ORDER BY created_at,owner_id,scope",
         config,
         local,
         persist_to,
@@ -188,7 +189,7 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
         local,
         persist_to,
     )
-    return {"users": users, "listings": listings, "audit_events": audits, "owner_listing_deletions": owner_listing_deletions, "counts": counts[0] if counts else {}}
+    return {"users": users, "listings": listings, "audit_events": audits, "listing_deletion_receipts": listing_deletion_receipts, "counts": counts[0] if counts else {}}
 
 
 def verify_provenance(config: str, local: bool = False, persist_to: str | None = None) -> None:
@@ -242,22 +243,31 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
     }
     for listing_id, baseline in expected_listings.items():
         synthetic_listing_owners.setdefault(listing_id, baseline.get("owner_id"))
-    # OWNER deletes do not write an audit row, but the successful atomic deletion
-    # persists a COMMITTED idempotency receipt with owner, resource, and exact scope.
-    # Read only those identifiers; never select the client-provided request key.
-    for receipt in observed.get("owner_listing_deletions", []):
+    # Deletions do not always leave a listing row. Their atomic idempotency receipts
+    # retain the actor and resource identity; assisted deletion also needs its audit
+    # target to recover the OWNER. Read identifiers only, never the client request key.
+    assisted_delete_actors: dict[str, str] = {}
+    for receipt in observed.get("listing_deletion_receipts", []):
         listing_id = receipt.get("resource_id")
-        owner_id = receipt.get("owner_id")
-        if not isinstance(listing_id, str) or not listing_id or receipt.get("scope") != f"OWNER_LISTING_DELETE:{listing_id}":
-            raise PolicyError("an OWNER listing deletion receipt has invalid listing provenance")
+        actor_id = receipt.get("owner_id")
+        scope = receipt.get("scope")
+        if not isinstance(listing_id, str) or not listing_id:
+            raise PolicyError("a listing deletion receipt has invalid listing provenance")
         if receipt.get("state") != "COMMITTED":
-            raise PolicyError("an OWNER listing deletion receipt is not committed")
-        if owner_id not in synthetic_user_ids or synthetic_user_roles.get(owner_id) != "OWNER":
-            raise PolicyError("an OWNER listing deletion receipt refers to an unverified owner")
-        known_owner = synthetic_listing_owners.get(listing_id)
-        if known_owner is not None and known_owner != owner_id:
-            raise PolicyError("an OWNER listing deletion receipt does not match the listing owner")
-        synthetic_listing_owners[listing_id] = owner_id
+            raise PolicyError("a listing deletion receipt is not committed")
+        if scope == f"OWNER_LISTING_DELETE:{listing_id}":
+            if actor_id not in synthetic_user_ids or synthetic_user_roles.get(actor_id) != "OWNER":
+                raise PolicyError("an OWNER listing deletion receipt refers to an unverified owner")
+            known_owner = synthetic_listing_owners.get(listing_id)
+            if known_owner is not None and known_owner != actor_id:
+                raise PolicyError("an OWNER listing deletion receipt does not match the listing owner")
+            synthetic_listing_owners[listing_id] = actor_id
+        elif scope == f"ADMIN_ASSISTED_DELETE:{listing_id}":
+            if actor_id not in synthetic_user_ids or synthetic_user_roles.get(actor_id) != "ADMIN":
+                raise PolicyError("an assisted listing deletion receipt refers to an unverified ADMIN")
+            assisted_delete_actors[listing_id] = actor_id
+        else:
+            raise PolicyError("a listing deletion receipt has an invalid scope")
     for row in listings:
         status = row.get("status")
         publication_status = row.get("publication_status")
@@ -299,6 +309,8 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
             if target_owner_id is None:
                 raise PolicyError("an assisted listing audit event must identify its OWNER target")
         if row.get("action") == "ADMIN_ASSISTED_LISTING_DELETED":
+            if assisted_delete_actors.get(listing_id) != actor_id:
+                raise PolicyError("an assisted-delete audit has no matching committed deletion receipt")
             known_owner = synthetic_listing_owners.get(listing_id)
             if known_owner is not None and known_owner != target_owner_id:
                 raise PolicyError("an audit target does not match the listing owner")

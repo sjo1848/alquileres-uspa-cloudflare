@@ -83,7 +83,7 @@ class PreviewCdGuardTests(unittest.TestCase):
             key: [dict(row) for row in manifest[key]]
             for key in ("users", "listings", "audit_events")
         }
-        snapshot["owner_listing_deletions"] = []
+        snapshot["listing_deletion_receipts"] = []
         for user in snapshot["users"]:
             user["is_synthetic"] = 1
         snapshot["counts"] = dict(manifest["counts"])
@@ -120,6 +120,12 @@ class PreviewCdGuardTests(unittest.TestCase):
 
     def test_provenance_allows_assisted_delete_audit_for_reviewed_synthetic_listing(self):
         manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listing_deletion_receipts"].append({
+            "owner_id": "synthetic-catalog-admin",
+            "scope": "ADMIN_ASSISTED_DELETE:synthetic-casa-rio",
+            "resource_id": "synthetic-casa-rio",
+            "state": "COMMITTED",
+        })
         snapshot["audit_events"].append({
             "id": "audit-after-synthetic-delete",
             "listing_id": "synthetic-casa-rio",
@@ -140,7 +146,7 @@ class PreviewCdGuardTests(unittest.TestCase):
             "action": "ADMIN_LISTING_REJECTED",
             "created_at": "2026-10-27T12:02:00Z",
         })
-        snapshot["owner_listing_deletions"].append({
+        snapshot["listing_deletion_receipts"].append({
             "owner_id": "synthetic-catalog-owner",
             "scope": "OWNER_LISTING_DELETE:owner-created-then-deleted",
             "resource_id": "owner-created-then-deleted",
@@ -148,21 +154,29 @@ class PreviewCdGuardTests(unittest.TestCase):
         })
         guard.validate_synthetic_provenance(snapshot, manifest)
 
-    def test_provenance_rejects_invalid_owner_listing_delete_receipt(self):
+    def test_provenance_rejects_invalid_listing_delete_receipts(self):
         cases = [
             ({"owner_id": "synthetic-catalog-admin", "scope": "OWNER_LISTING_DELETE:deleted-x", "resource_id": "deleted-x", "state": "COMMITTED"}, "unverified owner"),
-            ({"owner_id": "synthetic-catalog-owner", "scope": "OWNER_LISTING_DELETE:other-id", "resource_id": "deleted-x", "state": "COMMITTED"}, "invalid listing provenance"),
+            ({"owner_id": "synthetic-catalog-owner", "scope": "ADMIN_ASSISTED_DELETE:deleted-x", "resource_id": "deleted-x", "state": "COMMITTED"}, "unverified ADMIN"),
+            ({"owner_id": "synthetic-catalog-owner", "scope": "OWNER_LISTING_DELETE:other-id", "resource_id": "deleted-x", "state": "COMMITTED"}, "invalid scope"),
             ({"owner_id": "synthetic-catalog-owner", "scope": "OWNER_LISTING_DELETE:deleted-x", "resource_id": "deleted-x", "state": "PENDING"}, "not committed"),
+            ({"owner_id": "synthetic-catalog-admin", "scope": "ADMIN_ASSISTED_DELETE:other-id", "resource_id": "deleted-x", "state": "COMMITTED"}, "invalid scope"),
         ]
         for receipt, message in cases:
             manifest, snapshot = self._synthetic_snapshot()
-            snapshot["owner_listing_deletions"].append(receipt)
+            snapshot["listing_deletion_receipts"].append(receipt)
             with self.subTest(receipt=receipt), self.assertRaisesRegex(guard.PolicyError, message):
                 guard.validate_synthetic_provenance(snapshot, manifest)
 
     def test_provenance_rejects_assisted_delete_with_wrong_owner(self):
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["users"].append({"id": "another-synthetic-owner", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 1})
+        snapshot["listing_deletion_receipts"].append({
+            "owner_id": "synthetic-catalog-admin",
+            "scope": "ADMIN_ASSISTED_DELETE:synthetic-casa-rio",
+            "resource_id": "synthetic-casa-rio",
+            "state": "COMMITTED",
+        })
         snapshot["audit_events"].append({
             "id": "wrong-owner-delete",
             "listing_id": "synthetic-casa-rio",
@@ -194,6 +208,12 @@ class PreviewCdGuardTests(unittest.TestCase):
 
     def test_provenance_allows_new_assisted_creation_and_rejects_unknown_audit_listing(self):
         manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listing_deletion_receipts"].append({
+            "owner_id": "synthetic-catalog-admin",
+            "scope": "ADMIN_ASSISTED_DELETE:new-synthetic-assisted-listing",
+            "resource_id": "new-synthetic-assisted-listing",
+            "state": "COMMITTED",
+        })
         snapshot["audit_events"].append({
             "id": "new-assisted-create",
             "listing_id": "new-synthetic-assisted-listing",
@@ -211,6 +231,18 @@ class PreviewCdGuardTests(unittest.TestCase):
             "created_at": "2026-10-27T12:03:00Z",
         })
         guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({
+            "id": "orphan-assisted-delete",
+            "listing_id": "orphan-assisted-listing",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        with self.assertRaisesRegex(guard.PolicyError, "no matching committed deletion receipt"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
 
         manifest, snapshot = self._synthetic_snapshot()
         snapshot["audit_events"].append({
