@@ -1757,3 +1757,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - En el HEAD al crear PR, `worker`/`web` estaban `IN_PROGRESS`; review GitHub aún no emitida. La actualización canónica siguiente cambia el HEAD y requiere observar nuevos checks/review en el checkpoint final.
 - Protección `main` revalidada: checks estrictos requeridos `worker` y `web`, `enforce_admins=true`, force-push/eliminación deshabilitados; aprobación humana requerida 0.
 - **READY_TO_RESUME:** publicar este checkpoint de seguimiento, validar el HEAD resultante en PR #50, esperar checks `worker`/`web` y review GitHub consolidada. Luego validar ausencia de conversaciones pendientes, validador, Pre-Critic y mergeabilidad protegida. Si todo pasa, integrar #50; al faltar hoy el secreto estrecho de Actions el workflow debe informar SAFE SKIP. No afirmar migración ni nueva publicación hasta ejecutar controles reales. #33 no iniciado.
+
+
+## Event 221 — rework P1 de GitHub en PR #50
+
+- Review automática encontró P1 `4377659039` en HEAD `4ef69d4132cf562657aa5f140b1d259d735a1c0a`: salida diagnóstica adicional en `$GITHUB_OUTPUT` podía invalidar los outputs tras publicar. Se corrigió en `9fb26aa3be6bb17c1f7cf427577423d126c0ac6c`, tree `e580d373761dcb319a4129cba94be1d2a2cef090`, y se añadió regresión. Detalle `.orchestration/evidence/CF-AU-I06.6-CD-GITHUB-P1-4377659039.md`.
+- Tras la reparación: guard 13/13, Python 38/38, actionlint v1.7.7 y diff check PASS. Ningún deploy se ejecutó.
+- El Controller PASS sobre `ffb0402` es histórico y **no** cubre este fix; no se vuelve a invocar Controller para el cambio de una sola línea. No se afirma PASS técnico del candidato reparado hasta que la review GitHub exact-head complete y los checks `worker`/`web` pasen.
+- **READY_TO_RESUME:** empujar reparación y evidencia al PR #50, esperar CI y review exact-head, responder/resolver `4377659039` una vez confirmado el fix; ejecutar validador/Pre-Critic final y verificar protección/mergeability. Sin credencial Actions estrecha, la ejecución remota debe safe-skip. No tocar D1/Preview, no iniciar #33.

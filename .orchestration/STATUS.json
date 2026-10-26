@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6-P3 — OWNER D3.1 (Issue #44), integrado mediante PR #47",
   "last_completed_head": "main@6863bc02c8db45aae3cd231c349ecf069bcd72c5",
   "work_branch": "work/issue-49-preview-cd",
-  "next_action": "Push this canonical PR-tracking checkpoint to PR #50; wait for worker/web and one consolidated GitHub review on the resulting exact HEAD. Resolve material findings only, rerun affected checks, then revalidate the current protected-main rules and run final consistency/Pre-Critic. Merge only after those controls pass. The remote CD gate lacks the scoped Actions token, so the main workflow must safe-skip and no migration/deployment is assumed.",
+  "next_action": "Push the P1 repair and canonical evidence to PR #50. Obtain worker/web and one consolidated GitHub review on the exact final PR HEAD; respond/resolve finding 4377659039 only after that review confirms the correction. Then run the consistency validator and final Pre-Critic, recheck protected mergeability, and integrate only if all are clean. No remote mutation: GitHub Actions still lacks the scoped Cloudflare secret/variables.",
   "stop_reason": null,
   "event": {
-    "seq": 220,
-    "summary": "Functional PR #50 opened; exact-head GitHub controls pending"
+    "seq": 221,
+    "summary": "GitHub P1 4377659039 repaired; exact-head regression and review pending"
   },
   "external_review": null,
   "human_gate": {
@@ -28,12 +28,12 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/50",
     "branch": "work/issue-49-preview-cd",
     "base_sha": "6863bc02c8db45aae3cd231c349ecf069bcd72c5",
-    "executable_sha": "ffb040244cbb2cad78b460cc7a02a9609f9a11c5",
-    "executable_tree": "d7ed682aa55f817ac2d6c84c77e13893cea1433c",
-    "head_sha": "4ef69d4132cf562657aa5f140b1d259d735a1c0a",
+    "executable_sha": "9fb26aa3be6bb17c1f7cf427577423d126c0ac6c",
+    "executable_tree": "e580d373761dcb319a4129cba94be1d2a2cef090",
+    "head_sha": "29b59aff10801454c76b3607b37574c625fc2a1e",
     "head_tree": "23704dd28750b651a970c71a411be143e960797b",
     "state": "OPEN",
-    "status": "OPEN; status checkpoint follows observed head 4ef69d4"
+    "status": "OPEN; P1 rework committed locally, not yet pushed"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -49,9 +49,11 @@
     "controller_sandbox_requested": "read-only",
     "controller_backend_identity": "UNVERIFIED",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I06.6-CD-CONTROLLER-FFB0402-PASS.md",
-    "github_checks": "PENDING exact final PR HEAD",
-    "github_review": "PENDING exact final PR HEAD",
-    "precritic": "PASS to publish for exact-head GitHub controls only; not merge authorization"
+    "github_checks": "PENDING after P1 rework",
+    "github_review": "PENDING exact final PR HEAD after P1 rework",
+    "precritic": "PENDING exact-head GitHub review/checks after P1 rework",
+    "superseded_by": "9fb26aa3be6bb17c1f7cf427577423d126c0ac6c",
+    "status": "PASS on prior executable SHA only; P1 4377659039 found afterward and repaired; this PASS does not cover the repair"
   },
   "human_acceptance": {
     "scope": "Private Preview public catalog/detail/static images/filter journey only",
@@ -110,28 +112,29 @@
     "provenance": "SUPPORTED from the 16 October user OWNER test, third-row synthetic OWNER metadata, 17 October BLOB metadata, 18 October synthetic ADMIN audit actor/events, and 18 October three-listing checkpoint. No addresses, descriptions, image names/bytes, or contact content were read for the comparison. Human evidence: Issue #49 comment 6416495157.",
     "code_status": "Functional fail-closed workflow and guard implemented locally. Pull requests never reach remote staging job; only successful protected-main push can. Exact target is existing private Worker and synthetic D1; reviewed migration hash allowlist is 0013 only. Automatic remote job safe-skips unless explicit provenance/plan/Access variables and scoped GitHub token exist.",
     "local_checks": {
-      "preview_guard": "PASS 13/13",
-      "python_unit_tests": "PASS 38/38",
+      "preview_guard": "PASS 13/13 after P1 repair",
+      "python_unit_tests": "PASS 38/38 after P1 repair",
       "web_typecheck": "PASS",
       "web_build_preview": "PASS; exact existing Worker/Preview/D1, ACCESS_PREVIEW, D1_BLOB, secure cookie, no R2",
       "d1_backup": "PASS private local backup, 58481 bytes, SHA-256 07336ae2430f697607ee1ea076bdc7d5e56402268cc2611b716e6fea4c54fcab; outside repository",
       "d1_migration_rehearsal": "PASS 0013 applied in isolated local copy; metadata/row counts preserved; no local pending migration",
       "access_smoke": "PASS 12/12 anonymous stable/latest-immutable routes denied by Access; no authenticated remote browser test",
-      "workflow_lint": "PASS actionlint v1.7.7",
-      "consistency": "PASS after final canonical reconciliation; rerun on exact commit",
+      "workflow_lint": "PASS actionlint v1.7.7 after P1 repair",
+      "consistency": "PENDING final canonical update",
       "remote_migration": "NOT RUN; existing synthetic D1 remains unchanged and 0013 pending",
       "remote_preview": "NOT RUN; current deployment unchanged"
     },
-    "github_checks": "PENDING exact PR HEAD; observed checks on 4ef69d4 were running",
-    "github_review": "PENDING exact PR HEAD",
-    "controller": "PASS technical on exact executable SHA; separate Codex process requested GPT-6 Luna/High/read-only; backend UNVERIFIED. Exact-head GitHub controls pending.",
+    "github_checks": "Pending final HEAD after rework",
+    "github_review": "P1 on old HEAD; re-review exact updated head is required",
+    "controller": "PASS on prior executable ffb0402 only; it does not cover the one-line P1 repair. No new Controller run for this narrow delta; final GitHub review/checks pending.",
     "deployment_prerequisite": "GitHub currently has no CF_PREVIEW_API_TOKEN secret or Preview CD variables. Do not store the local broad token. Remote job remains safely disabled until a dedicated least-privilege Actions credential is configured.",
-    "executable_sha": "ffb040244cbb2cad78b460cc7a02a9609f9a11c5",
-    "executable_tree": "d7ed682aa55f817ac2d6c84c77e13893cea1433c",
+    "executable_sha": "9fb26aa3be6bb17c1f7cf427577423d126c0ac6c",
+    "executable_tree": "e580d373761dcb319a4129cba94be1d2a2cef090",
     "pr": 50,
     "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/50",
     "last_observed_pr_head": "4ef69d4132cf562657aa5f140b1d259d735a1c0a",
-    "last_observed_pr_tree": "23704dd28750b651a970c71a411be143e960797b"
+    "last_observed_pr_tree": "23704dd28750b651a970c71a411be143e960797b",
+    "github_p1_rework": "4377659039 fixed: deploy diagnostics are no longer appended to GITHUB_OUTPUT; regression covers this. Evidence: .orchestration/evidence/CF-AU-I06.6-CD-GITHUB-P1-4377659039.md."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

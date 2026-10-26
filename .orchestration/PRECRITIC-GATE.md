@@ -275,3 +275,10 @@ Codex cannot use this gate to self-declare substantive PASS.
 - At PR creation, exact-head `worker`/`web` were running and GitHub review had not completed. The following state checkpoint changes PR HEAD; wait for its exact-head controls rather than reusing the earlier run.
 - Main protection read-back: strict required `worker`/`web`, `enforce_admins=true`, force-push/deletion disabled, required approvals 0.
 - **Pre-Critic remains PASS only to publish and process PR #50 controls. Merge pending exact final-head CI/review, no material open conversations, consistency validator and final branch-protection/mergeability check.** The current safe gate lacks the scoped Actions secret/vars; no remote D1/Preview mutation is permitted by this missing configuration.
+
+
+## Issue #49 — GitHub P1 rework pending exact-head closeout
+
+- GitHub P1 `4377659039` identified an invalid extra line in `$GITHUB_OUTPUT` after Preview publication. Fixed in `9fb26aa3be6bb17c1f7cf427577423d126c0ac6c`; regression asserts the redirection is absent. Evidence: `.orchestration/evidence/CF-AU-I06.6-CD-GITHUB-P1-4377659039.md`.
+- Targeted guard 13/13, Python 38/38, actionlint and diff check pass. The prior Controller PASS (`ffb0402`) predates this repair and is not claimed for the new SHA; no Controller rerun is justified for this one-line output correction.
+- **Pre-Critic final is PENDING.** Require exact current PR #50 worker/web PASS, GitHub review without findings/unresolved conversations, canonical validator and protected mergeability. The fail-closed remote credential prerequisite remains absent.
