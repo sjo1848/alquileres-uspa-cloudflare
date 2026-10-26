@@ -110,6 +110,10 @@ test('ADMIN decisions, assisted persistence, audit and Mendoza timestamp regress
   expect(persisted.status()).toBe(200);
   expect((await persisted.json()).publicationStatus).toBe('PUBLISHED');
   await page.context().clearCookies();
+  await page.goto('/');
+  await expect(page.locator('.listing-card').filter({ hasText: title })).toBeVisible();
+  await expect(page.locator('.listing-card').filter({ hasText: title }).locator('.listing-price')).toContainText('ARS 52.000');
+  await page.context().clearCookies();
   await login(page, 'owner.a@example.test');
   const rejectedTitle = 'QA D31 rechazo ' + Date.now();
   const rejectedCreate = await page.request.post(origin + '/api/listings', {
