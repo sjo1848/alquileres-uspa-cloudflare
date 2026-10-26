@@ -1,9 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { formatAdminTimestamp } from '../src/views/admin-display';
+import { formatImageSize } from '../src/views/image-size';
 
 const origin = 'http://127.0.0.1:5176';
 const password = 'synthetic-owner-password-1';
+const evidence = resolve(process.cwd(), process.env.ADMIN_EVIDENCE_DIR ?? '../../output/playwright/i06.6-admin/after');
+async function capture(page: Page, name: string) {
+  await mkdir(evidence, { recursive: true });
+  await page.screenshot({ path: resolve(evidence, name), fullPage: true });
+}
 
 async function login(page: Page, email: string) {
   await page.goto('/login');
@@ -39,10 +46,11 @@ test('ADMIN D3.1 runtime captures from real local Worker and synthetic D1', asyn
   await page.getByRole('button', { name: new RegExp(title) }).waitFor();
   await expect(page.locator('.admin-review-images img').first()).toBeVisible();
   await expect(page.locator('.admin-review-images img').first()).toHaveJSProperty('naturalWidth', 48);
+  await expect(page.locator('.admin-review-images figcaption').first()).toContainText('124 bytes');
   await expect(page.getByText('42.000 ARS / semana').first()).toBeVisible();
   await expect(page.getByText('Hasta 4 personas')).toBeVisible();
   await expect(page.getByText('Disponibilidad aún no confirmada')).toBeVisible();
-  await page.screenshot({ path: '../../output/playwright/i06.6-admin/after/admin-moderation-desktop-1440x1000.png', fullPage: true });
+  await capture(page, 'admin-moderation-desktop-1440x1000.png');
 
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
@@ -60,14 +68,14 @@ test('ADMIN D3.1 runtime captures from real local Worker and synthetic D1', asyn
     await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: '← Volver a la lista' })).toBeVisible();
     expect(await page.locator('body').evaluate(el => el.scrollWidth)).toBeLessThanOrEqual(width);
-    await page.screenshot({ path: `../../output/playwright/i06.6-admin/after/admin-moderation-mobile-${width}x844.png`, fullPage: true });
+    await capture(page, `admin-moderation-mobile-${width}x844.png`);
   }
 
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/admin-assist');
   await expect(page.getByRole('heading', { name: 'Gestión asistida' })).toBeVisible();
   await page.locator('.admin-assist-sidebar select').first().waitFor();
-  await page.screenshot({ path: '../../output/playwright/i06.6-admin/after/admin-assist-desktop-1440x1000.png', fullPage: true });
+  await capture(page, 'admin-assist-desktop-1440x1000.png');
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
     await page.reload();
@@ -78,11 +86,16 @@ test('ADMIN D3.1 runtime captures from real local Worker and synthetic D1', asyn
       return !control || control.getBoundingClientRect().top >= label.getBoundingClientRect().top + 16;
     }));
     expect(aligned).toBe(true);
-    await page.screenshot({ path: `../../output/playwright/i06.6-admin/after/admin-assist-mobile-${width}x844.png`, fullPage: true });
+    await capture(page, `admin-assist-mobile-${width}x844.png`);
   }
 });
 
 test('ADMIN decisions, assisted persistence, audit and Mendoza timestamp regression', async ({ page }) => {
+  expect(formatImageSize(69)).toBe('69 bytes');
+  expect(formatImageSize(1023)).toBe('1023 bytes');
+  expect(formatImageSize(1024)).toBe('1.0 KB');
+  expect(formatImageSize(12 * 1024)).toBe('12 KB');
+  expect(formatImageSize(Number.NaN)).toBe('Tamaño desconocido');
   expect(formatAdminTimestamp('2026-10-19T16:11:22.876Z')).toBe('19/10/2026, 13:11');
   expect(formatAdminTimestamp('2026-10-20T02:10:00.000Z')).toBe('19/10/2026, 23:10');
   expect(formatAdminTimestamp('2026-10-20T12:05:00.000Z')).toBe('20/10/2026, 09:05');
@@ -151,6 +164,7 @@ test('ADMIN decisions, assisted persistence, audit and Mendoza timestamp regress
   const assistedImage = page.locator('.admin-assist-editor .admin-review-images img').first();
   await expect(assistedImage).toBeVisible();
   await expect(assistedImage).toHaveJSProperty('naturalWidth', 48);
+  await expect(page.locator('.admin-assist-editor .admin-review-images figcaption').first()).toContainText('124 bytes');
   await page.getByRole('button', { name: 'Crear otro borrador' }).click();
   await page.getByLabel('Título', { exact: true }).fill('Borrador asistido de prueba');
   await page.getByLabel('Descripción', { exact: true }).fill('Descripción sintética guardada por ADMIN.');

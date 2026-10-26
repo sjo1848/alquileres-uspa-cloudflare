@@ -4,6 +4,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import { ApiError, apiUrl } from '../api';
 import { useSession } from '../session';
 import { currencyOptions, pricePeriodOptions, rentalDurationOptions, formatRentalPrice, type Currency, type PricePeriod, type RentalDuration } from './rental-domain';
+import { formatImageSize } from './image-size';
 type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number };
 type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null };
 type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt?:string; source?:'STATIC_ASSET'|'OWNER_UPLOAD' };
@@ -411,7 +412,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <label v-if="canEdit&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Agregar fotografías<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
               <img :src="selectedPhoto.previewUrl" :alt="`Vista previa de ${selectedPhoto.file.name}`" width="640" height="480" />
-              <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ (selectedPhoto.file.size/1024).toFixed(0) }} KB · Vista previa, todavía no guardada</small></div>
+              <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ formatImageSize(selectedPhoto.file.size) }} · Vista previa, todavía no guardada</small></div>
               <div class="owner-image-actions"><button type="button" :disabled="busy" @click="uploadSelectedPhoto">{{ imageBusy==='upload'?'Guardando…':'Guardar foto' }}</button><button type="button" class="secondary" :disabled="busy" @click="discardSelectedPhoto">Cancelar</button></div>
             </div>
             <p v-if="imagesLoading" role="status">Cargando fotos…</p>
@@ -419,7 +420,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <ul v-else-if="images.length" class="owner-image-grid" :aria-busy="imageBusy!==null">
               <li v-for="(image,index) in images" :key="image.id" class="owner-image-card" :class="{ 'is-cover':index===0 }">
                 <div class="owner-image-frame"><img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${index+1} de ${selected.title}`" width="640" height="480" loading="lazy" /><span v-if="index===0" class="owner-cover-label">Portada</span></div>
-                <div class="owner-image-meta"><span><strong>{{ image.originalName }}</strong><small>{{ index+1 }} de {{ images.length }}<template v-if="image.source==='STATIC_ASSET'"> · Gestionada desde el repositorio</template></small></span><small>{{ (image.sizeBytes/1024).toFixed(0) }} KB</small></div>
+                <div class="owner-image-meta"><span><strong>{{ image.originalName }}</strong><small>{{ index+1 }} de {{ images.length }}<template v-if="image.source==='STATIC_ASSET'"> · Gestionada desde el repositorio</template></small></span><small>{{ formatImageSize(image.sizeBytes) }}</small></div>
                 <div v-if="canEdit&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image,$event)">Quitar</button></div>
               </li>
             </ul>

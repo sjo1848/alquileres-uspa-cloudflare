@@ -341,3 +341,68 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 
 - Code artifact `59a60c576fbd71e36f6292ebf9a02e8529ac094e` / tree `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`, PR artifact HEAD `4a043b77122abd056353a3b173718584d3f8607e`. Local tests, evidence and consistency pass. Delegated Controller exact-artifact PASS: `.orchestration/evidence/critics/CF-AU-I06.6-ADMIN-D31-CONTROLLER-PASS.md`. GitHub review no findings; 3 threads resolved; worker/web pass; staging-private skipped.
 - **Pre-Critic result: PASS for the consolidated code artifact.** This status/evidence commit changes the PR head. Before merge, derive the new live HEAD from GitHub and verify new exact-head required checks/review, no unresolved threads, clean mergeability, and main protection. No code delta after 59a60c5 means only affected/deterministic checks should be repeated by CI.
+
+## I07 — preflight local para publicar (Issue #26)
+
+- Base exacta `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`; alcance exclusivamente I07 local/sintético. Contrato `.orchestration/contracts/CF-AU-I07-INTEGRAL-QA.md`, evidencia `output/playwright/i07/QA.md`.
+- **PASS local para publicar un PR funcional consolidado y solicitar controles exact-head.** Evidencia ya ejecutada: público Playwright 5/5; OWNER 5/5; ADMIN 2/2; D3.1 foundations 1/1; HTTP/fault/idempotencia/concurrencia/recuperación local PASS (285.0 s); guard focalizado 20/20 y scripts 45/45; Worker typecheck y Web typecheck/build/build:preview PASS. Capturas y límites en QA.md.
+- Cambios en alcance: salida de tamaño sub-KB; parser JSONL estricto Wrangler; procedencia sintética que acepta cambios mutables y borrados sintéticos legítimos sin relajar identidades; harness de fault injection corregido. Sin código de producción remota/Preview/CD/R2.
+- Este Pre-Critic solo autoriza publicar y procesar CI `worker`/`web`, GitHub Review y una revisión de `project_controller` sobre SHA exacto. **No es autorización final de merge.** Merge requiere hallazgos materiales resueltos, checks exact-head verdes, Controller PASS, validador canónico, protección de `main` y conversaciones resueltas.
+- No se ejecutó E2E remoto autenticado ni se actualizó Preview. Issue #26 queda abierto para Product Acceptance; detenerse antes de I08/#27.
+
+## I07 — Controller REWORK reparado; controles finales pendientes
+
+- La primera revisión delegada del PR #53 encontró un evento de auditoría con `listing_id` no validado (artifact `0a5a83d7a262a8bdde0860b10d745fd4e9944f3f`). Hallazgo y límites de runtime: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-0A5A83D.md`. Este resultado invalida cualquier PASS de Controller para esa versión.
+- Reparación local: auditorías se ligan a listados sintéticos activos, baseline, o una creación asistida con actor ADMIN y dueño OWNER sintéticos. Prueba negativa de ID desconocido y positivas de baseline eliminado/creación asistida agregadas. Guard 21/21 y scripts 46/46 PASS.
+- Preflight local de reparación: PASS en diff/consistencia; pendiente publicar nueva cabeza. Para merge se requiere exact-head `worker`/`web`, review GitHub sin hallazgos materiales, proceso separado de Controller que acepte explícitamente GPT-6 Luna/High/`--sandbox read-only` según v2, ausencia de conversaciones sin resolver, protección de main y Pre-Critic final. Backend identity sigue UNVERIFIED si no hay metadata verificable.
+- Sin activación de CD/Preview, cambios remotos, migraciones o datos reales. Issue #26 permanece abierto para Product Acceptance; no iniciar I08/#27.
+
+## I07 — second Controller REWORK reparado localmente
+
+- Separate-process review of `65a59e81f7f3021ae9f21107de1b2c5e4c0c3460` found P1: the provenance guard allowed `DRAFT/PUBLISHED`, `SUBMITTED/PUBLISHED`, and `REJECTED/PUBLISHED`, despite Worker publishing only `APPROVED`. It also found stale reported test counts and missing capture provenance. Full findings/runtime evidence: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-65A59E8.md`.
+- Repair in current local tree rejects `PUBLISHED` unless state is `APPROVED`; regression checks all three invalid combinations and confirms `APPROVED/PUBLISHED` remains valid. Local guard suite 22/22 and full Python suite 47/47 pass. QA.md reconciles totals and identifies fresh public captures versus reused I06 OWNER/ADMIN captures.
+- Prior exact-head GitHub checks/review on 65a59e8 passed but predate this repair; no PASS is claimed for the new tree. Fresh exact-head checks/review and qualified separate read-only Controller are required. No merge until those pass.
+
+## I07 — candidato reparado consolidado
+
+- Código artifact local `a69f6de128b374a7063a8ebe679f19d1665e9e17`, tree `124c60175d39426412f14b68995caba45c30d99a`; base `main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412`.
+- Corrige ambos hallazgos de procedencia del Controller, añade invariantes de workflow-state, test de OWNER visible `124 bytes`, y captura de navegador nueva para catálogo/contacto/OWNER/ADMIN. QA refleja 22/22 guard, 47/47 scripts, Owner 5/5, Admin 2/2; detalles y limitaciones en `output/playwright/i07/QA.md`.
+- **Pre-Critic: PASS para publicar el candidato consolidado y renovar exact-head CI/review y Controller.** No equivale a aprobación de merge. Worker/web y review de GitHub en `65a59e8` están supersedidos y deben renovarse en el nuevo PR HEAD; Controller de ese SHA fue REWORK, corregido en el código consolidado.
+- Merge requiere nuevo `worker`/`web` PASS, review automática sin hallazgos en HEAD exacto, Controller calificado GPT-6 Luna/High/solo lectura sobre exact artifact, validador, conversaciones resueltas y protecciones de `main`. No cambiar Preview/CD/Access ni datos remotos.
+
+## I07 — GitHub review REWORK OWNER-create/assisted-delete
+
+- La review automática de commit previo `a90f202` señaló que la auditoría de borrado asistido no acreditaba el ID de un alojamiento creado por OWNER si luego desaparecía su fila. Reparado en código `f30d201`: audit exacto `ADMIN_ASSISTED_LISTING_DELETED` con ADMIN sintético y OWNER target da procedencia al ID; discrepancias, target ausente y eventos huérfanos no relacionados siguen bloqueados.
+- Evidencia: `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-A90F202.md`; pruebas focalizadas 25/25 y Python suite 50/50 PASS.
+- No hay Pre-Critic PASS final aún. El tracking checkpoint debe publicarse; después se requieren checks worker/web, review exacta, Controller final sobre ejecutable exacto y gate de integración.
+
+## I07 — Controller REWORK f30d201 cerrado localmente
+
+- Controller encontró P2 por campos faltantes en auditoría assisted, validación UUID no canónica en `parse_deploy_output` y totales QA obsoletos. Reparado en `7869af8`: exige listing ID/OWNER target para assisted create/delete; aplica UUID canónico a ambos caminos; QA marca 26/26 y 51/51.
+- Evidencia: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-F30D201.md`. Regresiones focalizadas 26/26 y suite 51/51 PASS.
+- No PASS final aún. El nuevo ejecutable necesita GitHub CI/review actualizados y Controller exacto; sólo entonces revisar Pre-Critic final, protección y merge.
+
+## I07 — GitHub review REWORK de OWNER-delete tras rechazo
+
+- Review automática sobre `efa0d54` indicó que `ADMIN_LISTING_REJECTED` persiste después de que OWNER borra el listing, y el flujo OWNER deja un recibo idempotente en la misma transacción pero no audit de borrado. Reparado en `a133282`: inspección mínima de `owner_id/scope/resource_id/state`, exige COMMITTED y scope/OWNER sintético exactos; nunca lee la Idempotency-Key. Regresión incluye OWNER create → submit → reject → delete y recibos inválidos.
+- Pruebas locales: guard 27/27, scripts 52/52 PASS. Informe `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-EFA0D54.md`.
+- Controller PASS de `7869af8` queda superseded por esta reparación; no Pre-Critic PASS final hasta review read-only exacta y GitHub exact-head controls.
+
+## I07 — Controller REWORK 2d2a1a3 cerrado localmente
+
+- Controller encontró dos P2: audit de assisted delete no requería recibo de idempotencia; `STATUS.json` señalaba `dfb26fb` en lugar del HEAD observado `2d2a1a3`. Ver `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-2D2A1A3.md`.
+- Reparación: snapshot mínimo consulta recibos `OWNER_LISTING_DELETE` y `ADMIN_ASSISTED_DELETE`; cada ruta exige `COMMITTED`, scope/resource y actor/rol exactos. Audit ADMIN assisted deletion debe coincidir con recibo comprometido, actor y target OWNER. Se agregó regresión para audit huérfano sin recibo. Estado anota el parent observado y explica self-reference tras push.
+- Resultados locales: guard 27/27, scripts 52/52. El candidato `9310509` y su checkpoint requieren nueva CI, GitHub review y Controller sobre el SHA completo de seguimiento. No PASS final todavía.
+
+## I07 — tercera Controller REWORK: relaciones OWNER/ADMIN reparadas
+
+- Controller separado cualificado en exact artifact `a69f6de` encontró P1: guard aceptaba listing propiedad de ADMIN, audit actor OWNER, target ADMIN o mismatch entre target y listing owner. Mismo informe propuso hardening P2 del parser JSONL (UUID canónico y orden único envelope→preview). Evidencia completa y provenance: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-A69F6DE.md` y su salida redacted.
+- Reparación local: consistencia de roles/relaciones en listing/audit; parser acepta solo `[preview]` o `[wrangler-session, preview]`, y exige ID UUID canónico. Regresiones positivas/negativas; guard 23/23, Python 48/48.
+- **No PASS todavía.** La CI/review de PR HEAD `a90f202` es anterior a estos cambios y no se reutiliza. Publicar nuevo code artifact; requerir exact-head `worker`/`web`, review GitHub, una revisión final separada read-only GPT-6 Luna High sobre SHA exacto, validador y protección main antes de merge. No activar CD ni cambiar Cloudflare remoto.
+
+## I07 — Pre-Critic final técnico (2026-10-26)
+
+- **PASS técnico del candidato**: executable `9310509a9c5168cfbbee0c7097c9718662f13c6e` / tree `223a994df7a2b9cb6ffa4eebc415f6f12e156f68`, PR tracking artifact `6c79d7d453dcc259c304e2a4831f7ab8f5771586` / tree `5c10bc4311344fa2fb88a44f2900660e79853081`, sobre base exacta `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`.
+- Controller delegated separate process PASS on exact tracking artifact; runtime parameters, process/session and backend-identity limitation are in `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-PASS-6C79D7D.md`. GitHub Actions `40404799291`: worker/web PASS, staging-private skipped. Automatic review on same HEAD had no findings; prior P2 threads resolved.
+- Local integrated QA evidence and limitations are in `output/playwright/i07/QA.md`. The malformed-JSONL-line parser path has no dedicated regression test (nonblocking Controller note). No authenticated remote E2E, Access re-verification, Cloudflare capacity test, screen-reader certification, or production readiness is claimed.
+- This result authorizes only the final evidence checkpoint and protected integration process for I07; it does not authorize deployment or production launch. Since the checkpoint itself changes tracking metadata/evidence, merge requires refreshed exact-HEAD required checks/review, validator, resolved conversations, and current `main` protection after publishing. Keep Issue #26 open for Human Product Acceptance and stop before I08/#27.

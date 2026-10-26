@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { performance } from 'node:perf_hooks';
 
 const evidence = resolve(process.cwd(), '../../output/playwright/i06.6-p2/after');
 async function capture(page: import('@playwright/test').Page, name: string) {
@@ -9,6 +10,22 @@ async function capture(page: import('@playwright/test').Page, name: string) {
   await page.locator('img').evaluateAll(images => Promise.all(images.map(image => (image as HTMLImageElement).decode().catch(() => undefined))));
   await page.screenshot({ path: resolve(evidence, name), fullPage: true });
 }
+
+test('rendimiento local sintético: catálogo responde de forma estable en 25 lecturas', async ({ page }) => {
+  const durations: number[] = [];
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const started = performance.now();
+    const response = await page.request.get('/api/public/listings?page=1');
+    durations.push(performance.now() - started);
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    expect(Array.isArray(body.items)).toBe(true);
+  }
+  const sorted = [...durations].sort((a, b) => a - b);
+  const p50 = sorted[Math.floor((sorted.length - 1) * 0.50)];
+  const p95 = sorted[Math.ceil(sorted.length * 0.95) - 1];
+  console.log(`I07 local synthetic catalog API: n=${durations.length}, p50=${p50.toFixed(1)}ms, p95=${p95.toFixed(1)}ms, max=${sorted.at(-1)!.toFixed(1)}ms; local Workerd+D1 only, not Cloudflare capacity evidence`);
+});
 
 test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });

@@ -77,6 +77,229 @@ class PreviewCdGuardTests(unittest.TestCase):
         for field in forbidden:
             self.assertNotIn(f'"{field}"', serialized)
 
+    def _synthetic_snapshot(self):
+        manifest = guard._load_json(guard.PROVENANCE)
+        snapshot = {
+            key: [dict(row) for row in manifest[key]]
+            for key in ("users", "listings", "audit_events")
+        }
+        snapshot["listing_deletion_receipts"] = []
+        for user in snapshot["users"]:
+            user["is_synthetic"] = 1
+        snapshot["counts"] = dict(manifest["counts"])
+        snapshot["counts"]["non_synthetic_user_email_count"] = 0
+        return manifest, snapshot
+
+    def test_provenance_allows_legitimate_mutable_workflow_and_synthetic_rows(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"][0]["updated_at"] = "changed-by-valid-login"
+        snapshot["listings"][0].update(status="SUBMITTED", publication_status="UNPUBLISHED", updated_at="changed-by-owner")
+        snapshot["counts"]["contact_events"] += 1
+        snapshot["counts"]["listing_images"] += 1
+        snapshot["counts"]["admin_audit_events"] += 1
+        snapshot["users"].append({"id": "new-synthetic-owner", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 1})
+        snapshot["listings"].append({"id": "new-synthetic-draft", "owner_id": "new-synthetic-owner", "status": "DRAFT", "publication_status": "UNPUBLISHED", "created_at": "2026-10-27T12:01:00Z"})
+        snapshot["audit_events"].append({"id": "new-synthetic-audit", "listing_id": "new-synthetic-draft", "actor_id": "synthetic-catalog-admin", "target_owner_id": "new-synthetic-owner", "action": "ADMIN_ASSISTED_LISTING_CREATED", "created_at": "2026-10-27T12:02:00Z"})
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_still_rejects_real_identity_and_broken_ownership_anchors(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"].append({"id": "unverified-user", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 0})
+        with self.assertRaisesRegex(guard.PolicyError, "non-synthetic"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"][0]["owner_id"] = "unknown-owner"
+        with self.assertRaisesRegex(guard.PolicyError, "identity anchors changed"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_allows_deletion_of_reviewed_synthetic_listing(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"] = snapshot["listings"][1:]
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_allows_assisted_delete_audit_for_reviewed_synthetic_listing(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listing_deletion_receipts"].append({
+            "owner_id": "synthetic-catalog-admin",
+            "scope": "ADMIN_ASSISTED_DELETE:synthetic-casa-rio",
+            "resource_id": "synthetic-casa-rio",
+            "state": "COMMITTED",
+        })
+        snapshot["audit_events"].append({
+            "id": "audit-after-synthetic-delete",
+            "listing_id": "synthetic-casa-rio",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_retains_owner_created_listing_after_owner_delete(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({
+            "id": "owner-created-review",
+            "listing_id": "owner-created-then-deleted",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_LISTING_REJECTED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        snapshot["listing_deletion_receipts"].append({
+            "owner_id": "synthetic-catalog-owner",
+            "scope": "OWNER_LISTING_DELETE:owner-created-then-deleted",
+            "resource_id": "owner-created-then-deleted",
+            "state": "COMMITTED",
+        })
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_invalid_listing_delete_receipts(self):
+        cases = [
+            ({"owner_id": "synthetic-catalog-admin", "scope": "OWNER_LISTING_DELETE:deleted-x", "resource_id": "deleted-x", "state": "COMMITTED"}, "unverified owner"),
+            ({"owner_id": "synthetic-catalog-owner", "scope": "ADMIN_ASSISTED_DELETE:deleted-x", "resource_id": "deleted-x", "state": "COMMITTED"}, "unverified ADMIN"),
+            ({"owner_id": "synthetic-catalog-owner", "scope": "OWNER_LISTING_DELETE:other-id", "resource_id": "deleted-x", "state": "COMMITTED"}, "invalid scope"),
+            ({"owner_id": "synthetic-catalog-owner", "scope": "OWNER_LISTING_DELETE:deleted-x", "resource_id": "deleted-x", "state": "PENDING"}, "not committed"),
+            ({"owner_id": "synthetic-catalog-admin", "scope": "ADMIN_ASSISTED_DELETE:other-id", "resource_id": "deleted-x", "state": "COMMITTED"}, "invalid scope"),
+        ]
+        for receipt, message in cases:
+            manifest, snapshot = self._synthetic_snapshot()
+            snapshot["listing_deletion_receipts"].append(receipt)
+            with self.subTest(receipt=receipt), self.assertRaisesRegex(guard.PolicyError, message):
+                guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_assisted_delete_with_wrong_owner(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"].append({"id": "another-synthetic-owner", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 1})
+        snapshot["listing_deletion_receipts"].append({
+            "owner_id": "synthetic-catalog-admin",
+            "scope": "ADMIN_ASSISTED_DELETE:synthetic-casa-rio",
+            "resource_id": "synthetic-casa-rio",
+            "state": "COMMITTED",
+        })
+        snapshot["audit_events"].append({
+            "id": "wrong-owner-delete",
+            "listing_id": "synthetic-casa-rio",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "another-synthetic-owner",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        with self.assertRaisesRegex(guard.PolicyError, "does not match the listing owner"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_assisted_listing_audit_without_listing_or_target(self):
+        cases = [
+            ({"listing_id": None, "target_owner_id": None}, "must reference a listing"),
+            ({"listing_id": "new-assisted-delete", "target_owner_id": None}, "must identify its OWNER target"),
+            ({"listing_id": "", "target_owner_id": "synthetic-catalog-owner"}, "must reference a listing"),
+        ]
+        for fields, message in cases:
+            manifest, snapshot = self._synthetic_snapshot()
+            snapshot["audit_events"].append({
+                "id": "incomplete-assisted-delete",
+                "actor_id": "synthetic-catalog-admin",
+                "action": "ADMIN_ASSISTED_LISTING_DELETED",
+                "created_at": "2026-10-27T12:02:00Z",
+                **fields,
+            })
+            with self.subTest(fields=fields), self.assertRaisesRegex(guard.PolicyError, message):
+                guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_allows_new_assisted_creation_and_rejects_unknown_audit_listing(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listing_deletion_receipts"].append({
+            "owner_id": "synthetic-catalog-admin",
+            "scope": "ADMIN_ASSISTED_DELETE:new-synthetic-assisted-listing",
+            "resource_id": "new-synthetic-assisted-listing",
+            "state": "COMMITTED",
+        })
+        snapshot["audit_events"].append({
+            "id": "new-assisted-create",
+            "listing_id": "new-synthetic-assisted-listing",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_ASSISTED_LISTING_CREATED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        snapshot["audit_events"].append({
+            "id": "new-assisted-delete",
+            "listing_id": "new-synthetic-assisted-listing",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
+            "created_at": "2026-10-27T12:03:00Z",
+        })
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({
+            "id": "orphan-assisted-delete",
+            "listing_id": "orphan-assisted-listing",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_ASSISTED_LISTING_DELETED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        with self.assertRaisesRegex(guard.PolicyError, "no matching committed deletion receipt"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({
+            "id": "orphan-event",
+            "listing_id": "unverified-listing-id",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_LISTING_PUBLISHED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        with self.assertRaisesRegex(guard.PolicyError, "without synthetic provenance"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_published_nonapproved_states_and_accepts_approved(self):
+        for status in ("DRAFT", "SUBMITTED", "REJECTED"):
+            manifest, snapshot = self._synthetic_snapshot()
+            snapshot["listings"][0].update(status=status, publication_status="PUBLISHED")
+            with self.subTest(status=status), self.assertRaisesRegex(guard.PolicyError, "only an approved listing may be published"):
+                guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"][0].update(status="APPROVED", publication_status="PUBLISHED")
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_role_and_listing_owner_mismatches(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"].append({"id": "admin-owned-listing", "owner_id": "synthetic-catalog-admin", "status": "DRAFT", "publication_status": "UNPUBLISHED", "created_at": "2026-10-27T12:00:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "must have the OWNER role"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({"id": "owner-actor", "listing_id": "synthetic-casa-rio", "actor_id": "synthetic-catalog-owner", "target_owner_id": "synthetic-catalog-owner", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "actor must have the ADMIN role"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({"id": "admin-target", "listing_id": "synthetic-casa-rio", "actor_id": "synthetic-catalog-admin", "target_owner_id": "synthetic-catalog-admin", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "target identity must have the OWNER role"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"].append({"id": "different-synthetic-owner", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 1})
+        snapshot["audit_events"].append({"id": "owner-mismatch", "listing_id": "synthetic-casa-rio", "actor_id": "synthetic-catalog-admin", "target_owner_id": "different-synthetic-owner", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "does not match the listing owner"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_unverified_audit_actors_and_invalid_states(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({"id": "new-event", "listing_id": None, "actor_id": "unknown", "target_owner_id": "synthetic-catalog-owner", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "non-synthetic identity"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"][0]["status"] = "IMPORTED"
+        with self.assertRaisesRegex(guard.PolicyError, "unrecognized workflow state"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
     def test_migration_allowlist_requires_exact_reviewed_hash(self):
         policy = guard._load_json(guard.MIGRATIONS)
         allowed = {item["name"]: item for item in policy["migrations"]}
@@ -124,9 +347,48 @@ class PreviewCdGuardTests(unittest.TestCase):
             path = Path(directory) / "output.json"
             path.write_text(json.dumps(payload))
             stable, immutable, returned_id = guard.parse_deploy_output(path)
+            for bad_id in ("12345678--123-1234-1234-1234567890ab", "12345678--1234-1234-1234-1234567890ab", "123456781234123412341234567890ab", "12345678-1234-1234-1234-1234567890zz"):
+                invalid = {**payload, "deployment_id": bad_id, "deployment_urls": [f"https://{bad_id[:8]}-alquileres-uspa-lab.sjo1848.workers.dev"]}
+                path.write_text(json.dumps(invalid))
+                with self.assertRaisesRegex(guard.PolicyError, "expected stable URL and deployment identifier"):
+                    guard.parse_deploy_output(path)
         self.assertEqual(stable, guard.TARGET["stable_url"])
         self.assertEqual(returned_id, deployment_id)
         self.assertTrue(immutable.endswith(".workers.dev"))
+
+    def test_wrangler_jsonl_session_envelope_precedes_preview_record(self):
+        deployment_id = "0ed47989-1234-1234-1234-1234567890ab"
+        session = {"type": "wrangler-session", "version": 1, "timestamp": "2026-10-26T13:30:00.000Z"}
+        preview = {
+            "type": "preview", "version": 1, "worker_name": "alquileres-uspa-lab",
+            "preview_id": guard.TARGET["preview_id"], "preview_name": "private", "preview_slug": "private",
+            "preview_urls": [guard.TARGET["stable_url"]], "deployment_id": deployment_id,
+            "deployment_urls": [f"https://{deployment_id[:8]}-alquileres-uspa-lab.sjo1848.workers.dev"],
+            "timestamp": "2026-10-26T13:30:00.000Z",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "output.jsonl"
+            path.write_text(json.dumps(session) + "\n" + json.dumps(preview) + "\n")
+            _, _, returned_id = guard.parse_deploy_output(path)
+        self.assertEqual(returned_id, deployment_id)
+
+    def test_wrangler_jsonl_rejects_duplicate_preview_or_unknown_record(self):
+        preview = {"type": "preview"}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "output.jsonl"
+            path.write_text(json.dumps(preview) + "\n" + json.dumps(preview) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "one Preview"):
+                guard.parse_deploy_output(path)
+            path.write_text(json.dumps({"type": "unexpected"}) + "\n" + json.dumps(preview) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "one Preview"):
+                guard.parse_deploy_output(path)
+            session = {"type": "wrangler-session", "version": 1}
+            path.write_text(json.dumps(session) + "\n" + json.dumps(session) + "\n" + json.dumps(preview) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "optionally preceded"):
+                guard.parse_deploy_output(path)
+            path.write_text(json.dumps(preview) + "\n" + json.dumps(session) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "optionally preceded"):
+                guard.parse_deploy_output(path)
 
     def test_deployment_output_rejects_unexpected_worker_or_url(self):
         payload = {"type": "preview", "worker_name": "other-worker", "preview_name": "private"}

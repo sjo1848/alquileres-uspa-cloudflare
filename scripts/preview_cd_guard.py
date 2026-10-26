@@ -17,6 +17,7 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "apps/worker"
+CANONICAL_UUID = re.compile(r"^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$")
 PROVENANCE = ROOT / ".orchestration/evidence/CF-AU-PREVIEW-D1-PROVENANCE.json"
 MIGRATIONS = ROOT / ".orchestration/evidence/preview-migration-allowlist.json"
 TARGET = {
@@ -150,15 +151,10 @@ def _wrangler_query(sql: str, config: str, local: bool = False, persist_to: str 
 
 def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -> dict:
     users = _wrangler_query(
-        "SELECT id,role,created_at,updated_at FROM users ORDER BY id", config, local, persist_to
+        "SELECT id,role,created_at,CASE WHEN lower(email) LIKE '%@example.test' THEN 1 ELSE 0 END AS is_synthetic FROM users ORDER BY id", config, local, persist_to
     )
     listings = _wrangler_query(
-        "SELECT l.id,l.owner_id,l.status,l.publication_status,l.created_at,l.updated_at,"
-        "(SELECT COUNT(*) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_image_count,"
-        "(SELECT MIN(created_at) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_first_created_at,"
-        "(SELECT MAX(created_at) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_last_created_at,"
-        "(SELECT COALESCE(SUM(byte_size),0) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_total_bytes,"
-        "(SELECT COUNT(*) FROM static_listing_images s WHERE s.listing_id=l.id) AS static_image_count "
+        "SELECT l.id,l.owner_id,l.status,l.publication_status,l.created_at "
         "FROM listings l ORDER BY l.created_at,l.id",
         config,
         local,
@@ -166,6 +162,14 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
     )
     audits = _wrangler_query(
         "SELECT id,listing_id,actor_id,target_owner_id,action,created_at FROM admin_audit_events ORDER BY created_at,id",
+        config,
+        local,
+        persist_to,
+    )
+    listing_deletion_receipts = _wrangler_query(
+        "SELECT owner_id,scope,resource_id,state FROM idempotency_records "
+        "WHERE scope LIKE 'OWNER_LISTING_DELETE:%' OR scope LIKE 'ADMIN_ASSISTED_DELETE:%' "
+        "ORDER BY created_at,owner_id,scope",
         config,
         local,
         persist_to,
@@ -185,16 +189,152 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
         local,
         persist_to,
     )
-    return {"users": users, "listings": listings, "audit_events": audits, "counts": counts[0] if counts else {}}
+    return {"users": users, "listings": listings, "audit_events": audits, "listing_deletion_receipts": listing_deletion_receipts, "counts": counts[0] if counts else {}}
 
 
 def verify_provenance(config: str, local: bool = False, persist_to: str | None = None) -> None:
     manifest = _load_json(PROVENANCE)
-    expected = {key: manifest[key] for key in ("users", "listings", "audit_events", "counts")}
     observed = _snapshot(config, local, persist_to)
-    if observed != expected:
-        raise PolicyError("synthetic D1 metadata differs from the reviewed provenance manifest; no mutation allowed")
-    print("PASS: D1 synthetic provenance metadata matches reviewed manifest; no listing/contact/media content was selected")
+    validate_synthetic_provenance(observed, manifest)
+    print("PASS: D1 synthetic identities and immutable provenance anchors verified; mutable workflow metadata may change; no listing/contact/media content was selected")
+
+
+def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
+    """Keep the reviewed synthetic baseline while allowing normal Preview activity.
+
+    The manifest anchors known synthetic identities and append-only audit records.
+    Status, publication/availability, updated timestamps, row totals and media/contact
+    operation counts are intentionally not pinned because valid staging journeys mutate them.
+    No title, location, description, address, email value, image name/bytes, or contact
+    content is selected for this decision.
+    """
+    users = observed.get("users", [])
+    users_by_id = {row.get("id"): row for row in users}
+    expected_users = {row.get("id"): row for row in manifest.get("users", [])}
+    if not expected_users or not set(expected_users) <= set(users_by_id):
+        raise PolicyError("reviewed synthetic user anchors are missing")
+    if any(
+        users_by_id[user_id].get("role") != baseline.get("role")
+        or users_by_id[user_id].get("created_at") != baseline.get("created_at")
+        for user_id, baseline in expected_users.items()
+    ):
+        raise PolicyError("reviewed synthetic user identity anchors changed")
+    if any(row.get("is_synthetic") != 1 or row.get("role") not in {"OWNER", "ADMIN"} for row in users):
+        raise PolicyError("D1 contains a non-synthetic or unrecognized user identity")
+    synthetic_user_ids = set(users_by_id)
+    synthetic_user_roles = {user_id: row.get("role") for user_id, row in users_by_id.items()}
+
+    listings = observed.get("listings", [])
+    listings_by_id = {row.get("id"): row for row in listings}
+    expected_listings = {row.get("id"): row for row in manifest.get("listings", [])}
+    if not expected_listings:
+        raise PolicyError("reviewed synthetic listing anchors are missing from the manifest")
+    for listing_id, baseline in expected_listings.items():
+        actual = listings_by_id.get(listing_id)
+        # A reviewed synthetic listing may be legitimately deleted in staging.
+        # If it remains, its stable owner/creation anchors must still match.
+        if actual and (actual.get("owner_id") != baseline.get("owner_id") or actual.get("created_at") != baseline.get("created_at")):
+            raise PolicyError("reviewed synthetic listing identity anchors changed")
+    valid_statuses = {"DRAFT", "REJECTED", "SUBMITTED", "APPROVED"}
+    valid_publication = {"UNPUBLISHED", "PUBLISHED"}
+    synthetic_listing_owners = {
+        listing_id: row.get("owner_id")
+        for listing_id, row in listings_by_id.items()
+    }
+    for listing_id, baseline in expected_listings.items():
+        synthetic_listing_owners.setdefault(listing_id, baseline.get("owner_id"))
+    # Deletions do not always leave a listing row. Their atomic idempotency receipts
+    # retain the actor and resource identity; assisted deletion also needs its audit
+    # target to recover the OWNER. Read identifiers only, never the client request key.
+    assisted_delete_actors: dict[str, str] = {}
+    for receipt in observed.get("listing_deletion_receipts", []):
+        listing_id = receipt.get("resource_id")
+        actor_id = receipt.get("owner_id")
+        scope = receipt.get("scope")
+        if not isinstance(listing_id, str) or not listing_id:
+            raise PolicyError("a listing deletion receipt has invalid listing provenance")
+        if receipt.get("state") != "COMMITTED":
+            raise PolicyError("a listing deletion receipt is not committed")
+        if scope == f"OWNER_LISTING_DELETE:{listing_id}":
+            if actor_id not in synthetic_user_ids or synthetic_user_roles.get(actor_id) != "OWNER":
+                raise PolicyError("an OWNER listing deletion receipt refers to an unverified owner")
+            known_owner = synthetic_listing_owners.get(listing_id)
+            if known_owner is not None and known_owner != actor_id:
+                raise PolicyError("an OWNER listing deletion receipt does not match the listing owner")
+            synthetic_listing_owners[listing_id] = actor_id
+        elif scope == f"ADMIN_ASSISTED_DELETE:{listing_id}":
+            if actor_id not in synthetic_user_ids or synthetic_user_roles.get(actor_id) != "ADMIN":
+                raise PolicyError("an assisted listing deletion receipt refers to an unverified ADMIN")
+            assisted_delete_actors[listing_id] = actor_id
+        else:
+            raise PolicyError("a listing deletion receipt has an invalid scope")
+    for row in listings:
+        status = row.get("status")
+        publication_status = row.get("publication_status")
+        owner_id = row.get("owner_id")
+        if owner_id not in synthetic_user_ids:
+            raise PolicyError("a listing is not owned by a verified synthetic identity")
+        if synthetic_user_roles.get(owner_id) != "OWNER":
+            raise PolicyError("a listing owner identity must have the OWNER role")
+        if status not in valid_statuses or publication_status not in valid_publication:
+            raise PolicyError("a listing has an unrecognized workflow state")
+        if publication_status == "PUBLISHED" and status != "APPROVED":
+            raise PolicyError("only an approved listing may be published")
+    audit_events = observed.get("audit_events", [])
+    audit_by_id = {row.get("id"): row for row in audit_events}
+    expected_audit = {row.get("id"): row for row in manifest.get("audit_events", [])}
+    if not set(expected_audit) <= set(audit_by_id):
+        raise PolicyError("reviewed synthetic audit anchors are missing")
+    immutable_audit_fields = ("listing_id", "actor_id", "target_owner_id", "action", "created_at")
+    for event_id, baseline in expected_audit.items():
+        if any(audit_by_id[event_id].get(field) != baseline.get(field) for field in immutable_audit_fields):
+            raise PolicyError("reviewed synthetic audit identity anchors changed")
+    # Assisted deletion is the durable audit proof for a synthetic listing created
+    # through the OWNER route and later removed. OWNER creation has no audit row;
+    # the delete audit is inserted only after a successful DELETE in one D1 batch.
+    # Use its role-checked target to retain provenance for the whole audit history.
+    for row in audit_events:
+        actor_id = row.get("actor_id")
+        target_owner_id = row.get("target_owner_id")
+        listing_id = row.get("listing_id")
+        if actor_id not in synthetic_user_ids or (target_owner_id is not None and target_owner_id not in synthetic_user_ids):
+            raise PolicyError("an audit event refers to a non-synthetic identity")
+        if synthetic_user_roles.get(actor_id) != "ADMIN":
+            raise PolicyError("an audit event actor must have the ADMIN role")
+        if target_owner_id is not None and synthetic_user_roles.get(target_owner_id) != "OWNER":
+            raise PolicyError("an audit target identity must have the OWNER role")
+        if row.get("action") in {"ADMIN_ASSISTED_LISTING_CREATED", "ADMIN_ASSISTED_LISTING_DELETED"}:
+            if not isinstance(listing_id, str) or not listing_id:
+                raise PolicyError("an assisted listing audit event must reference a listing")
+            if target_owner_id is None:
+                raise PolicyError("an assisted listing audit event must identify its OWNER target")
+        if row.get("action") == "ADMIN_ASSISTED_LISTING_DELETED":
+            if assisted_delete_actors.get(listing_id) != actor_id:
+                raise PolicyError("an assisted-delete audit has no matching committed deletion receipt")
+            known_owner = synthetic_listing_owners.get(listing_id)
+            if known_owner is not None and known_owner != target_owner_id:
+                raise PolicyError("an audit target does not match the listing owner")
+            synthetic_listing_owners[listing_id] = target_owner_id
+
+    for row in audit_events:
+        target_owner_id = row.get("target_owner_id")
+        listing_id = row.get("listing_id")
+        if row.get("action") == "ADMIN_ASSISTED_LISTING_CREATED" and listing_id:
+            if target_owner_id is None:
+                raise PolicyError("an assisted-create audit event must identify its OWNER target")
+            known_owner = synthetic_listing_owners.get(listing_id)
+            if known_owner is not None and known_owner != target_owner_id:
+                raise PolicyError("an audit target does not match the listing owner")
+            synthetic_listing_owners[listing_id] = target_owner_id
+        if listing_id is not None:
+            expected_owner_id = synthetic_listing_owners.get(listing_id)
+            if expected_owner_id is None:
+                raise PolicyError("an audit event refers to a listing without synthetic provenance")
+            if target_owner_id != expected_owner_id:
+                raise PolicyError("an audit target does not match the listing owner")
+
+    if observed.get("counts", {}).get("non_synthetic_user_email_count") != 0:
+        raise PolicyError("D1 contains a user with a non-synthetic email domain")
 
 
 def verify_migrations(config: str, allowlist_path: Path, local: bool = False, persist_to: str | None = None) -> list[str]:
@@ -294,7 +434,7 @@ def current_preview() -> tuple[str, str, str]:
     deployment = _cloudflare_get(base + "/deployments/latest")
     deployment_id = deployment.get("id")
     deployment_urls = deployment.get("urls", [])
-    if not isinstance(deployment_id, str) or not re.fullmatch(r"[0-9a-f-]{36}", deployment_id):
+    if not isinstance(deployment_id, str) or not CANONICAL_UUID.fullmatch(deployment_id):
         raise PolicyError("latest Preview deployment has no valid deployment ID")
     expected_immutable = f"https://{deployment_id[:8]}-{TARGET['worker_name']}.sjo1848.workers.dev"
     if deployment_urls != [expected_immutable]:
@@ -307,28 +447,41 @@ def current_preview() -> tuple[str, str, str]:
     return expected_stable, expected_immutable, deployment_id
 
 
-def _json_object_from_output(path: Path) -> dict:
-    text = "\n".join(line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("npm notice")).strip()
-    start = text.find("{")
-    if start < 0:
-        raise PolicyError("Wrangler Preview output has no JSON object")
-    try:
-        payload, _ = json.JSONDecoder().raw_decode(text[start:])
-    except json.JSONDecodeError as exc:
-        raise PolicyError("Wrangler Preview output JSON is invalid") from exc
-    if not isinstance(payload, dict):
-        raise PolicyError("Wrangler Preview output JSON is not an object")
-    return payload
+def _preview_object_from_output(path: Path) -> dict:
+    """Read Wrangler's JSONL output and select its single validated Preview record.
+
+    Wrangler 4.151 emits a `wrangler-session` object before the `preview` object.
+    Accept the older single-object form too, but reject malformed/unknown records
+    and duplicate Preview records rather than guessing which one was deployed.
+    """
+    records = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("npm notice"):
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise PolicyError("Wrangler Preview JSONL output contains an invalid record") from exc
+        if not isinstance(record, dict):
+            raise PolicyError("Wrangler Preview JSONL output contains a non-object record")
+        records.append(record)
+    if not records:
+        raise PolicyError("Wrangler Preview output has no JSON records")
+    record_types = [record.get("type") for record in records]
+    if record_types not in (["preview"], ["wrangler-session", "preview"]):
+        raise PolicyError("Wrangler Preview JSONL records must be one Preview, optionally preceded by one session record")
+    return records[-1]
 
 
 def parse_deploy_output(path: Path) -> tuple[str, str, str]:
-    payload = _json_object_from_output(path)
+    payload = _preview_object_from_output(path)
     if payload.get("type") != "preview" or payload.get("worker_name") != TARGET["worker_name"] or payload.get("preview_name") != TARGET["preview_name"]:
         raise PolicyError("Wrangler output does not identify the existing private Preview")
     stable_urls = payload.get("preview_urls", [])
     immutable_urls = payload.get("deployment_urls", [])
     deployment_id = payload.get("deployment_id")
-    if stable_urls != [TARGET["stable_url"]] or not isinstance(deployment_id, str) or not re.fullmatch(r"[0-9a-f-]{36}", deployment_id):
+    if stable_urls != [TARGET["stable_url"]] or not isinstance(deployment_id, str) or not CANONICAL_UUID.fullmatch(deployment_id):
         raise PolicyError("Wrangler did not return the expected stable URL and deployment identifier")
     immutable = f"https://{deployment_id[:8]}-{TARGET['worker_name']}.sjo1848.workers.dev"
     if immutable_urls != [immutable]:

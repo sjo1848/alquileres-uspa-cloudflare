@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I06_6_ADMIN_D31`
-Active task: `CF-AU-I06.6 — ADMIN D3.1 (Issue #33)`
+Phase: `CF_AU_I07_INTEGRAL_QA`
+Active task: `CF-AU-I07 — QA integral (Issue #26)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1860,3 +1860,105 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - En el artifact `4a043b7`: GitHub `worker`/`web` PASS, `staging-private` SAFE SKIP; revisión automática completada sin hallazgos; tres hilos P2 respondidos y resueltos; PR CLEAN/MERGEABLE.
 - Este evento y el reporte forman un commit de estado/evidencia que cambiará el live PR HEAD. No se autorreferencia: se registran el último HEAD observado y los SHA ejecutables; el nuevo HEAD debe derivarse de GitHub y tener checks/review actualizados antes de merge.
 - **READY_TO_RESUME:** actualizar/publicar estado+reporte, reconsultar el HEAD, esperar worker/web y revisión automática, validar no threads/mergeability/protección; completar Pre-Critic final y merge protegido. Después actualizar Issue #33/#35/#37/#25 con evidencia y detener antes de #34/I07. Sin Preview/CD/producción/R2/costos.
+
+
+## Event 233 — I07 QA integral ejecutada localmente; preflight a publicación
+
+- Base reconstruida de GitHub: `main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412`; I06/ADMIN D3.1 está integrado y aprobado. Issue #26 autoriza QA local sintética, no producción ni un lanzamiento.
+- Defecto reproducible de presentación: archivos sintéticos positivos menores a 1 KiB podían aparecer como `0 KB`. Formatter compartido para vistas OWNER/ADMIN muestra bytes para sub-KiB y mantiene unidades legibles desde 1 KiB; regresiones cubren 69/1023/1024/12288 bytes y valor inválido.
+- Staging parser acepta salida JSONL válida de Wrangler (`wrangler-session` y un registro `preview`) de forma estricta. El guard de procedencia permite estados, timestamps, filas de medios/contactos y eliminaciones sintéticas legítimas, conservando anclas de identidad/auditoría, comprobación de dominios sintéticos y fail-closed ante datos/identidades desconocidas. No selecciona contenido de publicaciones ni imágenes. CD sigue sin activarse.
+- Regresiones de harness: fault query incluye `session_version`; OWNER conserva lectura de metadata de fotos enviadas mientras mutation sigue denegada; límite de imagen se prueba con sesión válida tras logout.
+- Evidencia: `output/playwright/i07/QA.md` y capturas desktop/móvil 1440/390/320. Público 5/5, OWNER 5/5, ADMIN 2/2, D3.1 foundations 1/1; Worker HTTP/fault/idempotencia/compensación/recuperación PASS (285.0 s); guard focalizado 20/20 y suite Python 45/45; worker typecheck, web typecheck/build/build:preview PASS. Smoke catálogo local 25 lecturas: p50 21.4 ms/p95 35.5 ms/máx. 92.8 ms; no es capacidad Cloudflare.
+- Worker local corre R2 solo en emulador preexistente de la suite de regresión. No se tocó R2 remoto, D1 remoto, Preview, Access ni producción; no se activó CD. Cloudflare Free limits se documentan en QA con fuentes oficiales, pero no se midió uso de cuenta. Sin E2E remoto autenticado ni evaluación WCAG/lector de pantalla.
+- **Pre-Critic local: PASS para publicar una única PR funcional y obtener CI/review/Controller exactos; no autoriza merge todavía.**
+- **READY_TO_RESUME:** completar canonical consistency/diff preflight, publicar PR funcional #26, ejecutar checks `worker`/`web` y una review GitHub exact-head, obtener `project_controller` GPT-6 Luna High read-only exacto, reparar hallazgos materiales y merge solo protegido. Después registrar resultados en #26/#25 y detenerse para aceptación humana; dejar #26 abierto y no iniciar I08/#27. Sin despliegue remoto.
+
+
+## Event 234 — PR funcional #53 publicado
+
+- PR #53: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/53, base `main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412`. SHA ejecutable `8adb1649220ae388ec7c59f531a27865f6a29c66`, tree `212d0c3b254164a295947bd17ce10e44c5337610`.
+- El PR contiene correcciones funcionales acotadas y QA/evidencia. Local preflight PASS, pero `worker`/`web`, review automática y Controller aún están pendientes del HEAD final. El siguiente checkpoint de estado cambia el HEAD; no se reutilizarán checks/reviews anteriores.
+- **READY_TO_RESUME:** después de publicar el checkpoint, leer el HEAD vivo de PR #53 en GitHub; verificar CI worker/web y review exact-head, invocar `project_controller` read-only GPT-6 Luna High sobre SHA exacto, reparar P0/P1 y hallazgos materiales, repetir checks afectados, validar preflight/protección de main y hacer merge protegido solo con controles conformes. Dejar #26 abierto para aceptación humana; detenerse antes de I08/#27. Sin Preview, migraciones remotas, CD, Access, recursos, producción o datos reales.
+
+
+## Event 235 — Controller detectó/reparó procedencia de listing_id
+
+- El `project_controller` configurado para #53 observó en `0a5a83d7a262a8bdde0860b10d745fd4e9944f3f` un fallo material: auditorías no validaban `listing_id` y el migration 0009 no define FK; la prueba positiva de borrado usaba ID arbitrario. Ver `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-0A5A83D.md`. El veredicto queda **REWORK**; su runtime no verificó aislamiento read-only/model backend y por eso no cuenta como Controller PASS cualificado.
+- Corregido en el código local: auditoría solo puede referenciar listado actual, baseline conocido o creación asistida sintética acreditada (ADMIN actor + OWNER target); añadido test negativo de ID desconocido y positivos de borrado baseline y creación/borrado asistido. Guard 21/21, suite Python 46/46 PASS. QA index actualizado.
+- No se afirma cierre técnico aún. Falta invocar un proceso separado `codex exec` con modelo `gpt-6-luna`, esfuerzo high y `--sandbox read-only`, capturar configuración/sesión/salida y revisar el nuevo SHA; backend real permanece UNVERIFIED si CLI no lo expone. También faltan checks/review GitHub exact-head para el HEAD reparado.
+- **READY_TO_RESUME:** preflight, commit/push reparación, derivar PR #53 HEAD, cerrar checks `worker`/`web` y review automática, realizar Controller cualificado read-only exacto y reparar hallazgos; validar protección de main y merge solo si todos PASS. No desplegar, habilitar CD ni tocar datos remotos. Mantener Issue #26 abierto para aceptación; parar antes de I08/#27.
+
+
+## Event 236 — segunda REWORK del Controller corregida
+
+- El proceso separado de Controller sobre `65a59e81f7f3021ae9f21107de1b2c5e4c0c3460` emitió REWORK: guard permitía estados imposibles (`DRAFT/SUBMITTED/REJECTED` con `PUBLISHED`); además QA tenía conteos viejos y no explicaba procedencia de capturas. Ver `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-65A59E8.md`. Runtime pedido y observación CLI están registrados; backend sigue UNVERIFIED.
+- Reparación local: `PUBLISHED` requiere `APPROVED`. Regresión cubre los tres estados incompatibles y control positivo `APPROVED/PUBLISHED`. Guard 22/22, Python 47/47. QA actualiza conteos y aclara que catálogo/contacto son capturas nuevas del E2E de I07 mientras OWNER/ADMIN reutilizan evidencia I06 con jornadas vueltas a ejecutar.
+- Exact-head `worker`/`web` PASS y review sin hallazgos sobre 65a59e8 son históricos para el código anterior y no cubren este arreglo. Se requiere renovar en PR #53. No existe Controller PASS.
+- **READY_TO_RESUME:** commit/push de la reparación y estado, derivar el SHA vivo, renovar CI/review, ejecutar una única revisión separada GPT-6 Luna High solo lectura exacta con provenance de CLI/sesión y resolver defectos materiales. Merge protegido solo al pasar. Sin mutaciones remotas ni CD. Issue #26 abierto para aceptación humana; detenerse antes de I08/#27.
+
+
+## Event 237 — candidato I07 reparado consolidado
+
+- Código/tests/evidencia locales consolidados en `a69f6de128b374a7063a8ebe679f19d1665e9e17`, tree `124c60175d39426412f14b68995caba45c30d99a`, sobre base main `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`. Incluye las dos REWORK de procedencia corregidas; la revisión P1 de estados ahora rechaza DRAFT/SUBMITTED/REJECTED publicados y acepta APPROVED/PUBLISHED.
+- Regresiones verificadas después de la reparación: guard 22/22; scripts 47/47; OWNER Playwright 5/5 con BLOB real local de 124 bytes comprobado visualmente; ADMIN Playwright 2/2 con 124 bytes en moderación y asistencia. Capturas OWNER/ADMIN se regeneraron en I07 a 1440/390/320. E2E público 5/5, foundations 1/1, HTTP/fault suite 285.0 s, typecheck/build y smoke 25 requests mantienen evidencia de candidate previo con código API sin cambios.
+- Check/review GitHub y Controller en `65a59e8` no cubren estos cambios y no se reutilizan.
+- **READY_TO_RESUME:** publicar el tracking checkpoint y renovar exact-head checks/review; ejecutar qualified `codex exec` Controller sobre código `a69f6de` con Luna/High/read-only; resolver materialidad, validar protección y merge solo tras PASS. No modificar remoto; conservar #26 abierto para Product Acceptance y detenerse antes de I08/#27.
+
+
+## Event 238 — tercera REWORK del Controller corregida localmente
+
+- Controller separado cualificado sobre artifact `a69f6de128b374a7063a8ebe679f19d1665e9e17` / tree `124c60175d39426412f14b68995caba45c30d99a`, base `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`, emitió REWORK P1. El guard permitía que una publicación perteneciera al usuario sintético ADMIN, que audit actor no fuera ADMIN, target no fuera OWNER o target_owner discrepase del owner real del listing. Informe + salida bruta redacted: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-A69F6DE.md` y `...RAW-REWORK-A69F6DE.md`. Runtime: CLI 0.164.0, args Luna/High/read-only aceptados, sesión capturada; backend identity UNVERIFIED; no cambios del reviewer.
+- Corregido localmente con verificación de role OWNER en cada listing; role ADMIN para actors; role OWNER para targets; `target_owner_id` debe coincidir con owner sintético de listing actual/baseline/assisted-create. Regresiones negativas/positivas en la guard. El follow-up P2 del mismo Controller también se cerró: UUID canónico y JSONL permite solo un Preview opcionalmente precedido por un session envelope, rechazando duplicado/orden invertido.
+- Resultado actualizado: guard focalizado 23/23 y Python completo 48/48; capturas OWNER/ADMIN recientes y aserciones de 124-byte UI conservadas. `npm audit --omit=dev` 0 findings en Worker/Web runtime; full audit mantiene solo dev/toolchain avisos, registrados en QA para preparación de producción.
+- Exact CI/review de a90f202 está superseded; no PASS final.
+- **READY_TO_RESUME:** commit/push esta corrección, renovar exact-head checks/review, ejecutar Controller separado exacto, corregir hallazgos y repetir pruebas afectadas. Verificar protecciones y merge solo con PASS. No desplegar ni activar CD; #26 abierto para aceptación humana; parar antes de I08/#27.
+
+
+## Event 239 — tercera REWORK consolidada en código; preflight local actualizado
+
+- Código y regresiones de la tercera REWORK quedaron en `b32649f33508aaa899de99c92ad87eb315c77795`, tree `f83bbaf8ae3272bcd6b39598d832ff742d1c1617`, sobre base `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`. Guard sintético valida role OWNER para cada listing, actor ADMIN, target OWNER y correspondencia target/listing; Wrangler acepta solo JSONL `[preview]` o `[wrangler-session, preview]` y deployment UUID canónico.
+- Verificación local posterior al cambio: guard 23/23, suite Python 48/48, `check_orchestration_state.py` PASS y `git diff --check` PASS. E2E/UI y suite HTTP permanecen sin cambios ejecutables desde el candidato anterior; se exigirán CI exacto del PR actualizado.
+- Aún no hay PASS final: los checks/review de GitHub en `a90f202` y el Controller REWORK de `a69f6de` no cubren este SHA. El PR sigue siendo #53; no se activó CD ni se mutaron Cloudflare/Access/D1/Preview.
+- **READY_TO_RESUME:** publicar checkpoint, derivar el HEAD de PR #53 desde GitHub, esperar `worker`/`web` y review automática exactos, ejecutar una revisión separada cualificada GPT-6 Luna High read-only sobre el artefacto exacto; resolver hallazgos materiales, luego verificar protección de `main` y merge protegido. Actualizar #26/#25 con matriz y límites, dejar #26 abierto para aceptación humana y detenerse antes de I08/#27.
+
+
+## Event 240 — GitHub review P2 corregido: OWNER-create y assisted-delete
+
+- La revisión automática de GitHub del PR #53, commit `a90f202b513eabaccd48b9b5109cda8a8dec05f0`, encontró que una publicación creada por OWNER y borrada luego por ADMIN asistido deja auditoría de borrado, pero no conserva fila ni evento de creación OWNER. El guard rechazaba ese estado sintético legítimo. Informe: `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-A90F202.md`.
+- Reparación en código `f30d2017a1947cf95e43eb5302ad171c260c254a`, tree `c801042ad64ea789909638c00d28b8d64a006f8a`: un evento exacto `ADMIN_ASSISTED_LISTING_DELETED`, con actor sintético ADMIN y target sintético OWNER, aporta la evidencia durable del listing borrado y su owner para validar auditorías previas. Se rechazan target ausente, roles incorrectos, target discrepante y auditorías huérfanas sustentadas por otra acción. Sin inspeccionar contenido de listados.
+- Regresiones: flujo sintético OWNER-create → revisión → assisted delete sin fila del listing, target erróneo y orphan-event no relacionado. Guard 25/25 y Python completo 50/50 PASS.
+- El check/review observado en `dfb26fb` no aplica a este código. Controller final aún pendiente. `main` requiere worker/web, pull request y resolución de conversaciones; mergeable status anterior fue CLEAN, pero controles deben actualizarse para el nuevo SHA.
+- **READY_TO_RESUME:** publicar checkpoint de estado y nuevo código en PR #53; derivar HEAD real, esperar checks worker/web y GitHub review exactos, ejecutar revisión final cualificada GPT-6 Luna High read-only del ejecutable exacto, reparar hallazgos materiales, validar protección/threads y merge protegido. Actualizar Issue #26 y épica #25 con matriz; mantener #26 abierto para aceptación y detenerse antes de I08/#27. Sin Preview, CD, migraciones remotas, producción, R2, costo ni datos reales.
+
+
+## Event 241 — Controller REWORK P2 cerrado localmente
+
+- El Controller separado read-only sobre artifact `f30d2017a1947cf95e43eb5302ad171c260c254a` / tree `c801042ad64ea789909638c00d28b8d64a006f8a`, base `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`, emitió tres P2: assisted create/delete permitía audit sin `listing_id` o target OWNER; `parse_deploy_output` aceptaba UUID malformed de 36 caracteres; QA reportaba 22/47 aunque corría 25/50. Ver `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-F30D201.md`. Runtime solicitado GPT-6 Luna/High/read-only, CLI acceptance y backend UNVERIFIED; review sin tests.
+- Reparado en código `7869af8cec84effbad3fc4720e81f3a602d76f4e`, tree `7c7034a0784e063feea2a0395ef9d779e470ce11`: acciones assisted crean/deletan deben tener ID no vacío y target OWNER; UUID canónico se aplica también a output de deploy; regresiones para ID/target nulos, UUID incorrecto con longitud 36; tabla QA reconciliada a guard 26/26 y suite 51/51.
+- Verificación local posterior: guard focalizado 26/26, suite Python 51/51; el nuevo código y reporte aún no están en GitHub al momento de este evento. Los checks de `720bf0a` y review sobre `a90f202`/`720bf0a` no cubren el candidato reparado. No hay PASS final.
+- **READY_TO_RESUME:** publicar checkpoint de estado y candidato en PR #53; esperar worker/web y GitHub automatic review exactos; ejecutar nuevo Controller cualificado read-only del ejecutable exacto y resolver hallazgos; validar conversaciones y reglas de main, Pre-Critic y merge protegido. Actualizar #26/#25, dejar #26 abierto para aceptación humana y detenerse antes de I08/#27. Sin mutación remota ni CD.
+
+
+## Event 242 — GitHub P2 de borrado OWNER resuelto localmente
+
+- Review automática del PR #53 HEAD `efa0d5487aa61c524b34b8348042ccf2e1adb9ae` halló otro camino válido: OWNER crea y envía, ADMIN rechaza (audit retenida), y OWNER borra el listing; `DELETE /listings/:id` conserva recibo idempotente pero no un audit de borrado. El guard rechazaba esa auditoría de rechazo remanente. Evidencia: `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-EFA0D54.md`.
+- Reparado en `a133282a8ab985d57ee8846a743e4a4396817006`, tree `4b12e82a66a94c9b54f3581251975d3d085dafe7`: snapshot local de provenance toma exclusivamente owner_id/scope/resource_id/state de recibos `OWNER_LISTING_DELETE`, no request key; sólo un COMMITTED receipt con scope exacto y usuario sintético OWNER preserva la identidad del ID borrado y permite validar su historial de auditoría. Agregadas regresiones para flujo rechazo→borrado y recibos de rol/scope/state inválidos.
+- Pruebas tras reparación: guard 27/27; Python suite 52/52. Controller PASS previo de `7869af8` ya no revisa este cambio; CI/review de `efa0d54` tampoco. No hay PASS final de I07 aún.
+- **READY_TO_RESUME:** publicar checkpoint; renovar CI worker/web y GitHub automatic review del exact HEAD; ejecutar Controller separado read-only GPT-6 Luna High sobre `a133282`; resolver material findings, validar protección/conversaciones y merge protegido. Actualizar #26/#25 con matriz; dejar #26 abierto para aceptación humana; detenerse antes de I08/#27. Sin mutaciones remotas.
+
+
+## Event 243 — Controller P2 resuelto: recibo requerido para assisted-delete
+
+- Controller separado sobre PR HEAD `2d2a1a31090aa47d9a5025cea5884b2ce1d7e1f9` / tree `55f8794f4f57ab820a0cab227ce41ddf536f5b1a` emitió REWORK P2: audit `ADMIN_ASSISTED_LISTING_DELETED` podía acreditar un ID desconocido sin recibo; también `STATUS.json` registraba `dfb26fb` en vez del tracking HEAD observado `2d2a1a3`. Reporte: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-2D2A1A3.md`. Revisión de código no halló P0/P1; runtime CLI/backend no verificable independientemente.
+- Reparación local en ejecutable `9310509a9c5168cfbbee0c7097c9718662f13c6e`, tree `223a994df7a2b9cb6ffa4eebc415f6f12e156f68`: guard consulta recibos OWNER y ADMIN assisted delete en metadatos mínimos; assisted-delete audit sólo establece provenance cuando su ADMIN actor coincide con recibo COMMITTED y scope/resource exactos, y su target OWNER coincide con owner conocido. Caso huérfano sin receipt queda negativo. OWNER-delete sigue con receipt COMMITTED propietario/ID/scope exactos. Guard 27/27 y Python 52/52 PASS.
+- Estado actualizado: checkpoint registra HEAD observado `9310509`/tree `223a994` y documenta que el SHA de su commit de tracking debe derivarse de GitHub tras publicar, para no autorreferenciarse. Controller debe inspeccionar el PR tracking SHA completo con su checkpoint, no solo el commit ejecutable.
+- **READY_TO_RESUME:** publicar checkpoint; derivar live HEAD PR #53; renovar exact-head CI/review; ejecutar Controller final sobre complete tracking SHA con estado reconciliado; resolver material findings, verificar protección/conversaciones y merge protegido. Actualizar Issue #26/#25 con matriz, dejar #26 abierto y detenerse antes de I08/#27. No mutar Cloudflare ni activar CD.
+
+
+## Event 244 — Controller PASS y controles exactos de I07
+
+- Controller delegado en proceso separado emitió **PASS** para el PR tracking SHA `6c79d7d453dcc259c304e2a4831f7ab8f5771586` / tree `5c10bc4311344fa2fb88a44f2900660e79853081`, base `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`; código ejecutable `9310509a9c5168cfbbee0c7097c9718662f13c6e` / tree `223a994df7a2b9cb6ffa4eebc415f6f12e156f68`. Evidencia runtime y veredicto: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-PASS-6C79D7D.md`.
+- Solicitud operacional: Codex CLI 0.164.0, `gpt-6-luna`, esfuerzo `high`, `--sandbox read-only`, `--ephemeral`, proceso exit 0; sesión `01a17a1e-a4ef-7ca1-afa6-7e5f19217435`. Backend identity permanece **UNVERIFIED**. Reviewer identificó como observación no bloqueante que el rechazo de línea JSONL malformada no tiene un test dedicado.
+- Sobre el mismo tracking HEAD, GitHub Actions run `40404799291`: worker/web PASS; `staging-private` skipped por política. Automatic review completada sin findings ni unresolved findings; dos threads anteriores resueltos. El candidato funcional y el estado canónico informaban local/synthetic-only, sin E2E remoto autenticado ni readiness de producción.
+- El checkpoint que registra este resultado solo cambia estado/evidencia y no el árbol ejecutable; después de publicarlo se debe derivar el nuevo PR HEAD desde GitHub y renovar los checks/review requeridos sobre ese HEAD antes de integrar.
+- **READY_TO_RESUME:** publicar este checkpoint en PR #53, refrescar worker/web + automatic review para su nuevo HEAD; validar consistencia, mergeability, conversaciones y reglas actuales de `main`. Si pasan, merge protegido preservando historia; publicar matriz/límites en #26 y actualizar #25. Mantener #26 abierto para Product Acceptance y detenerse antes de I08/#27. No tocar Preview/CD/Access/D1 remota, producción, servicios pagados, R2, datos reales ni repo fuente.
