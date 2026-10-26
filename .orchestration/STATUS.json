@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6 — CI/CD fail-closed implementation and D3.1 private Preview publication (Issue #49; PRs #50/#51 protected-merged); Product Owner visually approved Preview #48",
   "last_completed_head": "main@0eff7358006a7e6e207387380ecc7bdd27615fb5",
   "work_branch": "work/i06-d31-admin",
-  "next_action": "Commit the consolidated local D3.1 ADMIN candidate and its test/capture evidence; publish one functional PR for Issue #33, wait for exact-head worker/web CI and GitHub review, then request one GPT-6 Luna High read-only Controller review. Resolve material findings, refresh canonical PR/head fields and Pre-Critic, verify protected mergeability, merge, close #33/#35/#37 only with evidence, update #25, and stop before #34/I07. Do not touch Preview/CD/remote D1/Access.",
+  "next_action": "After this non-executable state checkpoint, read PR #52 exact current head and checks; request the automatic GitHub review and one delegated read-only project_controller GPT-6 Luna High review on that exact SHA. Repair any material finding, rerun only affected tests and refresh PR/status; merge only after all required controls and protected-branch verification.",
   "stop_reason": null,
   "event": {
-    "seq": 226,
-    "summary": "ADMIN D3.1 implementation and synthetic local QA consolidated; preflight PASS to publish for exact-head reviews"
+    "seq": 227,
+    "summary": "Functional PR #52 published from consolidated D3.1 ADMIN candidate; exact-head CI pending"
   },
   "external_review": null,
   "human_gate": {
@@ -24,16 +24,16 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "url": null,
+    "number": 52,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/52",
     "branch": "work/i06-d31-admin",
     "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
-    "executable_sha": null,
-    "executable_tree": null,
-    "head_sha": null,
-    "head_tree": null,
-    "state": "NOT_PUBLISHED",
-    "status": "Consolidated candidate locally; preflight passed; ready to publish functional PR"
+    "executable_sha": "56e6050e8bcd71902248c0c2976c87b8d075df06",
+    "executable_tree": "1872b3edbe49be7efd9fc256d706af4a0c92c7b4",
+    "head_sha": "56e6050e8bcd71902248c0c2976c87b8d075df06",
+    "head_tree": "1872b3edbe49be7efd9fc256d706af4a0c92c7b4",
+    "state": "OPEN",
+    "status": "PR #52 published. Exact-head worker/web are running. This canonical tracking commit is non-executable and will supersede the push SHA; request/review checks against the resulting PR head."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -89,18 +89,20 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/33",
     "contract": ".orchestration/contracts/CF-AU-I06.6-ADMIN-D31.md",
-    "status": "IN_PROGRESS",
+    "status": "PR_OPEN_CHECKS_RUNNING",
     "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
     "branch": "work/i06-d31-admin",
     "scope": "D3.1 ADMIN moderation and assisted owner/listing management in local synthetic Vue + Worker/Hono + D1; fix #35 ADMIN mobile form overlap and #37 unambiguous time. No Preview/CD/remote D1/Access changes, #34 or I07.",
     "visual_reference": "Issue #41 D3.1 approved; commit 77c99fa445171a58548e6e06497050bf2d923305. The implemented structure is desktop queue+contextual detail and mobile list→detail; assisted sections align with one D3.1 system.",
     "prior_scope_reconciliation": "PR #51 merged 0eff735; PR #50/#51 CI and Preview publication facts preserved under historical_status_issue49_postmerge. Main still runs D3.1 from e1f319b; no update in this issue.",
     "cd_guard_note": "Remain disabled. Mutable D1 provenance guard observation is Issue #49 comment 6418504412 and out of scope; do not weaken or activate CD.",
-    "next_action": "Commit the consolidated local D3.1 ADMIN candidate and its test/capture evidence; publish one functional PR for Issue #33, wait for exact-head worker/web CI and GitHub review, then request one GPT-6 Luna High read-only Controller review. Resolve material findings, refresh canonical PR/head fields and Pre-Critic, verify protected mergeability, merge, close #33/#35/#37 only with evidence, update #25, and stop before #34/I07. Do not touch Preview/CD/remote D1/Access.",
+    "next_action": "After this non-executable state checkpoint, read PR #52 exact current head and checks; request the automatic GitHub review and one delegated read-only project_controller GPT-6 Luna High review on that exact SHA. Repair any material finding, rerun only affected tests and refresh PR/status; merge only after all required controls and protected-branch verification.",
     "github_checks": "PENDING exact PR head",
     "github_review": "PENDING exact PR head",
     "controller": "PENDING one final consolidated candidate",
-    "precritic": "PASS to publish candidate for exact-head checks/review; merge gate remains pending"
+    "precritic": "PASS to publish candidate for exact-head checks/review; merge gate remains pending",
+    "pr_number": 52,
+    "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/52"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
