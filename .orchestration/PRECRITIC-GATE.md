@@ -382,6 +382,12 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Evidencia: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-F30D201.md`. Regresiones focalizadas 26/26 y suite 51/51 PASS.
 - No PASS final aún. El nuevo ejecutable necesita GitHub CI/review actualizados y Controller exacto; sólo entonces revisar Pre-Critic final, protección y merge.
 
+## I07 — GitHub review REWORK de OWNER-delete tras rechazo
+
+- Review automática sobre `efa0d54` indicó que `ADMIN_LISTING_REJECTED` persiste después de que OWNER borra el listing, y el flujo OWNER deja un recibo idempotente en la misma transacción pero no audit de borrado. Reparado en `a133282`: inspección mínima de `owner_id/scope/resource_id/state`, exige COMMITTED y scope/OWNER sintético exactos; nunca lee la Idempotency-Key. Regresión incluye OWNER create → submit → reject → delete y recibos inválidos.
+- Pruebas locales: guard 27/27, scripts 52/52 PASS. Informe `.orchestration/evidence/critics/CF-AU-I07-GITHUB-REVIEW-REWORK-EFA0D54.md`.
+- Controller PASS de `7869af8` queda superseded por esta reparación; no Pre-Critic PASS final hasta review read-only exacta y GitHub exact-head controls.
+
 ## I07 — tercera Controller REWORK: relaciones OWNER/ADMIN reparadas
 
 - Controller separado cualificado en exact artifact `a69f6de` encontró P1: guard aceptaba listing propiedad de ADMIN, audit actor OWNER, target ADMIN o mismatch entre target y listing owner. Mismo informe propuso hardening P2 del parser JSONL (UUID canónico y orden único envelope→preview). Evidencia completa y provenance: `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-REWORK-A69F6DE.md` y su salida redacted.
