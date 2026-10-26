@@ -8,11 +8,11 @@
   "last_completed_task": "I06.6 ADMIN D3.1 — PR #52 mergeado protegido; CI worker/web PASS",
   "last_completed_head": "main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
   "work_branch": "work/i07-integral-qa",
-  "next_action": "Publish this checkpoint with executable artifact 9310509a9c5168cfbbee0c7097c9718662f13c6e; derive the new PR #53 HEAD from GitHub, wait exact-head worker/web and automatic review, then run one qualified read-only Controller on that complete tracking SHA. Repair any material findings, verify protections and merge only after all PASS. Keep #26 open for Human Product Acceptance and stop before I08/#27.",
+  "next_action": "Publish the final Controller PASS and I07 checkpoint for executable SHA 9310509a9c5168cfbbee0c7097c9718662f13c6e; derive the new PR #53 tracking HEAD from GitHub and refresh worker/web plus automatic review for that state-only checkpoint. Merge protected only if those exact-head controls remain green. Then report results in #26/#25, leave #26 open for Product Acceptance, and stop before I08/#27.",
   "stop_reason": null,
   "event": {
-    "seq": 243,
-    "summary": "Controller P2 fixed: assisted-delete audit now requires committed ADMIN receipt; tracking head reconciled"
+    "seq": 244,
+    "summary": "Final delegated Controller PASS on 6c79d7d; CI/review green, production readiness remains unestablished"
   },
   "external_review": null,
   "human_gate": null,
@@ -25,26 +25,26 @@
     "executable_sha": "9310509a9c5168cfbbee0c7097c9718662f13c6e",
     "executable_tree": "223a994df7a2b9cb6ffa4eebc415f6f12e156f68",
     "state": "OPEN",
-    "status": "OWNER and assisted deletion provenance P2s repaired in code artifact 9310509; guard 27/27 and Python 52/52 PASS; exact-head CI/review/Controller pending.",
-    "last_observed_head_sha": "9310509a9c5168cfbbee0c7097c9718662f13c6e",
-    "last_observed_head_tree": "223a994df7a2b9cb6ffa4eebc415f6f12e156f68",
-    "live_head_source": "This records the PR head observed immediately before this tracking checkpoint. The checkpoint cannot embed its own SHA; derive the complete current PR head from GitHub after push. The executable tree is unchanged by the tracking commit."
+    "status": "PASS: Controller reviewed tracking HEAD 6c79d7d and executable 9310509; worker/web PASS, GitHub review no findings, threads resolved. This follow-up only records evidence; exact checks/review must refresh for the new tracking SHA.",
+    "last_observed_head_sha": "6c79d7d453dcc259c304e2a4831f7ab8f5771586",
+    "last_observed_head_tree": "5c10bc4311344fa2fb88a44f2900660e79853081",
+    "live_head_source": "This records the PR head observed immediately before this final evidence checkpoint. The checkpoint cannot embed its own SHA; derive the complete current PR head from GitHub after push. The executable tree is unchanged by this evidence-only commit."
   },
   "issue_4": "CLOSED",
   "review_authority": {
-    "status": "PENDING_EXACT_HEAD",
+    "status": "PASS_BOUNDED_LOCAL_SYNTHETIC",
     "reviewer_kind": "delegated_codex_separate_process",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
     "sandbox": "read-only",
-    "artifact_sha": null,
-    "report": null
+    "artifact_sha": "6c79d7d453dcc259c304e2a4831f7ab8f5771586",
+    "report": ".orchestration/evidence/critics/CF-AU-I07-CONTROLLER-PASS-6C79D7D.md"
   },
   "candidate_review": {
-    "status": "PENDING_EXACT_HEAD",
-    "artifact_sha": null,
-    "controller_reviewed_sha": null,
-    "controller_evidence": null,
+    "status": "PASS_LOCAL_SYNTHETIC_PENDING_CHECKPOINT_REFRESH",
+    "artifact_sha": "6c79d7d453dcc259c304e2a4831f7ab8f5771586",
+    "controller_reviewed_sha": "6c79d7d453dcc259c304e2a4831f7ab8f5771586",
+    "controller_evidence": ".orchestration/evidence/critics/CF-AU-I07-CONTROLLER-PASS-6C79D7D.md",
     "remote_authenticated_e2e": "BLOCKED_AUTH / not run"
   },
   "human_acceptance": {
@@ -98,18 +98,18 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/26",
     "contract": ".orchestration/contracts/CF-AU-I07-INTEGRAL-QA.md",
-    "status": "CONTROLLER_P2_REPAIRED_LOCAL_TESTS_PASS; NEW_EXACT_HEAD_PENDING",
+    "status": "TECHNICAL_PASS_ON_6C79D7D; FINAL_EVIDENCE_CHECKPOINT_REQUIRES_EXACT_HEAD_REFRESH",
     "base_sha": "b7e1d7b27f778ec56de29ed5bcd446f199d1a412",
     "branch": "work/i07-integral-qa",
     "scope": "Integrated local/synthetic QA of public, OWNER and ADMIN workflows; fix confirmed sub-KB image display, Wrangler JSONL parser and mutable D1 synthetic-provenance guard. No Preview/CD/remote D1/Access/production/real data/R2 resource changes.",
     "evidence": "output/playwright/i07/QA.md; real local Vue+Worker/Hono+Workerd+D1 Playwright, HTTP fault/concurrency suite, static checks and Python guard regressions.",
     "local_results": "Public 5/5; OWNER 5/5 including 124-byte BLOB rendered as bytes; ADMIN 2/2 including 124-byte image in moderation and assisted management; foundations 1/1; Worker HTTP/fault/idempotency/concurrency/recovery PASS (285.0 s); guard 27/27 and scripts 52/52; Worker typecheck and Web typecheck/build/build:preview PASS; new I07 screenshots public/OWNER/ADMIN at 1440/390/320 where recorded; local catalog smoke p50 21.4 ms, p95 35.5 ms, max 92.8 ms (not Cloudflare capacity).",
-    "remaining": "Need publish the tracking checkpoint, exact-head CI worker/web and automatic review, final delegated read-only Controller on complete tracking SHA, then protected merge. No remote authenticated E2E; no deployment authorized.",
-    "next_action": "Publish the state checkpoint for executable code SHA 9310509a9c5168cfbbee0c7097c9718662f13c6e, derive complete PR #53 HEAD from GitHub and review that exact tracking SHA. Wait exact worker/web and automatic review; repair material findings and affected checks, verify protection and merge only after all PASS. Keep #26 open for Human Product Acceptance; stop before I08/#27.",
-    "github_checks": "worker/web passed on 2d2a1a3, but that candidate predates the assisted-delete receipt fix; refresh exact-head checks.",
-    "github_review": "Review on 2d2a1a3 found standalone assisted-delete audit provenance and stale last-observed HEAD. Fixed by requiring committed ADMIN assisted-delete receipt matching actor/resource; tracking metadata now records parent HEAD and avoids self-reference. New exact-head review pending.",
-    "controller": "REWORK on 2d2a1a3 found standalone assisted-delete audit acceptance and stale STATUS last_observed_head. Fixed in 9310509 + checkpoint; guard 27/27 and Python 52/52; final qualified exact tracking-SHA review required.",
-    "precritic": "Pending fresh exact-head controls and qualified Controller review; do not merge.",
+    "remaining": "Publish final review evidence checkpoint, refresh exact-head worker/web and automatic review, then protected merge. Human Product Acceptance remains open; no remote authenticated E2E or deployment authorized.",
+    "next_action": "Publish this Controller PASS/evidence checkpoint (executable tree unchanged), derive new PR #53 HEAD, require exact worker/web PASS and automatic review with no findings/threads. Verify mergeability and current main protection, merge protected preserving history. Then update #26/#25 with matrix and limitations, keep #26 open for Human acceptance, stop before I08/#27.",
+    "github_checks": "worker PASS, web PASS, staging-private skipped; run 40404799291 on exact observed HEAD 6c79d7d. This final state-only evidence commit requires checks refresh before merge.",
+    "github_review": "PASS on 6c79d7d; code review completed with no findings/unresolved findings. Both P2 threads resolved. Refresh after final state-only evidence checkpoint.",
+    "controller": "PASS bounded local synthetic on exact tracking HEAD 6c79d7d; executable SHA 9310509. Report records nonblocking missing malformed-JSONL-line test and production limits. Backend identity UNVERIFIED.",
+    "precritic": "PASS for executable 9310509 with Controller, CI, review, resolved threads and canonical checkpoint all aligned on observed HEAD 6c79d7d. Final tracking evidence commit leaves executable tree unchanged; refresh required checks/review before merge.",
     "remote_authenticated_e2e": "BLOCKED_AUTH / not run; no authorized session in this process and no remote deployment in scope.",
     "production_readiness": "NOT READY / I07 is not go-live authorization."
   },
