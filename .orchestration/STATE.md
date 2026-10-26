@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I06_6_PREVIEW_CI_CD`
-Active task: `CF-AU-I06.6 — CI/CD al Preview privado (Issue #49)`
+Phase: `CF_AU_I06_6_ADMIN_D31`
+Active task: `CF-AU-I06.6 — ADMIN D3.1 (Issue #33)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1792,3 +1792,71 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - GitHub automatic code review is still RUNNING on exact code SHA `a0a759c`; no review PASS is claimed yet. Branch protection remains strict with required worker/web checks and conversation resolution.
 - Canonical `STATUS.json` now records PR #51/head/tree and the exact next action. D3.1 was already published once at deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`; no second deploy. Provenance is SUPPORTED only by the metadata-only chain in Issue #49 comment 6416495157.
 - **READY_TO_RESUME:** await the existing review; repair any material finding, then run final consistency/Pre-Critic, verify exact PR checks/mergeability and protected-merge. After merge verify main CI's safe skip. Do not redeploy, configure broad credentials, or start ADMIN #33.
+
+
+## Event 225 — PR #51 closed and ADMIN D3.1 authorized
+
+- Canonical GitHub `main@0eff7358006a7e6e207387380ecc7bdd27615fb5` is the protected merge commit of PR #51; PR #50/#51 history is preserved. Main workflow `40332978431` passed worker/web and the staging job's explicit `SAFE SKIP` because CD enablement/credential variables are absent. Preview remains on reviewed D3.1 source `e1f319b`, deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`; Product Owner accepted the visual evaluation in #48. No Preview action occurs in this task.
+- The stale active #49 checkpoint is archived in `STATUS.json` as `historical_status_issue49_postmerge`; do not mistake its historical candidate state for active work. Guard maintenance finding is #49 comment `6418504412`, explicitly deferred until before CD activation; it is not part of ADMIN #33.
+- Product Owner explicitly authorized I06.6 ADMIN #33 and approved visual direction D3.1. Exact base `0eff7358006a7e6e207387380ecc7bdd27615fb5`; contract `.orchestration/contracts/CF-AU-I06.6-ADMIN-D31.md`.
+- In scope: D3.1 moderation decision queue/detail with separate approve/publish/reject, assisted owner/listing workflows, read-only photo inspection within current API, availability/reconfirmation, audit, defects #35/#37, responsive/accessibility and integrated synthetic tests. Preserve public/OWNER behavior and all backend semantics; only fix a directly reproduced material defect with a minimal regression-backed API change.
+- **READY_TO_RESUME:** baseline-capture current `/admin` and `/admin-assist` in local synthetic runtime; implement both screens, #35/#37 regressions and real Vue+Hono+Worker+D1 Playwright evidence; run focused checks then full relevant suite, exact-head GitHub review, one final read-only GPT-6 Luna High Controller, final consistency/Pre-Critic and protected merge. Close #33/#35/#37 only when evidence supports it, update #25, then stop before #34/I07. No Preview/CD/remote D1/Access/production/R2/cost/data/source changes.
+
+## Event 226 — I06.6 ADMIN D3.1 candidate consolidated locally
+
+- Implemented the D3.1 moderation decision workspace and assisted-management editor in the isolated `work/i06-d31-admin` worktree. No Worker/API/auth/database/Preview/CD/Access changes; approved and published remain separate transitions; ADMIN photo access is inspect-only through existing GETs.
+- Moderation shows decision state, owner, location, formatted price/cadence, rental duration, capacity, declared availability/confirmation time, image recovery warnings and rejection reason. Mobile behavior is list → detail with return-focus restoration. Assisted editing is sectioned into information, read-only photos, availability and audit; section stays selected after a successful mutation and unsaved changes require confirmation before changing owner, creating another draft, or leaving the route.
+- Defect #37 has deterministic Mendoza timezone formatting and tests for morning/evening/day rollover; UTC persistence/freshness untouched. #35 has current ADMIN layout geometry checks at 390/320 and public-contact regression PASS. The historical ADMIN overlap itself did not recur in the fresh baseline capture; this is stated in `output/playwright/i06.6-admin/QA.md` rather than claimed as a newly reproduced failure.
+- Local results: Worker `test:admin` 12/12, `test:management` 13/13 and typecheck PASS; Web typecheck/build PASS; ADMIN real Worker/Hono+D1 Playwright 2/2; public E2E 4/4; OWNER E2E 5/5. Captures before/after for moderation and assisted management at desktop 1440 and mobile 390/320 are in `output/playwright/i06.6-admin/`; contact evidence from I06.6-P2 is linked in its QA index. Synthetic `example.test` identities only.
+- Integration Review: backend/API/authz contracts unchanged; current image permissions remain read-only; publication and moderation state are preserved; OWNER/public regressions passed; no scope drift. `git diff --check` and `scripts/check_orchestration_state.py --base origin/main` PASS.
+- **Pre-Critic: PASS to publish one consolidated functional PR and obtain exact-head GitHub CI/review plus one read-only Controller review.** Merge remains blocked pending those exact-head controls, final state validation and protected-branch verification. No Preview/CD/remote D1/Access operation. After merge, close #33/#35/#37 only with recorded evidence, update #25 and stop before #34/I07.
+
+## Event 227 — Issue #33 functional PR #52 published
+
+- PR: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/52. Executable implementation SHA `56e6050e8bcd71902248c0c2976c87b8d075df06`, tree `1872b3edbe49be7efd9fc256d706af4a0c92c7b4`, base `main@0eff7358006a7e6e207387380ecc7bdd27615fb5`.
+- GitHub initially reported mergeable; required exact-head `worker` and `web` checks started on the published code SHA. The immediately following canonical status checkpoint is non-executable, so those checks will be refreshed for the new PR head before any review/merge decision.
+- Local test evidence, screenshots and limitations are recorded at `output/playwright/i06.6-admin/QA.md`. Preflight PASS to publish is recorded in `.orchestration/PRECRITIC-GATE.md`; this does not satisfy the final merge gate.
+- **READY_TO_RESUME:** read the exact current PR SHA after the tracking commit; wait for required CI, request GitHub automatic review and invoke one read-only GPT-6 Luna High Controller on that exact SHA. Resolve material findings, rerun affected checks and update state. Merge only with PASS controls/protected mergeability; close #33/#35/#37 only on evidence; update #25 and stop before #34/I07. Do not update Preview or staging CD.
+
+
+## Event 228 — Controller REWORK cerrado; PR #52 revalidación
+
+- El Controller read-only emitió `REWORK` sobre PR HEAD `de88b480151a1ab97f7c654c62fcd653b41d2863` (código ejecutable `56e6050e8bcd71902248c0c2976c87b8d075df06`). No encontró P0/P1; encontró P2 de protección de cambios sin guardar, reset tras borrar, URL D1 BLOB en `/admin-assist`, frescura ausente, foco al abrir detalle y confusión entre SHA de código y HEAD del PR. Runtime reporta GPT-6 Luna/High solicitado/configurado; backend e independencia de sandbox UNVERIFIED.
+- Los cinco hallazgos funcionales fueron corregidos y cubiertos: beforeunload, baseline/auditoría/section tras delete, ruta API autenticada de fotos, misma `publicFreshness()` en moderación/asistencia y respuestas de disponibilidad/reconfirmación, foco móvil al botón volver. La regresión Worker también detectó y cierra frescura obsoleta en los DTO de mutación. Regresión final ADMIN Playwright 2/2 y Worker admin 12/12, management 13/13, typecheck PASS; evidencia `.orchestration/evidence/CF-AU-I06.6-ADMIN-CONTROLLER-REWORK.md` y `output/playwright/i06.6-admin/QA.md`.
+- Corrección ejecutable consolidada y publicada en PR #52: `00f8f88b91155c8c7ed51d893b32d3f3deb824ac`, árbol `5a4842353e101bab418945123de884d0e0e68462`; base conserva `main@0eff7358006a7e6e207387380ecc7bdd27615fb5`. La corrida exacta de CI/review debe renovarse.
+- Estado canónico versionado en el checkpoint siguiente: distingue `executable_sha` de PR HEAD y registra rework; al empujarlo el HEAD del PR cambiará sin alterar el árbol ejecutable.
+- **READY_TO_RESUME:** consultar el nuevo PR HEAD/checks, solicitar una review GitHub sobre ese HEAD y el Controller read-only final sobre el SHA exacto; resolver materialidad, actualizar evidencia y ejecutar Pre-Critic final. Merge sólo mediante protecciones tras todos los PASS. No Preview/CD/remote D1/Access, #34 ni I07.
+
+
+## Event 229 — SHA ejecutable separado del HEAD derivado de GitHub
+
+- Corrección de seguimiento solicitada por Controller: el checkpoint de Event 228 conservó `head_sha=00f8f88` aunque su propio commit pasó a ser el HEAD `a52caef`.
+- Se elimina la afirmación mutable `pull_request.head_sha/head_tree` de `STATUS.json`. El SHA ejecutable inmutable sigue siendo `00f8f88b91155c8c7ed51d893b32d3f3deb824ac` y su tree `5a4842353e101bab418945123de884d0e0e68462`; el último HEAD observado antes de este estado fue `a52caef53eaf389ccc1218a6ee50e9f3972c479f` / tree `51a5eb09569d034b77f81268434c7a6cf744e35b`. El HEAD vivo siempre se obtiene de GitHub **después** del checkpoint, ya que el commit que contiene el estado se convierte en el nuevo HEAD.
+- El valor anterior queda registrado como `last_observed_head_sha`, no como HEAD actual. La nueva acción exacta exige consultar PR #52 y correr checks/review/Controller sobre el HEAD derivado.
+- **READY_TO_RESUME:** tras publicar este checkpoint, resolver controles exactos del nuevo HEAD; comprobar que el árbol ejecutable es igual a 00f8f88; completar Controller PASS y Pre-Critic; merge protegido si todo queda conforme. No tocar Preview/CD/remote D1/Access ni iniciar #34/I07.
+
+
+## Event 230 — E2E catálogo público incorporado al flujo ADMIN
+
+- Se respondió al Controller sobre la cobertura explícita de contrato: el E2E ADMIN publicado en #52 ahora valida que, después de publicar, la ruta pública anónima muestra la tarjeta y el precio `ARS 52.000`. Worker/Hono+D1 local real; captura/evidencia sintética solamente.
+- Regresión `npm run test:e2e:admin`: 2/2 PASS sobre el código `8522f3529aaa91c861f44f1d5936a49122674583`, tree `6aee9257a90a04ed2d31e21b943efdc677fb227a`; se conserva el código de fixes de `00f8f88` y los checkpoints no ejecutables. `QA.md` registra la comprobación.
+- `STATUS.json` actualiza el SHA ejecutable y describe el HEAD observado antes del checkpoint; el nuevo checkpoint se volverá el HEAD del PR y no se auto-referenciará.
+- **READY_TO_RESUME:** consultar GitHub después del checkpoint, confirmar worker/web, GitHub review y Controller read-only sobre el SHA actual. Resolver hallazgos y repetir sólo las pruebas afectadas; ejecutar Pre-Critic final, verificar protección/conversaciones y merge protegido. Cerrar #33/#35/#37 sólo con evidencia; actualizar #25 y parar antes de #34/I07.
+
+
+## Event 231 — carrera de auditoría corregida tras GitHub P2
+
+- Review automática de GitHub sobre `d268668e23319958c6686c6eb5d1e26b6b8ce6f4` detectó una carrera P2: respuesta audit lenta para una publicación podía mostrarse en otra ficha asistida.
+- Corregido con token de generación + ID de publicación vigente, limpieza al cambiar de ficha/OWNER, borrar, crear nuevo y desmontar. La respuesta de D1 se conserva real; Playwright retrasa una petición de auditoría real y confirma que no filtra eventos entre publicaciones.
+- Código final de este rework: `59a60c576fbd71e36f6292ebf9a02e8529ac094e`, árbol `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`. Web typecheck/build y Playwright ADMIN 2/2 PASS. Las capturas se regeneraron como efecto de la misma suite.
+- El Controller PASS anterior de `d268668` queda superado por el hallazgo GitHub; no se presenta como veredicto del rework. Falta una revisión exacta nueva.
+- **READY_TO_RESUME:** actualizar este checkpoint, consultar HEAD vivo/checks/review, confirmar threads resueltos y pedir Controller read-only exacto; después final Pre-Critic/merge protegido. No Preview/CD, recursos remotos, #34/I07.
+
+
+## Event 232 — Controller PASS / cierre técnico del candidato ADMIN
+
+- `project_controller` (`delegated_codex_subagent`) revisó el exact artifact `4a043b77122abd056353a3b173718584d3f8607e`, base `0eff7358006a7e6e207387380ecc7bdd27615fb5`; **PASS acotado local**. Código ejecutable `59a60c576fbd71e36f6292ebf9a02e8529ac094e`, tree `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`. Informe: `.orchestration/evidence/critics/CF-AU-I06.6-ADMIN-D31-CONTROLLER-PASS.md`.
+- No P0/P1/P2. Confirmada carrera de auditoría protegida; hallazgos previos corregidos; criterios de seguridad/permisos y alcance intactos. Modelo solicitado/configurado GPT-6 Luna/High, read-only; identidad backend y aislamiento estructural no verificables, indicados expresamente.
+- En el artifact `4a043b7`: GitHub `worker`/`web` PASS, `staging-private` SAFE SKIP; revisión automática completada sin hallazgos; tres hilos P2 respondidos y resueltos; PR CLEAN/MERGEABLE.
+- Este evento y el reporte forman un commit de estado/evidencia que cambiará el live PR HEAD. No se autorreferencia: se registran el último HEAD observado y los SHA ejecutables; el nuevo HEAD debe derivarse de GitHub y tener checks/review actualizados antes de merge.
+- **READY_TO_RESUME:** actualizar/publicar estado+reporte, reconsultar el HEAD, esperar worker/web y revisión automática, validar no threads/mergeability/protección; completar Pre-Critic final y merge protegido. Después actualizar Issue #33/#35/#37/#25 con evidencia y detener antes de #34/I07. Sin Preview/CD/producción/R2/costos.

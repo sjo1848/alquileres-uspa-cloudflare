@@ -297,3 +297,47 @@ Codex cannot use this gate to self-declare substantive PASS.
 - Focused local gate PASS: Python 38/38 (preview guard 13/13), actionlint 1.7.7, canonical consistency/diff; Web build/typecheck are unchanged from exact main tree and already passed.
 - Current published Preview `7f9cc4a7-9a96-477e-8e34-77594fe5df53` is verified separately by Cloudflare latest-deployment API, JWT secret presence and Access 12/12; report `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`.
 - **Pre-Critic PASS to publish one focused functional PR for exact-head GitHub CI/review only.** No merge until fresh checks/review and protected-branch validation. No new deploy is part of this fix.
+
+## I06.6 ADMIN D3.1 — active functional increment #33
+
+- Authorized exact base: `main@0eff7358006a7e6e207387380ecc7bdd27615fb5`, protected merge of PR #51. Task Contract: `.orchestration/contracts/CF-AU-I06.6-ADMIN-D31.md`.
+- Approved D3.1 identity: Issue #41, reference commit `77c99fa445171a58548e6e06497050bf2d923305`; Product Owner visually accepted the existing Preview in #48. ADMIN #33 only; #34 and I07 excluded.
+- Must preserve API/authz/state/audit/idempotency/concurrency/media contracts; no unsupported photo mutations. Fix #35 ADMIN mobile form overlap and #37 timestamp rendering with deterministic tests. Preserve public/OWNER regressions.
+- Local synthetic D1/Worker/Hono + Vue Playwright at 1440/390/320 and keyboard/accessibility evidence required. Exact-head GitHub worker/web, review, separate GPT-6 Luna High read-only Controller, canonical consistency and final protected merge required.
+- PR #51 post-merge main CI: worker/web PASS, staging-private SAFE SKIP; prior Preview remains source `e1f319b` at deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`. **No Preview, D1 remote, Access, or CD mutations in #33.** CD provenance guard finding remains deferred until before activation (Issue #49 comment `6418504412`).
+- **Pre-Critic currently NOT YET ASSESSED.** No implementation candidate or tests exist on this increment's branch at task start. Run only after code, local regressions, browser evidence, and Integration Review are consolidated.
+
+## I06.6 ADMIN D3.1 — local preflight to publish (2026-10-26)
+
+- Scope: authorized Issue #33 only; D3.1 Admin moderation and assisted management. No backend, auth, database, Preview, CD, Access, resource or source-repository changes.
+- Integration Review: existing `/admin` review/publish APIs and `/admin/listings/assisted` mutation/idempotency/audit contracts remain in place; existing photo GET is read-only; role denial checked in browser; owner/public regressions rerun. #35 public contact regression and ADMIN responsive geometry are captured; fresh baseline no longer reproduced the historically reported ADMIN overlap. #37 time zone display is fixed at presentation only.
+- Evidence: `output/playwright/i06.6-admin/QA.md`; before/after screenshots, 1440/390/320 integrated ADMIN Playwright, D1 synthetic runtime. Worker `test:admin` 12/12, `test:management` 13/13, Worker typecheck, Web typecheck/build, ADMIN E2E 2/2, public E2E 4/4, OWNER E2E 5/5 all PASS. Consistency validator and diff check PASS.
+- **Pre-Critic PASS to publish one consolidated functional PR for exact-head worker/web CI and GitHub review, followed by one `project_controller` GPT-6 Luna High read-only review of the final PR SHA.** This is not final approval to merge. Merge requires exact-head required checks, GitHub review/no material unresolved threads, Controller PASS, final canonical validation and protected-branch verification. No staging CD or Preview update.
+
+
+## Issue #33 — rework Controller integrado (26/10/2026)
+
+- Controller exacto de referencia: `de88b480151a1ab97f7c654c62fcd653b41d2863`, veredicto `REWORK`; no P0/P1. Sus cinco P2 funcionales se repararon en `00f8f88b91155c8c7ed51d893b32d3f3deb824ac` y el sexto hallazgo de estado se reconciliará aquí con el nuevo HEAD, separando SHA ejecutable y checkpoint.
+- Pruebas afectadas: Worker moderation 12/12, management 13/13, Worker typecheck PASS; Web ADMIN E2E 2/2 con Worker/Hono+D1 sintética, Web typecheck/build PASS. Incluye imagen D1 BLOB en administración asistida, dirty-beforeunload, borrado/baseline, foco mobile y frescura de disponibilidad. `QA.md` documenta primer timeout por aceptación tardía de diálogo nativo; la ejecución corregida final pasó 2/2.
+- **Pre-Critic de rework: PASS para publicar y renovar exact-head CI/review y Controller final.** No equivale a PASS de integración. Requiere CI worker/web en HEAD final, review automática sin hallazgos materiales, Controller PASS exacto, validador final, conversaciones resueltas y branch protection antes del merge.
+
+
+### Seguimiento canónico del HEAD del PR (rework exacto)
+
+`STATUS.json` registra el SHA/tree ejecutable inmutable por separado. El HEAD del PR es una observación derivada de GitHub, no se escribe como si el commit que contiene el estado pudiera referenciarse a sí mismo. `last_observed_head_sha` conserva el anterior HEAD `a52caef`; acción obligatoria tras este checkpoint: consultar PR #52 live HEAD y sus checks. Controller observó correctamente que Event 228 había dejado el antiguo campo como si fuera current; esta modificación corrige esa ambigüedad.
+
+
+### Cobertura integrada de catálogo tras publicación
+
+El recorrido ADMIN ahora ejecuta también la comprobación Playwright anónima de catálogo (tarjeta y precio visibles tras publicar), además de la regresión Worker de GET público 404→200. La suite ADMIN focalizada pasó 2/2 en código `8522f3529aaa91c861f44f1d5936a49122674583`; reporte `.orchestration/evidence/CF-AU-I06.6-ADMIN-CONTROLLER-REWORK.md` y `output/playwright/i06.6-admin/QA.md`. Esto atiende el alcance del contrato, no amplía funcionalidad. Publicado; exact-head CI/reviews/Controller aún pendientes.
+
+
+### GitHub P2 — aislamiento de respuestas de auditoría
+
+Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre listados. Rework `59a60c576fbd71e36f6292ebf9a02e8529ac094e` invalida requests previas por generation+listing ID; test real retrasa response Worker/D1 y verifica que eventos de A nunca aparezcan en B. ADMIN Playwright 2/2, web typecheck/build PASS. El anterior Controller PASS de d268 está invalidado como cierre final por el nuevo P2; se requiere Controller final sobre el candidato actual.
+
+
+## Issue #33 — Pre-Critic de integración
+
+- Code artifact `59a60c576fbd71e36f6292ebf9a02e8529ac094e` / tree `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`, PR artifact HEAD `4a043b77122abd056353a3b173718584d3f8607e`. Local tests, evidence and consistency pass. Delegated Controller exact-artifact PASS: `.orchestration/evidence/critics/CF-AU-I06.6-ADMIN-D31-CONTROLLER-PASS.md`. GitHub review no findings; 3 threads resolved; worker/web pass; staging-private skipped.
+- **Pre-Critic result: PASS for the consolidated code artifact.** This status/evidence commit changes the PR head. Before merge, derive the new live HEAD from GitHub and verify new exact-head required checks/review, no unresolved threads, clean mergeability, and main protection. No code delta after 59a60c5 means only affected/deterministic checks should be repeated by CI.

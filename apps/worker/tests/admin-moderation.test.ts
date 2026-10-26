@@ -24,11 +24,11 @@ describe('ADMIN moderation and publication',()=>{
     expect(created.status).toBe(201);
     expect((await request(`/listings/${listing.id}/submit`,'POST',undefined,owner)).status).toBe(200);
     const queue=await request('/admin/listings/review','GET',undefined,admin),page=await queue.json() as {items:any[];nextCursor:{createdAt:string;id:string}|null};
-    expect(page.items.some(item=>item.id===listing.id&&item.owner.email==='moderation.owner@example.test')).toBe(true);
+    expect(page.items.some(item=>item.id===listing.id&&item.owner.email==='moderation.owner@example.test'&&item.freshnessStatus==='UNCONFIRMED')).toBe(true);
     expect((await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin,false)).status).toBe(403);
     const approved=await request('/admin/listings/'+listing.id+'/review','POST',{action:'approve'},admin);
     expect(approved.status).toBe(200);
-    expect(await approved.json()).toMatchObject({id:listing.id,status:'APPROVED',publicationStatus:'UNPUBLISHED',rejectionReason:null,owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
+    expect(await approved.json()).toMatchObject({id:listing.id,status:'APPROVED',publicationStatus:'UNPUBLISHED',rejectionReason:null,freshnessStatus:'UNCONFIRMED',owner:{id:'moderation-owner',email:'moderation.owner@example.test',role:'OWNER'},images:[]});
     expect((await request('/public/listings/'+listing.id)).status).toBe(404);
     const published=await request('/admin/listings/'+listing.id+'/publish','POST',undefined,admin);
     expect(await published.json()).toMatchObject({id:listing.id,status:'APPROVED',publicationStatus:'PUBLISHED'});

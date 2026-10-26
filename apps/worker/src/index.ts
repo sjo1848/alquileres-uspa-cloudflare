@@ -143,7 +143,7 @@ app.get('/admin/listings/review',async c=>{
     for(const row of legacy)legacyIds.add(row.listingId);
   }
   const byListing=new Map<string,any[]>();for(const image of images){const collection=byListing.get(image.listingId)??[];collection.push({...image,url:image.url??`/admin/listings/${encodeURIComponent(image.listingId)}/images/${encodeURIComponent(image.id)}`});byListing.set(image.listingId,collection);}
-  return c.json({items:rows.map(row=>({...row,owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
+  return c.json({items:rows.map(row=>({...row,freshnessStatus:publicFreshness(row.lastConfirmedAt),owner:{id:row.ownerId,email:row.ownerEmail,role:'OWNER'},images:byListing.get(row.id)??[],requiresMediaRecovery:legacyIds.has(row.id)})),nextCursor:hasMore?{createdAt:rows.at(-1)!.createdAt,id:rows.at(-1)!.id}:null});
 });
 app.get('/admin/owners',async c=>{const search=(c.req.query('search')??'').trim();if(search.length>254)return c.json({error:'search is too long'},400);const statement=search?"SELECT id,email FROM users WHERE role='OWNER' AND instr(lower(email),lower(?))>0 ORDER BY email,id LIMIT 50":"SELECT id,email FROM users WHERE role='OWNER' ORDER BY email,id LIMIT 50";const result=await c.env.DB.prepare(statement).bind(...(search?[search]:[])).all<{id:string;email:string}>();return c.json(result.results);});
 app.get('/admin/listings/assisted',async c=>{
@@ -251,14 +251,14 @@ app.patch('/admin/listings/assisted/:id/availability',async c=>{
   if(!input||Object.keys(input).length!==1||!['AVAILABLE','UNAVAILABLE'].includes(input.availabilityStatus))return c.json({error:'availabilityStatus must be AVAILABLE or UNAVAILABLE'},400);
   return runAssistedMutation(c,'AVAILABILITY',input,(listing,lease,at)=>{
     if(!['DRAFT','REJECTED'].includes(listing.status))throw Object.assign(new Error('listing is not editable'),{status:409});
-    const snapshot={...listing.snapshot,availabilityStatus:input.availabilityStatus,lastConfirmedAt:at,updatedAt:at};
+    const snapshot={...listing.snapshot,availabilityStatus:input.availabilityStatus,lastConfirmedAt:at,freshnessStatus:publicFreshness(at),updatedAt:at};
     const update=c.env.DB.prepare("UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(input.availabilityStatus,at,at,listing.id,listing.ownerId,listing.id,lease);
     return {update,auditAction:'ADMIN_ASSISTED_AVAILABILITY_UPDATED',metadata:{availabilityStatus:input.availabilityStatus},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.status IN ('DRAFT','REJECTED') AND l.availability_status=? AND l.last_confirmed_at=?",auditArgs:[listing.id,at,input.availabilityStatus,at]};
   }).catch((error:any)=>assistedMutationError(c,error,()=> 'listing is not editable'));
 });
 app.post('/admin/listings/assisted/:id/reconfirm',async c=>runAssistedMutation(c,'RECONFIRM',{},(listing,lease,at)=>{
   if(!['DRAFT','REJECTED'].includes(listing.status))throw Object.assign(new Error('listing is not editable'),{status:409});
-  const snapshot={...listing.snapshot,lastConfirmedAt:at,updatedAt:at};
+  const snapshot={...listing.snapshot,lastConfirmedAt:at,freshnessStatus:publicFreshness(at),updatedAt:at};
   const update=c.env.DB.prepare("UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND status IN ('DRAFT','REJECTED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,at,listing.id,listing.ownerId,listing.id,lease);
   return {update,auditAction:'ADMIN_ASSISTED_LISTING_RECONFIRMED',metadata:{},snapshot,auditWhere:"l.id=? AND owner.role='OWNER' AND changes()=1 AND l.updated_at=? AND l.last_confirmed_at=? AND l.status IN ('DRAFT','REJECTED')",auditArgs:[listing.id,at,at]};
 }).catch((error:any)=>assistedMutationError(c,error,()=> 'listing is not editable')));
@@ -314,7 +314,7 @@ async function sourceAdminListing(db:D1Database,listingId:string,mediaStrategy?:
   const legacyMedia=usesD1Blob?await db.prepare('SELECT EXISTS(SELECT 1 FROM listing_images WHERE listing_id=? AND blob_data IS NULL) AS hasLegacy').bind(listingId).first<{hasLegacy:number}>():null;
   const images=(mediaStrategy==='STATIC_ASSETS'?staticImages:[...staticImages,...storedImages]).sort((a:any,b:any)=>a.position-b.position||a.id.localeCompare(b.id));
   const {ownerId,ownerEmail,ownerRole,...fields}=listing;
-  return {...fields,owner:{id:ownerId,email:ownerEmail,role:ownerRole},images,...(usesD1Blob?{requiresMediaRecovery:!!legacyMedia?.hasLegacy}:{})};
+  return {...fields,freshnessStatus:publicFreshness(fields.lastConfirmedAt),owner:{id:ownerId,email:ownerEmail,role:ownerRole},images,...(usesD1Blob?{requiresMediaRecovery:!!legacyMedia?.hasLegacy}:{})};
 }
 function sourceAuditInsert(c:any,eventId:string,listingId:string,action:string,reason:string|null,at:string,whereSql:string,whereArgs:unknown[],metadataValue?:Record<string,unknown>){
   const metadata=JSON.stringify(metadataValue??(reason?{reason}:{}));
