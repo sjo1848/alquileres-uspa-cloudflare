@@ -288,7 +288,7 @@ Codex cannot use this gate to self-declare substantive PASS.
 
 - The first authorized D3.1 Preview release is verified in `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`; no second deployment was run. Source `main@e1f319b`; deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`; migration 0013 applied; Access 12/12 anonymous denials; authenticated browser E2E `BLOCKED_AUTH`.
 - GitHub review of PR #50 found the output redirection P1 and it was fixed. The actual deployment showed Wrangler writes `--json` structured output to `WRANGLER_OUTPUT_FILE_PATH`, not stdout. The current functional follow-up sets this variable and validates the JSONL output (including Wrangler's timestamp) without redeploying.
-- **Pre-Critic pending for PR #51 exact head.** Require tests/actionlint, exact-head worker/web, GitHub review, consistency validator, and protected merge. Automated publication is not operational until the scoped Actions token/vars are safely configured; do not reuse the broad local token.
+- **Pre-Critic pending final closeout for PR #51 exact code SHA `a0a759ccecda7bdea5893446923ad4e48b43aa4a`.** Focused Python tests (38/38), actionlint, consistency validator, and exact-head worker/web PASS; staging-private safely skipped. The existing exact-code-SHA GitHub review is still running. After it completes, resolve any material thread, rerun consistency, verify protected mergeability and integrate. No Controller rerun: code delta is a narrow Wrangler output-path correction; the prior Controller’s scope is recorded accurately. Automated publication remains safely disabled until the scoped Actions secret/vars are configured; do not reuse the broad local token.
 
 
 ## Issue #49 — Wrangler 4.151 JSONL output follow-up (local candidate)

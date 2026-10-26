@@ -1783,3 +1783,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Checks focalizados sobre este follow-up: Python 38/38 (guard 13/13), actionlint v1.7.7 y consistencia/diff check PASS. El web typecheck/build:preview ya pasaron en main exacto `e1f319b` cuyo árbol coincide con el candidato; no hubo cambio web/backend.
 - Preview está ya verificado en `7f9cc4a7-9a96-477e-8e34-77594fe5df53`; evidencia `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`. La salida del primer Wrangler fue validada posteriormente consultando el deployment actual, secret y Access; no hubo segundo deployment.
 - **READY_TO_RESUME:** commit y publicar el follow-up funcional para exact-head GitHub CI/review; Controller anterior no se presenta como revisión de este delta. Resolver hallazgos, actualizar el gate final y merge protegido; observar safe skip de CD por falta de secreto/variables. Luego dejar el Preview disponible para evaluación. No empezar #33.
+
+
+## Event 224 — PR #51 exact-head controls running; state reconciled
+
+- PR #51 is published at code/head SHA `a0a759ccecda7bdea5893446923ad4e48b43aa4a`, tree `b97e9fbc69fd4688dfaf8a517ab8199717cee2dd`, base `main@e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f`. The earlier Event 223 “local candidate/publish next” is superseded; its implementation is now in PR #51.
+- Exact-head CI run `40332073797`: `worker` PASS, `web` PASS, `staging-private` SKIPPED. Thus this merge cannot mutate D1 or publish remotely without the absent scoped Actions secret/variables.
+- GitHub automatic code review is still RUNNING on exact code SHA `a0a759c`; no review PASS is claimed yet. Branch protection remains strict with required worker/web checks and conversation resolution.
+- Canonical `STATUS.json` now records PR #51/head/tree and the exact next action. D3.1 was already published once at deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`; no second deploy. Provenance is SUPPORTED only by the metadata-only chain in Issue #49 comment 6416495157.
+- **READY_TO_RESUME:** await the existing review; repair any material finding, then run final consistency/Pre-Critic, verify exact PR checks/mergeability and protected-merge. After merge verify main CI's safe skip. Do not redeploy, configure broad credentials, or start ADMIN #33.
