@@ -1,0 +1,12 @@
+{
+  "name": "alquileres-uspa-preview-migrations",
+  "account_id": "30e8fad45f7bc1cd5bddad87e18b1aec",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "alquileres-uspa-preview-synthetic",
+      "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
