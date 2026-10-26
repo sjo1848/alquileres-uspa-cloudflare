@@ -282,3 +282,18 @@ Codex cannot use this gate to self-declare substantive PASS.
 - GitHub P1 `4377659039` identified an invalid extra line in `$GITHUB_OUTPUT` after Preview publication. Fixed in `9fb26aa3be6bb17c1f7cf427577423d126c0ac6c`; regression asserts the redirection is absent. Evidence: `.orchestration/evidence/CF-AU-I06.6-CD-GITHUB-P1-4377659039.md`.
 - Targeted guard 13/13, Python 38/38, actionlint and diff check pass. The prior Controller PASS (`ffb0402`) predates this repair and is not claimed for the new SHA; no Controller rerun is justified for this one-line output correction.
 - **Pre-Critic final is PENDING.** Require exact current PR #50 worker/web PASS, GitHub review without findings/unresolved conversations, canonical validator and protected mergeability. The fail-closed remote credential prerequisite remains absent.
+
+
+## Issue #49 — exact Wrangler JSON output file follow-up (PR #51 candidate)
+
+- The first authorized D3.1 Preview release is verified in `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`; no second deployment was run. Source `main@e1f319b`; deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`; migration 0013 applied; Access 12/12 anonymous denials; authenticated browser E2E `BLOCKED_AUTH`.
+- GitHub review of PR #50 found the output redirection P1 and it was fixed. The actual deployment showed Wrangler writes `--json` structured output to `WRANGLER_OUTPUT_FILE_PATH`, not stdout. The current functional follow-up sets this variable and validates the JSONL output (including Wrangler's timestamp) without redeploying.
+- **Pre-Critic pending for PR #51 exact head.** Require tests/actionlint, exact-head worker/web, GitHub review, consistency validator, and protected merge. Automated publication is not operational until the scoped Actions token/vars are safely configured; do not reuse the broad local token.
+
+
+## Issue #49 — Wrangler 4.151 JSONL output follow-up (local candidate)
+
+- Fix sets `WRANGLER_OUTPUT_FILE_PATH` to the temp JSONL file used by `wrangler preview --json`; the command no longer assumes JSON on stdout. The parser regression includes Wrangler's `timestamp`. No second remote deploy is performed.
+- Focused local gate PASS: Python 38/38 (preview guard 13/13), actionlint 1.7.7, canonical consistency/diff; Web build/typecheck are unchanged from exact main tree and already passed.
+- Current published Preview `7f9cc4a7-9a96-477e-8e34-77594fe5df53` is verified separately by Cloudflare latest-deployment API, JWT secret presence and Access 12/12; report `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`.
+- **Pre-Critic PASS to publish one focused functional PR for exact-head GitHub CI/review only.** No merge until fresh checks/review and protected-branch validation. No new deploy is part of this fix.

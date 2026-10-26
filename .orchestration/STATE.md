@@ -1765,3 +1765,21 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Tras la reparación: guard 13/13, Python 38/38, actionlint v1.7.7 y diff check PASS. Ningún deploy se ejecutó.
 - El Controller PASS sobre `ffb0402` es histórico y **no** cubre este fix; no se vuelve a invocar Controller para el cambio de una sola línea. No se afirma PASS técnico del candidato reparado hasta que la review GitHub exact-head complete y los checks `worker`/`web` pasen.
 - **READY_TO_RESUME:** empujar reparación y evidencia al PR #50, esperar CI y review exact-head, responder/resolver `4377659039` una vez confirmado el fix; ejecutar validador/Pre-Critic final y verificar protección/mergeability. Sin credencial Actions estrecha, la ejecución remota debe safe-skip. No tocar D1/Preview, no iniciar #33.
+
+
+## Event 222 — Preview D3.1 publicado; arreglo de salida Wrangler en curso
+
+- PR #50 se integró mediante merge protegido en `main@e1f319bfb5dc1f0b1a76a6761b7b67018b338e9f`; merge CI `worker`/`web` PASS, job `staging-private` terminó **SAFE SKIP** por falta de secret/variables. El estado de PR #50 y su P1 corregido se preservan en `historical_status.issue49_pr50_integrated`.
+- Procedencia de la D1 remota: **SUPPORTED** mediante metadatos mínimos cotejados con OWNER del 16/10 y ADMIN/checkpoint del 18/10. No se leyeron/publicaron direcciones, descripciones, nombres/bytes de imágenes ni consultas. Backup privado y ensayo local previos constan en Event 218.
+- Migration `0013_owner_auth_local.sql` se aplicó al D1 sintético existente tras `main` actual, provenance exacta, backup/rehearsal y preflight Access. Post-check: provenance y conteos preservados; 0 migraciones pendientes.
+- D3.1 se publicó al Preview nombrado `private` con `wrangler preview`; Cloudflare API confirma source tree de main y deployment `7f9cc4a7-9a96-477e-8e34-77594fe5df53`. Stable URL `https://private-alquileres-uspa-lab.sjo1848.workers.dev`; immutable URL `https://7f9cc4a7-alquileres-uspa-lab.sjo1848.workers.dev`. `JWT_SECRET` existe, valor no leído. Access bloqueó 12/12 rutas anónimas antes/después. Remote authenticated E2E permanece `BLOCKED_AUTH` por falta de sesión del executor. Evidencia `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`.
+- El deployment manual se completó, pero la salida JSON de `wrangler preview --json` no estaba disponible en stdout; Wrangler v4.151 escribe al `WRANGLER_OUTPUT_FILE_PATH`. Esto se corrige en un PR funcional #51 sin volver a desplegar. El job automático sigue safe-skipped hasta incorporar una credencial Actions de alcance mínimo y variables explícitas.
+- **READY_TO_RESUME:** terminar prueba del output JSONL con timestamp, actionlint/guard/consistency; abrir PR #51, pasar worker/web y review exact-head, integrar protegido; confirmar main workflow safe-skips ante ausencia de token. El Preview actual ya está publicado y listo para evaluación visual. No iniciar #33.
+
+
+## Event 223 — regresión JSON de Wrangler corregida localmente
+
+- La inspección de Wrangler `4.151.0` confirmó que `--json` escribe a `WRANGLER_OUTPUT_FILE_PATH`. El workflow ahora usa ese archivo explícitamente y el helper parsea el JSONL estructurado, incluyendo `timestamp`; se añade regresión estática al workflow y el parser acepta el formato emitido. No se vuelve a desplegar.
+- Checks focalizados sobre este follow-up: Python 38/38 (guard 13/13), actionlint v1.7.7 y consistencia/diff check PASS. El web typecheck/build:preview ya pasaron en main exacto `e1f319b` cuyo árbol coincide con el candidato; no hubo cambio web/backend.
+- Preview está ya verificado en `7f9cc4a7-9a96-477e-8e34-77594fe5df53`; evidencia `.orchestration/evidence/CF-AU-I06.6-PRIVATE-PREVIEW-RELEASE-20261026.md`. La salida del primer Wrangler fue validada posteriormente consultando el deployment actual, secret y Access; no hubo segundo deployment.
+- **READY_TO_RESUME:** commit y publicar el follow-up funcional para exact-head GitHub CI/review; Controller anterior no se presenta como revisión de este delta. Resolver hallazgos, actualizar el gate final y merge protegido; observar safe skip de CD por falta de secreto/variables. Luego dejar el Preview disponible para evaluación. No empezar #33.
