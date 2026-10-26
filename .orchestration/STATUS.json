@@ -8,11 +8,11 @@
   "last_completed_task": "CF-AU-I06.6-P3 — OWNER D3.1 (Issue #44), integrado mediante PR #47",
   "last_completed_head": "main@6863bc02c8db45aae3cd231c349ecf069bcd72c5",
   "work_branch": "work/issue-49-preview-cd",
-  "next_action": "Publish one functional PR linked to Issue #49 from work/issue-49-preview-cd. Verify worker/web and the consolidated GitHub review on the exact final PR HEAD; resolve only material findings. Then perform final consistency/Pre-Critic and recheck protected-main mergeability. The Controller PASS covers executable SHA ffb0402 only; do not claim GitHub controls or remote publication until observed.",
+  "next_action": "Push this canonical PR-tracking checkpoint to PR #50; wait for worker/web and one consolidated GitHub review on the resulting exact HEAD. Resolve material findings only, rerun affected checks, then revalidate the current protected-main rules and run final consistency/Pre-Critic. Merge only after those controls pass. The remote CD gate lacks the scoped Actions token, so the main workflow must safe-skip and no migration/deployment is assumed.",
   "stop_reason": null,
   "event": {
-    "seq": 219,
-    "summary": "Controller PASS on exact CI/CD executable candidate; awaiting exact-head GitHub controls"
+    "seq": 220,
+    "summary": "Functional PR #50 opened; exact-head GitHub controls pending"
   },
   "external_review": null,
   "human_gate": {
@@ -24,16 +24,16 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "url": null,
+    "number": 50,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/50",
     "branch": "work/issue-49-preview-cd",
     "base_sha": "6863bc02c8db45aae3cd231c349ecf069bcd72c5",
     "executable_sha": "ffb040244cbb2cad78b460cc7a02a9609f9a11c5",
     "executable_tree": "d7ed682aa55f817ac2d6c84c77e13893cea1433c",
-    "head_sha": "ffb040244cbb2cad78b460cc7a02a9609f9a11c5",
-    "head_tree": "d7ed682aa55f817ac2d6c84c77e13893cea1433c",
-    "state": "NOT_PUBLISHED",
-    "status": "NOT_PUBLISHED; local executable candidate reviewed"
+    "head_sha": "4ef69d4132cf562657aa5f140b1d259d735a1c0a",
+    "head_tree": "23704dd28750b651a970c71a411be143e960797b",
+    "state": "OPEN",
+    "status": "OPEN; status checkpoint follows observed head 4ef69d4"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -49,8 +49,8 @@
     "controller_sandbox_requested": "read-only",
     "controller_backend_identity": "UNVERIFIED",
     "controller_evidence": ".orchestration/evidence/critics/CF-AU-I06.6-CD-CONTROLLER-FFB0402-PASS.md",
-    "github_checks": "PENDING exact PR head",
-    "github_review": "PENDING exact PR head",
+    "github_checks": "PENDING exact final PR HEAD",
+    "github_review": "PENDING exact final PR HEAD",
     "precritic": "PASS to publish for exact-head GitHub controls only; not merge authorization"
   },
   "human_acceptance": {
@@ -122,12 +122,16 @@
       "remote_migration": "NOT RUN; existing synthetic D1 remains unchanged and 0013 pending",
       "remote_preview": "NOT RUN; current deployment unchanged"
     },
-    "github_checks": "PENDING PR",
-    "github_review": "PENDING PR",
+    "github_checks": "PENDING exact PR HEAD; observed checks on 4ef69d4 were running",
+    "github_review": "PENDING exact PR HEAD",
     "controller": "PASS technical on exact executable SHA; separate Codex process requested GPT-6 Luna/High/read-only; backend UNVERIFIED. Exact-head GitHub controls pending.",
     "deployment_prerequisite": "GitHub currently has no CF_PREVIEW_API_TOKEN secret or Preview CD variables. Do not store the local broad token. Remote job remains safely disabled until a dedicated least-privilege Actions credential is configured.",
     "executable_sha": "ffb040244cbb2cad78b460cc7a02a9609f9a11c5",
-    "executable_tree": "d7ed682aa55f817ac2d6c84c77e13893cea1433c"
+    "executable_tree": "d7ed682aa55f817ac2d6c84c77e13893cea1433c",
+    "pr": 50,
+    "pr_url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/50",
+    "last_observed_pr_head": "4ef69d4132cf562657aa5f140b1d259d735a1c0a",
+    "last_observed_pr_tree": "23704dd28750b651a970c71a411be143e960797b"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
