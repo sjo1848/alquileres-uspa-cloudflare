@@ -83,6 +83,7 @@ class PreviewCdGuardTests(unittest.TestCase):
             key: [dict(row) for row in manifest[key]]
             for key in ("users", "listings", "audit_events")
         }
+        snapshot["owner_listing_deletions"] = []
         for user in snapshot["users"]:
             user["is_synthetic"] = 1
         snapshot["counts"] = dict(manifest["counts"])
@@ -129,27 +130,35 @@ class PreviewCdGuardTests(unittest.TestCase):
         })
         guard.validate_synthetic_provenance(snapshot, manifest)
 
-    def test_provenance_retains_owner_created_listing_after_assisted_delete(self):
+    def test_provenance_retains_owner_created_listing_after_owner_delete(self):
         manifest, snapshot = self._synthetic_snapshot()
-        snapshot["audit_events"].extend([
-            {
-                "id": "owner-created-review",
-                "listing_id": "owner-created-then-deleted",
-                "actor_id": "synthetic-catalog-admin",
-                "target_owner_id": "synthetic-catalog-owner",
-                "action": "ADMIN_LISTING_REJECTED",
-                "created_at": "2026-10-27T12:02:00Z",
-            },
-            {
-                "id": "owner-created-delete",
-                "listing_id": "owner-created-then-deleted",
-                "actor_id": "synthetic-catalog-admin",
-                "target_owner_id": "synthetic-catalog-owner",
-                "action": "ADMIN_ASSISTED_LISTING_DELETED",
-                "created_at": "2026-10-27T12:03:00Z",
-            },
-        ])
+        snapshot["audit_events"].append({
+            "id": "owner-created-review",
+            "listing_id": "owner-created-then-deleted",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": "synthetic-catalog-owner",
+            "action": "ADMIN_LISTING_REJECTED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        snapshot["owner_listing_deletions"].append({
+            "owner_id": "synthetic-catalog-owner",
+            "scope": "OWNER_LISTING_DELETE:owner-created-then-deleted",
+            "resource_id": "owner-created-then-deleted",
+            "state": "COMMITTED",
+        })
         guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_invalid_owner_listing_delete_receipt(self):
+        cases = [
+            ({"owner_id": "synthetic-catalog-admin", "scope": "OWNER_LISTING_DELETE:deleted-x", "resource_id": "deleted-x", "state": "COMMITTED"}, "unverified owner"),
+            ({"owner_id": "synthetic-catalog-owner", "scope": "OWNER_LISTING_DELETE:other-id", "resource_id": "deleted-x", "state": "COMMITTED"}, "invalid listing provenance"),
+            ({"owner_id": "synthetic-catalog-owner", "scope": "OWNER_LISTING_DELETE:deleted-x", "resource_id": "deleted-x", "state": "PENDING"}, "not committed"),
+        ]
+        for receipt, message in cases:
+            manifest, snapshot = self._synthetic_snapshot()
+            snapshot["owner_listing_deletions"].append(receipt)
+            with self.subTest(receipt=receipt), self.assertRaisesRegex(guard.PolicyError, message):
+                guard.validate_synthetic_provenance(snapshot, manifest)
 
     def test_provenance_rejects_assisted_delete_with_wrong_owner(self):
         manifest, snapshot = self._synthetic_snapshot()

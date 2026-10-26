@@ -1,0 +1,9 @@
+# I07 GitHub automatic review finding — OWNER-deleted rejected listing provenance
+
+- **Source:** automatic Codex review of PR #53 tracking head `efa0d5487aa61c524b34b8348042ccf2e1adb9ae`.
+- **Severity:** P2.
+- **Finding:** OWNER can create and submit a synthetic listing, ADMIN can reject it (persisting `ADMIN_LISTING_REJECTED` audit), then OWNER can delete the REJECTED listing. The OWNER delete route commits an idempotency receipt with owner, exact `OWNER_LISTING_DELETE:<listingId>` scope, resource ID, and `COMMITTED` state in the same D1 batch as the delete, but does not create a new audit row. The guard previously had no durable association for the removed listing ID and rejected the valid remaining rejection audit.
+- **Repair:** `_snapshot` reads only `owner_id`, `scope`, `resource_id`, and `state` for OWNER-listing-delete receipts; it never selects request keys or content. The guard accepts a deleted listing's provenance only when scope exactly matches resource ID, receipt is COMMITTED, and owner is a verified synthetic OWNER; it enforces mismatch against known current/baseline owners. Existing audit rows must still have synthetic ADMIN actors and synthetic OWNER targets matching the derived listing owner. Unrelated orphans without an accepted deletion receipt or reviewed/assisted provenance remain blocked.
+- **Regression:** synthetic OWNER-create → ADMIN reject audit → OWNER-delete committed receipt with no remaining listing row is accepted. Invalid role, scope/resource mismatch, non-COMMITTED receipt, and orphan audit without a receipt are rejected. No request key is selected.
+- **Tests:** current local guard 27/27; Python suite 52/52. A new exact-head GitHub review/CI and qualified Controller review are required after publication.
+- **Scope:** local synthetic guard/code/evidence only; no Preview, remote D1, Access, CD activation, production, real data, new resources or costs.

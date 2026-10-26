@@ -166,6 +166,13 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
         local,
         persist_to,
     )
+    owner_listing_deletions = _wrangler_query(
+        "SELECT owner_id,scope,resource_id,state FROM idempotency_records "
+        "WHERE scope LIKE 'OWNER_LISTING_DELETE:%' ORDER BY created_at,owner_id,scope",
+        config,
+        local,
+        persist_to,
+    )
     counts = _wrangler_query(
         "SELECT (SELECT COUNT(*) FROM users) AS users,"
         "(SELECT COALESCE(SUM(CASE WHEN lower(email) LIKE '%@example.test' THEN 0 ELSE 1 END),0) FROM users) AS non_synthetic_user_email_count,"
@@ -181,7 +188,7 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
         local,
         persist_to,
     )
-    return {"users": users, "listings": listings, "audit_events": audits, "counts": counts[0] if counts else {}}
+    return {"users": users, "listings": listings, "audit_events": audits, "owner_listing_deletions": owner_listing_deletions, "counts": counts[0] if counts else {}}
 
 
 def verify_provenance(config: str, local: bool = False, persist_to: str | None = None) -> None:
@@ -235,6 +242,22 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
     }
     for listing_id, baseline in expected_listings.items():
         synthetic_listing_owners.setdefault(listing_id, baseline.get("owner_id"))
+    # OWNER deletes do not write an audit row, but the successful atomic deletion
+    # persists a COMMITTED idempotency receipt with owner, resource, and exact scope.
+    # Read only those identifiers; never select the client-provided request key.
+    for receipt in observed.get("owner_listing_deletions", []):
+        listing_id = receipt.get("resource_id")
+        owner_id = receipt.get("owner_id")
+        if not isinstance(listing_id, str) or not listing_id or receipt.get("scope") != f"OWNER_LISTING_DELETE:{listing_id}":
+            raise PolicyError("an OWNER listing deletion receipt has invalid listing provenance")
+        if receipt.get("state") != "COMMITTED":
+            raise PolicyError("an OWNER listing deletion receipt is not committed")
+        if owner_id not in synthetic_user_ids or synthetic_user_roles.get(owner_id) != "OWNER":
+            raise PolicyError("an OWNER listing deletion receipt refers to an unverified owner")
+        known_owner = synthetic_listing_owners.get(listing_id)
+        if known_owner is not None and known_owner != owner_id:
+            raise PolicyError("an OWNER listing deletion receipt does not match the listing owner")
+        synthetic_listing_owners[listing_id] = owner_id
     for row in listings:
         status = row.get("status")
         publication_status = row.get("publication_status")
