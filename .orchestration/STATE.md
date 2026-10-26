@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I06_6_ADMIN_D31`
-Active task: `CF-AU-I06.6 — ADMIN D3.1 (Issue #33)`
+Phase: `CF_AU_I07_INTEGRAL_QA`
+Active task: `CF-AU-I07 — QA integral (Issue #26)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1860,3 +1860,15 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - En el artifact `4a043b7`: GitHub `worker`/`web` PASS, `staging-private` SAFE SKIP; revisión automática completada sin hallazgos; tres hilos P2 respondidos y resueltos; PR CLEAN/MERGEABLE.
 - Este evento y el reporte forman un commit de estado/evidencia que cambiará el live PR HEAD. No se autorreferencia: se registran el último HEAD observado y los SHA ejecutables; el nuevo HEAD debe derivarse de GitHub y tener checks/review actualizados antes de merge.
 - **READY_TO_RESUME:** actualizar/publicar estado+reporte, reconsultar el HEAD, esperar worker/web y revisión automática, validar no threads/mergeability/protección; completar Pre-Critic final y merge protegido. Después actualizar Issue #33/#35/#37/#25 con evidencia y detener antes de #34/I07. Sin Preview/CD/producción/R2/costos.
+
+
+## Event 233 — I07 QA integral ejecutada localmente; preflight a publicación
+
+- Base reconstruida de GitHub: `main@b7e1d7b27f778ec56de29ed5bcd446f199d1a412`; I06/ADMIN D3.1 está integrado y aprobado. Issue #26 autoriza QA local sintética, no producción ni un lanzamiento.
+- Defecto reproducible de presentación: archivos sintéticos positivos menores a 1 KiB podían aparecer como `0 KB`. Formatter compartido para vistas OWNER/ADMIN muestra bytes para sub-KiB y mantiene unidades legibles desde 1 KiB; regresiones cubren 69/1023/1024/12288 bytes y valor inválido.
+- Staging parser acepta salida JSONL válida de Wrangler (`wrangler-session` y un registro `preview`) de forma estricta. El guard de procedencia permite estados, timestamps, filas de medios/contactos y eliminaciones sintéticas legítimas, conservando anclas de identidad/auditoría, comprobación de dominios sintéticos y fail-closed ante datos/identidades desconocidas. No selecciona contenido de publicaciones ni imágenes. CD sigue sin activarse.
+- Regresiones de harness: fault query incluye `session_version`; OWNER conserva lectura de metadata de fotos enviadas mientras mutation sigue denegada; límite de imagen se prueba con sesión válida tras logout.
+- Evidencia: `output/playwright/i07/QA.md` y capturas desktop/móvil 1440/390/320. Público 5/5, OWNER 5/5, ADMIN 2/2, D3.1 foundations 1/1; Worker HTTP/fault/idempotencia/compensación/recuperación PASS (285.0 s); guard focalizado 20/20 y suite Python 45/45; worker typecheck, web typecheck/build/build:preview PASS. Smoke catálogo local 25 lecturas: p50 21.4 ms/p95 35.5 ms/máx. 92.8 ms; no es capacidad Cloudflare.
+- Worker local corre R2 solo en emulador preexistente de la suite de regresión. No se tocó R2 remoto, D1 remoto, Preview, Access ni producción; no se activó CD. Cloudflare Free limits se documentan en QA con fuentes oficiales, pero no se midió uso de cuenta. Sin E2E remoto autenticado ni evaluación WCAG/lector de pantalla.
+- **Pre-Critic local: PASS para publicar una única PR funcional y obtener CI/review/Controller exactos; no autoriza merge todavía.**
+- **READY_TO_RESUME:** completar canonical consistency/diff preflight, publicar PR funcional #26, ejecutar checks `worker`/`web` y una review GitHub exact-head, obtener `project_controller` GPT-6 Luna High read-only exacto, reparar hallazgos materiales y merge solo protegido. Después registrar resultados en #26/#25 y detenerse para aceptación humana; dejar #26 abierto y no iniciar I08/#27. Sin despliegue remoto.

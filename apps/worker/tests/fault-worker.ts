@@ -59,7 +59,7 @@ export default {
     const isListingInsert=(query:string)=>/^\s*INSERT\s+INTO\s+listings\b/i.test(query);
     const isListingReadback=(query:string)=>/^\s*SELECT\b[\s\S]*\bFROM\s+listings\s+WHERE\s+id\s*=\s*\?/i.test(query);
     const isOwnerListingRead=(query:string)=>/^\s*SELECT\b[\s\S]*\bFROM\s+listings\s+WHERE\s+owner_id\s*=\s*\?/i.test(query);
-    const isUserRevalidationRead=(query:string)=>/^\s*SELECT\s+id\s*,\s*email\s*,\s*role\s+FROM\s+users\s+WHERE\s+id\s*=\s*\?/i.test(query);
+    const isUserRevalidationRead=(query:string)=>/^\s*SELECT\s+id\s*,\s*email\s*,\s*role(?:\s*,\s*session_version)?\s+FROM\s+users\s+WHERE\s+id\s*=\s*\?/i.test(query);
     const isLockRelease=(query:string)=>/^\s*DELETE\s+FROM\s+listing_locks\b/i.test(query);
     const isLockReadback=(query:string)=>/^\s*SELECT\s+token\s*,\s*expires_at\s+FROM\s+listing_locks\b/i.test(query);
     const isOperationStateUpdate=(query:string)=>/^\s*UPDATE\s+image_operations\s+SET\s+state\s*=/i.test(query);

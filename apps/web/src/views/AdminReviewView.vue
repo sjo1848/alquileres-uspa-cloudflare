@@ -4,6 +4,7 @@ import { apiUrl, ApiError } from '../api';
 import { useSession } from '../session';
 import { availabilityLabel, freshnessLabel, type FreshnessStatus } from './availability-helpers';
 import { adminActionLabel, adminDurationLabel, formatAdminPrice, formatAdminTimestamp } from './admin-display';
+import { formatImageSize } from './image-size';
 
 type ReviewItem = {
   id: string; title: string; description: string; location: string;
@@ -190,7 +191,7 @@ onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
           <section class="admin-review-photo-section" aria-labelledby="admin-review-photos-title">
             <header><div><p class="admin-eyebrow">Material enviado</p><h3 id="admin-review-photos-title">Fotografías</h3></div><span class="admin-count">{{ selected.images.length }}</span></header>
             <div v-if="selected.images.length" class="admin-review-images">
-              <figure v-for="image in selected.images" :key="image.id"><img :src="imageSrc(image.url)" :alt="`Fotografía ${image.position + 1} de ${selected.title}`" /><figcaption>Foto {{ image.position + 1 }} · {{ Math.round(image.sizeBytes / 1024) }} KB</figcaption></figure>
+              <figure v-for="image in selected.images" :key="image.id"><img :src="imageSrc(image.url)" :alt="`Fotografía ${image.position + 1} de ${selected.title}`" /><figcaption>Foto {{ image.position + 1 }} · {{ formatImageSize(image.sizeBytes) }}</figcaption></figure>
             </div>
             <p v-else class="admin-muted-note">El propietario no adjuntó fotografías.</p>
             <p v-if="selected.requiresMediaRecovery" class="admin-feedback is-error" role="alert">Hay registros de imágenes anteriores que requieren recuperación. No se puede aprobar ni publicar hasta resolverlos.</p>

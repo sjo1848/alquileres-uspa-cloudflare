@@ -150,15 +150,10 @@ def _wrangler_query(sql: str, config: str, local: bool = False, persist_to: str 
 
 def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -> dict:
     users = _wrangler_query(
-        "SELECT id,role,created_at,updated_at FROM users ORDER BY id", config, local, persist_to
+        "SELECT id,role,created_at,CASE WHEN lower(email) LIKE '%@example.test' THEN 1 ELSE 0 END AS is_synthetic FROM users ORDER BY id", config, local, persist_to
     )
     listings = _wrangler_query(
-        "SELECT l.id,l.owner_id,l.status,l.publication_status,l.created_at,l.updated_at,"
-        "(SELECT COUNT(*) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_image_count,"
-        "(SELECT MIN(created_at) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_first_created_at,"
-        "(SELECT MAX(created_at) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_last_created_at,"
-        "(SELECT COALESCE(SUM(byte_size),0) FROM listing_images i WHERE i.listing_id=l.id) AS d1_blob_total_bytes,"
-        "(SELECT COUNT(*) FROM static_listing_images s WHERE s.listing_id=l.id) AS static_image_count "
+        "SELECT l.id,l.owner_id,l.status,l.publication_status,l.created_at "
         "FROM listings l ORDER BY l.created_at,l.id",
         config,
         local,
@@ -190,11 +185,69 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
 
 def verify_provenance(config: str, local: bool = False, persist_to: str | None = None) -> None:
     manifest = _load_json(PROVENANCE)
-    expected = {key: manifest[key] for key in ("users", "listings", "audit_events", "counts")}
     observed = _snapshot(config, local, persist_to)
-    if observed != expected:
-        raise PolicyError("synthetic D1 metadata differs from the reviewed provenance manifest; no mutation allowed")
-    print("PASS: D1 synthetic provenance metadata matches reviewed manifest; no listing/contact/media content was selected")
+    validate_synthetic_provenance(observed, manifest)
+    print("PASS: D1 synthetic identities and immutable provenance anchors verified; mutable workflow metadata may change; no listing/contact/media content was selected")
+
+
+def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
+    """Keep the reviewed synthetic baseline while allowing normal Preview activity.
+
+    The manifest anchors known synthetic identities and append-only audit records.
+    Status, publication/availability, updated timestamps, row totals and media/contact
+    operation counts are intentionally not pinned because valid staging journeys mutate them.
+    No title, location, description, address, email value, image name/bytes, or contact
+    content is selected for this decision.
+    """
+    users = observed.get("users", [])
+    users_by_id = {row.get("id"): row for row in users}
+    expected_users = {row.get("id"): row for row in manifest.get("users", [])}
+    if not expected_users or not set(expected_users) <= set(users_by_id):
+        raise PolicyError("reviewed synthetic user anchors are missing")
+    if any(
+        users_by_id[user_id].get("role") != baseline.get("role")
+        or users_by_id[user_id].get("created_at") != baseline.get("created_at")
+        for user_id, baseline in expected_users.items()
+    ):
+        raise PolicyError("reviewed synthetic user identity anchors changed")
+    if any(row.get("is_synthetic") != 1 or row.get("role") not in {"OWNER", "ADMIN"} for row in users):
+        raise PolicyError("D1 contains a non-synthetic or unrecognized user identity")
+    synthetic_user_ids = set(users_by_id)
+
+    listings = observed.get("listings", [])
+    listings_by_id = {row.get("id"): row for row in listings}
+    expected_listings = {row.get("id"): row for row in manifest.get("listings", [])}
+    if not expected_listings:
+        raise PolicyError("reviewed synthetic listing anchors are missing from the manifest")
+    for listing_id, baseline in expected_listings.items():
+        actual = listings_by_id.get(listing_id)
+        # A reviewed synthetic listing may be legitimately deleted in staging.
+        # If it remains, its stable owner/creation anchors must still match.
+        if actual and (actual.get("owner_id") != baseline.get("owner_id") or actual.get("created_at") != baseline.get("created_at")):
+            raise PolicyError("reviewed synthetic listing identity anchors changed")
+    valid_statuses = {"DRAFT", "REJECTED", "SUBMITTED", "APPROVED"}
+    valid_publication = {"UNPUBLISHED", "PUBLISHED"}
+    for row in listings:
+        if row.get("owner_id") not in synthetic_user_ids:
+            raise PolicyError("a listing is not owned by a verified synthetic identity")
+        if row.get("status") not in valid_statuses or row.get("publication_status") not in valid_publication:
+            raise PolicyError("a listing has an unrecognized workflow state")
+    audit_events = observed.get("audit_events", [])
+    audit_by_id = {row.get("id"): row for row in audit_events}
+    expected_audit = {row.get("id"): row for row in manifest.get("audit_events", [])}
+    if not set(expected_audit) <= set(audit_by_id):
+        raise PolicyError("reviewed synthetic audit anchors are missing")
+    immutable_audit_fields = ("listing_id", "actor_id", "target_owner_id", "action", "created_at")
+    for event_id, baseline in expected_audit.items():
+        if any(audit_by_id[event_id].get(field) != baseline.get(field) for field in immutable_audit_fields):
+            raise PolicyError("reviewed synthetic audit identity anchors changed")
+    for row in audit_events:
+        target_owner_id = row.get("target_owner_id")
+        if row.get("actor_id") not in synthetic_user_ids or (target_owner_id is not None and target_owner_id not in synthetic_user_ids):
+            raise PolicyError("an audit event refers to a non-synthetic identity")
+
+    if observed.get("counts", {}).get("non_synthetic_user_email_count") != 0:
+        raise PolicyError("D1 contains a user with a non-synthetic email domain")
 
 
 def verify_migrations(config: str, allowlist_path: Path, local: bool = False, persist_to: str | None = None) -> list[str]:
@@ -307,22 +360,35 @@ def current_preview() -> tuple[str, str, str]:
     return expected_stable, expected_immutable, deployment_id
 
 
-def _json_object_from_output(path: Path) -> dict:
-    text = "\n".join(line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("npm notice")).strip()
-    start = text.find("{")
-    if start < 0:
-        raise PolicyError("Wrangler Preview output has no JSON object")
-    try:
-        payload, _ = json.JSONDecoder().raw_decode(text[start:])
-    except json.JSONDecodeError as exc:
-        raise PolicyError("Wrangler Preview output JSON is invalid") from exc
-    if not isinstance(payload, dict):
-        raise PolicyError("Wrangler Preview output JSON is not an object")
-    return payload
+def _preview_object_from_output(path: Path) -> dict:
+    """Read Wrangler's JSONL output and select its single validated Preview record.
+
+    Wrangler 4.151 emits a `wrangler-session` object before the `preview` object.
+    Accept the older single-object form too, but reject malformed/unknown records
+    and duplicate Preview records rather than guessing which one was deployed.
+    """
+    records = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("npm notice"):
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise PolicyError("Wrangler Preview JSONL output contains an invalid record") from exc
+        if not isinstance(record, dict):
+            raise PolicyError("Wrangler Preview JSONL output contains a non-object record")
+        records.append(record)
+    if not records:
+        raise PolicyError("Wrangler Preview output has no JSON records")
+    previews = [record for record in records if record.get("type") == "preview"]
+    if len(previews) != 1 or any(record.get("type") not in {"preview", "wrangler-session"} for record in records):
+        raise PolicyError("Wrangler Preview JSONL output must contain one Preview record and known session records only")
+    return previews[0]
 
 
 def parse_deploy_output(path: Path) -> tuple[str, str, str]:
-    payload = _json_object_from_output(path)
+    payload = _preview_object_from_output(path)
     if payload.get("type") != "preview" or payload.get("worker_name") != TARGET["worker_name"] or payload.get("preview_name") != TARGET["preview_name"]:
         raise PolicyError("Wrangler output does not identify the existing private Preview")
     stable_urls = payload.get("preview_urls", [])

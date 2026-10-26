@@ -77,6 +77,69 @@ class PreviewCdGuardTests(unittest.TestCase):
         for field in forbidden:
             self.assertNotIn(f'"{field}"', serialized)
 
+    def _synthetic_snapshot(self):
+        manifest = guard._load_json(guard.PROVENANCE)
+        snapshot = {
+            key: [dict(row) for row in manifest[key]]
+            for key in ("users", "listings", "audit_events")
+        }
+        for user in snapshot["users"]:
+            user["is_synthetic"] = 1
+        snapshot["counts"] = dict(manifest["counts"])
+        snapshot["counts"]["non_synthetic_user_email_count"] = 0
+        return manifest, snapshot
+
+    def test_provenance_allows_legitimate_mutable_workflow_and_synthetic_rows(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"][0]["updated_at"] = "changed-by-valid-login"
+        snapshot["listings"][0].update(status="SUBMITTED", publication_status="UNPUBLISHED", updated_at="changed-by-owner")
+        snapshot["counts"]["contact_events"] += 1
+        snapshot["counts"]["listing_images"] += 1
+        snapshot["counts"]["admin_audit_events"] += 1
+        snapshot["users"].append({"id": "new-synthetic-owner", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 1})
+        snapshot["listings"].append({"id": "new-synthetic-draft", "owner_id": "new-synthetic-owner", "status": "DRAFT", "publication_status": "UNPUBLISHED", "created_at": "2026-10-27T12:01:00Z"})
+        snapshot["audit_events"].append({"id": "new-synthetic-audit", "listing_id": "new-synthetic-draft", "actor_id": "synthetic-catalog-admin", "target_owner_id": "new-synthetic-owner", "action": "ADMIN_ASSISTED_LISTING_CREATED", "created_at": "2026-10-27T12:02:00Z"})
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_still_rejects_real_identity_and_broken_ownership_anchors(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["users"].append({"id": "unverified-user", "role": "OWNER", "created_at": "2026-10-27T12:00:00Z", "is_synthetic": 0})
+        with self.assertRaisesRegex(guard.PolicyError, "non-synthetic"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"][0]["owner_id"] = "unknown-owner"
+        with self.assertRaisesRegex(guard.PolicyError, "identity anchors changed"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_allows_deletion_of_reviewed_synthetic_listing(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"] = snapshot["listings"][1:]
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_allows_audit_for_deleted_synthetic_listing_and_null_target(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({
+            "id": "audit-after-synthetic-delete",
+            "listing_id": "deleted-synthetic-listing",
+            "actor_id": "synthetic-catalog-admin",
+            "target_owner_id": None,
+            "action": "ADMIN_LISTING_DELETED",
+            "created_at": "2026-10-27T12:02:00Z",
+        })
+        guard.validate_synthetic_provenance(snapshot, manifest)
+
+    def test_provenance_rejects_unverified_audit_actors_and_invalid_states(self):
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["audit_events"].append({"id": "new-event", "listing_id": None, "actor_id": "unknown", "target_owner_id": "synthetic-catalog-owner", "action": "ADMIN_LISTING_PUBLISHED", "created_at": "2026-10-27T12:02:00Z"})
+        with self.assertRaisesRegex(guard.PolicyError, "non-synthetic identity"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
+        manifest, snapshot = self._synthetic_snapshot()
+        snapshot["listings"][0]["status"] = "IMPORTED"
+        with self.assertRaisesRegex(guard.PolicyError, "unrecognized workflow state"):
+            guard.validate_synthetic_provenance(snapshot, manifest)
+
     def test_migration_allowlist_requires_exact_reviewed_hash(self):
         policy = guard._load_json(guard.MIGRATIONS)
         allowed = {item["name"]: item for item in policy["migrations"]}
@@ -127,6 +190,33 @@ class PreviewCdGuardTests(unittest.TestCase):
         self.assertEqual(stable, guard.TARGET["stable_url"])
         self.assertEqual(returned_id, deployment_id)
         self.assertTrue(immutable.endswith(".workers.dev"))
+
+    def test_wrangler_jsonl_session_envelope_precedes_preview_record(self):
+        deployment_id = "0ed47989-1234-1234-1234-1234567890ab"
+        session = {"type": "wrangler-session", "version": 1, "timestamp": "2026-10-26T13:30:00.000Z"}
+        preview = {
+            "type": "preview", "version": 1, "worker_name": "alquileres-uspa-lab",
+            "preview_id": guard.TARGET["preview_id"], "preview_name": "private", "preview_slug": "private",
+            "preview_urls": [guard.TARGET["stable_url"]], "deployment_id": deployment_id,
+            "deployment_urls": [f"https://{deployment_id[:8]}-alquileres-uspa-lab.sjo1848.workers.dev"],
+            "timestamp": "2026-10-26T13:30:00.000Z",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "output.jsonl"
+            path.write_text(json.dumps(session) + "\n" + json.dumps(preview) + "\n")
+            _, _, returned_id = guard.parse_deploy_output(path)
+        self.assertEqual(returned_id, deployment_id)
+
+    def test_wrangler_jsonl_rejects_duplicate_preview_or_unknown_record(self):
+        preview = {"type": "preview"}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "output.jsonl"
+            path.write_text(json.dumps(preview) + "\n" + json.dumps(preview) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "one Preview record"):
+                guard.parse_deploy_output(path)
+            path.write_text(json.dumps({"type": "unexpected"}) + "\n" + json.dumps(preview) + "\n")
+            with self.assertRaisesRegex(guard.PolicyError, "known session records"):
+                guard.parse_deploy_output(path)
 
     def test_deployment_output_rejects_unexpected_worker_or_url(self):
         payload = {"type": "preview", "worker_name": "other-worker", "preview_name": "private"}

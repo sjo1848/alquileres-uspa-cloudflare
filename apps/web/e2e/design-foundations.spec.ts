@@ -125,15 +125,21 @@ test('D3.1 shared foundation preserves role navigation and responsive shell', as
     if (viewport.width <= 768) await page.getByRole('button', { name: 'Cerrar menú' }).click();
   }
 
-  const ownerHeroLink = page.getByRole('link', { name: 'Ir a mis alojamientos' });
-  await ownerHeroLink.focus();
-  await expect(ownerHeroLink).toBeFocused();
-  const ownerFocus = await ownerHeroLink.evaluate(element => {
+  // I06.6 replaced the earlier OWNER hero CTA with the real section navigation.
+  const ownerSectionLink = page.getByRole('link', { name: /Alojamientos/ }).first();
+  await ownerSectionLink.focus();
+  await expect(ownerSectionLink).toBeFocused();
+  // Put keyboard modality in effect before checking the focus-visible indicator.
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(ownerSectionLink).toBeFocused();
+  const ownerFocus = await ownerSectionLink.evaluate(element => {
     const style = getComputedStyle(element);
-    return { outline: style.outlineColor, boxShadow: style.boxShadow };
+    return { outline: style.outlineColor, outlineStyle: style.outlineStyle, boxShadow: style.boxShadow };
   });
-  expect(ownerFocus.outline).toBe('rgb(255, 255, 255)');
-  expect(contrastRatio(ownerFocus.outline, '#6879dc')).toBeGreaterThanOrEqual(3);
+  expect(ownerFocus.outlineStyle).toBe('solid');
+  expect(ownerFocus.outline).toBe('rgb(70, 91, 209)');
+  expect(contrastRatio(ownerFocus.outline, '#ffffff')).toBeGreaterThanOrEqual(3);
 
   await page.context().clearCookies();
   await page.goto('/login');

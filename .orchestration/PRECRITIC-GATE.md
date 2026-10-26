@@ -341,3 +341,11 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 
 - Code artifact `59a60c576fbd71e36f6292ebf9a02e8529ac094e` / tree `e7eb67b0749d2f2e98f4644a2d842cc5207459f6`, PR artifact HEAD `4a043b77122abd056353a3b173718584d3f8607e`. Local tests, evidence and consistency pass. Delegated Controller exact-artifact PASS: `.orchestration/evidence/critics/CF-AU-I06.6-ADMIN-D31-CONTROLLER-PASS.md`. GitHub review no findings; 3 threads resolved; worker/web pass; staging-private skipped.
 - **Pre-Critic result: PASS for the consolidated code artifact.** This status/evidence commit changes the PR head. Before merge, derive the new live HEAD from GitHub and verify new exact-head required checks/review, no unresolved threads, clean mergeability, and main protection. No code delta after 59a60c5 means only affected/deterministic checks should be repeated by CI.
+
+## I07 — preflight local para publicar (Issue #26)
+
+- Base exacta `b7e1d7b27f778ec56de29ed5bcd446f199d1a412`; alcance exclusivamente I07 local/sintético. Contrato `.orchestration/contracts/CF-AU-I07-INTEGRAL-QA.md`, evidencia `output/playwright/i07/QA.md`.
+- **PASS local para publicar un PR funcional consolidado y solicitar controles exact-head.** Evidencia ya ejecutada: público Playwright 5/5; OWNER 5/5; ADMIN 2/2; D3.1 foundations 1/1; HTTP/fault/idempotencia/concurrencia/recuperación local PASS (285.0 s); guard focalizado 20/20 y scripts 45/45; Worker typecheck y Web typecheck/build/build:preview PASS. Capturas y límites en QA.md.
+- Cambios en alcance: salida de tamaño sub-KB; parser JSONL estricto Wrangler; procedencia sintética que acepta cambios mutables y borrados sintéticos legítimos sin relajar identidades; harness de fault injection corregido. Sin código de producción remota/Preview/CD/R2.
+- Este Pre-Critic solo autoriza publicar y procesar CI `worker`/`web`, GitHub Review y una revisión de `project_controller` sobre SHA exacto. **No es autorización final de merge.** Merge requiere hallazgos materiales resueltos, checks exact-head verdes, Controller PASS, validador canónico, protección de `main` y conversaciones resueltas.
+- No se ejecutó E2E remoto autenticado ni se actualizó Preview. Issue #26 queda abierto para Product Acceptance; detenerse antes de I08/#27.
