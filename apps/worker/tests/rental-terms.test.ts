@@ -64,6 +64,17 @@ describe('M2.1 owner-declared rental terms',()=>{
     expect(await env.DB.prepare('SELECT price_period,deposit_status,deposit_amount,pets_policy,available_from FROM listings WHERE id=?').bind(monthlyItem.id).first()).toEqual({price_period:'WEEK',deposit_status:'NOT_INFORMED',deposit_amount:null,pets_policy:'NOT_INFORMED',available_from:null});
   });
 
+  it('prevents ADMIN-assisted period changes or submission from bypassing monthly-term validation',async()=>{
+    const owner=await login('terms-a@example.test'),admin=await login('terms-admin@example.test');
+    const created=await request('/listings','POST',{...base,title:'Admin weekly guard synthetic',...terms},owner);expect(created.status).toBe(201);const item=await created.json() as any;
+    const patch={title:item.title,description:item.description,location:item.location,priceAmount:item.priceAmount,pricePeriod:'WEEK',rentalDuration:'WEEKS',maxOccupants:item.maxOccupants,currency:item.currency,expectedUpdatedAt:item.updatedAt};
+    expect((await request(`/admin/listings/assisted/${item.id}`,'PATCH',patch,admin,'terms-assisted-weekly-change')).status).toBe(400);
+    expect(await env.DB.prepare('SELECT price_period,deposit_status,deposit_amount FROM listings WHERE id=?').bind(item.id).first()).toEqual({price_period:'MONTH',deposit_status:'FIXED_AMOUNT',deposit_amount:250000});
+    await env.DB.prepare("UPDATE listings SET price_period='WEEK' WHERE id=?").bind(item.id).run();
+    expect((await request(`/admin/listings/assisted/${item.id}/submit`,'POST',undefined,admin,'terms-assisted-weekly-submit')).status).toBe(400);
+    expect(await env.DB.prepare('SELECT status,price_period,deposit_status,deposit_amount FROM listings WHERE id=?').bind(item.id).first()).toEqual({status:'DRAFT',price_period:'WEEK',deposit_status:'FIXED_AMOUNT',deposit_amount:250000});
+  });
+
   it('replays a pre-M2.1 create idempotency record using the original fingerprint',async()=>{
     const owner=await login('terms-a@example.test'),listingId=`legacy-terms-${crypto.randomUUID()}`,at=new Date().toISOString(),legacyInput={...base,title:'Legacy replay synthetic'};
     const fingerprintValue={title:legacyInput.title,description:legacyInput.description,location:legacyInput.location,priceAmount:legacyInput.priceAmount,pricePeriod:legacyInput.pricePeriod,rentalDuration:legacyInput.rentalDuration,maxOccupants:legacyInput.maxOccupants,currency:legacyInput.currency};

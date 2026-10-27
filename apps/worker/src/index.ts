@@ -230,6 +230,7 @@ async function runAssistedMutation(c:any,action:string,payload:unknown,prepare:(
     if(!listing)return c.json({message:'Listing not found'},404);
     const currentSnapshot=await sourceAdminListing(c.env.DB,listingId,c.env.MEDIA_STRATEGY);
     if(!currentSnapshot)return c.json({message:'Listing not found'},404);
+    Object.assign(listing,Object.fromEntries(TERM_FIELDS.map(key=>[key,currentSnapshot[key]??null])));
     listing.snapshot=currentSnapshot;
     const at=monotonicTimestamp(listing.updatedAt),eventId=id(),prepared=await prepare(listing,lease,at,eventId);
     const audit=sourceAuditInsert(c,eventId,listingId,prepared.auditAction,null,at,prepared.auditWhere,prepared.auditArgs,prepared.metadata);
