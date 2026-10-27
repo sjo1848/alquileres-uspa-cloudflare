@@ -8,11 +8,11 @@
   "last_completed_task": "I07 — QA integral integrado por PR #53; aceptación humana y Preview privado publicados desde main@d5a26a0",
   "last_completed_head": "main@d5a26a0c6f1ad68dd77a13459ade1c15573a15cf",
   "work_branch": "work/mvp-m1-monthly-search",
-  "next_action": "Reconciliar el estado canónico con el HEAD final del PR #57, validar el preflight, completar CI worker/web, GitHub Review y una revisión Controller exacta; corregir hallazgos materiales y hacer merge protegido solo con todos los controles conformes. Luego detenerse: M1 queda sin publicación en Preview y espera autorización humana independiente; no iniciar M2/M3.",
+  "next_action": "Publicar el checkpoint de evidencia/estado en el PR #57, marcarlo listo para revisión y verificar CI worker/web y review automática sobre ese HEAD exacto. Resolver hallazgos materiales y fusionar protegido solo con conversaciones resueltas, main sin cambios incompatibles y branch protection vigente. Después registrar cierre en #56/#55 y detenerse: no actualizar Preview ni iniciar M2/M3.",
   "stop_reason": null,
   "event": {
-    "seq": 245,
-    "summary": "M1 implementado y abierto como PR funcional #57 draft; QA local sintética PASS, controles exact-head pendientes"
+    "seq": 246,
+    "summary": "M1 Controller PASS exact candidate; canonical status reconciled; exact-head GitHub review remains pending"
   },
   "external_review": null,
   "human_gate": null,
@@ -26,19 +26,23 @@
     "executable_tree": "8b57dd5db85fdad931737f4c917af7db9bb223db",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Functional M1 candidate; state reconciliation and exact-head review/checks are pending.",
-    "last_observed_head_sha": "57dcd4f75bb4fe95f052fab107dbe25c61ff9876",
-    "last_observed_head_tree": "8b57dd5db85fdad931737f4c917af7db9bb223db",
-    "live_head_source": "GitHub PR #57 observed immediately before the canonical state checkpoint. Derive its full current head again from GitHub after this checkpoint; executable tree is unchanged by state-only follow-ups."
+    "status": "Functional M1 candidate; exact tracking SHA 3cebec2 has required checks PASS, Controller bounded PASS; canonical state checkpoint requires fresh exact-head GitHub checks/review.",
+    "last_observed_head_sha": "3cebec2b15bfc5b25bdcb77a0444348d4299db95",
+    "last_observed_head_tree": "7c075cac808ec7f466206fcb46025021957b9fec",
+    "live_head_source": "GitHub PR #57 exact head observed after Controller review and before this evidence/state checkpoint. Resolve the next tracking HEAD and its exact checks from GitHub."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
-    "status": "LOCAL_SYNTHETIC_PASS_PENDING_EXACT_HEAD_REVIEWS",
-    "artifact_sha": "57dcd4f75bb4fe95f052fab107dbe25c61ff9876",
-    "controller_reviewed_sha": null,
-    "controller_evidence": null,
-    "remote_authenticated_e2e": "BLOCKED_AUTH / not run; no Preview access performed for M1"
+    "status": "CONTROLLER_PASS; EXACT_HEAD_GITHUB_REVIEW_PENDING",
+    "artifact_sha": "3cebec2b15bfc5b25bdcb77a0444348d4299db95",
+    "executable_sha": "57dcd4f75bb4fe95f052fab107dbe25c61ff9876",
+    "controller_reviewed_sha": "3cebec2b15bfc5b25bdcb77a0444348d4299db95",
+    "controller_evidence": ".orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-3CEBEC2.md",
+    "controller_verdict": "PASS_BOUNDED_LOCAL_SYNTHETIC; requested Codex CLI gpt-6-luna/high/read-only; process completed; backend identity UNVERIFIED; nested self-check failure documented; not external/cryptographic approval.",
+    "github_checks": "PASS worker/web on exact 3cebec2, run 40446969519; staging-private SKIPPED. Fresh checks required for state/evidence checkpoint HEAD.",
+    "github_review": "Pending; PR remained draft at last exact-head observation.",
+    "remote_authenticated_e2e": "NOT RUN; no Preview access or M1 deployment."
   },
   "human_acceptance": {
     "scope": "MVP M1 monthly-first search in private Preview",
@@ -89,7 +93,7 @@
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "ideas": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/54",
     "contract": ".orchestration/contracts/MVP-M1-MONTHLY-SEARCH.md",
-    "status": "IMPLEMENTED_LOCAL; PR #57 OPEN DRAFT; EXACT_HEAD_REVIEW_AND_CI_PENDING",
+    "status": "IMPLEMENTED_LOCAL; PR #57 OPEN DRAFT; Controller PASS and CI worker/web PASS on tracking SHA 3cebec2; fresh exact-head checks/review pending after state checkpoint.",
     "base_sha": "d5a26a0c6f1ad68dd77a13459ade1c15573a15cf",
     "branch": "work/mvp-m1-monthly-search",
     "scope": "Monthly-first public home/catalog/detail/inquiry using existing API/query filters. Weekly listings remain discoverable. No M2/M3, backend/runtime/API/auth/schema changes, Preview, Access, production, paid resources, real data, or source repository changes.",
@@ -97,12 +101,12 @@
     "executable_tree": "8b57dd5db85fdad931737f4c917af7db9bb223db",
     "evidence": "output/playwright/mvp-m1/QA.md and seven real-browser screenshots; Playwright uses Vue + Worker/Hono + local synthetic D1.",
     "local_results": "Full public E2E 6/6 PASS before the final form-keyboard adjustment; affected M1 recheck 1/1 PASS after it. Error/empty screenshot regressions 2/2 PASS. Web typecheck/build PASS on the final executable tree. Widths 1440/390/320 with no horizontal overflow.",
-    "remaining": "Finish exact-head GitHub worker/web CI and automatic review, delegated technical Controller, Pre-Critic and protected merge. Keep #56 open until M1 is separately published to the existing private Preview and accepted by the Human.",
+    "remaining": "Publish state/evidence checkpoint; mark PR ready; verify exact-head worker/web CI, automatic GitHub review, open conversations and merge protections. Merge protected only after all gates. Keep #56 open for separate Preview publication approval and human acceptance; do not start M2/M3.",
     "preview": "M1 not deployed. Existing Preview remains at main@d5a26a0, deployment f358699c; do not update it without the separate authorization already requested by the Human.",
-    "github_checks": "Pending final PR #57 head.",
-    "github_review": "Pending exact-head review after canonical status checkpoint.",
-    "controller": "Pending exact executable review; no PASS claimed.",
-    "precritic": "Not yet assessed for integration; local code/test candidate is consolidated."
+    "github_checks": "PASS worker/web on 3cebec2, run 40446969519; staging-private skipped. Renew on next tracking head.",
+    "github_review": "No review object/findings or conversations visible on 3cebec2; automatic review still required after marking PR ready.",
+    "controller": "PASS bounded local synthetic on exact tracking SHA 3cebec2; see .orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-3CEBEC2.md.",
+    "precritic": "PASS to proceed to exact-head GitHub review and protected integration, conditional on refreshed checks/review, consistency validator, clean conversations and current protection."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
