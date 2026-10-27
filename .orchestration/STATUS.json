@@ -8,16 +8,28 @@
   "last_completed_task": "MVP M1 — búsqueda mensual-first, Preview privado y aceptación de producto (#56)",
   "last_completed_head": "main@de412467e10b386b74120c035de453ca165e1637",
   "work_branch": "work/mvp-m2-1-rental-terms",
-  "next_action": "Publicar el PR funcional M2.1 desde 7b32e116c30155e2441d3c03fd1cd460bd88204d; esperar CI worker/web y revisión GitHub exact-head, resolver cualquier hallazgo material, ejecutar Controller GPT-6 Luna High read-only sobre el SHA final. Al cerrar controles, dejar el PR listo para revisión del Product Owner. No hacer merge, migración remota ni despliegue sin autorización adicional.",
+  "next_action": "Completar checks worker/web, revisión GitHub exact-head y validador sobre PR #59; resolver hallazgos materiales; ejecutar una revisión delegada read-only GPT-6 Luna High del SHA exacto final. Dejar el PR abierto para revisión/aceptación del Product Owner. No hacer merge, migración remota ni desplegar.",
   "stop_reason": null,
   "event": {
     "seq": 250,
-    "summary": "M2.1 implementado localmente; D1/API/OWNER/detalle público y QA integrada listos para PR y revisión exact-head"
+    "summary": "PR funcional #59 publicado; QA local PASS; checks GitHub y revisión técnica independiente pendientes"
   },
   "external_review": null,
   "human_gate": null,
   "blocker": null,
-  "pull_request": null,
+  "pull_request": {
+    "number": 59,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/59",
+    "branch": "work/mvp-m2-1-rental-terms",
+    "base_sha": "de412467e10b386b74120c035de453ca165e1637",
+    "executable_sha": "f56915fda660af9edac2bc613c434554af7c7de9",
+    "executable_tree": "972906c2c1b288d6fcfd4f985b89d8da837e7c76",
+    "state": "OPEN",
+    "is_draft": false,
+    "status": "Functional M2.1 PR published; exact-head GitHub checks/review and delegated read-only Controller pending. No merge/deploy.",
+    "last_observed_head_sha": "935c186f68997aa81b1ad8b38827d7f27e277789",
+    "last_observed_head_tree": "ace547ad19fc4e4f49146f9cd6f89619f6702931"
+  },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
@@ -29,8 +41,8 @@
     "controller_reviewed_sha": null,
     "controller_evidence": null,
     "controller_verdict": "PENDING; delegated_codex_separate_process required per operational verification v2.",
-    "github_checks": "Pending exact PR HEAD; local Worker/Web and focused integrated QA PASS.",
-    "github_review": "Pending exact PR HEAD.",
+    "github_checks": "Pending exact PR #59 HEAD 935c186; CI must include the new M2.1 Worker Vitest suite.",
+    "github_review": "Pending exact PR #59 HEAD.",
     "remote_authenticated_e2e": "NOT RUN; M2.1 local-only; no remote deployment authorized."
   },
   "human_acceptance": {
@@ -81,7 +93,7 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/58",
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "contract": ".orchestration/contracts/MVP-M2.1-RENTAL-TERMS.md",
-    "status": "LOCAL_IMPLEMENTATION_COMPLETE; exact functional/test/CI candidate f56915f; GitHub PR/checks/review and delegated Controller pending.",
+    "status": "PR #59 OPEN; code candidate f56915f; local QA PASS; exact-head GitHub checks/review and delegated Controller pending.",
     "base_sha": "de412467e10b386b74120c035de453ca165e1637",
     "branch": "work/mvp-m2-1-rental-terms",
     "scope": "OWNER and public listing detail for monthly rental terms only. Additive migration 0014 local only. No remote migration/deploy, My Selection, messaging, bookings, payments, AI or redesign.",
@@ -89,7 +101,7 @@
     "executable_tree": "972906c2c1b288d6fcfd4f985b89d8da837e7c76",
     "evidence": "output/playwright/m2.1/QA.md and six local Playwright desktop/mobile captures.",
     "local_results": "Worker typecheck PASS; 5 relevant Worker Vitest files / 33 tests PASS; named M2.1 Vitest 2/2 PASS and included in CI; Web typecheck/build PASS; integrated local synthetic-D1 Playwright 1/1 PASS at 1440/390/320 with no horizontal overflow.",
-    "remaining": "Publish functional PR, pass exact-head worker/web and GitHub review, complete one delegated read-only Controller review, resolve material findings. Keep PR open for Product Owner review; do not merge or deploy.",
+    "remaining": "Pass exact-head worker/web and GitHub review, consistency validator, one delegated read-only Controller review. Keep PR #59 open for Product Owner review; no merge or deployment.",
     "remote": "No remote D1 migration or Preview update. M1 remains the current private Preview version.",
     "artifact_sha": null
   },
