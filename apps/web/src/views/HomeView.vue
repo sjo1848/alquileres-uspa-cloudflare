@@ -47,6 +47,7 @@ const filters = reactive({
 });
 const advancedOpen = ref(false);
 const page = ref<Page | null>(null);
+const loadedPricePeriod = ref<PricePeriod | ''>('');
 const loading = ref(false);
 const error = ref('');
 const failedImages = ref(new Set<string>());
@@ -58,6 +59,11 @@ const activeFilterCount = computed(() => [
   filters.minPriceAmount, filters.maxPriceAmount, filters.currency, filters.pricePeriod,
   filters.rentalDuration, filters.maxOccupants, filters.soloDisponibles ? 'true' : '',
 ].filter(Boolean).length);
+const resultsTitle = computed(() => loadedPricePeriod.value === 'MONTH'
+  ? 'Alquileres con precio mensual'
+  : loadedPricePeriod.value === 'WEEK'
+    ? 'Alquileres con precio semanal'
+    : 'Todos los alquileres publicados');
 const pageFromRoute = () => Math.max(1, Math.min(10_000, Number(route.query.page ?? 1) || 1));
 
 function routeValue(value: unknown) {
@@ -73,7 +79,7 @@ function syncFiltersFromRoute() {
   filters.rentalDuration = routeValue(route.query.rentalDuration) as RentalDuration | '';
   filters.maxOccupants = routeValue(route.query.maxOccupants);
   filters.soloDisponibles = route.query.availableOnly === 'true';
-  advancedOpen.value = activeFilterCount.value > 0;
+  advancedOpen.value = activeFilterCount.value > 0 && !(activeFilterCount.value === 1 && filters.pricePeriod === 'MONTH');
 }
 
 function paramsForPage(pageNumber: number) {
@@ -94,6 +100,7 @@ async function loadPage(pageNumber = pageFromRoute()) {
   activeRequest = controller;
   loading.value = true;
   error.value = '';
+  const requestedPricePeriod = filters.pricePeriod;
   const params = new URLSearchParams(paramsForPage(pageNumber));
   try {
     const result = await request<Page>(`/public/listings?${params}`, { signal: controller.signal });
@@ -107,6 +114,7 @@ async function loadPage(pageNumber = pageFromRoute()) {
       return;
     }
     page.value = result;
+    loadedPricePeriod.value = requestedPricePeriod;
     failedImages.value = new Set();
   } catch (cause) {
     if (sequence !== requestSequence || controller.signal.aborted) return;
@@ -142,6 +150,11 @@ function resetFilters() {
   void navigateToResults(1);
 }
 
+function searchMonthly() {
+  filters.pricePeriod = 'MONTH';
+  void navigateToResults(1);
+}
+
 function toggleAdvanced(event: Event) {
   advancedOpen.value = (event.currentTarget as HTMLDetailsElement).open;
 }
@@ -164,6 +177,10 @@ function priceAmount(listing: Listing) {
   return `${listing.currency} ${amount}`;
 }
 
+function durationSummary(value: RentalDuration | null) {
+  return value === 'FLEXIBLE' ? 'Flexible' : rentalDurationLabel(value);
+}
+
 function imageFailed(imageId: string) {
   failedImages.value = new Set(failedImages.value).add(imageId);
 }
@@ -177,10 +194,10 @@ watch(() => route.query, () => {
 <template>
   <div class="catalog-page">
     <section class="catalog-intro" aria-labelledby="catalog-title">
-      <p class="eyebrow">Alojamientos · Uspallata, Mendoza</p>
+      <p class="eyebrow">Alquiler mensual · Uspallata, Mendoza</p>
       <div class="catalog-intro-copy">
-        <h1 id="catalog-title">Una pausa entre la montaña y el cielo.</h1>
-        <p>Explorá alquileres en el valle. Compará sus detalles y consultá directamente a cada propietario.</p>
+        <h1 id="catalog-title">Encontrá tu próximo alquiler mensual en Uspallata.</h1>
+        <p>Compará precios publicados, duración declarada y disponibilidad. Consultá las condiciones directamente con cada propietario.</p>
       </div>
       <div class="catalog-intro-note" aria-label="Información del catálogo">
         <span aria-hidden="true">⌖</span><span>Valle de Uspallata</span>
@@ -188,19 +205,22 @@ watch(() => route.query, () => {
     </section>
 
     <section class="search-panel" aria-labelledby="search-title">
-      <h2 id="search-title">¿Dónde querés quedarte?</h2>
+      <h2 id="search-title">Buscá un lugar para vivir</h2>
       <form class="catalog-search" @submit.prevent="navigateToResults(1)">
         <label class="search-location" for="filter-location">
           <span>Ubicación</span>
-          <input id="filter-location" v-model="filters.location" name="location" autocomplete="address-level2" placeholder="Uspallata y alrededores" />
+          <input id="filter-location" v-model="filters.location" name="location" autocomplete="address-level2" placeholder="Uspallata y alrededores" @keydown.enter.prevent="searchMonthly" />
         </label>
         <label class="quick-availability" for="filter-available">
           <input id="filter-available" v-model="filters.soloDisponibles" name="soloDisponibles" type="checkbox" />
-          <span>Último registro disponible</span>
+          <span>Disponibilidad declarada como disponible</span>
         </label>
-        <button type="submit" class="search-submit" :aria-busy="loading">
-          <span aria-hidden="true">⌕</span> {{ loading ? 'Actualizando…' : 'Buscar alojamientos' }}
-        </button>
+        <div class="catalog-search-actions">
+          <button type="button" class="search-submit" :aria-busy="loading" @click="searchMonthly">
+            <span aria-hidden="true">⌕</span> {{ loading ? 'Actualizando…' : 'Buscar alquiler mensual' }}
+          </button>
+          <button type="button" class="catalog-all-listings" @click="resetFilters">Ver todos los alquileres</button>
+        </div>
         <details class="advanced-filters" :open="advancedOpen" @toggle="toggleAdvanced">
           <summary>Más filtros <span v-if="activeFilterCount" class="filter-count">{{ activeFilterCount }}</span></summary>
           <div class="advanced-filter-grid">
@@ -218,7 +238,7 @@ watch(() => route.query, () => {
 
     <section class="catalog-results" aria-labelledby="results-title" :aria-busy="loading">
       <div class="results-heading">
-        <div><p class="eyebrow">El valle te espera</p><h2 id="results-title">Alojamientos para explorar</h2></div>
+        <div><p class="eyebrow">El valle te espera</p><h2 id="results-title">{{ resultsTitle }}</h2></div>
         <p v-if="page" class="result-count" aria-live="polite">{{ page.totalItems }} {{ page.totalItems === 1 ? 'alojamiento' : 'alojamientos' }}</p>
       </div>
 
@@ -245,7 +265,7 @@ watch(() => route.query, () => {
               <div class="listing-meta" aria-label="Características">
                 <span v-if="listing.maxOccupants">Hasta {{ listing.maxOccupants }} {{ listing.maxOccupants === 1 ? 'persona' : 'personas' }}</span>
                 <span v-else>Capacidad a consultar</span>
-                <span v-if="listing.domainDataStatus === 'COMPLETE'">{{ rentalDurationLabel(listing.rentalDuration) }}</span>
+                <span v-if="listing.domainDataStatus === 'COMPLETE'">Duración: {{ durationSummary(listing.rentalDuration) }}</span>
               </div>
               <div class="listing-card-bottom">
                 <p class="listing-price"><strong>{{ priceAmount(listing) }}</strong><span v-if="listing.pricePeriod">por {{ pricePeriodLabel(listing.pricePeriod) }}</span></p>
@@ -261,7 +281,7 @@ watch(() => route.query, () => {
           </article>
         </div>
         <div v-else class="catalog-empty" role="status">
-          <span class="empty-mark" aria-hidden="true">⌖</span><p class="eyebrow">Probemos otro camino</p><h3>No encontramos alojamientos con esos filtros.</h3><p>Ampliá la ubicación o quitá alguno de los filtros para ver más opciones.</p><button type="button" class="secondary" @click="resetFilters">Ver todos los alojamientos</button>
+          <span class="empty-mark" aria-hidden="true">⌖</span><p class="eyebrow">Probemos otro camino</p><h3>No encontramos alojamientos con esos filtros.</h3><p>Ampliá la ubicación o quitá alguno de los filtros para ver más opciones.</p><button type="button" class="secondary" @click="resetFilters">Ver todos los alquileres</button>
         </div>
         <nav v-if="page.totalPages > 1" class="catalog-pagination" aria-label="Páginas de resultados">
           <button type="button" class="secondary" :disabled="loading || page.page <= 1" @click="navigateToResults(page.page - 1)">← Anterior</button>

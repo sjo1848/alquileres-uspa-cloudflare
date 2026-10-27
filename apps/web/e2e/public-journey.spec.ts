@@ -4,11 +4,19 @@ import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 
 const evidence = resolve(process.cwd(), '../../output/playwright/i06.6-p2/after');
+const m1Evidence = resolve(process.cwd(), '../../output/playwright/mvp-m1');
 async function capture(page: import('@playwright/test').Page, name: string) {
   await mkdir(evidence, { recursive: true });
   await page.locator('img').evaluateAll(images => { for (const image of images) (image as HTMLImageElement).loading = 'eager'; });
   await page.locator('img').evaluateAll(images => Promise.all(images.map(image => (image as HTMLImageElement).decode().catch(() => undefined))));
   await page.screenshot({ path: resolve(evidence, name), fullPage: true });
+}
+
+async function captureM1(page: import('@playwright/test').Page, name: string) {
+  await mkdir(m1Evidence, { recursive: true });
+  await page.locator('img').evaluateAll(images => { for (const image of images) (image as HTMLImageElement).loading = 'eager'; });
+  await page.locator('img').evaluateAll(images => Promise.all(images.map(image => (image as HTMLImageElement).decode().catch(() => undefined))));
+  await page.screenshot({ path: resolve(m1Evidence, name), fullPage: true });
 }
 
 test('rendimiento local sintético: catálogo responde de forma estable en 25 lecturas', async ({ page }) => {
@@ -39,8 +47,8 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
   });
   await page.goto('/');
   await expect(page.getByRole('status')).toContainText('Buscando lugares para tu estadía');
-  await expect(page.getByRole('heading', { name: /Una pausa entre la montaña y el cielo/ })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Alojamientos para explorar' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Encontrá tu próximo alquiler mensual en Uspallata/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Todos los alquileres publicados' })).toBeVisible();
   await expect(page.locator('.listing-card')).toHaveCount(6);
   await expect(page.locator('.listing-card').first()).toContainText('ARS');
   await expect(page.locator('.listing-card').first().locator('.listing-price')).toContainText('ARS 45.000');
@@ -109,7 +117,7 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
   await page.getByRole('button', { name: 'Aplicar filtros' }).click();
   await expect(page.locator('.listing-card')).toHaveCount(4);
   await page.locator('#filter-available').check();
-  await page.getByRole('button', { name: 'Buscar alojamientos' }).click();
+  await page.getByRole('button', { name: 'Aplicar filtros' }).click();
   await expect(page).toHaveURL(/availableOnly=true/);
   await expect(page.locator('.availability-pill.is-unavailable')).toHaveCount(0);
 
@@ -123,6 +131,7 @@ test('catálogo: filtros reales, paginación y retorno conservan la búsqueda', 
 });
 
 test('catálogo: error recuperable, ausencia de resultados e imagen rota', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   let failFirstSearch = true;
   await page.route('**/api/public/listings**', async route => {
     if (failFirstSearch) {
@@ -134,6 +143,7 @@ test('catálogo: error recuperable, ausencia de resultados e imagen rota', async
   });
   await page.goto('/');
   await expect(page.getByRole('alert')).toContainText('No pudimos actualizar el catálogo');
+  await captureM1(page, 'catalog-error-desktop-1440x1000.png');
   await page.getByRole('button', { name: 'Reintentar' }).click();
   await expect(page.locator('.listing-card')).toHaveCount(6);
 
@@ -160,6 +170,9 @@ test('catálogo: error recuperable, ausencia de resultados e imagen rota', async
   await page.getByLabel('Ubicación').fill('Pueblo inexistente');
   await page.locator('.search-submit').click();
   await expect(page.getByRole('status')).toContainText('No encontramos alojamientos');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await captureM1(page, 'catalog-empty-mobile-390x844.png');
   await slowFinished;
   await expect(page.getByRole('status')).toContainText('No encontramos alojamientos');
   await expect(page.locator('.listing-card')).toHaveCount(0);
@@ -188,10 +201,93 @@ test('catálogo: error recuperable, ausencia de resultados e imagen rota', async
 
   await page.goto('/');
   await page.getByLabel('Ubicación').fill('Pueblo sintético inexistente');
-  await page.getByRole('button', { name: 'Buscar alojamientos' }).click();
+  await page.getByRole('button', { name: 'Buscar alquiler mensual' }).click();
   await expect(page.getByRole('status')).toContainText('No encontramos alojamientos');
-  await page.getByRole('button', { name: 'Ver todos los alojamientos' }).click();
+  await page.locator('.catalog-empty').getByRole('button', { name: 'Ver todos los alquileres' }).click();
   await expect(page.locator('.listing-card')).toHaveCount(6);
+});
+
+test('M1: búsqueda mensual, precio vs duración, retorno al catálogo y alternativa semanal', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: /Encontrá tu próximo alquiler mensual en Uspallata/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Buscar alquiler mensual' })).toBeVisible();
+  await page.locator('.catalog-search details summary').click();
+  await page.getByLabel('Periodicidad').selectOption('MONTH');
+  await expect(page.getByRole('heading', { name: 'Todos los alquileres publicados' })).toBeVisible();
+  await expect(page.locator('.listing-card')).toHaveCount(6);
+  await page.getByRole('button', { name: 'Buscar alquiler mensual' }).click();
+  await expect(page).toHaveURL(/pricePeriod=MONTH/);
+  await expect(page.getByRole('heading', { name: 'Alquileres con precio mensual' })).toBeVisible();
+  await expect(page.locator('.listing-card')).toHaveCount(4);
+  for (const card of await page.locator('.listing-card').all()) {
+    await expect(card.locator('.listing-price')).toContainText('por mes');
+    await expect(card.locator('.listing-meta')).toContainText('Duración:');
+  }
+  await captureM1(page, 'catalog-monthly-desktop-1440x1000.png');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await captureM1(page, 'catalog-monthly-mobile-390x844.png');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  const permanentListing = page.locator('.listing-card').filter({ hasText: 'Casa del Río Quieto' });
+  await expect(permanentListing.locator('.listing-price strong')).toHaveText('ARS 135.000');
+  await expect(permanentListing.locator('.listing-price > span')).toHaveText('por mes');
+  await expect(permanentListing.locator('.listing-meta')).toContainText('Duración: Permanente');
+  await permanentListing.getByRole('link', { name: 'Casa del Río Quieto', exact: true }).click();
+  await expect(page.getByText('ARS 135.000 por mes')).toBeVisible();
+  await expect(page.getByText('Permanente', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: /Alojamientos/ }).click();
+  await expect(page).toHaveURL(/pricePeriod=MONTH/);
+
+  const flexibleListing = page.locator('.listing-card').filter({ hasText: 'Cabaña Viento Andino' });
+  await expect(flexibleListing.locator('.listing-price')).toContainText('por mes');
+  await expect(flexibleListing.locator('.listing-meta')).toContainText('Duración: Flexible');
+  await flexibleListing.getByRole('link', { name: 'Cabaña Viento Andino', exact: true }).click();
+  await expect(page).toHaveURL(/\/listings\/synthetic-catalog-07\?pricePeriod=MONTH/);
+  await expect(page.getByText('USD 660 por mes')).toBeVisible();
+  await expect(page.getByText('Duración flexible', { exact: true })).toBeVisible();
+  await expect(page.getByText('Precio publicado por mes. Consultá la duración y las condiciones antes de avanzar.')).toBeVisible();
+  await expect(page.getByText(/esta consulta no reserva el alquiler/i)).toBeVisible();
+  await captureM1(page, 'listing-monthly-desktop-1440x1000.png');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await captureM1(page, 'listing-monthly-mobile-390x844.png');
+  await page.setViewportSize({ width: 320, height: 844 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.getByRole('link', { name: /Alojamientos/ }).click();
+  await expect(page).toHaveURL(/pricePeriod=MONTH(?:&|$)/);
+  await captureM1(page, 'catalog-monthly-mobile-320x844.png');
+
+  await page.getByRole('button', { name: 'Ver todos los alquileres' }).click();
+  await expect(page).not.toHaveURL(/pricePeriod=/);
+  await expect(page.locator('.listing-card')).toHaveCount(6);
+  const failWeeklySearch = async (route: import('@playwright/test').Route) => {
+    if (new URL(route.request().url()).searchParams.get('pricePeriod') === 'WEEK') await route.abort('failed');
+    else await route.continue();
+  };
+  await page.route('**/api/public/listings?*', failWeeklySearch);
+  await page.locator('.catalog-search details summary').click();
+  await page.getByLabel('Periodicidad').selectOption('WEEK');
+  await page.getByRole('button', { name: 'Aplicar filtros' }).click();
+  await expect(page.getByRole('alert')).toContainText('Conservamos los resultados anteriores');
+  await expect(page.getByRole('heading', { name: 'Todos los alquileres publicados' })).toBeVisible();
+  await expect(page.locator('.listing-card')).toHaveCount(6);
+  await page.unroute('**/api/public/listings?*', failWeeklySearch);
+  await page.getByRole('button', { name: 'Reintentar' }).click();
+  await expect(page).toHaveURL(/pricePeriod=WEEK/);
+  await expect(page.getByRole('heading', { name: 'Alquileres con precio semanal' })).toBeVisible();
+  await expect(page.locator('.listing-card')).toHaveCount(3);
+  for (const card of await page.locator('.listing-card').all()) await expect(card.locator('.listing-price')).toContainText('por semana');
+
+  await page.getByRole('button', { name: 'Ver todos los alquileres' }).click();
+  await page.getByLabel('Ubicación').fill('Uspallata');
+  await page.getByLabel('Ubicación').press('Enter');
+  await expect(page).toHaveURL(/pricePeriod=MONTH/);
+  await expect(page).toHaveURL(/location=Uspallata/);
+  await expect(page.getByRole('heading', { name: 'Alquileres con precio mensual' })).toBeVisible();
 });
 
 test('catálogo: una página guardada fuera del nuevo total vuelve a la última página válida', async ({ page }) => {

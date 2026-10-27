@@ -35,7 +35,8 @@ INSERT OR IGNORE INTO listings(
  NULL,'2026-10-11T12:00:00.000Z','2026-10-11T12:00:00.000Z'),
 ('synthetic-catalog-05','synthetic-catalog-owner','APPROVED','Casa del Río Quieto',
  'Casa sintética de muestra con capacidad para grupos.',
- 'Uspallata, Mendoza',135000,'MONTH','MONTHS',6,'ARS','PUBLISHED','AVAILABLE',
+ -- M1 regression: price frequency and rental duration are independent declarations.
+ 'Uspallata, Mendoza',135000,'MONTH','PERMANENT',6,'ARS','PUBLISHED','AVAILABLE',
  '2026-10-16T12:00:00.000Z','2026-10-10T12:00:00.000Z','2026-10-10T12:00:00.000Z'),
 ('synthetic-catalog-06','synthetic-catalog-owner','APPROVED','Casita de Muestra',
  'Alojamiento sintético con último registro de disponibilidad antiguo.',

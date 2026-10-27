@@ -406,3 +406,30 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Controller delegated separate process PASS on exact tracking artifact; runtime parameters, process/session and backend-identity limitation are in `.orchestration/evidence/critics/CF-AU-I07-CONTROLLER-PASS-6C79D7D.md`. GitHub Actions `40404799291`: worker/web PASS, staging-private skipped. Automatic review on same HEAD had no findings; prior P2 threads resolved.
 - Local integrated QA evidence and limitations are in `output/playwright/i07/QA.md`. The malformed-JSONL-line parser path has no dedicated regression test (nonblocking Controller note). No authenticated remote E2E, Access re-verification, Cloudflare capacity test, screen-reader certification, or production readiness is claimed.
 - This result authorizes only the final evidence checkpoint and protected integration process for I07; it does not authorize deployment or production launch. Since the checkpoint itself changes tracking metadata/evidence, merge requires refreshed exact-HEAD required checks/review, validator, resolved conversations, and current `main` protection after publishing. Keep Issue #26 open for Human Product Acceptance and stop before I08/#27.
+
+## MVP M1 mensual-first — integración condicional (2026-10-27)
+
+- Candidato ejecutable: `57dcd4f75bb4fe95f052fab107dbe25c61ff9876`, tree `8b57dd5db85fdad931737f4c917af7db9bb223db`, base `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`; tracking artifact revisado `3cebec2b15bfc5b25bdcb77a0444348d4299db95`.
+- Local: Playwright público integrado 6/6; M1 focal posterior al ajuste 1/1; regresiones error/vacío 2/2; typecheck/build web PASS; capturas reales 1440/390/320; validador y diff-check a ejecutar en el checkpoint final.
+- GitHub: run `40446969519` worker/web PASS exacto en 3cebec2; staging-private skipped. La revisión automática exact-head todavía no estaba disponible porque el PR seguía draft.
+- Controller: bounded PASS en exact tracking artifact 3cebec2; evidencia `.orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-3CEBEC2.md`; proceso separado solicitado gpt-6-luna/high/read-only, backend UNVERIFIED, limitación runtime documentada.
+- **Resultado: PASS para publicar el checkpoint y continuar con revisión exact-head; NO es aún autorización final de merge.** Después de este checkpoint deben pasar worker/web y GitHub Review en el nuevo HEAD, consistencia, conversaciones, mergeability y protección de main. No desplegar ni actualizar el Preview; detenerse tras merge hasta aprobación humana de publicación/aceptación.
+
+## M1 mensual-first — rework de GitHub P2 (2026-10-27)
+
+- P2 de exact-head review: título de resultados seguía el filtro editable, no la página visible tras filtro sin aplicar o búsqueda fallida. Reparado en ejecutable `99ef502a01e7073f7e0973b6d574d193ce8d8018`; estado `loadedPricePeriod` se actualiza solo cuando se acepta la respuesta vigente. Regresión M1 1/1 PASS; typecheck/build PASS. QA y screenshot mobile actualizados.
+- GitHub Actions exact-head run `40447952055`: worker/web SUCCESS; staging-private SKIPPED. Review automática exact-head completada sin findings, P2 cerrado.
+- Revisión separada encontró REWORK solamente porque el estado todavía apuntaba al ejecutable anterior; Event 247 y STATUS corrigen los SHA/punteros. Su reporte es `.orchestration/evidence/critics/MVP-M1-REWORK-99EF502.md`; no se declara PASS Controller mientras esté pendiente la comprobación de cierre.
+- **Gate actual: pendiente de publicar este checkpoint, cerrar verificación de estado/controller en nuevo HEAD y renovar exact-head CI/review.** Mantener M1 sin deploy; no M2/M3.
+
+### Controller REWORK — cierre del puntero ejecutable
+
+- Sobre tracking SHA `0766deb68ab5b4db2f4ee72fff171e162ca2a0cd`, Controller señaló que `pull_request.executable_sha/tree` seguía en el candidato inicial `57dcd4f`, mientras el código/candidate_review apuntaban a `99ef502`. Sin hallazgos de código; la corrección P2 y su regresión se consideran correctas.
+- STATUS corrige el puntero en Event 248 al ejecutable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`.
+- **Gate aún no cerrado:** revisar exactamente la consistencia de los tres punteros activos en el checkpoint, renovar worker/web y GitHub review exact-head, conversaciones, validador y main protections antes del merge. No actualizar Preview.
+
+## M1 mensual-first — Controller final PASS (2026-10-27)
+
+- Controller PASS exact tracking artifact `7d9de4da4c2ddf34429a8cf404500d69acba2b78`; executable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`; base `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`. Evidence: `.orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-7D9DE4D.md`.
+- Active STATUS pointers coincide; GitHub P2 fix/regression reviewed; M1-only scope and no remote work confirmed. Backend model identity UNVERIFIED; no cryptographic/sandbox attestation.
+- **Pre-Critic técnico: PASS. Merge remains conditional** on exact-head worker/web, automated review sin findings, conversations resolved, consistency validator, branch protection and clean mergeability on the checkpoint produced by this record. Preview remains unchanged and M1 unpublished.

@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I07_INTEGRAL_QA`
-Active task: `CF-AU-I07 — QA integral (Issue #26)`
+Phase: `MVP_M1_MONTHLY_SEARCH`
+Active task: `MVP M1 — búsqueda orientada a alquileres mensuales (Issue #56)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1962,3 +1962,43 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Sobre el mismo tracking HEAD, GitHub Actions run `40404799291`: worker/web PASS; `staging-private` skipped por política. Automatic review completada sin findings ni unresolved findings; dos threads anteriores resueltos. El candidato funcional y el estado canónico informaban local/synthetic-only, sin E2E remoto autenticado ni readiness de producción.
 - El checkpoint que registra este resultado solo cambia estado/evidencia y no el árbol ejecutable; después de publicarlo se debe derivar el nuevo PR HEAD desde GitHub y renovar los checks/review requeridos sobre ese HEAD antes de integrar.
 - **READY_TO_RESUME:** publicar este checkpoint en PR #53, refrescar worker/web + automatic review para su nuevo HEAD; validar consistencia, mergeability, conversaciones y reglas actuales de `main`. Si pasan, merge protegido preservando historia; publicar matriz/límites en #26 y actualizar #25. Mantener #26 abierto para Product Acceptance y detenerse antes de I08/#27. No tocar Preview/CD/Access/D1 remota, producción, servicios pagados, R2, datos reales ni repo fuente.
+
+
+## Event 245 — M1 mensual-first implementado y PR funcional abierto
+
+- El estado previo I07 quedó integrado en `main@d5a26a0c6f1ad68dd77a13459ade1c15573a15cf` por PR #53. La aceptación humana está registrada en Issue #26; el Preview privado existente ya publica ese SHA en deployment `f358699c-9d20-4e86-b1d4-fcec8ddacffa`. Access se mantuvo operator-only, sin publicación de M1.
+- Issue #56 autoriza exclusivamente M1. Código ejecutable inicial `57dcd4f75bb4fe95f052fab107dbe25c61ff9876`, tree `8b57dd5db85fdad931737f4c917af7db9bb223db`, base exacta `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`; PR funcional draft #57, rama `work/mvp-m1-monthly-search`.
+- Home y búsqueda priorizan precio mensual con el filtro existente `pricePeriod=MONTH`; vía explícita y filtro semanal preservan acceso a anuncios semanales. Precio mensual y duración `PERMANENT`/`FLEXIBLE` quedan visual y funcionalmente separados; availability/freshness y consultas conservan contratos honestos. La única fixture D1 modificada es sintética y local. No cambia Worker runtime, API, auth o esquema.
+- QA integrada real Vue + Worker/Hono + D1 local: Playwright público 6/6 PASS; M1 focal 1/1 PASS después del ajuste de teclado; regresión vacía/error y capturas 2/2 PASS; Web typecheck/build PASS. Capturas verificables desktop 1440 y mobile 390/320, además error/empty: `output/playwright/mvp-m1/QA.md`.
+- Sin defectos técnicos materiales conocidos localmente. GitHub worker/web, GitHub review y Controller exactos aún pendientes tras reconciliar el estado; aún no se declara Pre-Critic de integración.
+- **Frontera vigente:** resolver controles exact-head y merge protegido de PR #57. Después mantener #56 abierta para publicación M1 en Preview y aceptación humana; no actualizar Preview ni iniciar M2/M3 sin autorización.
+
+## Event 246 — M1 Controller PASS; exact-head integration gates
+
+- Controller separado completó revisión read-only del tracking artifact `3cebec2b15bfc5b25bdcb77a0444348d4299db95` / tree `7c075cac808ec7f466206fcb46025021957b9fec`; ejecutable `57dcd4f75bb4fe95f052fab107dbe25c61ff9876` / tree `8b57dd5db85fdad931737f4c917af7db9bb223db`; base `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`. Dictamen **PASS bounded local/synthetic**, sin defectos materiales P0/P1/P2. Evidencia/provenance: `.orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-3CEBEC2.md`; CLI solicitado `gpt-6-luna`/High/`--sandbox read-only`, proceso Codex CLI 0.164.0 completado, backend identity UNVERIFIED; queda documentado el fallo de un nested self-check, sin claim de atestación criptográfica ni independencia externa.
+- GitHub run `40446969519` sobre ese tracking SHA: worker/web SUCCESS, `staging-private` SKIPPED. PR seguía draft y la revisión automática exact-head aún no aparecía; ambos se renuevan después de este checkpoint.
+- Estado y STATUS reconciliados con el resultado observado y evidencia de Controller. El próximo commit modifica solo estado/evidencia, no ejecutable.
+- **Pre-Critic: PASS condicional para avanzar a revisión automática exact-head e integración protegida.** Antes del merge: publicar checkpoint; marcar PR #57 listo; obtener checks worker/web y review automática en el HEAD exacto, cero conversaciones abiertas, validar consistencia y protección actual de main; fusionar solo si todos pasan. Después actualizar #56/#55, dejar Issue #56 abierto para publicación de Preview y aceptación humana. No actualizar Preview ni iniciar M2/M3.
+
+## Event 247 — GitHub P2 corregido; Controller rework de estado reconciliado
+
+- La review automática de GitHub sobre tracking/executable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b` encontró P2: el encabezado del catálogo cambiaba al editar un filtro sin aplicar y podía quedar describiendo una consulta fallida mientras las tarjetas anteriores seguían visibles.
+- Reparación en `loadedPricePeriod`: solo cambia junto con una respuesta vigente aceptada; la consulta abortada/fallida conserva encabezado y resultados previos. La regresión pública prueba filtro mensual sin aplicar, búsqueda semanal fallida/reintento, y la ruta mensual completa. Playwright M1 integrado focal 1/1 PASS con Vue + Worker/Hono + D1 local; Web typecheck/build PASS; imágenes responsive 1440/390/320 sin overflow. QA: `output/playwright/mvp-m1/QA.md`.
+- GitHub Actions run `40447952055` en ese SHA: worker/web SUCCESS; staging-private SKIPPED. Review automática de GitHub exact-head cerrada sin findings adicionales; P2 corregido en el mismo SHA.
+- Revisión separada produjo REWORK por punteros canónicos todavía referidos al ejecutable previo `57dcd4f` y al tracking artifact previo `3cebec2`; no reportó otros defectos de producto/código. Reporte y provenance/limitaciones: `.orchestration/evidence/critics/MVP-M1-REWORK-99EF502.md`. La reconciliación de STATUS/STATE/Pre-Critic para el código exacto `99ef502` y este hallazgo está aplicada en este evento. La invocación pidió Luna/High/read-only y completó; backend UNVERIFIED, dispatch nested fallido documentado; no se presenta como atestación criptográfica ni como PASS final.
+- Este checkpoint no cambia ejecutables. Publicar y derivar el nuevo HEAD, luego renovar `worker`/`web`, review automática y comprobación de conversaciones/protecciones en ese HEAD. Cerrar el REWORK de punteros con comprobación final. Merge protegido sólo si el cierre técnico y los checks exactos pasan. Issue #56 permanece abierto para publicación separada del Preview y aceptación humana; no actualizarlo ni empezar M2/M3.
+
+## Event 248 — Último SHA ejecutable canónico reconciliado
+
+- Controller exact tracking artifact `0766deb68ab5b4db2f4ee72fff171e162ca2a0cd` / tree `1fb7a52f996bd97cce853ec39fd1d60b2bf9daa6` devolvió REWORK por un puntero que había quedado sin actualizar: `pull_request.executable_sha/tree` seguía en `57dcd4f`, mientras el candidato, Current Functional Increment y código real eran `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`. No reportó defecto de código; consideró correcta la reparación P2 y regresión.
+- Corregido en STATUS en este evento; histórico Event 245 conserva su valor original como registro histórico. Evidencia REWORK: `.orchestration/evidence/critics/MVP-M1-CONTROLLER-REWORK-0766DEB.md`.
+- CI exact tracking `0766deb`: run `40448238889`, worker/web SUCCESS, staging-private SKIPPED. GitHub automatic review del ejecutable `99ef502` PASS sin findings. Este nuevo checkpoint requiere checks/review exactos renovados.
+- **READY_TO_RESUME:** publicar y derivar nuevo HEAD; ejecutar Controller final para verificar que `pull_request`, `candidate_review` y `current_functional_increment` usan el mismo ejecutable; resolver cualquier inconsistencia; exact-head CI/review y protección de main; merge protegido solo con gates verdes. Después actualizar #56/#55, dejar #56 pendiente de publicación humana a Preview y aceptación. No desplegar ni iniciar M2/M3.
+
+## Event 249 — Controller PASS final de M1
+
+- Controller separado completó **PASS** local/sintético sobre tracking SHA `7d9de4da4c2ddf34429a8cf404500d69acba2b78` / tree `e2b030e7d1d1e59b17b2607b56c0bc9b51aa1c22`, base `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`, ejecutable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`.
+- Verificó que `STATUS.pull_request`, `candidate_review` y `current_functional_increment` referencian el mismo ejecutable/tree; el heading depende del último resultado aceptado y conserva consistencia al editar filtros sin aplicar o al fallar/reintentar; el alcance permanece M1 público, sin M2/M3/API/auth/schema/despliegue. Evidencia `.orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-7D9DE4D.md`.
+- Runtime provenance: Codex CLI separado 0.164.0, gpt-6-luna/High/read-only/ephemeral solicitado, sesión `01a17b8d-b1a7-7b20-bc5c-350aa77e3110`, exit 0; backend identity UNVERIFIED; sin claims criptográficos. No corrió tests ni modificó archivos.
+- Checks/review de GitHub exact tracking SHA estaban pendientes al cierre del review. Publicar este estado/evidencia y exigir worker/web + review automática en HEAD exacto, conversaciones resueltas, validador, main protection y mergeabilidad antes de integrar.
+- **Pre-Critic técnico PASS; autorización de integración condicionada** a esas comprobaciones finales. Después del merge, publicar el resultado en #56/#55 y detenerse. M1 Preview no autorizado en esta tarea; no desplegar y no iniciar M2/M3.
