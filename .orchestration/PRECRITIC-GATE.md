@@ -421,3 +421,9 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - GitHub Actions exact-head run `40447952055`: worker/web SUCCESS; staging-private SKIPPED. Review automática exact-head completada sin findings, P2 cerrado.
 - Revisión separada encontró REWORK solamente porque el estado todavía apuntaba al ejecutable anterior; Event 247 y STATUS corrigen los SHA/punteros. Su reporte es `.orchestration/evidence/critics/MVP-M1-REWORK-99EF502.md`; no se declara PASS Controller mientras esté pendiente la comprobación de cierre.
 - **Gate actual: pendiente de publicar este checkpoint, cerrar verificación de estado/controller en nuevo HEAD y renovar exact-head CI/review.** Mantener M1 sin deploy; no M2/M3.
+
+### Controller REWORK — cierre del puntero ejecutable
+
+- Sobre tracking SHA `0766deb68ab5b4db2f4ee72fff171e162ca2a0cd`, Controller señaló que `pull_request.executable_sha/tree` seguía en el candidato inicial `57dcd4f`, mientras el código/candidate_review apuntaban a `99ef502`. Sin hallazgos de código; la corrección P2 y su regresión se consideran correctas.
+- STATUS corrige el puntero en Event 248 al ejecutable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`.
+- **Gate aún no cerrado:** revisar exactamente la consistencia de los tres punteros activos en el checkpoint, renovar worker/web y GitHub review exact-head, conversaciones, validador y main protections antes del merge. No actualizar Preview.

@@ -8,11 +8,11 @@
   "last_completed_task": "I07 — QA integral integrado por PR #53; aceptación humana y Preview privado publicados desde main@d5a26a0",
   "last_completed_head": "main@d5a26a0c6f1ad68dd77a13459ade1c15573a15cf",
   "work_branch": "work/mvp-m1-monthly-search",
-  "next_action": "Publicar el checkpoint de reconciliación; reconsultar el nuevo HEAD PR #57 y verificar worker/web, review automática sin hallazgos, conversaciones, consistencia y protección main. Cerrar internamente el REWORK de estado sin cambio ejecutable. Integrar por merge protegido solo con gates verdes. Después registrar #56/#55 y detenerse, sin Preview ni M2/M3.",
+  "next_action": "Publicar la reconciliación Event 248 y renovar worker/web y GitHub review en el nuevo HEAD. Ejecutar revisión Controller final exacta: verificar que pull_request, candidate_review y current_functional_increment apuntan todos a 99ef502 y confirmar el rework cerrado. Merge protegido solo con todos los gates PASS; luego actualizar #56/#55 y detenerse sin Preview ni M2/M3.",
   "stop_reason": null,
   "event": {
-    "seq": 247,
-    "summary": "GitHub P2 de título alineado corregido; CI y review PASS en 99ef502; Controller reportó REWORK solo por punteros canónicos obsoletos, ya reconciliados"
+    "seq": 248,
+    "summary": "Corregido último puntero ejecutable M1 obsoleto detectado por Controller; cierre final pendiente"
   },
   "external_review": null,
   "human_gate": null,
@@ -22,26 +22,26 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/57",
     "branch": "work/mvp-m1-monthly-search",
     "base_sha": "d5a26a0c6f1ad68dd77a13459ade1c15573a15cf",
-    "executable_sha": "57dcd4f75bb4fe95f052fab107dbe25c61ff9876",
-    "executable_tree": "8b57dd5db85fdad931737f4c917af7db9bb223db",
+    "executable_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
+    "executable_tree": "310cb4e3ade7269cbdd76134619f6a069cfcc16b",
     "state": "OPEN",
     "is_draft": false,
-    "status": "P2 de GitHub corregido; exact-head CI/review PASS en 99ef502; estado canónico reconciliado en Event 247; renovar checks exactos después de checkpoint.",
-    "last_observed_head_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
-    "last_observed_head_tree": "310cb4e3ade7269cbdd76134619f6a069cfcc16b",
-    "live_head_source": "GitHub PR #57 y run 40447952055 consultados después de rework; observado antes de este checkpoint."
+    "status": "M1 executable P2 fix 99ef502; latest Controller REWORK is bookkeeping-only, correcting the remaining executable pointer in Event 248. Exact-head controls on tracking checkpoint pending.",
+    "last_observed_head_sha": "0766deb68ab5b4db2f4ee72fff171e162ca2a0cd",
+    "last_observed_head_tree": "1fb7a52f996bd97cce853ec39fd1d60b2bf9daa6",
+    "live_head_source": "GitHub PR #57 exact head observed before Event 248 reconciliation checkpoint."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
-    "status": "P2_FIXED; GITHUB_EXACT_HEAD_PASS; CONTROLLER_REWORK_STATE_POINTERS_RECONCILED",
+    "status": "GITHUB_PASS; CONTROLLER_REWORK_BOOKKEEPING_ONLY; FINAL_POINTER_CLOSURE_PENDING",
     "artifact_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
     "executable_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
     "controller_reviewed_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
-    "controller_evidence": ".orchestration/evidence/critics/MVP-M1-REWORK-99EF502.md",
-    "controller_verdict": "Separate Codex process output REWORK only because state pointers were stale; no additional code defect. Reconciled in Event 247. Do not label PASS until closing exact-state check. Runtime command requested gpt-6-luna/high/read-only; backend UNVERIFIED; nested Controller dispatch failed and is disclosed.",
-    "github_checks": "PASS worker/web exact 99ef502, run 40447952055; staging-private SKIPPED.",
-    "github_review": "Completed on exact 99ef502; no findings.",
+    "controller_evidence": ".orchestration/evidence/critics/MVP-M1-CONTROLLER-REWORK-0766DEB.md",
+    "controller_verdict": "REWORK: pull_request.executable_sha/tree remained on 57dcd4f although candidate/current increment identified 99ef502. Corrected in Event 248; final closure check pending. No code defect found.",
+    "github_checks": "PASS exact tracking SHA 0766deb, run 40448238889; worker/web SUCCESS; staging-private skipped. Renew on Event 248 checkpoint.",
+    "github_review": "PASS/no findings on executable SHA 99ef502; renew automatic review for tracking checkpoint.",
     "remote_authenticated_e2e": "NOT RUN; M1 Preview not deployed."
   },
   "human_acceptance": {
@@ -93,7 +93,7 @@
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "ideas": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/54",
     "contract": ".orchestration/contracts/MVP-M1-MONTHLY-SEARCH.md",
-    "status": "IMPLEMENTED_LOCAL; PR #57 READY; GitHub P2 corrected, exact-head worker/web and review PASS on 99ef502; canonical-pointer rework reconciled; renew exact-head controls after checkpoint.",
+    "status": "IMPLEMENTED_LOCAL; PR #57 READY; executable 99ef502; GitHub exact executable review/CI PASS; Controller REWORK was residual stale pull_request pointer, now corrected in Event 248; final closure check and checkpoint CI/review pending.",
     "base_sha": "d5a26a0c6f1ad68dd77a13459ade1c15573a15cf",
     "branch": "work/mvp-m1-monthly-search",
     "scope": "Monthly-first public home/catalog/detail/inquiry using existing API/query filters. Weekly listings remain discoverable. No M2/M3, backend/runtime/API/auth/schema changes, Preview, Access, production, paid resources, real data, or source repository changes.",
@@ -101,12 +101,12 @@
     "executable_tree": "310cb4e3ade7269cbdd76134619f6a069cfcc16b",
     "evidence": "output/playwright/mvp-m1/QA.md and seven real-browser screenshots; final M1 regression covers unapplied filter and failed/retried weekly query.",
     "local_results": "Initial integrated public E2E 6/6 PASS; final P2 regression M1 E2E 1/1 PASS with Vue + Worker/Hono + D1 synthetic; final web typecheck/build PASS; 1440/390/320 no overflow.",
-    "remaining": "Reconcile Controller finding on stale canonical artifact pointers (completed in Event 247), publish checkpoint, verify exact-head worker/web, GitHub review, conversations, consistency and main branch protections; then protected merge. Keep #56 open awaiting separate Preview publication and human acceptance; no M2/M3.",
+    "remaining": "Publish Event 248 checkpoint; recheck worker/web and automatic review on exact tracking head; verify Controller closure of all three active SHA pointers, consistency, conversations and current main protection. Protected merge only after all PASS. Keep #56 open awaiting Preview authorization and human acceptance; no M2/M3.",
     "preview": "M1 not deployed. Existing Preview remains at main@d5a26a0, deployment f358699c; do not update it without the separate authorization already requested by the Human.",
     "github_checks": "PASS exact 99ef502, run 40447952055: worker/web success, staging-private skipped; renew for state checkpoint HEAD.",
     "github_review": "Codex GitHub review exact 99ef502 completed with no findings after P2 repair.",
-    "controller": "Review process output REWORK for stale state pointers only; fixed in Event 247. No additional code defects. A closing controller/state check is pending before reporting PASS.",
-    "precritic": "P2 regression verified; integration gate still pending closing exact-state review and refreshed exact-head checks/review after reconciliation checkpoint."
+    "controller": "REWORK on tracking SHA 0766deb: remaining pull_request.executable_sha/tree stale; corrected in Event 248, final closure pending. Evidence .orchestration/evidence/critics/MVP-M1-CONTROLLER-REWORK-0766DEB.md.",
+    "precritic": "P2 code regression passed; final integration gate pending Controller closure of residual pointer plus exact-head GitHub CI/review after state reconciliation."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
