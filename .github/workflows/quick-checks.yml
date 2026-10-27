@@ -38,6 +38,8 @@ jobs:
         working-directory: apps/worker
       - run: npm run test:owner
         working-directory: apps/worker
+      - run: npm run test:rental-terms
+        working-directory: apps/worker
       - run: npm run test:owner-auth
         working-directory: apps/worker
       - run: npm run test:admin
