@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `IN_PROGRESS`
+State: `READY_FOR_PRODUCT_OWNER_REVIEW`
 Phase: `MVP_M2_1_RENTAL_TERMS`
 Active task: `MVP M2.1 — condiciones esenciales del alquiler mensual (Issue #58)`
 
@@ -2021,3 +2021,14 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Regresión local en `apps/worker/tests/rental-terms.test.ts` prepara un row/receipt pre-upgrade y verifica replay original, rechazo 409 de cuerpo distinto y ausencia de duplicados. Worker typecheck PASS; suite M2.1 3/3 PASS. Web/E2E no cambió por este repair.
 - El P2 quedó corregido antes de integrar; la review/checks del SHA anterior no son controles del rework.
 - **Próximo paso exacto:** publicar `d2a623050678f61f5cf84f191040b21197b5a74b` y el checkpoint canónico en PR #59; obtener CI `worker`/`web`, revisión GitHub exact-head sin findings abiertos, ejecutar Controller delegado read-only exacto; dejar el PR abierto para revisión del Product Owner. Sin merge, migración remota ni deploy.
+
+
+## Event 252 — M2.1 candidate passed technical review; awaiting Product Owner
+
+- Rework candidate `f060283630a6d3dd68bc86eded1d3ea136f579b3` / tree `8980185d9c3055e185b94aad5bb90707a106594c`, based on `main@de412467e10b386b74120c035de453ca165e1637`, contains the complete M2.1 implementation and both repaired findings. The final scope remains essential monthly rental terms only.
+- GitHub review first found a P2 in pre-upgrade create replay; the legacy fingerprint behavior is preserved and covered by a seeded D1 regression. The Controller then found monthly terms could persist on WEEK listings, including through ADMIN-assisted update/submit; Worker and OWNER handling now enforce the monthly-only invariant, with regressions for each path. Both review threads are resolved.
+- Local evidence on this exact executable: Worker typecheck PASS; six relevant Worker suites 49/49, including M2.1 5/5 and assisted management 13/13; Web typecheck/build PASS; integrated synthetic-D1 Playwright OWNER→ADMIN→public 1/1 PASS. Evidence and real responsive captures: `output/playwright/m2.1/QA.md`.
+- GitHub exact-head Actions run `40545301046`: worker/web SUCCESS; staging-private SKIPPED. Automated review on the same SHA completed without findings.
+- Delegated `project_controller` returned PASS on the exact SHA. Review configuration requested `gpt-6-luna` / High with the read-only Controller role; actual backend model identity is UNVERIFIED. Report: `.orchestration/evidence/critics/MVP-M2.1-CONTROLLER-PASS-F060283.md`. The Controller inspected but did not execute tests.
+- **Boundary:** PR #59 remains OPEN for Product Owner review. Do not merge, run the migration against remote D1, update Preview, deploy, or start M2.2 under this task. No remote E2E or production readiness is claimed.
+- This canonical update is tracking/evidence only; the reviewed executable remains SHA `f060283630a6d3dd68bc86eded1d3ea136f579b3`. The GitHub branch may advance by this bookkeeping commit, with no executable change.

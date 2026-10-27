@@ -433,3 +433,12 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Controller PASS exact tracking artifact `7d9de4da4c2ddf34429a8cf404500d69acba2b78`; executable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`; base `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`. Evidence: `.orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-7D9DE4D.md`.
 - Active STATUS pointers coincide; GitHub P2 fix/regression reviewed; M1-only scope and no remote work confirmed. Backend model identity UNVERIFIED; no cryptographic/sandbox attestation.
 - **Pre-Critic técnico: PASS. Merge remains conditional** on exact-head worker/web, automated review sin findings, conversations resolved, consistency validator, branch protection and clean mergeability on the checkpoint produced by this record. Preview remains unchanged and M1 unpublished.
+
+## MVP M2.1 — condiciones esenciales del alquiler mensual (2026-10-27)
+
+- **Pre-Critic técnico PASS para Product Owner review** sobre ejecutable `f060283630a6d3dd68bc86eded1d3ea136f579b3` / tree `8980185d9c3055e185b94aad5bb90707a106594c`, base `de412467e10b386b74120c035de453ca165e1637`, PR #59 / Issue #58. La review técnica no implica merge ni publicación.
+- Incluye solo condiciones OWNER de alquiler mensual en migration 0014 local, validación API, OWNER y ficha pública. Dos reworks cerrados: replay pre-M2.1 conserva fingerprint legacy; términos mensuales no pueden persistir en alquiler semanal por OWNER o ADMIN asistido, ni enviarse a revisión en un estado inconsistente. Regresiones negativas y positivas inspeccionadas.
+- Local: 6 suites Worker relevantes 49/49, incluida M2.1 5/5 y gestión asistida 13/13; Worker typecheck; Web typecheck/build; Playwright integrado sintético D1 1/1. Evidencia `.orchestration/evidence/critics/MVP-M2.1-CONTROLLER-PASS-F060283.md` y `output/playwright/m2.1/QA.md`.
+- GitHub exact SHA `f060283`: run `40545301046` worker/web SUCCESS, staging-private SKIPPED; automatic review completed sin findings; hilos previos resueltos.
+- `project_controller` delegated Codex subagent: PASS exact-SHA, requested `gpt-6-luna` / High con rol read-only. Backend identity UNVERIFIED. No ejecutó pruebas; inspeccionó código y evidencia.
+- No remote D1 migration, Preview update, deployment, producción, paid resources ni datos reales. El PR queda abierto esperando Product Owner. No comenzar M2.2 ni otra funcionalidad hasta autorización posterior.
