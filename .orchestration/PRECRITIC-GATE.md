@@ -427,3 +427,9 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - Sobre tracking SHA `0766deb68ab5b4db2f4ee72fff171e162ca2a0cd`, Controller señaló que `pull_request.executable_sha/tree` seguía en el candidato inicial `57dcd4f`, mientras el código/candidate_review apuntaban a `99ef502`. Sin hallazgos de código; la corrección P2 y su regresión se consideran correctas.
 - STATUS corrige el puntero en Event 248 al ejecutable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`.
 - **Gate aún no cerrado:** revisar exactamente la consistencia de los tres punteros activos en el checkpoint, renovar worker/web y GitHub review exact-head, conversaciones, validador y main protections antes del merge. No actualizar Preview.
+
+## M1 mensual-first — Controller final PASS (2026-10-27)
+
+- Controller PASS exact tracking artifact `7d9de4da4c2ddf34429a8cf404500d69acba2b78`; executable `99ef502a01e7073f7e0973b6d574d193ce8d8018` / tree `310cb4e3ade7269cbdd76134619f6a069cfcc16b`; base `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`. Evidence: `.orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-7D9DE4D.md`.
+- Active STATUS pointers coincide; GitHub P2 fix/regression reviewed; M1-only scope and no remote work confirmed. Backend model identity UNVERIFIED; no cryptographic/sandbox attestation.
+- **Pre-Critic técnico: PASS. Merge remains conditional** on exact-head worker/web, automated review sin findings, conversations resolved, consistency validator, branch protection and clean mergeability on the checkpoint produced by this record. Preview remains unchanged and M1 unpublished.

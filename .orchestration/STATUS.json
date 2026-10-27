@@ -8,11 +8,11 @@
   "last_completed_task": "I07 — QA integral integrado por PR #53; aceptación humana y Preview privado publicados desde main@d5a26a0",
   "last_completed_head": "main@d5a26a0c6f1ad68dd77a13459ade1c15573a15cf",
   "work_branch": "work/mvp-m1-monthly-search",
-  "next_action": "Publicar la reconciliación Event 248 y renovar worker/web y GitHub review en el nuevo HEAD. Ejecutar revisión Controller final exacta: verificar que pull_request, candidate_review y current_functional_increment apuntan todos a 99ef502 y confirmar el rework cerrado. Merge protegido solo con todos los gates PASS; luego actualizar #56/#55 y detenerse sin Preview ni M2/M3.",
+  "next_action": "Publicar evidencia final del Controller y estado Event 249; verificar worker/web, review automática sin hallazgos, conversaciones, consistencia y branch protection sobre ese nuevo HEAD. Si todos PASS y main sigue en la base autorizada, merge protegido del PR #57; actualizar Issue #56/#55 y detenerse para autorización de publicación/aceptación. No desplegar Preview ni iniciar M2/M3.",
   "stop_reason": null,
   "event": {
-    "seq": 248,
-    "summary": "Corregido último puntero ejecutable M1 obsoleto detectado por Controller; cierre final pendiente"
+    "seq": 249,
+    "summary": "Controller PASS final exacto sobre M1; los tres punteros ejecutables activos coinciden; controles GitHub del checkpoint final pendientes"
   },
   "external_review": null,
   "human_gate": null,
@@ -26,22 +26,22 @@
     "executable_tree": "310cb4e3ade7269cbdd76134619f6a069cfcc16b",
     "state": "OPEN",
     "is_draft": false,
-    "status": "M1 executable P2 fix 99ef502; latest Controller REWORK is bookkeeping-only, correcting the remaining executable pointer in Event 248. Exact-head controls on tracking checkpoint pending.",
-    "last_observed_head_sha": "0766deb68ab5b4db2f4ee72fff171e162ca2a0cd",
-    "last_observed_head_tree": "1fb7a52f996bd97cce853ec39fd1d60b2bf9daa6",
-    "live_head_source": "GitHub PR #57 exact head observed before Event 248 reconciliation checkpoint."
+    "status": "Controller final PASS exact tracking artifact 7d9de4d; three active executable pointers reconciled to 99ef502; final checkpoint CI/review pending.",
+    "last_observed_head_sha": "7d9de4da4c2ddf34429a8cf404500d69acba2b78",
+    "last_observed_head_tree": "e2b030e7d1d1e59b17b2607b56c0bc9b51aa1c22",
+    "live_head_source": "GitHub PR exact head observed and inspected by final Controller before this evidence checkpoint."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
-    "status": "GITHUB_PASS; CONTROLLER_REWORK_BOOKKEEPING_ONLY; FINAL_POINTER_CLOSURE_PENDING",
-    "artifact_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
+    "status": "CONTROLLER_PASS; FINAL_GITHUB_CHECKPOINT_PENDING",
+    "artifact_sha": "7d9de4da4c2ddf34429a8cf404500d69acba2b78",
     "executable_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
-    "controller_reviewed_sha": "99ef502a01e7073f7e0973b6d574d193ce8d8018",
-    "controller_evidence": ".orchestration/evidence/critics/MVP-M1-CONTROLLER-REWORK-0766DEB.md",
-    "controller_verdict": "REWORK: pull_request.executable_sha/tree remained on 57dcd4f although candidate/current increment identified 99ef502. Corrected in Event 248; final closure check pending. No code defect found.",
-    "github_checks": "PASS exact tracking SHA 0766deb, run 40448238889; worker/web SUCCESS; staging-private skipped. Renew on Event 248 checkpoint.",
-    "github_review": "PASS/no findings on executable SHA 99ef502; renew automatic review for tracking checkpoint.",
+    "controller_reviewed_sha": "7d9de4da4c2ddf34429a8cf404500d69acba2b78",
+    "controller_evidence": ".orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-7D9DE4D.md",
+    "controller_verdict": "PASS bounded local/synthetic; exact tracking SHA 7d9de4d; all active executable pointers align to 99ef502. Requested GPT-6 Luna/High/read-only; backend UNVERIFIED.",
+    "github_checks": "Pending for evidence checkpoint after 7d9de4d; prior exact-head run 40448238889 was in progress at Controller review time.",
+    "github_review": "Pending exact evidence checkpoint; prior executable review on 99ef502 had no findings.",
     "remote_authenticated_e2e": "NOT RUN; M1 Preview not deployed."
   },
   "human_acceptance": {
@@ -93,7 +93,7 @@
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "ideas": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/54",
     "contract": ".orchestration/contracts/MVP-M1-MONTHLY-SEARCH.md",
-    "status": "IMPLEMENTED_LOCAL; PR #57 READY; executable 99ef502; GitHub exact executable review/CI PASS; Controller REWORK was residual stale pull_request pointer, now corrected in Event 248; final closure check and checkpoint CI/review pending.",
+    "status": "IMPLEMENTED_LOCAL; PR #57 ready; GitHub P2 fixed; Controller PASS on exact tracking 7d9de4d; final checkpoint exact-head CI/review pending.",
     "base_sha": "d5a26a0c6f1ad68dd77a13459ade1c15573a15cf",
     "branch": "work/mvp-m1-monthly-search",
     "scope": "Monthly-first public home/catalog/detail/inquiry using existing API/query filters. Weekly listings remain discoverable. No M2/M3, backend/runtime/API/auth/schema changes, Preview, Access, production, paid resources, real data, or source repository changes.",
@@ -101,12 +101,12 @@
     "executable_tree": "310cb4e3ade7269cbdd76134619f6a069cfcc16b",
     "evidence": "output/playwright/mvp-m1/QA.md and seven real-browser screenshots; final M1 regression covers unapplied filter and failed/retried weekly query.",
     "local_results": "Initial integrated public E2E 6/6 PASS; final P2 regression M1 E2E 1/1 PASS with Vue + Worker/Hono + D1 synthetic; final web typecheck/build PASS; 1440/390/320 no overflow.",
-    "remaining": "Publish Event 248 checkpoint; recheck worker/web and automatic review on exact tracking head; verify Controller closure of all three active SHA pointers, consistency, conversations and current main protection. Protected merge only after all PASS. Keep #56 open awaiting Preview authorization and human acceptance; no M2/M3.",
+    "remaining": "Publish this Controller evidence/state checkpoint; verify worker/web and automatic review exact-head, resolved conversations, consistency and main protection. Merge protected only after every control passes. Keep #56 open for separately authorized Preview publication and human acceptance; no M2/M3.",
     "preview": "M1 not deployed. Existing Preview remains at main@d5a26a0, deployment f358699c; do not update it without the separate authorization already requested by the Human.",
     "github_checks": "PASS exact 99ef502, run 40447952055: worker/web success, staging-private skipped; renew for state checkpoint HEAD.",
     "github_review": "Codex GitHub review exact 99ef502 completed with no findings after P2 repair.",
-    "controller": "REWORK on tracking SHA 0766deb: remaining pull_request.executable_sha/tree stale; corrected in Event 248, final closure pending. Evidence .orchestration/evidence/critics/MVP-M1-CONTROLLER-REWORK-0766DEB.md.",
-    "precritic": "P2 code regression passed; final integration gate pending Controller closure of residual pointer plus exact-head GitHub CI/review after state reconciliation."
+    "controller": "PASS bounded local/synthetic on exact tracking artifact 7d9de4da4c2ddf34429a8cf404500d69acba2b78; evidence .orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-7D9DE4D.md; runtime provenance/model limitation recorded.",
+    "precritic": "PASS technical M1 candidate; final integration gate requires exact-head worker/web, automatic review, resolved conversations and protected main after this evidence checkpoint."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
