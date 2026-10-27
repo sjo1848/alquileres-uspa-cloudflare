@@ -2,22 +2,22 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "MVP_M2_1_REMOTE_PREFLIGHT",
-  "runtime_status": "IN_PROGRESS",
-  "resume_authorized": true,
+  "runtime_status": "AWAITING_HUMAN_AUTHORIZATION",
+  "resume_authorized": false,
   "active_task": "M2.1 remote migration preflight (Issue #58)",
   "last_completed_task": "M2.1 implementation merged; migration 0014 remains unapplied and Preview remains on M1",
   "last_completed_head": "main@797e6656488d5473b9348542c2312ed0c90c94a6",
   "work_branch": "work/m2-1-migration-preflight",
-  "next_action": "Run the focused 32-test guard suite and protected checks/review on the post-rework artifact. Obtain a fresh bounded read-only Controller review. Leave PR #60 unmerged; stop for separate Human authorization before remote migration.",
-  "stop_reason": "The prior Controller REWORK is being addressed; no remote migration or deployment is authorized.",
+  "next_action": "Product Owner: review PR #60 and explicitly authorize or decline applying exactly migration 0014 to the existing synthetic D1. Do not merge or apply it before that decision. Preview publication remains a separate authorization.",
+  "stop_reason": "Remote schema migration is a material, irreversible-in-place D1 action requiring separate Human authorization; preflight is complete and remote state remains unchanged.",
   "event": {
-    "seq": 256,
-    "summary": "Controller P2 findings repaired with altered/extra trigger declaration regressions; new exact artifact awaits review"
+    "seq": 257,
+    "summary": "M2.1 migration preflight complete; guard tests and protected CI pass; awaiting separate Human authorization for remote 0014"
   },
   "external_review": null,
   "human_gate": {
-    "status": "PENDING_PRODUCT_OWNER_AUTHORIZATION",
-    "scope": "Apply migration 0014 to the existing synthetic Preview D1 only after PR #60 has passed protected review. This task does not authorize that action or Preview publication."
+    "status": "AWAITING_HUMAN_AUTHORIZATION",
+    "scope": "Separately authorize or decline applying exactly migration 0014 to synthetic Preview D1 database 74a00c52-a63b-45a3-8213-6648378ed5b1. This does not authorize Preview Worker publication; that remains separate."
   },
   "blocker": null,
   "pull_request": {
@@ -29,13 +29,25 @@
     "executable_tree": "06ab699eb9f4715ec327daebd0f4703567761715",
     "state": "OPEN",
     "is_draft": false,
-    "status": "Controller P2 regressions added; exact rework artifact awaits protected checks and fresh review.",
-    "last_observed_head_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29",
-    "last_observed_head_tree": "06ab699eb9f4715ec327daebd0f4703567761715"
+    "status": "Ready for Product Owner review; worker/web checks pass. PR intentionally unmerged pending explicit remote migration authorization.",
+    "last_observed_head_sha": "f26df3033591fd40e8dac559cded50637f889c95",
+    "last_observed_head_tree": "1315f3b3f491a815f9299ffdc2f05b17febda412"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
-  "candidate_review": null,
+  "candidate_review": {
+    "status": "CONTROLLER_REWORK_P2_RECONCILED_NO_FINAL_PASS_CLAIMED",
+    "artifact_sha": "f26df3033591fd40e8dac559cded50637f889c95",
+    "executable_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29",
+    "executable_tree": "06ab699eb9f4715ec327daebd0f4703567761715",
+    "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
+    "controller_reviewed_sha": "f26df3033591fd40e8dac559cded50637f889c95",
+    "controller_evidence": ".orchestration/evidence/critics/MVP-M2.1-MIGRATION-CONTROLLER-REWORK-F26DF30.md",
+    "controller_verdict": "REWORK P2: stale 30/32 test count reconciled in the following state-only checkpoint; code review found no migration guard defect. No final Controller PASS claimed. Requested gpt-6-luna/high with read-only CLI; backend identity UNVERIFIED.",
+    "github_checks": "Run 40579143017 on exact artifact f26df3033591fd40e8dac559cded50637f889c95: worker/web SUCCESS; staging-private SKIPPED.",
+    "github_review": "No automated GitHub review submission was observed; not claimed.",
+    "remote_authenticated_e2e": "NOT RUN; no Preview publication or authenticated remote test was authorized."
+  },
   "human_acceptance": {
     "scope": "MVP M1 monthly-first search in the private Preview",
     "verdict": "ACCEPTED_M1; M2.1 awaits separate review and publication authorization",
@@ -84,17 +96,17 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/58",
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "contract": ".orchestration/contracts/MVP-M2.1-REMOTE-MIGRATION-PREFLIGHT.md",
-    "status": "Controller REWORK P2 corrected; altered/extra trigger declarations now have fail-closed regressions. Fresh exact-artifact reviews pending.",
+    "status": "Preflight complete: sole remote pending migration is 0014; exact-hash guard PR #60 ready and CI worker/web PASS. Remote D1/Worker/Access/CD unchanged.",
     "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
     "branch": "work/m2-1-migration-preflight",
     "scope": "Read-only Preview/D1/Access verification; exact-SHA guard policy; private backup; local-only migration rehearsal. No remote migration, Worker publication, Access/CD/production change, M2.2, or M3.",
     "executable_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29",
     "executable_tree": "06ab699eb9f4715ec327daebd0f4703567761715",
     "evidence": ".orchestration/evidence/MVP-M2.1-MIGRATION-PREFLIGHT.md; private SQL and recovery metadata remain outside the repository.",
-    "local_results": "Preview target check PASS; D1 synthetic provenance PASS; exactly 0014 pending; Time Travel bookmark available; backup mode 0600; local isolated 0014 rehearsal PASS; Python guard tests 30/30 PASS; compilation/diff checks PASS.",
-    "remaining": "Protected CI, automatic GitHub review and fresh delegated read-only Controller on the rework artifact. Then stop for separate remote migration authorization.",
-    "remote": "Read-only checks and one SQL export only; no remote schema/data mutation or Worker publication. M1 remains deployed.",
-    "artifact_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29"
+    "local_results": "32/32 local guard tests PASS; Python compile and diff/state consistency PASS. GitHub Actions run 40579143017 worker/web SUCCESS, staging-private SKIPPED. Controller review found no migration guard code issue but returned REWORK P2 for stale test count, now reconciled; no final Controller PASS claimed.",
+    "remaining": "Separate Human authorization to merge/apply exactly 0014 to synthetic D1. Preview publication is a later independent authorization.",
+    "remote": "Read-only preflight, D1 SQL export, and local rehearsal only. Remote 0014 remains pending; M1 is still deployed; no remote schema mutation or Worker publication.",
+    "artifact_sha": "f26df3033591fd40e8dac559cded50637f889c95"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

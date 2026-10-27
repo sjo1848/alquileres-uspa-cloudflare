@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `IN_PROGRESS`
+State: `AWAITING_HUMAN_AUTHORIZATION`
 Phase: `MVP_M2_1_REMOTE_PREFLIGHT`
 Active task: `M2.1 remote migration preflight (Issue #58)`
 
@@ -2064,3 +2064,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The Controller's two bounded P2 findings are repaired in candidate `f738c670c3dd1bd3bf5451e2e8efc0d29f019d29` / tree `06ab699eb9f4715ec327daebd0f4703567761715`: tests now reject an altered authorized trigger header and an extra unlisted UPDATE trigger even when test fixture hashes are recomputed. Canonical STATUS identifies this exact rework artifact rather than the older 52ed checkpoint.
 - Local guard suite, Python compilation and whitespace checks PASS; a new protected exact-head review is required because tests and state changed.
 - **Next action:** run exact rework checks and a fresh delegated read-only Controller review; keep PR #60 unmerged and remote D1/Preview unchanged pending separate Human authorization.
+
+
+## Event 257 — preflight complete; awaiting separate migration authorization
+
+- Post-export read-only checks passed again: exact existing Worker/D1 target; exactly one pending migration 0014; synthetic D1 provenance; current Preview deployment remains `f9b74d2e-c503-43b4-b15c-bc4b45e3f8f1`; anonymous Access denials 12/12 stable+immutable routes. No remote D1 migration or Worker publication occurred.
+- The private SQL export and recovery metadata remain outside GitHub; backup/metadata modes were rechecked as 0600 under a 0700 directory. Local rehearsal passed; remote state was not restored or modified. Account plan remains unverified because the subscriptions API returned no entries.
+- Guard tests are reconciled to 32/32, Python compilation and consistency/diff checks PASS. GitHub Actions run `40579143017` on artifact `f26df3033591fd40e8dac559cded50637f889c95`: `worker`/`web` SUCCESS; `staging-private` SKIPPED. Branch protection requires those checks and enforces admins; it requires zero approving reviews. No automated review record was observed and none is claimed.
+- Controller review on the exact artifact returned REWORK P2 only for the stale test count; this was corrected in the status-only follow-up, with no migration-guard code finding. **No final Controller PASS is claimed.** Runtime reports and provenance are preserved in `evidence/critics/MVP-M2.1-MIGRATION-CONTROLLER-REWORK-F26DF30.md`.
+- **Human Gate:** PR #60 remains open and unmerged. Await explicit authorization to merge/apply exactly 0014 to the synthetic D1. Preview publication is a separate gate. No M2.2/M3.

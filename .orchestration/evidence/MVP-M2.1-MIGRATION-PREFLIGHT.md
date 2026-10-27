@@ -23,8 +23,11 @@ Observed: 2026-10-27. Authorized main base: `797e6656488d5473b9348542c2312ed0c90
 
 - Migration 0014 is SHA-256 `e71a710f90cf6b2dfdd5d329b280ac57931bab9d212dfdfbf74f1f43ce5cdb95`.
 - The allowlist binds that exact hash to Issue #58 and allows only the named `listings_validate_rental_terms_update` `BEFORE UPDATE OF` trigger declaration. After the exact trigger header is removed from validation, any remaining `UPDATE` still fails. The existing 0013 policy remains unchanged.
-- `python3 -m unittest scripts.tests.test_preview_cd_guard -v`: 30/30 PASS, including exact 0014 hash acceptance, hash mismatch rejection, unauthorized migration rejection, destructive SQL rejection, and general DML UPDATE rejection under the 0014 policy.
-- Python compilation and `git diff --check`: PASS.
+- `python3 -m unittest scripts.tests.test_preview_cd_guard -q`: 32/32 PASS, including exact 0014 hash acceptance, hash mismatch rejection, altered and extra trigger declaration rejection, unauthorized migration rejection, destructive SQL rejection, and general DML UPDATE rejection under the 0014 policy.
+- Python compilation, `git diff --check`, and `scripts/check_orchestration_state.py --base 797e6656488d5473b9348542c2312ed0c90c94a6`: PASS.
+- GitHub Actions run `40579143017` on tracking SHA `f26df3033591fd40e8dac559cded50637f889c95`: `worker` and `web` SUCCESS; `staging-private` SKIPPED. The branch protection read showed `worker` and `web` required, admins enforced; required approval count is zero.
+- Delegated Controller review first returned two P2s on `d9c208a`; both were repaired in the test/canonical checkpoint. Its bounded review of exact artifact `f26df3033591fd40e8dac559cded50637f889c95` found no code/guard defect but returned REWORK for stale `30/30` text in active STATUS. That count is reconciled to 32/32 below. No final Controller PASS is claimed. Review report: `.orchestration/evidence/critics/MVP-M2.1-MIGRATION-CONTROLLER-REWORK-F26DF30.md`.
+- No automated GitHub review submission was observed; none is claimed. The PR remains open and unmerged.
 - The change is prepared for a protected PR. Do not merge it or allow any remote migration to run before the separate Human authorization.
 
 ## Recovery plan and stop boundary
