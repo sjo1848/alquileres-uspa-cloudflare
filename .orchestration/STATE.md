@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CF_AU_I07_INTEGRAL_QA`
-Active task: `CF-AU-I07 — QA integral (Issue #26)`
+Phase: `MVP_M1_MONTHLY_SEARCH`
+Active task: `MVP M1 — búsqueda orientada a alquileres mensuales (Issue #56)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -1962,3 +1962,13 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Sobre el mismo tracking HEAD, GitHub Actions run `40404799291`: worker/web PASS; `staging-private` skipped por política. Automatic review completada sin findings ni unresolved findings; dos threads anteriores resueltos. El candidato funcional y el estado canónico informaban local/synthetic-only, sin E2E remoto autenticado ni readiness de producción.
 - El checkpoint que registra este resultado solo cambia estado/evidencia y no el árbol ejecutable; después de publicarlo se debe derivar el nuevo PR HEAD desde GitHub y renovar los checks/review requeridos sobre ese HEAD antes de integrar.
 - **READY_TO_RESUME:** publicar este checkpoint en PR #53, refrescar worker/web + automatic review para su nuevo HEAD; validar consistencia, mergeability, conversaciones y reglas actuales de `main`. Si pasan, merge protegido preservando historia; publicar matriz/límites en #26 y actualizar #25. Mantener #26 abierto para Product Acceptance y detenerse antes de I08/#27. No tocar Preview/CD/Access/D1 remota, producción, servicios pagados, R2, datos reales ni repo fuente.
+
+
+## Event 245 — M1 mensual-first implementado y PR funcional abierto
+
+- El estado previo I07 quedó integrado en `main@d5a26a0c6f1ad68dd77a13459ade1c15573a15cf` por PR #53. La aceptación humana está registrada en Issue #26; el Preview privado existente ya publica ese SHA en deployment `f358699c-9d20-4e86-b1d4-fcec8ddacffa`. Access se mantuvo operator-only, sin publicación de M1.
+- Issue #56 autoriza exclusivamente M1. Código ejecutable inicial `57dcd4f75bb4fe95f052fab107dbe25c61ff9876`, tree `8b57dd5db85fdad931737f4c917af7db9bb223db`, base exacta `d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`; PR funcional draft #57, rama `work/mvp-m1-monthly-search`.
+- Home y búsqueda priorizan precio mensual con el filtro existente `pricePeriod=MONTH`; vía explícita y filtro semanal preservan acceso a anuncios semanales. Precio mensual y duración `PERMANENT`/`FLEXIBLE` quedan visual y funcionalmente separados; availability/freshness y consultas conservan contratos honestos. La única fixture D1 modificada es sintética y local. No cambia Worker runtime, API, auth o esquema.
+- QA integrada real Vue + Worker/Hono + D1 local: Playwright público 6/6 PASS; M1 focal 1/1 PASS después del ajuste de teclado; regresión vacía/error y capturas 2/2 PASS; Web typecheck/build PASS. Capturas verificables desktop 1440 y mobile 390/320, además error/empty: `output/playwright/mvp-m1/QA.md`.
+- Sin defectos técnicos materiales conocidos localmente. GitHub worker/web, GitHub review y Controller exactos aún pendientes tras reconciliar el estado; aún no se declara Pre-Critic de integración.
+- **Frontera vigente:** resolver controles exact-head y merge protegido de PR #57. Después mantener #56 abierta para publicación M1 en Preview y aceptación humana; no actualizar Preview ni iniciar M2/M3 sin autorización.
