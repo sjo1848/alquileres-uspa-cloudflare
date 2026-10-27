@@ -363,7 +363,42 @@ def validate_pending_migrations(pending: list[str], allowed: dict, sql_files: di
         if re.search(r"\bDROP\s+(TABLE|COLUMN|INDEX|TRIGGER|VIEW)\b|\bTRUNCATE\b|\bDELETE\s+FROM\b", sql):
             raise PolicyError(f"destructive SQL is forbidden in automated Preview migrations: {name}")
         if re.search(r"\bUPDATE\b", sql) and policy.get("allow_update") is not True:
-            raise PolicyError(f"general data update is not explicitly approved: {name}")
+            sql_without_approved_trigger_headers = _remove_approved_update_trigger_headers(sql, policy)
+            if re.search(r"\bUPDATE\b", sql_without_approved_trigger_headers):
+                raise PolicyError(f"general data update is not explicitly approved: {name}")
+
+
+def _remove_approved_update_trigger_headers(sql: str, policy: dict) -> str:
+    """Strip only exact, policy-listed BEFORE UPDATE OF trigger headers.
+
+    The migration hash is checked before this function runs. Any UPDATE remaining
+    after stripping these DDL headers is DML or an unlisted trigger and fails closed.
+    """
+    triggers = policy.get("allowed_update_trigger_ddl", [])
+    if not isinstance(triggers, list) or not triggers:
+        return sql
+    remaining = sql
+    for trigger in triggers:
+        if not isinstance(trigger, dict) or set(trigger) != {"name", "table", "columns"}:
+            raise PolicyError("invalid update-trigger DDL allowlist policy")
+        name, table, columns = trigger["name"], trigger["table"], trigger["columns"]
+        if not all(isinstance(value, str) and re.fullmatch(r"[A-Z][A-Z0-9_]*", value) for value in [name, table]):
+            raise PolicyError("invalid update-trigger DDL identifier in allowlist")
+        if not isinstance(columns, list) or not columns or any(
+            not isinstance(column, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]*", column)
+            for column in columns
+        ):
+            raise PolicyError("invalid update-trigger DDL columns in allowlist")
+        column_pattern = r"\s*,\s*".join(re.escape(column) for column in columns)
+        pattern = re.compile(
+            rf"CREATE\s+TRIGGER\s+{re.escape(name)}\s+BEFORE\s+UPDATE\s+OF\s+"
+            rf"{column_pattern}\s+ON\s+{re.escape(table)}\b",
+            re.IGNORECASE,
+        )
+        remaining, count = pattern.subn("CREATE TRIGGER", remaining, count=1)
+        if count != 1:
+            raise PolicyError("allowlisted UPDATE trigger DDL was not found exactly once")
+    return remaining
 
 
 def check_access_response(status: int, location: str, expected_host: str = TARGET["access_host"]) -> None:

@@ -311,6 +311,31 @@ class PreviewCdGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(guard.PolicyError, "hash mismatch"):
                 guard.validate_pending_migrations([sql_file.name], allowed, {sql_file.name: altered})
 
+    def test_exact_0014_hash_allows_only_reviewed_update_trigger_ddl(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0014_monthly_rental_terms.sql"
+        guard.validate_pending_migrations([sql_file.name], allowed, {sql_file.name: sql_file})
+
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            altered.write_text(sql_file.read_text() + "\n-- changed\n")
+            with self.assertRaisesRegex(guard.PolicyError, "hash mismatch"):
+                guard.validate_pending_migrations([sql_file.name], allowed, {sql_file.name: altered})
+
+    def test_0014_policy_does_not_authorize_general_update_dml(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0014_monthly_rental_terms.sql"
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            altered.write_text(sql_file.read_text() + "\nUPDATE listings SET deposit_status='NOT_REQUIRED';\n")
+            policy_for_fixture = dict(allowed[sql_file.name])
+            policy_for_fixture["sha256"] = __import__("hashlib").sha256(altered.read_bytes()).hexdigest()
+            fixture_allowlist = {**allowed, sql_file.name: policy_for_fixture}
+            with self.assertRaisesRegex(guard.PolicyError, "general data update"):
+                guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
     def test_unapproved_and_destructive_migrations_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "0014_bad.sql"
@@ -320,6 +345,13 @@ class PreviewCdGuardTests(unittest.TestCase):
             allow = {path.name: {"sha256": __import__("hashlib").sha256(path.read_bytes()).hexdigest()}}
             with self.assertRaisesRegex(guard.PolicyError, "destructive SQL"):
                 guard.validate_pending_migrations([path.name], allow, {path.name: path})
+
+    def test_unapproved_data_update_migration_fails_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "0015_unreviewed.sql"
+            path.write_text("UPDATE listings SET deposit_status='NOT_REQUIRED';")
+            with self.assertRaisesRegex(guard.PolicyError, "not explicitly approved"):
+                guard.validate_pending_migrations([path.name], {}, {path.name: path})
 
     def test_access_denial_accepts_only_access_redirect_or_forbidden(self):
         guard.check_access_response(302, "https://sebastian-ojeda-pages.cloudflareaccess.com/cdn-cgi/access/login")
