@@ -8,11 +8,11 @@
   "last_completed_task": "M2.1 implementation merged; migration 0014 remains unapplied and Preview remains on M1",
   "last_completed_head": "main@797e6656488d5473b9348542c2312ed0c90c94a6",
   "work_branch": "work/m2-1-migration-preflight",
-  "next_action": "Close Controller P2 findings by adding altered/extra update-trigger declaration regressions; run focused guard and consistency checks, publish the rework commit, then obtain fresh exact-artifact Controller and GitHub review. Keep PR #60 unmerged.",
-  "stop_reason": "Controller exact-SHA review returned bounded REWORK; no remote migration or deployment is authorized.",
+  "next_action": "Run the focused 32-test guard suite and protected checks/review on the post-rework artifact. Obtain a fresh bounded read-only Controller review. Leave PR #60 unmerged; stop for separate Human authorization before remote migration.",
+  "stop_reason": "The prior Controller REWORK is being addressed; no remote migration or deployment is authorized.",
   "event": {
-    "seq": 255,
-    "summary": "Controller requested P2 regression coverage for altered and extra trigger declarations; autonomous rework in progress"
+    "seq": 256,
+    "summary": "Controller P2 findings repaired with altered/extra trigger declaration regressions; new exact artifact awaits review"
   },
   "external_review": null,
   "human_gate": {
@@ -25,13 +25,13 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/60",
     "branch": "work/m2-1-migration-preflight",
     "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
-    "executable_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc",
-    "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
+    "executable_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29",
+    "executable_tree": "06ab699eb9f4715ec327daebd0f4703567761715",
     "state": "OPEN",
     "is_draft": false,
-    "status": "Controller requested focused tests for altered/extra trigger declarations; rework in progress. No merge or remote mutation.",
-    "last_observed_head_sha": "d9c208ad35b52a44ef799ed155e38c22bed7a087",
-    "last_observed_head_tree": "c02afc30c63340beb835a82674595c66a16ca408"
+    "status": "Controller P2 regressions added; exact rework artifact awaits protected checks and fresh review.",
+    "last_observed_head_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29",
+    "last_observed_head_tree": "06ab699eb9f4715ec327daebd0f4703567761715"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -84,17 +84,17 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/58",
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "contract": ".orchestration/contracts/MVP-M2.1-REMOTE-MIGRATION-PREFLIGHT.md",
-    "status": "Controller REWORK P2: add explicit altered/extra trigger declaration regressions before final exact-SHA review.",
+    "status": "Controller REWORK P2 corrected; altered/extra trigger declarations now have fail-closed regressions. Fresh exact-artifact reviews pending.",
     "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
     "branch": "work/m2-1-migration-preflight",
     "scope": "Read-only Preview/D1/Access verification; exact-SHA guard policy; private backup; local-only migration rehearsal. No remote migration, Worker publication, Access/CD/production change, M2.2, or M3.",
-    "executable_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc",
-    "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
+    "executable_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29",
+    "executable_tree": "06ab699eb9f4715ec327daebd0f4703567761715",
     "evidence": ".orchestration/evidence/MVP-M2.1-MIGRATION-PREFLIGHT.md; private SQL and recovery metadata remain outside the repository.",
     "local_results": "Preview target check PASS; D1 synthetic provenance PASS; exactly 0014 pending; Time Travel bookmark available; backup mode 0600; local isolated 0014 rehearsal PASS; Python guard tests 30/30 PASS; compilation/diff checks PASS.",
-    "remaining": "Run focused guard tests and state check; then fresh exact-artifact GitHub and Controller review. Leave PR unmerged pending separate migration authorization.",
+    "remaining": "Protected CI, automatic GitHub review and fresh delegated read-only Controller on the rework artifact. Then stop for separate remote migration authorization.",
     "remote": "Read-only checks and one SQL export only; no remote schema/data mutation or Worker publication. M1 remains deployed.",
-    "artifact_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc"
+    "artifact_sha": "f738c670c3dd1bd3bf5451e2e8efc0d29f019d29"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

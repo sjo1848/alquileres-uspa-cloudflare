@@ -2057,3 +2057,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The delegated read-only Controller process reviewed PR #60 HEAD `d9c208ad35b52a44ef799ed155e38c22bed7a087` against base `797e6656488d5473b9348542c2312ed0c90c94a6`. It found no unsafe allowance, but returned P2 REWORK for missing explicit regressions covering an altered trigger declaration and an extra trigger declaration. Its other P2 concerned active status pointers lagging the reviewed PR checkpoint; canonical tracking is being reconciled in this rework.
 - The configured native Controller was advisory only and returned BLOCKED_MODEL_CONFIG because it could not verify enforced read-only confinement. The required separate `codex exec` process used requested `gpt-6-luna` / High, `--sandbox read-only`, exit 0; backend identity remains UNVERIFIED. Its bounded verdict is preserved in the local execution record, not treated as PASS.
 - **Next action:** add the two fail-closed trigger-declaration tests, rerun the focused guard and canonical-state checks, then obtain fresh exact-artifact GitHub/Controller review. PR #60 remains unmerged; remote migration and Preview publication remain unauthorized.
+
+
+## Event 256 — Controller P2 regressions repaired
+
+- The Controller's two bounded P2 findings are repaired in candidate `f738c670c3dd1bd3bf5451e2e8efc0d29f019d29` / tree `06ab699eb9f4715ec327daebd0f4703567761715`: tests now reject an altered authorized trigger header and an extra unlisted UPDATE trigger even when test fixture hashes are recomputed. Canonical STATUS identifies this exact rework artifact rather than the older 52ed checkpoint.
+- Local guard suite, Python compilation and whitespace checks PASS; a new protected exact-head review is required because tests and state changed.
+- **Next action:** run exact rework checks and a fresh delegated read-only Controller review; keep PR #60 unmerged and remote D1/Preview unchanged pending separate Human authorization.
