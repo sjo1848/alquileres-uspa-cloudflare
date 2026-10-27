@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_FOR_PRODUCT_OWNER_REVIEW`
-Phase: `MVP_M2_1_RENTAL_TERMS`
-Active task: `MVP M2.1 — condiciones esenciales del alquiler mensual (Issue #58)`
+State: `IN_PROGRESS`
+Phase: `MVP_M2_1_REMOTE_PREFLIGHT`
+Active task: `M2.1 remote migration preflight (Issue #58)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2032,3 +2032,14 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Delegated `project_controller` returned PASS on the exact SHA. Review configuration requested `gpt-6-luna` / High with the read-only Controller role; actual backend model identity is UNVERIFIED. Report: `.orchestration/evidence/critics/MVP-M2.1-CONTROLLER-PASS-F060283.md`. The Controller inspected but did not execute tests.
 - **Boundary:** PR #59 remains OPEN for Product Owner review. Do not merge, run the migration against remote D1, update Preview, deploy, or start M2.2 under this task. No remote E2E or production readiness is claimed.
 - This canonical update is tracking/evidence only; the reviewed executable remains SHA `f060283630a6d3dd68bc86eded1d3ea136f579b3`. The GitHub branch may advance by this bookkeeping commit, with no executable change.
+
+
+## Event 253 — M2.1 remote migration preflight; guard PR prepared
+
+- GitHub confirms PR #59 merged as `main@797e6656488d5473b9348542c2312ed0c90c94a6`. The existing Worker Preview target and D1 binding match the pinned account/resource IDs. The current Preview deployment remains the prior M1 deployment `f9b74d2e-c503-43b4-b15c-bc4b45e3f8f1`; M2.1 is not published.
+- Read-only Cloudflare metadata found the existing Access app and one enabled `Operator only` allow policy with a single email selector. Selector values were not reported. Anonymous access was denied on 12/12 route probes spanning stable and immutable Preview URLs.
+- Synthetic D1 provenance passed without selecting listing descriptions, addresses, contact content, or image bytes. Wrangler reported exactly one pending remote migration: `0014_monthly_rental_terms.sql`. No remote migration was applied. A D1 Time Travel bookmark is stored in local protected recovery metadata; its value is intentionally omitted from GitHub.
+- A 62,127-byte remote SQL export was saved outside the repository with file mode 0600 and parent mode 0700. It was imported to an isolated local Wrangler persistence directory; 0014 applied there successfully, both validation triggers were present, synthetic provenance still passed, and the local migration ledger had zero pending migrations. The private backup may contain synthetic password hashes; it is not published.
+- The account subscription metadata endpoint returned an empty list, which does not independently prove the account plan. No plan claim is made. No resource, plan, billing, Access, Worker, CD, or production setting changed.
+- Guard PR #60 changes only exact-hash authorization and its tests/evidence. Exact 0014 SHA-256: `e71a710f90cf6b2dfdd5d329b280ac57931bab9d212dfdfbf74f1f43ce5cdb95`. Only the named `BEFORE UPDATE OF` trigger DDL is permitted; remaining UPDATE DML is rejected. Guard tests 30/30 PASS, Python compilation and diff check PASS.
+- **Boundary:** finish protected checks, GitHub review, and delegated Controller review for PR #60, then leave it unmerged pending separate Human authorization to apply 0014. Do not publish the Worker or change Preview/CD/Access/production; do not start M2.2/M3. A Time Travel restore overwrites the entire database and must never be run automatically.
