@@ -30,6 +30,15 @@ type Listing = {
   rentalDuration: RentalDuration | null;
   maxOccupants: number | null;
   currency: Currency | null;
+  depositStatus: 'NOT_INFORMED'|'ASK_OWNER'|'NOT_REQUIRED'|'FIXED_AMOUNT'|null;
+  depositAmount: number|null;
+  depositCurrency: Currency|null;
+  internetIncluded: 'INCLUDED'|'NOT_INCLUDED'|'NOT_INFORMED'|null;
+  waterIncluded: 'INCLUDED'|'NOT_INCLUDED'|'NOT_INFORMED'|null;
+  electricityIncluded: 'INCLUDED'|'NOT_INCLUDED'|'NOT_INFORMED'|null;
+  gasIncluded: 'INCLUDED'|'NOT_INCLUDED'|'NOT_INFORMED'|null;
+  petsPolicy: 'ALLOWED'|'NOT_ALLOWED'|'ASK_OWNER'|'NOT_INFORMED'|null;
+  availableFrom: string|null;
   domainDataStatus: 'COMPLETE' | 'MISSING';
   availabilityStatus: AvailabilityStatus;
   lastConfirmedAt: string | null;
@@ -95,6 +104,11 @@ function detailPrice(value: Listing) {
   const amount = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 }).format(value.priceAmount);
   return `${value.currency} ${amount} por ${pricePeriodLabel(value.pricePeriod)}`;
 }
+
+const inclusionLabel=(value:Listing['internetIncluded'])=>value==='INCLUDED'?'Incluido en el precio':value==='NOT_INCLUDED'?'No incluido en el precio':'No informado';
+const petsLabel=(value:Listing['petsPolicy'])=>value==='ALLOWED'?'Permitidas':value==='NOT_ALLOWED'?'No permitidas':value==='ASK_OWNER'?'Consultar al propietario':'No informado';
+const declaredDeposit=computed(()=>{const value=listing.value;if(!value)return 'No informado';if(value.depositStatus==='ASK_OWNER')return 'A consultar';if(value.depositStatus==='NOT_REQUIRED')return 'No se requiere';if(value.depositStatus==='FIXED_AMOUNT'&&value.depositAmount&&value.depositCurrency){const amount=new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(value.depositAmount);return `${value.depositCurrency} ${amount} · monto fijo declarado`;}return 'No informado';});
+const estimatedMoveIn=computed(()=>{const value=listing.value?.availableFrom;if(!value)return 'No informado';const parsed=new Date(`${value}T12:00:00.000Z`);return Number.isNaN(parsed.getTime())?'No informado':new Intl.DateTimeFormat('es-AR',{dateStyle:'long',timeZone:'UTC'}).format(parsed);});
 
 async function sendContact() {
   if (!listing.value || contactBusy.value) return;
@@ -180,6 +194,20 @@ watch(() => route.params.id, id => void load(String(id)), { immediate: true });
               <div v-if="listing.domainDataStatus === 'COMPLETE'"><dt>Duración del alquiler</dt><dd>{{ rentalDurationLabel(listing.rentalDuration) }}</dd></div>
               <div><dt>Ubicación</dt><dd>{{ listing.location }}</dd></div>
             </dl>
+          </section>
+
+          <section v-if="listing.pricePeriod==='MONTH'" class="rental-terms card" aria-labelledby="rental-terms-title">
+            <div class="detail-overview-heading"><div><p class="eyebrow">Alquiler mensual</p><h2 id="rental-terms-title">Condiciones del alquiler</h2></div></div>
+            <dl class="detail-facts rental-terms-facts">
+              <div><dt>Depósito o garantía</dt><dd>{{ declaredDeposit }}</dd></div>
+              <div><dt>Internet</dt><dd>{{ inclusionLabel(listing.internetIncluded) }}</dd></div>
+              <div><dt>Agua</dt><dd>{{ inclusionLabel(listing.waterIncluded) }}</dd></div>
+              <div><dt>Electricidad</dt><dd>{{ inclusionLabel(listing.electricityIncluded) }}</dd></div>
+              <div><dt>Gas</dt><dd>{{ inclusionLabel(listing.gasIncluded) }}</dd></div>
+              <div><dt>Mascotas</dt><dd>{{ petsLabel(listing.petsPolicy) }}</dd></div>
+              <div><dt>Ingreso estimado</dt><dd>{{ estimatedMoveIn }}</dd></div>
+            </dl>
+            <p class="rental-terms-disclaimer">Condiciones y fecha declaradas por el propietario; pueden cambiar. Confirmalas antes de avanzar. La fecha no reserva el alojamiento ni sustituye su disponibilidad confirmada.</p>
           </section>
 
           <section class="detail-availability" aria-labelledby="availability-title">

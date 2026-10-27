@@ -11,3 +11,7 @@ Source pin: `sjo1848/alquileres-uspa@267c531f3e3d5869240894063d3a194fa1f9680b`, 
 | `AdminAuditLog`: required `id`, `actorId`, `action`, `entityType`, JSON `metadata`, `createdAt`; nullable `entityId`, `listingId`, `targetOwnerId`; actor/target FKs use RESTRICT and three source indexes | `admin_audit_events`; source-shaped nullable entity/listing/target fields, JSON-validated `metadata`, retained listing `reason` convenience field, RESTRICT actor/target FKs, actor/listing/target indexes, plus a recent-feed index | Operational for ADMIN listing review/publication/audit; 0009 upgrades legacy synthetic listing events to `entityType=LISTING`, copies the listing id and preserves the reason in JSON metadata; 0010 normalizes earlier synthetic moderation action names to the source `ADMIN_LISTING_*` values. No historical production records are migrated. |
 
 P2 also creates lab-only `listing_locks` and `image_operations`; they have no PostgreSQL product-entity equivalent. They are runtime coordination/recovery metadata, not claims of schema parity. D1/SQLite constraints are executable in `migrations/0001_core.sql`.
+
+## M2.1 local extension
+
+Migration `0014_monthly_rental_terms.sql` adds nullable OWNER declarations for deposit state/positive fixed amount and currency, utility-price inclusion, pet policy, and estimated move-in date. Historical rows remain SQL `NULL`; APIs and UI present those values as “No informado”. These fields are a local marketplace extension, not inferred source values or a remote D1 migration.

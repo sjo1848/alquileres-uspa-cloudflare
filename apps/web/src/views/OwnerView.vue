@@ -5,8 +5,11 @@ import { ApiError, apiUrl } from '../api';
 import { useSession } from '../session';
 import { currencyOptions, pricePeriodOptions, rentalDurationOptions, formatRentalPrice, type Currency, type PricePeriod, type RentalDuration } from './rental-domain';
 import { formatImageSize } from './image-size';
-type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number };
-type Listing = Fields & { id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null };
+type DepositStatus='NOT_INFORMED'|'ASK_OWNER'|'NOT_REQUIRED'|'FIXED_AMOUNT';
+type ServiceInclusion='INCLUDED'|'NOT_INCLUDED'|'NOT_INFORMED';
+type PetsPolicy='ALLOWED'|'NOT_ALLOWED'|'ASK_OWNER'|'NOT_INFORMED';
+type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number; depositStatus:DepositStatus; depositAmount:number|null; depositCurrency:Currency|null; internetIncluded:ServiceInclusion; waterIncluded:ServiceInclusion; electricityIncluded:ServiceInclusion; gasIncluded:ServiceInclusion; petsPolicy:PetsPolicy; availableFrom:string|null };
+type Listing = Omit<Fields,'depositStatus'|'depositAmount'|'depositCurrency'|'internetIncluded'|'waterIncluded'|'electricityIncluded'|'gasIncluded'|'petsPolicy'|'availableFrom'> & { depositStatus:DepositStatus|null; depositAmount:number|null; depositCurrency:Currency|null; internetIncluded:ServiceInclusion|null; waterIncluded:ServiceInclusion|null; electricityIncluded:ServiceInclusion|null; gasIncluded:ServiceInclusion|null; petsPolicy:PetsPolicy|null; availableFrom:string|null; id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null };
 type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt?:string; source?:'STATIC_ASSET'|'OWNER_UPLOAD' };
 type ContactEvent = { id:string; state:'UNREAD'|'READ'; visitorName:string; visitorEmail:string; message:string; createdAt:string; listing:{id:string;title:string;location:string} };
 type OwnerSection = 'information'|'photographs'|'availability';
@@ -26,7 +29,8 @@ const selectedPhoto=ref<{file:File;previewUrl:string}|null>(null);
 const statusFilter=ref<'ALL'|'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'>('ALL');
 const activeOwnerSection=ref<OwnerSection>('information');
 const mobilePane=ref<'inventory'|'detail'>('inventory');
-const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1});
+const blank=():Fields=>({title:'',description:'',location:'Uspallata',priceAmount:0,currency:'ARS',pricePeriod:'MONTH',rentalDuration:'FLEXIBLE',maxOccupants:1,depositStatus:'NOT_INFORMED',depositAmount:null,depositCurrency:null,internetIncluded:'NOT_INFORMED',waterIncluded:'NOT_INFORMED',electricityIncluded:'NOT_INFORMED',gasIncluded:'NOT_INFORMED',petsPolicy:'NOT_INFORMED',availableFrom:null});
+const normalizeListing=(item:Listing):Listing=>({...item,depositStatus:item.depositStatus??'NOT_INFORMED',depositAmount:item.depositAmount??null,depositCurrency:item.depositCurrency??null,internetIncluded:item.internetIncluded??'NOT_INFORMED',waterIncluded:item.waterIncluded??'NOT_INFORMED',electricityIncluded:item.electricityIncluded??'NOT_INFORMED',gasIncluded:item.gasIncluded??'NOT_INFORMED',petsPolicy:item.petsPolicy??'NOT_INFORMED',availableFrom:item.availableFrom??null});
 const form=reactive<Fields>(blank());
 const listingsLoadError=ref('');
 const selected=computed(()=>listings.value.find(x=>x.id===selectedId.value));
@@ -111,8 +115,9 @@ function choose(item?:Listing){
   discardSelectedPhoto();pendingImageDelete.value=null;
   creating.value=!item;
   activeOwnerSection.value='information';mobilePane.value='detail';
-  selectedId.value=item?.id??null;
-  Object.assign(form,item?Object.fromEntries(Object.keys(blank()).map(key=>[key,item[key as keyof Fields]])):blank());
+  const normalized=item?normalizeListing(item):undefined;
+  selectedId.value=normalized?.id??null;
+  Object.assign(form,normalized?Object.fromEntries(Object.keys(blank()).map(key=>[key,normalized[key as keyof Fields]])):blank());
   error.value='';notice.value='';pendingCreate=undefined;
   confirmReload.value=false;
   pendingSelection.value=null;
@@ -120,6 +125,7 @@ function choose(item?:Listing){
   images.value=[];imagesLoading.value=false;imagesLoadError.value='';imageLoadVersion++;
   if(item)void loadImages(item);
 }
+function changeDepositStatus(value:DepositStatus){form.depositStatus=value;if(value!=='FIXED_AMOUNT'){form.depositAmount=null;form.depositCurrency=null;}}
 function returnToInventory(){mobilePane.value='inventory';void nextTick(()=>document.getElementById('owner-listings-title')?.focus({preventScroll:true}));}
 function resumeEditing(){
   if(!unsaved.value)return;
@@ -156,7 +162,7 @@ async function load(discardChanges=false,trigger?:HTMLElement|null){
   loading.value=true;error.value='';
   try{
     const selected=selectedId.value;
-    listings.value=await session.apiRequest<Listing[]>('/listings');
+    listings.value=(await session.apiRequest<Listing[]>('/listings')).map(normalizeListing);
     if(selected){
       const refreshed=listings.value.find(item=>item.id===selected);
       choose(refreshed);
@@ -193,6 +199,7 @@ async function confirmRemoveListing(){
   finally{busy.value=false;}
 }
 function remember(item:Listing){
+  item=normalizeListing(item);
   const index=listings.value.findIndex(x=>x.id===item.id);
   if(index<0)listings.value.unshift(item);else listings.value[index]=item;
   selectedId.value=item.id;creating.value=false;Object.assign(form,Object.fromEntries(Object.keys(blank()).map(key=>[key,item[key as keyof Fields]])));
@@ -390,6 +397,24 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
                 <label>Duración<select v-model="form.rentalDuration" name="rentalDuration"><option v-for="o in rentalDurationOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></label>
                 <label>Capacidad máxima<input v-model.number="form.maxOccupants" name="maxOccupants" type="number" min="1" max="2147483647" step="1" required inputmode="numeric" /></label>
               </div>
+            </fieldset>
+            <fieldset v-if="form.pricePeriod==='MONTH'" :disabled="busy||!canEdit">
+              <legend>Condiciones del alquiler mensual</legend>
+              <p class="owner-save-hint">Completá solo lo que conocés. Estos datos son declarados por vos; no se verifican ni generan una reserva.</p>
+              <div class="owner-form-grid owner-form-grid-compact">
+                <label>Depósito o garantía<select :value="form.depositStatus" name="depositStatus" @change="changeDepositStatus(($event.target as HTMLSelectElement).value as DepositStatus)"><option value="NOT_INFORMED">No informado</option><option value="ASK_OWNER">A consultar</option><option value="NOT_REQUIRED">No se requiere</option><option value="FIXED_AMOUNT">Monto fijo declarado</option></select></label>
+                <template v-if="form.depositStatus==='FIXED_AMOUNT'">
+                  <label>Monto fijo<input :value="form.depositAmount??''" name="depositAmount" type="number" min="1" max="2147483647" step="1" inputmode="numeric" required @input="form.depositAmount=($event.target as HTMLInputElement).value===''?null:Number(($event.target as HTMLInputElement).value)" /></label>
+                  <label>Moneda del depósito<select v-model="form.depositCurrency" name="depositCurrency" required><option :value="null" disabled>Elegí una moneda</option><option value="ARS">Pesos argentinos (ARS)</option><option value="USD">Dólares estadounidenses (USD)</option></select></label>
+                </template>
+                <label>Internet incluido en el precio<select v-model="form.internetIncluded" name="internetIncluded"><option value="NOT_INFORMED">No informado</option><option value="INCLUDED">Incluido</option><option value="NOT_INCLUDED">No incluido</option></select></label>
+                <label>Agua incluida en el precio<select v-model="form.waterIncluded" name="waterIncluded"><option value="NOT_INFORMED">No informado</option><option value="INCLUDED">Incluida</option><option value="NOT_INCLUDED">No incluida</option></select></label>
+                <label>Electricidad incluida en el precio<select v-model="form.electricityIncluded" name="electricityIncluded"><option value="NOT_INFORMED">No informado</option><option value="INCLUDED">Incluida</option><option value="NOT_INCLUDED">No incluida</option></select></label>
+                <label>Gas incluido en el precio<select v-model="form.gasIncluded" name="gasIncluded"><option value="NOT_INFORMED">No informado</option><option value="INCLUDED">Incluido</option><option value="NOT_INCLUDED">No incluido</option></select></label>
+                <label>¿Se permiten mascotas?<select v-model="form.petsPolicy" name="petsPolicy"><option value="NOT_INFORMED">No informado</option><option value="ALLOWED">Permitidas</option><option value="NOT_ALLOWED">No permitidas</option><option value="ASK_OWNER">Consultar</option></select></label>
+                <label>Fecha estimada de ingreso<input :value="form.availableFrom??''" name="availableFrom" type="date" @input="form.availableFrom=($event.target as HTMLInputElement).value||null" /></label>
+              </div>
+              <p class="owner-save-hint">Los servicios indican si están incluidos en el precio publicado, no si existen en la zona. La fecha es una estimación y no confirma disponibilidad.</p>
             </fieldset>
             <p v-if="selected && canEdit && dirty" class="owner-unsaved" role="status">Tenés cambios sin guardar. Guardalos antes de enviarlos a revisión o salir.</p>
             <p v-else-if="selected && !canEdit" class="owner-save-hint">La información queda en modo lectura mientras el equipo revisa o publica este alojamiento.</p>
