@@ -336,6 +336,37 @@ class PreviewCdGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(guard.PolicyError, "general data update"):
                 guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
 
+    def test_0014_policy_rejects_altered_update_trigger_declaration(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0014_monthly_rental_terms.sql"
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            changed_sql = sql_file.read_text().replace(
+                "BEFORE UPDATE OF deposit_status,deposit_amount,deposit_currency ON listings",
+                "BEFORE UPDATE OF deposit_status ON listings",
+            )
+            altered.write_text(changed_sql)
+            policy_for_fixture = dict(allowed[sql_file.name])
+            policy_for_fixture["sha256"] = __import__("hashlib").sha256(altered.read_bytes()).hexdigest()
+            fixture_allowlist = {**allowed, sql_file.name: policy_for_fixture}
+            with self.assertRaisesRegex(guard.PolicyError, "trigger DDL was not found"):
+                guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
+    def test_0014_policy_rejects_extra_update_trigger_declaration(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0014_monthly_rental_terms.sql"
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            extra = "\nCREATE TRIGGER unreviewed_rental_terms BEFORE UPDATE OF deposit_status ON listings BEGIN SELECT 1; END;\n"
+            altered.write_text(sql_file.read_text() + extra)
+            policy_for_fixture = dict(allowed[sql_file.name])
+            policy_for_fixture["sha256"] = __import__("hashlib").sha256(altered.read_bytes()).hexdigest()
+            fixture_allowlist = {**allowed, sql_file.name: policy_for_fixture}
+            with self.assertRaisesRegex(guard.PolicyError, "general data update"):
+                guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
     def test_unapproved_and_destructive_migrations_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "0014_bad.sql"

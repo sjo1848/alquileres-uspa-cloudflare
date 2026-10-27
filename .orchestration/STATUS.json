@@ -8,11 +8,11 @@
   "last_completed_task": "M2.1 implementation merged; migration 0014 remains unapplied and Preview remains on M1",
   "last_completed_head": "main@797e6656488d5473b9348542c2312ed0c90c94a6",
   "work_branch": "work/m2-1-migration-preflight",
-  "next_action": "Complete the reconciled PR #60 with protected CI, exact-head GitHub review, and delegated read-only Controller review. Keep the PR unmerged and stop for separate Human authorization before any remote migration or Preview publication.",
-  "stop_reason": "The remote migration is a separate Human authorization gate; this PR only prepares the exact-hash guard and local rehearsal evidence.",
+  "next_action": "Close Controller P2 findings by adding altered/extra update-trigger declaration regressions; run focused guard and consistency checks, publish the rework commit, then obtain fresh exact-artifact Controller and GitHub review. Keep PR #60 unmerged.",
+  "stop_reason": "Controller exact-SHA review returned bounded REWORK; no remote migration or deployment is authorized.",
   "event": {
-    "seq": 254,
-    "summary": "Protected PR #60 opened for exact-hash migration guard; exact-head reviews pending"
+    "seq": 255,
+    "summary": "Controller requested P2 regression coverage for altered and extra trigger declarations; autonomous rework in progress"
   },
   "external_review": null,
   "human_gate": {
@@ -29,25 +29,13 @@
     "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
     "state": "OPEN",
     "is_draft": false,
-    "status": "Ready for protected exact-head CI and review; remote migration and Preview publication are not authorized.",
-    "last_observed_head_sha": "52ed89009de1ef8546eebd664e20f299f161c489",
-    "last_observed_head_tree": "8e5fd2b2a3fbfe0f4a0704c760df3e4015b56082"
+    "status": "Controller requested focused tests for altered/extra trigger declarations; rework in progress. No merge or remote mutation.",
+    "last_observed_head_sha": "d9c208ad35b52a44ef799ed155e38c22bed7a087",
+    "last_observed_head_tree": "c02afc30c63340beb835a82674595c66a16ca408"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
-  "candidate_review": {
-    "status": "PENDING_EXACT_HEAD_GITHUB_AND_CONTROLLER_REVIEW",
-    "artifact_sha": "52ed89009de1ef8546eebd664e20f299f161c489",
-    "executable_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc",
-    "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
-    "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
-    "controller_reviewed_sha": null,
-    "controller_evidence": null,
-    "controller_verdict": "PENDING",
-    "github_checks": "PENDING on PR #60 final head",
-    "github_review": "PENDING on PR #60 final head",
-    "remote_authenticated_e2e": "NOT APPLICABLE; no Preview publication or authenticated remote test was authorized."
-  },
+  "candidate_review": null,
   "human_acceptance": {
     "scope": "MVP M1 monthly-first search in the private Preview",
     "verdict": "ACCEPTED_M1; M2.1 awaits separate review and publication authorization",
@@ -96,7 +84,7 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/58",
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "contract": ".orchestration/contracts/MVP-M2.1-REMOTE-MIGRATION-PREFLIGHT.md",
-    "status": "PR #60 is ready for exact-head protected checks and delegated review; no remote migration/deployment.",
+    "status": "Controller REWORK P2: add explicit altered/extra trigger declaration regressions before final exact-SHA review.",
     "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
     "branch": "work/m2-1-migration-preflight",
     "scope": "Read-only Preview/D1/Access verification; exact-SHA guard policy; private backup; local-only migration rehearsal. No remote migration, Worker publication, Access/CD/production change, M2.2, or M3.",
@@ -104,7 +92,7 @@
     "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
     "evidence": ".orchestration/evidence/MVP-M2.1-MIGRATION-PREFLIGHT.md; private SQL and recovery metadata remain outside the repository.",
     "local_results": "Preview target check PASS; D1 synthetic provenance PASS; exactly 0014 pending; Time Travel bookmark available; backup mode 0600; local isolated 0014 rehearsal PASS; Python guard tests 30/30 PASS; compilation/diff checks PASS.",
-    "remaining": "Exact-head CI, GitHub review and delegated read-only Controller; then separate Human authorization before merging or applying 0014.",
+    "remaining": "Run focused guard tests and state check; then fresh exact-artifact GitHub and Controller review. Leave PR unmerged pending separate migration authorization.",
     "remote": "Read-only checks and one SQL export only; no remote schema/data mutation or Worker publication. M1 remains deployed.",
     "artifact_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc"
   },

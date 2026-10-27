@@ -2050,3 +2050,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - PR #60 is open and ready for review from `work/m2-1-migration-preflight`; it changes only the exact-hash migration guard, its regression tests, the M2.1 preflight contract/evidence, and canonical status. Base is `main@797e6656488d5473b9348542c2312ed0c90c94a6`.
 - Executable candidate `f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc` / tree `706dc94ac84909fe8d0a9c6da255124c13e8d626`; tracking checkpoint `52ed89009de1ef8546eebd664e20f299f161c489` / tree `8e5fd2b2a3fbfe0f4a0704c760df3e4015b56082`. The checkpoint reconciles this Issue and branch state; exact-head CI, GitHub review and Controller are pending.
 - **Next action:** complete only the protected PR review and local technical Controller checks. Leave PR #60 unmerged and do not apply 0014 or publish the Worker; stop for a separate Human authorization.
+
+
+## Event 255 — Controller REWORK P2: trigger declaration regressions
+
+- The delegated read-only Controller process reviewed PR #60 HEAD `d9c208ad35b52a44ef799ed155e38c22bed7a087` against base `797e6656488d5473b9348542c2312ed0c90c94a6`. It found no unsafe allowance, but returned P2 REWORK for missing explicit regressions covering an altered trigger declaration and an extra trigger declaration. Its other P2 concerned active status pointers lagging the reviewed PR checkpoint; canonical tracking is being reconciled in this rework.
+- The configured native Controller was advisory only and returned BLOCKED_MODEL_CONFIG because it could not verify enforced read-only confinement. The required separate `codex exec` process used requested `gpt-6-luna` / High, `--sandbox read-only`, exit 0; backend identity remains UNVERIFIED. Its bounded verdict is preserved in the local execution record, not treated as PASS.
+- **Next action:** add the two fail-closed trigger-declaration tests, rerun the focused guard and canonical-state checks, then obtain fresh exact-artifact GitHub/Controller review. PR #60 remains unmerged; remote migration and Preview publication remain unauthorized.
