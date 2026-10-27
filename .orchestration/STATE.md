@@ -2012,3 +2012,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - QA local PASS: Worker typecheck y 5 suites enfocadas, 33/33; `npm run test:rental-terms` PASS y queda agregado a CI; Web typecheck/build; Playwright integrado Vue + Worker/Hono + D1 local 1/1. Recorrido OWNER→ADMIN sintético→ficha pública verificado a 320/390/1440; evidencia en `output/playwright/m2.1/QA.md`. El detalle histórico con campos SQL NULL sigue válido y se presenta “No informado”.
 - Sin cambios ni migraciones remotas, despliegues, Access, producción, datos reales, R2 o servicios pagos.
 - **Frontera:** publicar el PR funcional, procesar CI/revisión GitHub y completar una revisión técnica independiente read-only del SHA exacto. Después dejar M2.1 en espera de revisión/aceptación del Product Owner; no integrar ni publicar sin autorización adicional.
+
+
+## Event 251 — GitHub P2 cerrado en rework M2.1
+
+- La revisión automática de PR #59 sobre `935c186f68997aa81b1ad8b38827d7f27e277789` señaló que los fingerprints de `LISTING_CREATE` cambiaban al añadir términos por defecto, bloqueando replay de operaciones previas a M2.1.
+- Reparación en candidato `d2a623050678f61f5cf84f191040b21197b5a74b` / tree `9e435ac047f5c7270a946e51c3cea679f2dbb961`: una solicitud sin claves M2.1 usa exactamente el fingerprint pre-M2.1; una solicitud que sí declara condiciones las vincula al fingerprint. Se conserva el conflicto para reutilización de clave con cambios reales.
+- Regresión local en `apps/worker/tests/rental-terms.test.ts` prepara un row/receipt pre-upgrade y verifica replay original, rechazo 409 de cuerpo distinto y ausencia de duplicados. Worker typecheck PASS; suite M2.1 3/3 PASS. Web/E2E no cambió por este repair.
+- El P2 quedó corregido antes de integrar; la review/checks del SHA anterior no son controles del rework.
+- **Próximo paso exacto:** publicar `d2a623050678f61f5cf84f191040b21197b5a74b` y el checkpoint canónico en PR #59; obtener CI `worker`/`web`, revisión GitHub exact-head sin findings abiertos, ejecutar Controller delegado read-only exacto; dejar el PR abierto para revisión del Product Owner. Sin merge, migración remota ni deploy.
