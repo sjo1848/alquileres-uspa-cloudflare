@@ -7,6 +7,7 @@ const base={title:'Casa mensual sintética',description:'Datos locales de prueba
 const terms={depositStatus:'FIXED_AMOUNT',depositAmount:250000,depositCurrency:'ARS',internetIncluded:'INCLUDED',waterIncluded:'NOT_INCLUDED',electricityIncluded:'NOT_INFORMED',gasIncluded:'INCLUDED',petsPolicy:'ASK_OWNER',availableFrom:'2027-02-15'};
 function request(path:string,method='GET',body?:unknown,cookie?:string,key?:string){return app.request(origin+path,{method,headers:{Origin:origin,...(cookie?{Cookie:cookie}:{}),...(body===undefined?{}:{'Content-Type':'application/json'}),...(key?{'Idempotency-Key':key}:{})},body:body===undefined?undefined:JSON.stringify(body)},{...env,DB:env.DB,JWT_SECRET:secret,MEDIA_STRATEGY:'D1_BLOB'});}
 async function login(email:string){const response=await request('/auth/login','POST',{email,password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
+async function fingerprint(value:unknown){const bytes=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(value))));let raw='';for(const byte of bytes)raw+=String.fromCharCode(byte);return btoa(raw).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');}
 
 beforeAll(async()=>{
   const hash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS',at=new Date().toISOString();
@@ -48,5 +49,16 @@ describe('M2.1 owner-declared rental terms',()=>{
     const created=await request('/listings','POST',sparse,owner);expect(created.status).toBe(201);const item=await created.json() as any;expect(item).toMatchObject({depositStatus:'ASK_OWNER',depositAmount:null,depositCurrency:null});
     const submitted=await request(`/listings/${item.id}/submit`,'POST',undefined,owner);expect(submitted.status).toBe(200);expect(await submitted.json()).toMatchObject({status:'SUBMITTED',internetIncluded:'NOT_INFORMED',petsPolicy:'NOT_INFORMED',availableFrom:null});
     expect((await env.DB.prepare("SELECT COUNT(*) AS count FROM listings WHERE owner_id='terms-owner-a' AND title=?").bind(base.title).first<{count:number}>())?.count).toBe(1);
+  });
+
+  it('replays a pre-M2.1 create idempotency record using the original fingerprint',async()=>{
+    const owner=await login('terms-a@example.test'),listingId=`legacy-terms-${crypto.randomUUID()}`,at=new Date().toISOString(),legacyInput={...base,title:'Legacy replay synthetic'};
+    const fingerprintValue={title:legacyInput.title,description:legacyInput.description,location:legacyInput.location,priceAmount:legacyInput.priceAmount,pricePeriod:legacyInput.pricePeriod,rentalDuration:legacyInput.rentalDuration,maxOccupants:legacyInput.maxOccupants,currency:legacyInput.currency};
+    const legacyResult={id:listingId,ownerId:'terms-owner-a',status:'DRAFT',...legacyInput,publicationStatus:'UNPUBLISHED',availabilityStatus:'AVAILABLE',lastConfirmedAt:null,rejectionReason:null,createdAt:at,updatedAt:at};
+    await env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,location_search,price_amount,price_period,rental_duration,max_occupants,currency,created_at,updated_at) VALUES(?,'terms-owner-a','DRAFT',?,?,?,?,?,?,?,?,?,?,?)").bind(listingId,legacyInput.title,legacyInput.description,legacyInput.location,legacyInput.location.normalize('NFC').toLowerCase(),legacyInput.priceAmount,legacyInput.pricePeriod,legacyInput.rentalDuration,legacyInput.maxOccupants,legacyInput.currency,at,at).run();
+    await env.DB.prepare("INSERT INTO idempotency_records(owner_id,scope,request_key,request_fingerprint,resource_id,state,result_json,created_at,updated_at) VALUES('terms-owner-a','LISTING_CREATE','pre-m2-create',?,?,'COMMITTED',?,?,?)").bind(await fingerprint(fingerprintValue),listingId,JSON.stringify(legacyResult),at,at).run();
+    const replay=await request('/listings','POST',legacyInput,owner,'pre-m2-create');expect(replay.status).toBe(201);expect(await replay.json()).toEqual(legacyResult);
+    expect((await request('/listings','POST',{...legacyInput,priceAmount:legacyInput.priceAmount+1},owner,'pre-m2-create')).status).toBe(409);
+    expect(await env.DB.prepare('SELECT COUNT(*) AS count FROM listings WHERE id=?').bind(listingId).first('count')).toBe(1);
   });
 });

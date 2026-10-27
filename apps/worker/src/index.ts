@@ -439,7 +439,11 @@ app.post('/listings',async c=>{
   const x=input?{...input,...rentalTerms(input)}:null;
   if(!validListingInput(x))return c.json({error:'validation failed'},400);
   const user=c.get('user'), supplied=requestKey(c);if(supplied===false)return c.json({error:'invalid idempotency key'},400);
-  const requestFingerprint=await fingerprint({title:x.title,description:x.description,location:x.location,priceAmount:x.priceAmount,pricePeriod:x.pricePeriod,rentalDuration:x.rentalDuration,maxOccupants:x.maxOccupants,currency:x.currency,...rentalTerms(x)});
+  // Preserve the pre-M2.1 fingerprint when an older client replays a create
+  // request without the new fields. Requests that declare terms bind them into
+  // the fingerprint so reusing a key with changed terms remains a conflict.
+  const fingerprintInput={title:x.title,description:x.description,location:x.location,priceAmount:x.priceAmount,pricePeriod:x.pricePeriod,rentalDuration:x.rentalDuration,maxOccupants:x.maxOccupants,currency:x.currency,...(TERM_FIELDS.some(key=>Object.prototype.hasOwnProperty.call(input,key))?rentalTerms(x):{})};
+  const requestFingerprint=await fingerprint(fingerprintInput);
   let listingId=id(),t=now(),body=listingDto(listingId,user.id,x,t);
   if(supplied){
     let record:any;
