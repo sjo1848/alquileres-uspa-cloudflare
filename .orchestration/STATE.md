@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `MVP_M1_MONTHLY_SEARCH`
-Active task: `MVP M1 — búsqueda orientada a alquileres mensuales (Issue #56)`
+Phase: `MVP_M2_1_RENTAL_TERMS`
+Active task: `MVP M2.1 — condiciones esenciales del alquiler mensual (Issue #58)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2002,3 +2002,13 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Runtime provenance: Codex CLI separado 0.164.0, gpt-6-luna/High/read-only/ephemeral solicitado, sesión `01a17b8d-b1a7-7b20-bc5c-350aa77e3110`, exit 0; backend identity UNVERIFIED; sin claims criptográficos. No corrió tests ni modificó archivos.
 - Checks/review de GitHub exact tracking SHA estaban pendientes al cierre del review. Publicar este estado/evidencia y exigir worker/web + review automática en HEAD exacto, conversaciones resueltas, validador, main protection y mergeabilidad antes de integrar.
 - **Pre-Critic técnico PASS; autorización de integración condicionada** a esas comprobaciones finales. Después del merge, publicar el resultado en #56/#55 y detenerse. M1 Preview no autorizado en esta tarea; no desplegar y no iniciar M2/M3.
+
+
+## Event 250 — M2.1 local candidate ready for review
+
+- M1 fue aceptado para el Preview privado por el Product Owner en Issue #56, comentario 6445661066. La publicación M1 vigente corresponde a `main@de412467e10b386b74120c035de453ca165e1637`, deployment `f9b74d2e-c503-43b4-b15c-bc4b45e3f8f1`; no se actualiza el Preview como parte de M2.1.
+- Issue #58 quedó autorizado expresamente por el Product Owner para ejecutar únicamente M2.1. Contrato: `.orchestration/contracts/MVP-M2.1-RENTAL-TERMS.md`.
+- Candidato ejecutable `7b32e116c30155e2441d3c03fd1cd460bd88204d`, rama `work/mvp-m2-1-rental-terms`, base exacta `de412467e10b386b74120c035de453ca165e1637`. Incluye migración 0014 aditiva solo local, OWNER, lectura pública/Admin, regresiones y capturas.
+- QA local PASS: Worker typecheck y 5 suites enfocadas, 33/33; Web typecheck/build; Playwright integrado Vue + Worker/Hono + D1 local 1/1. Recorrido OWNER→ADMIN sintético→ficha pública verificado a 320/390/1440; evidencia en `output/playwright/m2.1/QA.md`. El detalle histórico con campos SQL NULL sigue válido y se presenta “No informado”.
+- Sin cambios ni migraciones remotas, despliegues, Access, producción, datos reales, R2 o servicios pagos.
+- **Frontera:** publicar el PR funcional, procesar CI/revisión GitHub y completar una revisión técnica independiente read-only del SHA exacto. Después dejar M2.1 en espera de revisión/aceptación del Product Owner; no integrar ni publicar sin autorización adicional.
