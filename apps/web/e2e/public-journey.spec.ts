@@ -212,6 +212,10 @@ test('M1: búsqueda mensual, precio vs duración, retorno al catálogo y alterna
   await page.goto('/');
   await expect(page.getByRole('heading', { name: /Encontrá tu próximo alquiler mensual en Uspallata/ })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Buscar alquiler mensual' })).toBeVisible();
+  await page.locator('.catalog-search details summary').click();
+  await page.getByLabel('Periodicidad').selectOption('MONTH');
+  await expect(page.getByRole('heading', { name: 'Todos los alquileres publicados' })).toBeVisible();
+  await expect(page.locator('.listing-card')).toHaveCount(6);
   await page.getByRole('button', { name: 'Buscar alquiler mensual' }).click();
   await expect(page).toHaveURL(/pricePeriod=MONTH/);
   await expect(page.getByRole('heading', { name: 'Alquileres con precio mensual' })).toBeVisible();
@@ -260,9 +264,19 @@ test('M1: búsqueda mensual, precio vs duración, retorno al catálogo y alterna
   await page.getByRole('button', { name: 'Ver todos los alquileres' }).click();
   await expect(page).not.toHaveURL(/pricePeriod=/);
   await expect(page.locator('.listing-card')).toHaveCount(6);
+  const failWeeklySearch = async (route: import('@playwright/test').Route) => {
+    if (new URL(route.request().url()).searchParams.get('pricePeriod') === 'WEEK') await route.abort('failed');
+    else await route.continue();
+  };
+  await page.route('**/api/public/listings?*', failWeeklySearch);
   await page.locator('.catalog-search details summary').click();
   await page.getByLabel('Periodicidad').selectOption('WEEK');
   await page.getByRole('button', { name: 'Aplicar filtros' }).click();
+  await expect(page.getByRole('alert')).toContainText('Conservamos los resultados anteriores');
+  await expect(page.getByRole('heading', { name: 'Todos los alquileres publicados' })).toBeVisible();
+  await expect(page.locator('.listing-card')).toHaveCount(6);
+  await page.unroute('**/api/public/listings?*', failWeeklySearch);
+  await page.getByRole('button', { name: 'Reintentar' }).click();
   await expect(page).toHaveURL(/pricePeriod=WEEK/);
   await expect(page.getByRole('heading', { name: 'Alquileres con precio semanal' })).toBeVisible();
   await expect(page.locator('.listing-card')).toHaveCount(3);

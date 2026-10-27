@@ -47,6 +47,7 @@ const filters = reactive({
 });
 const advancedOpen = ref(false);
 const page = ref<Page | null>(null);
+const loadedPricePeriod = ref<PricePeriod | ''>('');
 const loading = ref(false);
 const error = ref('');
 const failedImages = ref(new Set<string>());
@@ -58,9 +59,9 @@ const activeFilterCount = computed(() => [
   filters.minPriceAmount, filters.maxPriceAmount, filters.currency, filters.pricePeriod,
   filters.rentalDuration, filters.maxOccupants, filters.soloDisponibles ? 'true' : '',
 ].filter(Boolean).length);
-const resultsTitle = computed(() => filters.pricePeriod === 'MONTH'
+const resultsTitle = computed(() => loadedPricePeriod.value === 'MONTH'
   ? 'Alquileres con precio mensual'
-  : filters.pricePeriod === 'WEEK'
+  : loadedPricePeriod.value === 'WEEK'
     ? 'Alquileres con precio semanal'
     : 'Todos los alquileres publicados');
 const pageFromRoute = () => Math.max(1, Math.min(10_000, Number(route.query.page ?? 1) || 1));
@@ -99,6 +100,7 @@ async function loadPage(pageNumber = pageFromRoute()) {
   activeRequest = controller;
   loading.value = true;
   error.value = '';
+  const requestedPricePeriod = filters.pricePeriod;
   const params = new URLSearchParams(paramsForPage(pageNumber));
   try {
     const result = await request<Page>(`/public/listings?${params}`, { signal: controller.signal });
@@ -112,6 +114,7 @@ async function loadPage(pageNumber = pageFromRoute()) {
       return;
     }
     page.value = result;
+    loadedPricePeriod.value = requestedPricePeriod;
     failedImages.value = new Set();
   } catch (cause) {
     if (sequence !== requestSequence || controller.signal.aborted) return;

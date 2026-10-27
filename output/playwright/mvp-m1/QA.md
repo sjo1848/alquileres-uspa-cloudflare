@@ -4,11 +4,12 @@ Base de ejecución: `main@d5a26a0c6f1ad68dd77a13459ade1c15573a15cf`. Entorno loc
 
 ## Validación
 
-- Playwright público integrado: **6/6 PASS** (catálogo/filtros/paginación/retorno, estados de error/vacío/reintento, ficha/consulta idempotente, regresión #35 y recorrido M1). Después del último ajuste de presentación y del envío mensual con Enter desde ubicación, el recorrido M1 pasó de nuevo: **1/1 PASS**; las capturas de error/vacío también se regeneraron con su prueba focalizada (**2/2 PASS**).
+- Playwright público integrado: **6/6 PASS** antes del rework de revisión automática (catálogo/filtros/paginación/retorno, estados de error/vacío/reintento, ficha/consulta idempotente, regresión #35 y recorrido M1). Regressión del P2 de encabezado: **1/1 PASS** sobre Vue + Worker/Hono + D1 local sintética; cubre cambio de filtro sin aplicar, búsqueda semanal fallida que conserva los resultados/título previos y reintento exitoso. El recorrido M1 completo también cubre precio frente a duración, consulta no reservante, retorno y vistas responsive.
 - Web typecheck: **PASS**.
 - Web production build: **PASS**.
 - Anchos verificados sin overflow horizontal: **1440, 390 y 320 px**. Capturas completas obtenidas desde el navegador real del test.
 - La suite conserva pruebas existentes de estado vacío, error, imagen rota, teclado/foco, filtros, paginación y retorno desde ficha. El camino M1 añade precio mensual frente a duración `PERMANENT` y `FLEXIBLE`, query persistente, acceso a anuncios semanales y consulta no reservante.
+- Rework GitHub review P2: el encabezado ahora usa la periodicidad de la última página cargada con éxito, no la selección editable; durante error conserva el título coherente con las tarjetas que permanecen visibles.
 - La métrica local de 25 lecturas del catálogo pertenece al test I07 existente; es solo observación de Workerd+D1 local y no evidencia de capacidad en Cloudflare.
 
 ## Capturas
