@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `IN_PROGRESS`
-Phase: `MVP_M1_MONTHLY_SEARCH`
-Active task: `MVP M1 — búsqueda orientada a alquileres mensuales (Issue #56)`
+State: `READY_FOR_PRODUCT_OWNER_REVIEW`
+Phase: `MVP_M2_1_RENTAL_TERMS`
+Active task: `MVP M2.1 — condiciones esenciales del alquiler mensual (Issue #58)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2002,3 +2002,33 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Runtime provenance: Codex CLI separado 0.164.0, gpt-6-luna/High/read-only/ephemeral solicitado, sesión `01a17b8d-b1a7-7b20-bc5c-350aa77e3110`, exit 0; backend identity UNVERIFIED; sin claims criptográficos. No corrió tests ni modificó archivos.
 - Checks/review de GitHub exact tracking SHA estaban pendientes al cierre del review. Publicar este estado/evidencia y exigir worker/web + review automática en HEAD exacto, conversaciones resueltas, validador, main protection y mergeabilidad antes de integrar.
 - **Pre-Critic técnico PASS; autorización de integración condicionada** a esas comprobaciones finales. Después del merge, publicar el resultado en #56/#55 y detenerse. M1 Preview no autorizado en esta tarea; no desplegar y no iniciar M2/M3.
+
+
+## Event 250 — M2.1 local candidate ready for review
+
+- M1 fue aceptado para el Preview privado por el Product Owner en Issue #56, comentario 6445661066. La publicación M1 vigente corresponde a `main@de412467e10b386b74120c035de453ca165e1637`, deployment `f9b74d2e-c503-43b4-b15c-bc4b45e3f8f1`; no se actualiza el Preview como parte de M2.1.
+- Issue #58 quedó autorizado expresamente por el Product Owner para ejecutar únicamente M2.1. Contrato: `.orchestration/contracts/MVP-M2.1-RENTAL-TERMS.md`.
+- Candidato funcional `f56915fda660af9edac2bc613c434554af7c7de9` (tree `972906c2c1b288d6fcfd4f985b89d8da837e7c76`), rama `work/mvp-m2-1-rental-terms`, base exacta `de412467e10b386b74120c035de453ca165e1637`. Incluye migración 0014 aditiva solo local, OWNER, lectura pública/Admin, regresiones y capturas.
+- QA local PASS: Worker typecheck y 5 suites enfocadas, 33/33; `npm run test:rental-terms` PASS y queda agregado a CI; Web typecheck/build; Playwright integrado Vue + Worker/Hono + D1 local 1/1. Recorrido OWNER→ADMIN sintético→ficha pública verificado a 320/390/1440; evidencia en `output/playwright/m2.1/QA.md`. El detalle histórico con campos SQL NULL sigue válido y se presenta “No informado”.
+- Sin cambios ni migraciones remotas, despliegues, Access, producción, datos reales, R2 o servicios pagos.
+- **Frontera:** publicar el PR funcional, procesar CI/revisión GitHub y completar una revisión técnica independiente read-only del SHA exacto. Después dejar M2.1 en espera de revisión/aceptación del Product Owner; no integrar ni publicar sin autorización adicional.
+
+
+## Event 251 — GitHub P2 cerrado en rework M2.1
+
+- La revisión automática de PR #59 sobre `935c186f68997aa81b1ad8b38827d7f27e277789` señaló que los fingerprints de `LISTING_CREATE` cambiaban al añadir términos por defecto, bloqueando replay de operaciones previas a M2.1.
+- Reparación en candidato `d2a623050678f61f5cf84f191040b21197b5a74b` / tree `9e435ac047f5c7270a946e51c3cea679f2dbb961`: una solicitud sin claves M2.1 usa exactamente el fingerprint pre-M2.1; una solicitud que sí declara condiciones las vincula al fingerprint. Se conserva el conflicto para reutilización de clave con cambios reales.
+- Regresión local en `apps/worker/tests/rental-terms.test.ts` prepara un row/receipt pre-upgrade y verifica replay original, rechazo 409 de cuerpo distinto y ausencia de duplicados. Worker typecheck PASS; suite M2.1 3/3 PASS. Web/E2E no cambió por este repair.
+- El P2 quedó corregido antes de integrar; la review/checks del SHA anterior no son controles del rework.
+- **Próximo paso exacto:** publicar `d2a623050678f61f5cf84f191040b21197b5a74b` y el checkpoint canónico en PR #59; obtener CI `worker`/`web`, revisión GitHub exact-head sin findings abiertos, ejecutar Controller delegado read-only exacto; dejar el PR abierto para revisión del Product Owner. Sin merge, migración remota ni deploy.
+
+
+## Event 252 — M2.1 candidate passed technical review; awaiting Product Owner
+
+- Rework candidate `f060283630a6d3dd68bc86eded1d3ea136f579b3` / tree `8980185d9c3055e185b94aad5bb90707a106594c`, based on `main@de412467e10b386b74120c035de453ca165e1637`, contains the complete M2.1 implementation and both repaired findings. The final scope remains essential monthly rental terms only.
+- GitHub review first found a P2 in pre-upgrade create replay; the legacy fingerprint behavior is preserved and covered by a seeded D1 regression. The Controller then found monthly terms could persist on WEEK listings, including through ADMIN-assisted update/submit; Worker and OWNER handling now enforce the monthly-only invariant, with regressions for each path. Both review threads are resolved.
+- Local evidence on this exact executable: Worker typecheck PASS; six relevant Worker suites 49/49, including M2.1 5/5 and assisted management 13/13; Web typecheck/build PASS; integrated synthetic-D1 Playwright OWNER→ADMIN→public 1/1 PASS. Evidence and real responsive captures: `output/playwright/m2.1/QA.md`.
+- GitHub exact-head Actions run `40545301046`: worker/web SUCCESS; staging-private SKIPPED. Automated review on the same SHA completed without findings.
+- Delegated `project_controller` returned PASS on the exact SHA. Review configuration requested `gpt-6-luna` / High with the read-only Controller role; actual backend model identity is UNVERIFIED. Report: `.orchestration/evidence/critics/MVP-M2.1-CONTROLLER-PASS-F060283.md`. The Controller inspected but did not execute tests.
+- **Boundary:** PR #59 remains OPEN for Product Owner review. Do not merge, run the migration against remote D1, update Preview, deploy, or start M2.2 under this task. No remote E2E or production readiness is claimed.
+- This canonical update is tracking/evidence only; the reviewed executable remains SHA `f060283630a6d3dd68bc86eded1d3ea136f579b3`. The GitHub branch may advance by this bookkeeping commit, with no executable change.

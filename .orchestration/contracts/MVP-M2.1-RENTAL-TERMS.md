@@ -1,0 +1,9 @@
+# M2.1 — Essential monthly rental terms
+
+- **Issue:** https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/58
+- **Authorized base:** `main@de412467e10b386b74120c035de453ca165e1637`; M1 accepted in Issue #56 comment 6445661066
+- **Scope:** add optional OWNER-declared deposit/guarantee, service inclusion (internet, water, electricity, gas), pet policy, and estimated move-in date to existing D1, OWNER editor, and public monthly listing detail.
+- **Semantics:** old SQL `NULL` means “No informado”; it is not backfilled. Services describe inclusion in the advertised price, not whether a utility exists. Deposit states are “No informado”, “A consultar”, “No se requiere”, or a positive fixed amount plus ARS/USD; zero and rent-multiple claims are not represented. `available_from` is an estimated OWNER date and remains independent from `availability_status` and `last_confirmed_at`.
+- **Compatibility/security:** additive local migration only; no remote migration/deploy. Existing listing lifecycle, API auth, ownership checks, admin audit/moderation, idempotency and contact behavior remain. OWNER can edit only draft/rejected listings; ADMIN can read conditions but cannot write them through M2.1.
+- **Acceptance:** exact persistence through OWNER reload; public detail shows declared values and explicit unknowns; older NULL rows remain valid; malformed/contradictory values fail; cross-owner and approved-listing writes remain denied; real local Vue + Worker/Hono + D1 E2E; 320/390/1440 responsive evidence; typecheck/build/CI and exact-SHA delegated read-only Controller review.
+- **Excluded:** Mi selección, messaging, booking, payment, AI, redesign, Preview/Access/production changes, remote D1 migration, real data, R2 or paid services. Leave Issue open for separate publication and product acceptance.
