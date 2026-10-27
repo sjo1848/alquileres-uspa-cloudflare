@@ -51,6 +51,19 @@ describe('M2.1 owner-declared rental terms',()=>{
     expect((await env.DB.prepare("SELECT COUNT(*) AS count FROM listings WHERE owner_id='terms-owner-a' AND title=?").bind(base.title).first<{count:number}>())?.count).toBe(1);
   });
 
+  it('keeps monthly conditions off weekly rentals at create and when changing period',async()=>{
+    const owner=await login('terms-a@example.test');
+    expect((await request('/listings','POST',{...base,pricePeriod:'WEEK',...terms},owner)).status).toBe(400);
+    const weekly=await request('/listings','POST',{...base,title:'Weekly synthetic',pricePeriod:'WEEK'},owner);expect(weekly.status).toBe(201);
+    const item=await weekly.json() as any;expect(item).toMatchObject({pricePeriod:'WEEK',depositStatus:'NOT_INFORMED',depositAmount:null,petsPolicy:'NOT_INFORMED',availableFrom:null});
+    expect((await request(`/listings/${item.id}`,'PATCH',{...base,pricePeriod:'WEEK',...terms},owner)).status).toBe(400);
+    const monthly=await request('/listings','POST',{...base,title:'Monthly to weekly synthetic',...terms},owner);expect(monthly.status).toBe(201);
+    const monthlyItem=await monthly.json() as any;
+    const changed=await request(`/listings/${monthlyItem.id}`,'PATCH',{...base,pricePeriod:'WEEK'},owner);expect(changed.status).toBe(200);
+    expect(await changed.json()).toMatchObject({pricePeriod:'WEEK',depositStatus:'NOT_INFORMED',depositAmount:null,depositCurrency:null,internetIncluded:'NOT_INFORMED',waterIncluded:'NOT_INFORMED',electricityIncluded:'NOT_INFORMED',gasIncluded:'NOT_INFORMED',petsPolicy:'NOT_INFORMED',availableFrom:null});
+    expect(await env.DB.prepare('SELECT price_period,deposit_status,deposit_amount,pets_policy,available_from FROM listings WHERE id=?').bind(monthlyItem.id).first()).toEqual({price_period:'WEEK',deposit_status:'NOT_INFORMED',deposit_amount:null,pets_policy:'NOT_INFORMED',available_from:null});
+  });
+
   it('replays a pre-M2.1 create idempotency record using the original fingerprint',async()=>{
     const owner=await login('terms-a@example.test'),listingId=`legacy-terms-${crypto.randomUUID()}`,at=new Date().toISOString(),legacyInput={...base,title:'Legacy replay synthetic'};
     const fingerprintValue={title:legacyInput.title,description:legacyInput.description,location:legacyInput.location,priceAmount:legacyInput.priceAmount,pricePeriod:legacyInput.pricePeriod,rentalDuration:legacyInput.rentalDuration,maxOccupants:legacyInput.maxOccupants,currency:legacyInput.currency};

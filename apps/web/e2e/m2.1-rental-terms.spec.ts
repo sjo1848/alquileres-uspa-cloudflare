@@ -29,6 +29,18 @@ test('M2.1 OWNER → revisión ADMIN → ficha pública, con datos sintéticos',
   await page.getByLabel('¿Se permiten mascotas?').selectOption('ASK_OWNER');
   await page.getByLabel('Fecha estimada de ingreso').fill('2027-02-15');
   await expect(page.getByText('declarados por vos')).toBeVisible();
+  await page.getByLabel('Periodicidad').selectOption('WEEK');
+  await expect(page.getByLabel('Fecha estimada de ingreso')).toHaveCount(0);
+  await page.getByLabel('Periodicidad').selectOption('MONTH');
+  await page.getByLabel('Depósito o garantía').selectOption('FIXED_AMOUNT');
+  await page.getByRole('spinbutton',{name:'Monto fijo'}).fill('250000');
+  await page.getByLabel('Moneda del depósito').selectOption('ARS');
+  await page.getByLabel('Internet incluido en el precio').selectOption('INCLUDED');
+  await page.getByLabel('Agua incluida en el precio').selectOption('NOT_INCLUDED');
+  await page.getByLabel('Electricidad incluida en el precio').selectOption('NOT_INFORMED');
+  await page.getByLabel('Gas incluido en el precio').selectOption('INCLUDED');
+  await page.getByLabel('¿Se permiten mascotas?').selectOption('ASK_OWNER');
+  await page.getByLabel('Fecha estimada de ingreso').fill('2027-02-15');
   for(const width of [320,390]){
     await page.setViewportSize({width,height:844});
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

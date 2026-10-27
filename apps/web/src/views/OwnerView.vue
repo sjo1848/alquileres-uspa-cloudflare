@@ -126,6 +126,7 @@ function choose(item?:Listing){
   if(item)void loadImages(item);
 }
 function changeDepositStatus(value:DepositStatus){form.depositStatus=value;if(value!=='FIXED_AMOUNT'){form.depositAmount=null;form.depositCurrency=null;}}
+function changePricePeriod(value:PricePeriod){form.pricePeriod=value;if(value==='WEEK'){Object.assign(form,{depositStatus:'NOT_INFORMED',depositAmount:null,depositCurrency:null,internetIncluded:'NOT_INFORMED',waterIncluded:'NOT_INFORMED',electricityIncluded:'NOT_INFORMED',gasIncluded:'NOT_INFORMED',petsPolicy:'NOT_INFORMED',availableFrom:null});}}
 function returnToInventory(){mobilePane.value='inventory';void nextTick(()=>document.getElementById('owner-listings-title')?.focus({preventScroll:true}));}
 function resumeEditing(){
   if(!unsaved.value)return;
@@ -393,7 +394,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
               <div class="owner-form-grid owner-form-grid-compact">
                 <label>Precio de referencia<input v-model.number="form.priceAmount" name="priceAmount" type="number" min="0" max="2147483647" step="1" required inputmode="numeric" /></label>
                 <label>Moneda<select v-model="form.currency" name="currency"><option v-for="o in currencyOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></label>
-                <label>Periodicidad<select v-model="form.pricePeriod" name="pricePeriod"><option v-for="o in pricePeriodOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></label>
+                <label>Periodicidad<select v-model="form.pricePeriod" name="pricePeriod" @change="changePricePeriod(($event.target as HTMLSelectElement).value as PricePeriod)"><option v-for="o in pricePeriodOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></label>
                 <label>Duración<select v-model="form.rentalDuration" name="rentalDuration"><option v-for="o in rentalDurationOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></label>
                 <label>Capacidad máxima<input v-model.number="form.maxOccupants" name="maxOccupants" type="number" min="1" max="2147483647" step="1" required inputmode="numeric" /></label>
               </div>
