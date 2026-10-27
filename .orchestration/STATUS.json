@@ -11,8 +11,8 @@
   "next_action": "Complete the reconciled PR #60 with protected CI, exact-head GitHub review, and delegated read-only Controller review. Keep the PR unmerged and stop for separate Human authorization before any remote migration or Preview publication.",
   "stop_reason": "The remote migration is a separate Human authorization gate; this PR only prepares the exact-hash guard and local rehearsal evidence.",
   "event": {
-    "seq": 253,
-    "summary": "M2.1 remote preflight passed read-only checks; private backup and local 0014 rehearsal completed; exact-hash guard PR #60 prepared"
+    "seq": 254,
+    "summary": "Protected PR #60 opened for exact-hash migration guard; exact-head reviews pending"
   },
   "external_review": null,
   "human_gate": {
@@ -28,14 +28,26 @@
     "executable_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc",
     "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
     "state": "OPEN",
-    "is_draft": true,
-    "status": "Exact-hash migration guard and local-only rehearsal evidence; awaiting exact-head CI, GitHub review, Controller review. No merge, remote migration, or deployment.",
-    "last_observed_head_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc",
-    "last_observed_head_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626"
+    "is_draft": false,
+    "status": "Ready for protected exact-head CI and review; remote migration and Preview publication are not authorized.",
+    "last_observed_head_sha": "52ed89009de1ef8546eebd664e20f299f161c489",
+    "last_observed_head_tree": "8e5fd2b2a3fbfe0f4a0704c760df3e4015b56082"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
-  "candidate_review": null,
+  "candidate_review": {
+    "status": "PENDING_EXACT_HEAD_GITHUB_AND_CONTROLLER_REVIEW",
+    "artifact_sha": "52ed89009de1ef8546eebd664e20f299f161c489",
+    "executable_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc",
+    "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
+    "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
+    "controller_reviewed_sha": null,
+    "controller_evidence": null,
+    "controller_verdict": "PENDING",
+    "github_checks": "PENDING on PR #60 final head",
+    "github_review": "PENDING on PR #60 final head",
+    "remote_authenticated_e2e": "NOT APPLICABLE; no Preview publication or authenticated remote test was authorized."
+  },
   "human_acceptance": {
     "scope": "MVP M1 monthly-first search in the private Preview",
     "verdict": "ACCEPTED_M1; M2.1 awaits separate review and publication authorization",
@@ -84,7 +96,7 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/58",
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "contract": ".orchestration/contracts/MVP-M2.1-REMOTE-MIGRATION-PREFLIGHT.md",
-    "status": "Remote read-only preflight passed; 0014 exact-hash policy and local rehearsal prepared in PR #60. The PR is intentionally unmerged pending its protected checks/reviews and separate migration authorization.",
+    "status": "PR #60 is ready for exact-head protected checks and delegated review; no remote migration/deployment.",
     "base_sha": "797e6656488d5473b9348542c2312ed0c90c94a6",
     "branch": "work/m2-1-migration-preflight",
     "scope": "Read-only Preview/D1/Access verification; exact-SHA guard policy; private backup; local-only migration rehearsal. No remote migration, Worker publication, Access/CD/production change, M2.2, or M3.",
@@ -92,7 +104,7 @@
     "executable_tree": "706dc94ac84909fe8d0a9c6da255124c13e8d626",
     "evidence": ".orchestration/evidence/MVP-M2.1-MIGRATION-PREFLIGHT.md; private SQL and recovery metadata remain outside the repository.",
     "local_results": "Preview target check PASS; D1 synthetic provenance PASS; exactly 0014 pending; Time Travel bookmark available; backup mode 0600; local isolated 0014 rehearsal PASS; Python guard tests 30/30 PASS; compilation/diff checks PASS.",
-    "remaining": "Protected PR #60 CI, exact-head GitHub review and read-only Controller review. Then stop for separate Human authorization before merging/applying 0014.",
+    "remaining": "Exact-head CI, GitHub review and delegated read-only Controller; then separate Human authorization before merging or applying 0014.",
     "remote": "Read-only checks and one SQL export only; no remote schema/data mutation or Worker publication. M1 remains deployed.",
     "artifact_sha": "f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc"
   },

@@ -2043,3 +2043,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The account subscription metadata endpoint returned an empty list, which does not independently prove the account plan. No plan claim is made. No resource, plan, billing, Access, Worker, CD, or production setting changed.
 - Guard PR #60 changes only exact-hash authorization and its tests/evidence. Exact 0014 SHA-256: `e71a710f90cf6b2dfdd5d329b280ac57931bab9d212dfdfbf74f1f43ce5cdb95`. Only the named `BEFORE UPDATE OF` trigger DDL is permitted; remaining UPDATE DML is rejected. Guard tests 30/30 PASS, Python compilation and diff check PASS.
 - **Boundary:** finish protected checks, GitHub review, and delegated Controller review for PR #60, then leave it unmerged pending separate Human authorization to apply 0014. Do not publish the Worker or change Preview/CD/Access/production; do not start M2.2/M3. A Time Travel restore overwrites the entire database and must never be run automatically.
+
+
+## Event 254 — PR #60 ready for protected review
+
+- PR #60 is open and ready for review from `work/m2-1-migration-preflight`; it changes only the exact-hash migration guard, its regression tests, the M2.1 preflight contract/evidence, and canonical status. Base is `main@797e6656488d5473b9348542c2312ed0c90c94a6`.
+- Executable candidate `f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc` / tree `706dc94ac84909fe8d0a9c6da255124c13e8d626`; tracking checkpoint `52ed89009de1ef8546eebd664e20f299f161c489` / tree `8e5fd2b2a3fbfe0f4a0704c760df3e4015b56082`. The checkpoint reconciles this Issue and branch state; exact-head CI, GitHub review and Controller are pending.
+- **Next action:** complete only the protected PR review and local technical Controller checks. Leave PR #60 unmerged and do not apply 0014 or publish the Worker; stop for a separate Human authorization.
