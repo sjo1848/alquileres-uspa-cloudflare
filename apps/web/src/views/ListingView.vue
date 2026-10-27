@@ -128,6 +128,13 @@ async function sendContact() {
 }
 
 const freshness = computed(() => freshnessLabel(listing.value?.freshnessStatus, listing.value?.lastConfirmedAt));
+const rentalContext = computed(() => {
+  if (!listing.value || !hasRentalDomainData(listing.value)) {
+    return 'Consultá el precio y las condiciones directamente con el propietario.';
+  }
+  const period = pricePeriodLabel(listing.value.pricePeriod);
+  return `Precio publicado por ${period}. Consultá la duración y las condiciones antes de avanzar.`;
+});
 const availableImages = computed(() => listing.value?.images.filter(image => !failedImages.value.has(image.id)) ?? []);
 const primaryImage = computed(() => availableImages.value[0]);
 const secondaryImages = computed(() => availableImages.value.slice(1));
@@ -149,7 +156,7 @@ watch(() => route.params.id, id => void load(String(id)), { immediate: true });
         <section class="listing-detail-main">
           <header class="detail-heading">
             <p class="eyebrow">{{ listing.location }}</p><h1>{{ listing.title }}</h1>
-            <p class="detail-lede">Una propiedad en Uspallata para conocer con calma y consultar directamente.</p>
+            <p class="detail-lede">{{ rentalContext }}</p>
             <a class="detail-contact-cta" href="#contact-form">Consultar este alojamiento <span aria-hidden="true">→</span></a>
           </header>
 
@@ -170,7 +177,7 @@ watch(() => route.params.id, id => void load(String(id)), { immediate: true });
             <p class="detail-description">{{ listing.description }}</p>
             <dl class="detail-facts">
               <div><dt>Precio publicado</dt><dd>{{ detailPrice(listing) }}</dd></div>
-              <div v-if="listing.domainDataStatus === 'COMPLETE'"><dt>Duración</dt><dd>{{ rentalDurationLabel(listing.rentalDuration) }}</dd></div>
+              <div v-if="listing.domainDataStatus === 'COMPLETE'"><dt>Duración del alquiler</dt><dd>{{ rentalDurationLabel(listing.rentalDuration) }}</dd></div>
               <div><dt>Ubicación</dt><dd>{{ listing.location }}</dd></div>
             </dl>
           </section>
@@ -182,21 +189,21 @@ watch(() => route.params.id, id => void load(String(id)), { immediate: true });
                 <span aria-hidden="true">{{ freshnessMarker(listing.freshnessStatus) }}</span>{{ availabilityLabel(listing.availabilityStatus, listing.freshnessStatus) }}
               </p>
               <p class="listing-freshness" :class="`freshness-${listing.freshnessStatus.toLowerCase()}`">{{ freshness }} · {{ formatConfirmationDate(listing.lastConfirmedAt) }}</p>
-              <p class="availability-disclaimer">El estado refleja la última información disponible y puede haber cambiado. Consultá antes de organizar tu viaje; no es una reserva.</p>
+              <p class="availability-disclaimer">El estado refleja la última información declarada y puede haber cambiado. Confirmá las condiciones con el propietario; esta consulta no reserva el alquiler.</p>
             </div>
           </section>
         </section>
 
         <aside id="contact-form" class="contact-panel card" aria-labelledby="contact-title">
           <p class="eyebrow">Contacto directo</p><h2 id="contact-title">¿Te interesa?</h2>
-          <p class="contact-intro">Contale al propietario sobre tu estadía. Enviar una consulta no reserva el alojamiento.</p>
+          <p class="contact-intro">Contale al propietario qué alquiler estás buscando. Enviar una consulta no reserva el alojamiento.</p>
           <p v-if="contactError" class="contact-feedback error" role="alert">{{ contactError }}</p>
           <p v-if="contactNotice" class="contact-feedback success" role="status">{{ contactNotice }}</p>
           <form class="public-contact-form" @submit.prevent="sendContact" :aria-busy="contactBusy">
             <fieldset :disabled="contactBusy">
               <label for="visitor-name"><span>Tu nombre</span><input id="visitor-name" v-model="contact.visitorName" name="visitorName" required maxlength="120" autocomplete="name" /></label>
               <label for="visitor-email"><span>Tu correo</span><input id="visitor-email" v-model="contact.visitorEmail" name="visitorEmail" required maxlength="254" type="email" autocomplete="email" /></label>
-              <label for="visitor-message"><span>Mensaje</span><textarea id="visitor-message" v-model="contact.message" name="message" required maxlength="2000" rows="4" placeholder="¿Para qué fechas estás consultando? ¿Cuántas personas viajan?"></textarea></label>
+              <label for="visitor-message"><span>Mensaje</span><textarea id="visitor-message" v-model="contact.message" name="message" required maxlength="2000" rows="4" placeholder="¿Desde cuándo buscás alquilar? ¿Cuántas personas vivirían aquí?"></textarea></label>
               <button type="submit" class="contact-submit">{{ contactBusy ? 'Enviando consulta…' : 'Enviar consulta' }} <span aria-hidden="true">→</span></button>
             </fieldset>
           </form>

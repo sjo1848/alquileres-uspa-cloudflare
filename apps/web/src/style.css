@@ -1464,6 +1464,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .detail-overview-heading h2, .detail-availability h2, .contact-panel h2 { color: #1d294c; font-family: var(--font-body); letter-spacing: -.035em; }
 .availability-detail-card { border-color: #e1e5ee; }
 .contact-submit { min-height: 3.15rem; }
+.catalog-search-actions { display: grid; justify-items: stretch; gap: .25rem; }
+.catalog-all-listings { min-height: 2.35rem; padding: .35rem .55rem; border: 0; background: transparent; color: #364bb5; font-size: .82rem; font-weight: 700; text-decoration: underline; text-underline-offset: .15em; }
+.catalog-all-listings:hover { background: #f0f2ff; }
+.catalog-all-listings:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.listing-meta span:nth-child(2) { color: #39496f; }
 @media (prefers-reduced-motion: reduce) {
   .listing-card, .listing-card-photo img { transition: none; }
 }
@@ -1482,6 +1487,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .search-location input { min-height: 2.65rem; }
   .quick-availability { min-height: 2.55rem; font-size: .7rem; }
   .search-submit { min-height: 2.55rem; padding-inline: .55rem; font-size: .76rem; }
+  .catalog-search-actions { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr); align-items: center; gap: .2rem; }
+  .catalog-search-actions .search-submit { width: 100%; white-space: normal; }
+  .catalog-all-listings { min-height: 2.55rem; padding-inline: .4rem; font-size: .72rem; }
   .advanced-filters > summary { min-height: 2.2rem; font-size: .82rem; }
   .results-heading h2 { font-size: 1.22rem; }
   .listing-grid { gap: .6rem; }
@@ -1510,7 +1518,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .search-panel { padding: .6rem; }
   .catalog-search { grid-template-columns: minmax(0, 1fr); }
   .quick-availability, .search-submit { grid-column: 1; }
+  .catalog-search-actions { grid-column: 1; grid-template-columns: minmax(0, 1fr); }
   .search-submit { width: 100%; }
+  .catalog-all-listings { width: 100%; }
   .quick-availability { font-size: .67rem; }
   .listing-card { grid-template-columns: minmax(4.8rem, 28%) minmax(0, 1fr); }
   .listing-card-content { padding: .5rem; }
