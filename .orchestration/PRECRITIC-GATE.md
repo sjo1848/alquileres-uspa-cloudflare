@@ -414,3 +414,10 @@ Review exacta `d268668` detectó respuesta de auditoría fuera de orden entre li
 - GitHub: run `40446969519` worker/web PASS exacto en 3cebec2; staging-private skipped. La revisión automática exact-head todavía no estaba disponible porque el PR seguía draft.
 - Controller: bounded PASS en exact tracking artifact 3cebec2; evidencia `.orchestration/evidence/critics/MVP-M1-CONTROLLER-PASS-3CEBEC2.md`; proceso separado solicitado gpt-6-luna/high/read-only, backend UNVERIFIED, limitación runtime documentada.
 - **Resultado: PASS para publicar el checkpoint y continuar con revisión exact-head; NO es aún autorización final de merge.** Después de este checkpoint deben pasar worker/web y GitHub Review en el nuevo HEAD, consistencia, conversaciones, mergeability y protección de main. No desplegar ni actualizar el Preview; detenerse tras merge hasta aprobación humana de publicación/aceptación.
+
+## M1 mensual-first — rework de GitHub P2 (2026-10-27)
+
+- P2 de exact-head review: título de resultados seguía el filtro editable, no la página visible tras filtro sin aplicar o búsqueda fallida. Reparado en ejecutable `99ef502a01e7073f7e0973b6d574d193ce8d8018`; estado `loadedPricePeriod` se actualiza solo cuando se acepta la respuesta vigente. Regresión M1 1/1 PASS; typecheck/build PASS. QA y screenshot mobile actualizados.
+- GitHub Actions exact-head run `40447952055`: worker/web SUCCESS; staging-private SKIPPED. Review automática exact-head completada sin findings, P2 cerrado.
+- Revisión separada encontró REWORK solamente porque el estado todavía apuntaba al ejecutable anterior; Event 247 y STATUS corrigen los SHA/punteros. Su reporte es `.orchestration/evidence/critics/MVP-M1-REWORK-99EF502.md`; no se declara PASS Controller mientras esté pendiente la comprobación de cierre.
+- **Gate actual: pendiente de publicar este checkpoint, cerrar verificación de estado/controller en nuevo HEAD y renovar exact-head CI/review.** Mantener M1 sin deploy; no M2/M3.
