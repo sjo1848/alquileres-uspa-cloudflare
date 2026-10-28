@@ -53,6 +53,25 @@ describe('OWNER listing lifecycle',()=>{
     expect((await submitted.json() as any).revision).toMatchObject({state:'SUBMITTED',version:2});
     expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:2,baseUpdatedAt:original.updatedAt,fields:changes},ownerCookie)).status).toBe(409);
     expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toEqual(original);
+    const waiting=await request('/admin/listings/revisions','GET',undefined,adminCookie);
+    expect(waiting.status).toBe(200);
+    expect((await waiting.json() as any).items).toEqual(expect.arrayContaining([
+      expect.objectContaining({listingId:item.id,state:'SUBMITTED',version:2,ownerEmail:'listing.mgmt.owner@example.test'}),
+    ]));
+    expect((await request('/admin/listings/'+item.id+'/revision/review','POST',{action:'approve',expectedVersion:2},ownerCookie)).status).toBe(401);
+    const approved=await request('/admin/listings/'+item.id+'/revision/review','POST',{action:'approve',expectedVersion:2},adminCookie);
+    expect(approved.status,await approved.clone().text()).toBe(200);
+    expect((await approved.json() as any).revision).toMatchObject({state:'APPROVED',version:3});
+    expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toEqual(original);
+    const published=await request('/admin/listings/'+item.id+'/revision/publish','POST',{expectedVersion:3},adminCookie);
+    expect(published.status,await published.clone().text()).toBe(200);
+    const final=(await published.json() as any);
+    expect(final.revision).toMatchObject({state:'APPLIED',version:4});
+    expect(final.listing).toMatchObject({id:item.id,title:changes.title,priceAmount:35000,status:'APPROVED',publicationStatus:'PUBLISHED'});
+    const refreshed=await env.DB.prepare('SELECT title,price_amount AS priceAmount,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first();
+    expect(refreshed).toMatchObject({title:changes.title,priceAmount:35000,status:'APPROVED',publicationStatus:'PUBLISHED'});
+    expect((await request('/admin/listings/'+item.id+'/revision/publish','POST',{expectedVersion:3},adminCookie)).status).toBe(409);
+    expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action IN (?,?,?)').bind(item.id,'ADMIN_LISTING_REVISION_APPROVED','ADMIN_LISTING_REVISION_REJECTED','ADMIN_LISTING_REVISION_PUBLISHED').first('n')).toBe(2);
   });
   it('GET is OWNER-scoped and includes source listing state; role and missing IDs are denied',async()=>{
     const listing=await create();
