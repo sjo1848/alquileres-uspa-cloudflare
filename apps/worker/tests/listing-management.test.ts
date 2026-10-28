@@ -31,6 +31,29 @@ afterAll(async()=>{
 });
 
 describe('OWNER listing lifecycle',()=>{
+
+  it('keeps a published listing immutable while OWNER saves and submits a private revision',async()=>{
+    const item=await create(ownerCookie,'Alojamiento publicado sintético');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const original=await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first<any>();
+    expect(original.status).toBe('APPROVED');
+    expect((await request('/listings/'+item.id+'/revision','GET',undefined,otherCookie)).status).toBe(404);
+    expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:0,baseUpdatedAt:original.updatedAt,fields:{...fields,title:'Edición ajena'}},otherCookie)).status).toBe(404);
+    const get=await request('/listings/'+item.id+'/revision','GET',undefined,ownerCookie);
+    expect(get.status).toBe(200);expect((await get.json() as any).revision).toBeNull();
+    const changes={...fields,title:'Casa sintética revisada',priceAmount:35000,depositStatus:'NOT_REQUIRED',petsPolicy:'ALLOWED'};
+    const saved=await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:0,baseUpdatedAt:original.updatedAt,fields:changes},ownerCookie);
+    expect(saved.status,await saved.clone().text()).toBe(200);
+    const revision=(await saved.json() as any).revision;
+    expect(revision).toMatchObject({listingId:item.id,ownerId,state:'DRAFT',version:1,fields:{title:changes.title,priceAmount:35000,depositStatus:'NOT_REQUIRED',petsPolicy:'ALLOWED'}});
+    expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:0,baseUpdatedAt:original.updatedAt,fields:changes},ownerCookie)).status).toBe(409);
+    expect((await request('/listings/'+item.id+'/revision/submit','POST',{expectedVersion:0},ownerCookie)).status).toBe(400);
+    const submitted=await request('/listings/'+item.id+'/revision/submit','POST',{expectedVersion:1},ownerCookie);
+    expect(submitted.status,await submitted.clone().text()).toBe(200);
+    expect((await submitted.json() as any).revision).toMatchObject({state:'SUBMITTED',version:2});
+    expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:2,baseUpdatedAt:original.updatedAt,fields:changes},ownerCookie)).status).toBe(409);
+    expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toEqual(original);
+  });
   it('GET is OWNER-scoped and includes source listing state; role and missing IDs are denied',async()=>{
     const listing=await create();
     expect((await request(`/listings/${listing.id}`)).status).toBe(401);
