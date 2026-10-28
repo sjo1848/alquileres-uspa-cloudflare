@@ -6,6 +6,19 @@
       "approved_by_issue": 49,
       "change_class": "additive_with_explicit_synthetic_user_backfill",
       "allow_update": true
+    },
+    {
+      "name": "0014_monthly_rental_terms.sql",
+      "sha256": "e71a710f90cf6b2dfdd5d329b280ac57931bab9d212dfdfbf74f1f43ce5cdb95",
+      "approved_by_issue": 58,
+      "change_class": "additive_nullable_with_validating_triggers",
+      "allowed_update_trigger_ddl": [
+        {
+          "name": "LISTINGS_VALIDATE_RENTAL_TERMS_UPDATE",
+          "table": "LISTINGS",
+          "columns": ["DEPOSIT_STATUS", "DEPOSIT_AMOUNT", "DEPOSIT_CURRENCY"]
+        }
+      ]
     }
   ]
 }

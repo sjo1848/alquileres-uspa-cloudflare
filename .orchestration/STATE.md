@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_FOR_PRODUCT_OWNER_REVIEW`
-Phase: `MVP_M2_1_RENTAL_TERMS`
-Active task: `MVP M2.1 — condiciones esenciales del alquiler mensual (Issue #58)`
+State: `AWAITING_HUMAN_AUTHORIZATION`
+Phase: `MVP_M2_1_REMOTE_PREFLIGHT`
+Active task: `M2.1 remote migration preflight (Issue #58)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2032,3 +2032,44 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Delegated `project_controller` returned PASS on the exact SHA. Review configuration requested `gpt-6-luna` / High with the read-only Controller role; actual backend model identity is UNVERIFIED. Report: `.orchestration/evidence/critics/MVP-M2.1-CONTROLLER-PASS-F060283.md`. The Controller inspected but did not execute tests.
 - **Boundary:** PR #59 remains OPEN for Product Owner review. Do not merge, run the migration against remote D1, update Preview, deploy, or start M2.2 under this task. No remote E2E or production readiness is claimed.
 - This canonical update is tracking/evidence only; the reviewed executable remains SHA `f060283630a6d3dd68bc86eded1d3ea136f579b3`. The GitHub branch may advance by this bookkeeping commit, with no executable change.
+
+
+## Event 253 — M2.1 remote migration preflight; guard PR prepared
+
+- GitHub confirms PR #59 merged as `main@797e6656488d5473b9348542c2312ed0c90c94a6`. The existing Worker Preview target and D1 binding match the pinned account/resource IDs. The current Preview deployment remains the prior M1 deployment `f9b74d2e-c503-43b4-b15c-bc4b45e3f8f1`; M2.1 is not published.
+- Read-only Cloudflare metadata found the existing Access app and one enabled `Operator only` allow policy with a single email selector. Selector values were not reported. Anonymous access was denied on 12/12 route probes spanning stable and immutable Preview URLs.
+- Synthetic D1 provenance passed without selecting listing descriptions, addresses, contact content, or image bytes. Wrangler reported exactly one pending remote migration: `0014_monthly_rental_terms.sql`. No remote migration was applied. A D1 Time Travel bookmark is stored in local protected recovery metadata; its value is intentionally omitted from GitHub.
+- A 62,127-byte remote SQL export was saved outside the repository with file mode 0600 and parent mode 0700. It was imported to an isolated local Wrangler persistence directory; 0014 applied there successfully, both validation triggers were present, synthetic provenance still passed, and the local migration ledger had zero pending migrations. The private backup may contain synthetic password hashes; it is not published.
+- The account subscription metadata endpoint returned an empty list, which does not independently prove the account plan. No plan claim is made. No resource, plan, billing, Access, Worker, CD, or production setting changed.
+- Guard PR #60 changes only exact-hash authorization and its tests/evidence. Exact 0014 SHA-256: `e71a710f90cf6b2dfdd5d329b280ac57931bab9d212dfdfbf74f1f43ce5cdb95`. Only the named `BEFORE UPDATE OF` trigger DDL is permitted; remaining UPDATE DML is rejected. Guard tests 30/30 PASS, Python compilation and diff check PASS.
+- **Boundary:** finish protected checks, GitHub review, and delegated Controller review for PR #60, then leave it unmerged pending separate Human authorization to apply 0014. Do not publish the Worker or change Preview/CD/Access/production; do not start M2.2/M3. A Time Travel restore overwrites the entire database and must never be run automatically.
+
+
+## Event 254 — PR #60 ready for protected review
+
+- PR #60 is open and ready for review from `work/m2-1-migration-preflight`; it changes only the exact-hash migration guard, its regression tests, the M2.1 preflight contract/evidence, and canonical status. Base is `main@797e6656488d5473b9348542c2312ed0c90c94a6`.
+- Executable candidate `f5f45473b6d74aba4c1bd95b9485d0fe1bbd56dc` / tree `706dc94ac84909fe8d0a9c6da255124c13e8d626`; tracking checkpoint `52ed89009de1ef8546eebd664e20f299f161c489` / tree `8e5fd2b2a3fbfe0f4a0704c760df3e4015b56082`. The checkpoint reconciles this Issue and branch state; exact-head CI, GitHub review and Controller are pending.
+- **Next action:** complete only the protected PR review and local technical Controller checks. Leave PR #60 unmerged and do not apply 0014 or publish the Worker; stop for a separate Human authorization.
+
+
+## Event 255 — Controller REWORK P2: trigger declaration regressions
+
+- The delegated read-only Controller process reviewed PR #60 HEAD `d9c208ad35b52a44ef799ed155e38c22bed7a087` against base `797e6656488d5473b9348542c2312ed0c90c94a6`. It found no unsafe allowance, but returned P2 REWORK for missing explicit regressions covering an altered trigger declaration and an extra trigger declaration. Its other P2 concerned active status pointers lagging the reviewed PR checkpoint; canonical tracking is being reconciled in this rework.
+- The configured native Controller was advisory only and returned BLOCKED_MODEL_CONFIG because it could not verify enforced read-only confinement. The required separate `codex exec` process used requested `gpt-6-luna` / High, `--sandbox read-only`, exit 0; backend identity remains UNVERIFIED. Its bounded verdict is preserved in the local execution record, not treated as PASS.
+- **Next action:** add the two fail-closed trigger-declaration tests, rerun the focused guard and canonical-state checks, then obtain fresh exact-artifact GitHub/Controller review. PR #60 remains unmerged; remote migration and Preview publication remain unauthorized.
+
+
+## Event 256 — Controller P2 regressions repaired
+
+- The Controller's two bounded P2 findings are repaired in candidate `f738c670c3dd1bd3bf5451e2e8efc0d29f019d29` / tree `06ab699eb9f4715ec327daebd0f4703567761715`: tests now reject an altered authorized trigger header and an extra unlisted UPDATE trigger even when test fixture hashes are recomputed. Canonical STATUS identifies this exact rework artifact rather than the older 52ed checkpoint.
+- Local guard suite, Python compilation and whitespace checks PASS; a new protected exact-head review is required because tests and state changed.
+- **Next action:** run exact rework checks and a fresh delegated read-only Controller review; keep PR #60 unmerged and remote D1/Preview unchanged pending separate Human authorization.
+
+
+## Event 257 — preflight complete; awaiting separate migration authorization
+
+- Post-export read-only checks passed again: exact existing Worker/D1 target; exactly one pending migration 0014; synthetic D1 provenance; current Preview deployment remains `f9b74d2e-c503-43b4-b15c-bc4b45e3f8f1`; anonymous Access denials 12/12 stable+immutable routes. No remote D1 migration or Worker publication occurred.
+- The private SQL export and recovery metadata remain outside GitHub; backup/metadata modes were rechecked as 0600 under a 0700 directory. Local rehearsal passed; remote state was not restored or modified. Account plan remains unverified because the subscriptions API returned no entries.
+- Guard tests are reconciled to 32/32, Python compilation and consistency/diff checks PASS. GitHub Actions run `40579143017` on artifact `f26df3033591fd40e8dac559cded50637f889c95`: `worker`/`web` SUCCESS; `staging-private` SKIPPED. Branch protection requires those checks and enforces admins; it requires zero approving reviews. No automated review record was observed and none is claimed.
+- Controller review on the exact artifact returned REWORK P2 only for the stale test count; this was corrected in the status-only follow-up, with no migration-guard code finding. **No final Controller PASS is claimed.** Runtime reports and provenance are preserved in `evidence/critics/MVP-M2.1-MIGRATION-CONTROLLER-REWORK-F26DF30.md`.
+- **Human Gate:** PR #60 remains open and unmerged. Await explicit authorization to merge/apply exactly 0014 to the synthetic D1. Preview publication is a separate gate. No M2.2/M3.
