@@ -158,7 +158,7 @@ app.post('/admin/listings/:id/revision/review',async c=>{
     const action=input.action==='approve'?'ADMIN_LISTING_REVISION_APPROVED':'ADMIN_LISTING_REVISION_REJECTED';
     const update=c.env.DB.prepare("UPDATE listing_change_revisions SET state=?,rejection_reason=?,version=version+1,reviewed_at=?,updated_at=? WHERE listing_id=? AND state='SUBMITTED' AND version=? AND base_updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(state,reason,at,at,lid,input.expectedVersion,current.updatedAt,lid,lease);
     const audit=sourceAuditInsert(c,id(),lid,action,reason,at,"l.id=? AND owner.role='OWNER' AND changes()=1 AND EXISTS(SELECT 1 FROM listing_change_revisions r WHERE r.listing_id=l.id AND r.state=? AND r.version=?)",[lid,state,input.expectedVersion+1],{revisionVersion:input.expectedVersion+1});
-    const results=await c.env.DB.batch([update,audit]);
+    const results=await c.env.DB.batch([update,audit,c.env.DB.prepare(revisionAtomicGuard)]);
     if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'revision review conflict'},409);
     return c.json({revision:revisionDto(await getListingRevision(c.env.DB,lid))});
   }catch{return c.json({error:'revision review unavailable'},503);}
@@ -179,8 +179,8 @@ app.post('/admin/listings/:id/revision/publish',async c=>{
     const update=c.env.DB.prepare("UPDATE listings SET title=?,description=?,location=?,location_search=?,price_amount=?,price_period=?,rental_duration=?,max_occupants=?,currency=?,deposit_status=?,deposit_amount=?,deposit_currency=?,internet_included=?,water_included=?,electricity_included=?,gas_included=?,pets_policy=?,available_from=?,updated_at=? WHERE id=? AND owner_id=? AND status='APPROVED' AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch()) AND EXISTS(SELECT 1 FROM listing_change_revisions r WHERE r.listing_id=listings.id AND r.state='APPROVED' AND r.version=? AND r.base_updated_at=listings.updated_at)").bind(fields.title,fields.description,fields.location,fields.location.normalize('NFC').toLowerCase(),fields.priceAmount,fields.pricePeriod,fields.rentalDuration,fields.maxOccupants,fields.currency,...TERM_FIELDS.map(key=>fields[key]),at,lid,revision.ownerId,current.updatedAt,lid,lease,input.expectedVersion);
     const applied=c.env.DB.prepare("UPDATE listing_change_revisions SET state='APPLIED',version=version+1,applied_at=?,updated_at=? WHERE listing_id=? AND state='APPROVED' AND version=? AND base_updated_at=? AND EXISTS(SELECT 1 FROM listings WHERE id=? AND updated_at=? AND status='APPROVED')").bind(at,at,lid,input.expectedVersion,current.updatedAt,lid,at);
     const audit=sourceAuditInsert(c,id(),lid,'ADMIN_LISTING_REVISION_PUBLISHED',null,at,"l.id=? AND owner.role='OWNER' AND changes()=1 AND EXISTS(SELECT 1 FROM listing_change_revisions r WHERE r.listing_id=l.id AND r.state='APPLIED' AND r.version=? AND r.applied_at=?)",[lid,input.expectedVersion+1,at],{revisionVersion:input.expectedVersion+1});
-    const result=await c.env.DB.batch([update,applied,audit]);
-    if(result.length!==3||result.some(row=>row.meta?.changes!==1))return c.json({error:'revision publication needs recovery; inspect audit and listing'},503);
+    const result=await c.env.DB.batch([update,c.env.DB.prepare(revisionAtomicGuard),applied,audit,c.env.DB.prepare(revisionAtomicGuard)]);
+    if(result.length!==5||result[0]?.meta?.changes!==1||result[2]?.meta?.changes!==1||result[3]?.meta?.changes!==1)return c.json({error:'revision publication needs recovery; inspect audit and listing'},503);
     return c.json({listing:await sourceAdminListing(c.env.DB,lid,c.env.MEDIA_STRATEGY),revision:revisionDto(await getListingRevision(c.env.DB,lid))});
   }catch{return c.json({error:'revision publication outcome uncertain; inspect before retry'},503);}
   finally{await unlock(c.env.DB,lid,lease);}
@@ -463,6 +463,9 @@ type ListingRevision = {
   payload:string;baseUpdatedAt:string;version:number;rejectionReason:string|null;
   createdAt:string;updatedAt:string;reviewedAt:string|null;appliedAt:string|null;
 };
+// D1 batch is transactional, but a zero-row guarded UPDATE does not raise by itself.
+// The statement below raises on a zero-row predecessor so the entire batch rolls back.
+const revisionAtomicGuard="SELECT json_extract('REVISION_ATOMIC_ASSERT_INVALID_JSON','$.failed') WHERE changes()!=1";
 const revisionColumns="listing_id AS listingId,owner_id AS ownerId,state,payload,base_updated_at AS baseUpdatedAt,version,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt,reviewed_at AS reviewedAt,applied_at AS appliedAt";
 const revisionFields=['title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency',...TERM_FIELDS] as const;
 function proposedRevisionFields(value:any){
