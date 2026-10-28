@@ -135,6 +135,57 @@ app.use('/admin/*',async(c,next)=>{
   if(user.role!=='ADMIN')return c.json({error:'Invalid or expired token'},401);
   c.set('user',user);await next();
 });
+// Proposed edits to already approved listings are moderated separately from new listings.
+app.get('/admin/listings/revisions',async c=>{
+  const rows=await c.env.DB.prepare("SELECT r.listing_id AS listingId,r.state,r.payload,r.version,r.base_updated_at AS baseUpdatedAt,r.rejection_reason AS rejectionReason,r.updated_at AS updatedAt,l.title AS currentTitle,l.description AS currentDescription,l.price_amount AS currentPriceAmount,l.currency AS currentCurrency,l.publication_status AS publicationStatus,l.status AS listingStatus,l.updated_at AS listingUpdatedAt,u.email AS ownerEmail FROM listing_change_revisions r JOIN listings l ON l.id=r.listing_id JOIN users u ON u.id=l.owner_id AND u.role='OWNER' WHERE r.state IN ('SUBMITTED','APPROVED') ORDER BY r.updated_at DESC,r.listing_id LIMIT 100").all<any>();
+  return c.json({items:rows.results.map(row=>{const {payload,...rest}=row;return {...rest,fields:JSON.parse(payload)};})});
+});
+app.post('/admin/listings/:id/revision/review',async c=>{
+  const lid=c.req.param('id'),input=await boundedJson(c.req.raw,1024) as any;
+  if(!input||Object.keys(input).some(key=>!['action','reason','expectedVersion'].includes(key))||
+    !['approve','reject'].includes(input.action)||!Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<1||
+    (input.action==='approve'&&input.reason!==undefined)||
+    (input.action==='reject'&&(typeof input.reason!=='string'||input.reason.trim().length<3||input.reason.trim().length>1000)))
+    return c.json({error:'invalid revision decision'},400);
+  const listing=await sourceAdminListing(c.env.DB,lid,c.env.MEDIA_STRATEGY);
+  if(!listing)return c.json({error:'not found'},404);
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'listing busy; retry'},409);
+  try{
+    const revision=await getListingRevision(c.env.DB,lid);
+    const current=await sourceAdminListing(c.env.DB,lid,c.env.MEDIA_STRATEGY);
+    if(!current||current.status!=='APPROVED'||!revision||revision.state!=='SUBMITTED'||revision.version!==input.expectedVersion||revision.baseUpdatedAt!==current.updatedAt)return c.json({error:'revision changed or public listing updated'},409);
+    const at=monotonicTimestamp(revision.updatedAt),reason=input.action==='reject'?input.reason.trim():null,state=input.action==='approve'?'APPROVED':'REJECTED';
+    const action=input.action==='approve'?'ADMIN_LISTING_REVISION_APPROVED':'ADMIN_LISTING_REVISION_REJECTED';
+    const update=c.env.DB.prepare("UPDATE listing_change_revisions SET state=?,rejection_reason=?,version=version+1,reviewed_at=?,updated_at=? WHERE listing_id=? AND state='SUBMITTED' AND version=? AND base_updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(state,reason,at,at,lid,input.expectedVersion,current.updatedAt,lid,lease);
+    const audit=sourceAuditInsert(c,id(),lid,action,reason,at,"l.id=? AND owner.role='OWNER' AND changes()=1 AND EXISTS(SELECT 1 FROM listing_change_revisions r WHERE r.listing_id=l.id AND r.state=? AND r.version=?)",[lid,state,input.expectedVersion+1],{revisionVersion:input.expectedVersion+1});
+    const results=await c.env.DB.batch([update,audit]);
+    if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'revision review conflict'},409);
+    return c.json({revision:revisionDto(await getListingRevision(c.env.DB,lid))});
+  }catch{return c.json({error:'revision review unavailable'},503);}
+  finally{await unlock(c.env.DB,lid,lease);}
+});
+app.post('/admin/listings/:id/revision/publish',async c=>{
+  const lid=c.req.param('id'),input=await boundedJson(c.req.raw,512) as any;
+  if(!input||Object.keys(input).some(key=>key!=='expectedVersion')||!Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<1)return c.json({error:'expectedVersion required'},400);
+  const before=await sourceAdminListing(c.env.DB,lid,c.env.MEDIA_STRATEGY);
+  if(!before)return c.json({error:'not found'},404);
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'listing busy; retry'},409);
+  try{
+    const current=await sourceAdminListing(c.env.DB,lid,c.env.MEDIA_STRATEGY),revision=await getListingRevision(c.env.DB,lid);
+    if(!current||current.status!=='APPROVED'||!revision||revision.state!=='APPROVED'||revision.version!==input.expectedVersion||revision.baseUpdatedAt!==current.updatedAt)return c.json({error:'revision no longer ready for publication'},409);
+    const fields=proposedRevisionFields(JSON.parse(revision.payload));
+    if(!fields)return c.json({error:'revision contains invalid fields'},409);
+    const at=monotonicTimestamp(current.updatedAt);
+    const update=c.env.DB.prepare("UPDATE listings SET title=?,description=?,location=?,location_search=?,price_amount=?,price_period=?,rental_duration=?,max_occupants=?,currency=?,deposit_status=?,deposit_amount=?,deposit_currency=?,internet_included=?,water_included=?,electricity_included=?,gas_included=?,pets_policy=?,available_from=?,updated_at=? WHERE id=? AND owner_id=? AND status='APPROVED' AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch()) AND EXISTS(SELECT 1 FROM listing_change_revisions r WHERE r.listing_id=listings.id AND r.state='APPROVED' AND r.version=? AND r.base_updated_at=listings.updated_at)").bind(fields.title,fields.description,fields.location,fields.location.normalize('NFC').toLowerCase(),fields.priceAmount,fields.pricePeriod,fields.rentalDuration,fields.maxOccupants,fields.currency,...TERM_FIELDS.map(key=>fields[key]),at,lid,revision.ownerId,current.updatedAt,lid,lease,input.expectedVersion);
+    const applied=c.env.DB.prepare("UPDATE listing_change_revisions SET state='APPLIED',version=version+1,applied_at=?,updated_at=? WHERE listing_id=? AND state='APPROVED' AND version=? AND base_updated_at=? AND EXISTS(SELECT 1 FROM listings WHERE id=? AND updated_at=? AND status='APPROVED')").bind(at,at,lid,input.expectedVersion,current.updatedAt,lid,at);
+    const audit=sourceAuditInsert(c,id(),lid,'ADMIN_LISTING_REVISION_PUBLISHED',null,at,"l.id=? AND owner.role='OWNER' AND changes()=1 AND EXISTS(SELECT 1 FROM listing_change_revisions r WHERE r.listing_id=l.id AND r.state='APPLIED' AND r.version=? AND r.applied_at=?)",[lid,input.expectedVersion+1,at],{revisionVersion:input.expectedVersion+1});
+    const result=await c.env.DB.batch([update,applied,audit]);
+    if(result.length!==3||result.some(row=>row.meta?.changes!==1))return c.json({error:'revision publication needs recovery; inspect audit and listing'},503);
+    return c.json({listing:await sourceAdminListing(c.env.DB,lid,c.env.MEDIA_STRATEGY),revision:revisionDto(await getListingRevision(c.env.DB,lid))});
+  }catch{return c.json({error:'revision publication outcome uncertain; inspect before retry'},503);}
+  finally{await unlock(c.env.DB,lid,lease);}
+});
+
 app.get('/admin/listings/review',async c=>{
   const afterCreatedAt=c.req.query('afterCreatedAt'),afterId=c.req.query('afterId');
   const hasCursor=afterCreatedAt!==undefined||afterId!==undefined;
