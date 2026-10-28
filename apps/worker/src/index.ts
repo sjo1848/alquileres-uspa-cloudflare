@@ -406,6 +406,79 @@ app.get('/admin/listings/:listingId/images/:imageId',async c=>{
 });
 app.get('/listings',async c=>{const rows=await c.env.DB.prepare('SELECT id,owner_id AS ownerId,status,title,description,location,price_amount AS priceAmount,price_period AS pricePeriod,rental_duration AS rentalDuration,max_occupants AS maxOccupants,currency,deposit_status AS depositStatus,deposit_amount AS depositAmount,deposit_currency AS depositCurrency,internet_included AS internetIncluded,water_included AS waterIncluded,electricity_included AS electricityIncluded,gas_included AS gasIncluded,pets_policy AS petsPolicy,available_from AS availableFrom,publication_status AS publicationStatus,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt FROM listings WHERE owner_id=? ORDER BY updated_at DESC').bind(c.get('user').id).all();return c.json(rows.results);});
 app.get('/listings/:id',async c=>{const listing=await ownerListing(c.env.DB,c.req.param('id'),ownerId(c));return listing?c.json(listing):c.json({error:'not found'},404);});
+
+type ListingRevision = {
+  listingId:string;ownerId:string;state:'DRAFT'|'SUBMITTED'|'REJECTED'|'APPROVED'|'APPLIED';
+  payload:string;baseUpdatedAt:string;version:number;rejectionReason:string|null;
+  createdAt:string;updatedAt:string;reviewedAt:string|null;appliedAt:string|null;
+};
+const revisionColumns="listing_id AS listingId,owner_id AS ownerId,state,payload,base_updated_at AS baseUpdatedAt,version,rejection_reason AS rejectionReason,created_at AS createdAt,updated_at AS updatedAt,reviewed_at AS reviewedAt,applied_at AS appliedAt";
+const revisionFields=['title','description','location','priceAmount','pricePeriod','rentalDuration','maxOccupants','currency',...TERM_FIELDS] as const;
+function proposedRevisionFields(value:any){
+  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(key=>!(revisionFields as readonly string[]).includes(key)))return null;
+  const fields={...value,...rentalTerms(value)};
+  return validListingInput(fields)?fields:null;
+}
+function revisionDto(row:ListingRevision|null){
+  if(!row)return null;
+  const {payload,...meta}=row;
+  return {...meta,fields:JSON.parse(payload)};
+}
+async function getListingRevision(db:D1Database,lid:string){
+  return db.prepare('SELECT '+revisionColumns+' FROM listing_change_revisions WHERE listing_id=?').bind(lid).first<ListingRevision>();
+}
+// A published listing is NEVER modified by the OWNER revision endpoints.
+app.get('/listings/:id/revision',async c=>{
+  const lid=c.req.param('id');
+  const listing=await ownerListing(c.env.DB,lid,ownerId(c));
+  if(!listing)return c.json({error:'not found'},404);
+  if(listing.status!=='APPROVED')return c.json({error:'only approved listings can have change proposals'},409);
+  return c.json({listingUpdatedAt:listing.updatedAt,revision:revisionDto(await getListingRevision(c.env.DB,lid))});
+});
+app.put('/listings/:id/revision',async c=>{
+  const lid=c.req.param('id'),owner=ownerId(c),input=await boundedJson(c.req.raw,12000) as any;
+  if(!input||Object.keys(input).some(key=>!['expectedVersion','baseUpdatedAt','fields'].includes(key))||
+    !Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<0||
+    typeof input.baseUpdatedAt!=='string'||input.baseUpdatedAt.length>40||
+    !Number.isFinite(Date.parse(input.baseUpdatedAt)))return c.json({error:'expectedVersion, baseUpdatedAt and fields required'},400);
+  const proposed=proposedRevisionFields(input.fields);
+  if(!proposed)return c.json({error:'invalid proposed listing fields'},400);
+  const listing=await ownerListing(c.env.DB,lid,owner);
+  if(!listing)return c.json({error:'not found'},404);
+  if(listing.status!=='APPROVED')return c.json({error:'listing is not approved'},409);
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'listing busy; retry'},409);
+  try{
+    const current=await ownerListing(c.env.DB,lid,owner);
+    if(!current||current.status!=='APPROVED'||current.updatedAt!==input.baseUpdatedAt)return c.json({error:'listing changed; reload before editing'},409);
+    const previous=await getListingRevision(c.env.DB,lid);
+    if(previous && (previous.version!==input.expectedVersion||!['DRAFT','REJECTED','APPLIED'].includes(previous.state)))return c.json({error:'revision changed or awaiting review'},409);
+    if(!previous && input.expectedVersion!==0)return c.json({error:'revision already changed'},409);
+    const at=monotonicTimestamp(previous?.updatedAt??current.updatedAt),payload=JSON.stringify(proposed);
+    const result=previous
+      ? await c.env.DB.prepare("UPDATE listing_change_revisions SET state='DRAFT',payload=?,base_updated_at=?,version=version+1,rejection_reason=NULL,updated_at=?,reviewed_at=NULL,applied_at=NULL WHERE listing_id=? AND owner_id=? AND version=? AND state IN ('DRAFT','REJECTED','APPLIED') AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(payload,current.updatedAt,at,lid,owner,input.expectedVersion,lid,lease).run()
+      : await c.env.DB.prepare("INSERT INTO listing_change_revisions(listing_id,owner_id,state,payload,base_updated_at,version,created_at,updated_at) SELECT ?,?,'DRAFT',?,?,1,?,? WHERE EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch()) AND EXISTS(SELECT 1 FROM listings WHERE id=? AND owner_id=? AND status='APPROVED' AND updated_at=?)").bind(lid,owner,payload,current.updatedAt,at,at,lid,lease,lid,owner,current.updatedAt).run();
+    if(result.meta.changes!==1)return c.json({error:'revision save conflict'},409);
+    return c.json({revision:revisionDto(await getListingRevision(c.env.DB,lid))});
+  }catch{return c.json({error:'revision save unavailable; no public listing changes'},503);}
+  finally{await unlock(c.env.DB,lid,lease);}
+});
+app.post('/listings/:id/revision/submit',async c=>{
+  const lid=c.req.param('id'),owner=ownerId(c),input=await boundedJson(c.req.raw,512) as any;
+  if(!input||Object.keys(input).some(key=>key!=='expectedVersion')||!Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<1)return c.json({error:'expectedVersion required'},400);
+  const listing=await ownerListing(c.env.DB,lid,owner);if(!listing)return c.json({error:'not found'},404);
+  const lease=await lock(c.env.DB,lid);if(!lease)return c.json({error:'listing busy; retry'},409);
+  try{
+    const current=await ownerListing(c.env.DB,lid,owner),revision=await getListingRevision(c.env.DB,lid);
+    if(!current||current.status!=='APPROVED'||!revision||revision.ownerId!==owner||revision.state!=='DRAFT'||revision.version!==input.expectedVersion||revision.baseUpdatedAt!==current.updatedAt)return c.json({error:'revision requires saving or refreshing before submission'},409);
+    if(!proposedRevisionFields(JSON.parse(revision.payload)))return c.json({error:'invalid stored revision'},409);
+    const at=monotonicTimestamp(revision.updatedAt);
+    const result=await c.env.DB.prepare("UPDATE listing_change_revisions SET state='SUBMITTED',version=version+1,updated_at=? WHERE listing_id=? AND owner_id=? AND state='DRAFT' AND version=? AND base_updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,lid,owner,input.expectedVersion,current.updatedAt,lid,lease).run();
+    if(result.meta.changes!==1)return c.json({error:'revision changed during submission'},409);
+    return c.json({revision:revisionDto(await getListingRevision(c.env.DB,lid))});
+  }catch{return c.json({error:'revision submission unavailable'},503);}
+  finally{await unlock(c.env.DB,lid,lease);}
+});
+
 app.patch('/listings/:id/availability',async c=>{const input=await boundedJson(c.req.raw,1024) as any;if(!input||Object.keys(input).some(key=>key!=='availabilityStatus')||!['AVAILABLE','UNAVAILABLE'].includes(input.availabilityStatus))return c.json({error:'availabilityStatus must be AVAILABLE or UNAVAILABLE'},400);return updateOwnerAvailability(c,c.req.param('id'),input.availabilityStatus);});
 app.post('/listings/:id/reconfirm',async c=>updateOwnerAvailability(c,c.req.param('id')));
 async function updateOwnerAvailability(c:any,listingId:string,availabilityStatus?:'AVAILABLE'|'UNAVAILABLE'){
