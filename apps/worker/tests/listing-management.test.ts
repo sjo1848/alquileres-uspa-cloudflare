@@ -31,6 +31,32 @@ afterAll(async()=>{
 });
 
 describe('OWNER listing lifecycle',()=>{
+  it('validates rental terms and permits retry after ADMIN rejects a change proposal',async()=>{
+    const item=await create(ownerCookie,'Alquiler sintético revisable');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const baseline=await env.DB.prepare('SELECT title,updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first<{title:string;updatedAt:string}>();
+    expect(baseline).not.toBeNull();
+    const baseUpdatedAt=baseline!.updatedAt;
+    const invalidDeposit={...fields,depositStatus:'FIXED_AMOUNT',depositAmount:20000,depositCurrency:null};
+    expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:0,baseUpdatedAt,fields:invalidDeposit},ownerCookie)).status).toBe(400);
+    const invalidWeekly={...fields,pricePeriod:'WEEK',petsPolicy:'ALLOWED'};
+    expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:0,baseUpdatedAt,fields:invalidWeekly},ownerCookie)).status).toBe(400);
+    const proposed={...fields,title:'Alquiler corregido',petsPolicy:'ALLOWED',internetIncluded:'INCLUDED'};
+    const saved=await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:0,baseUpdatedAt,fields:proposed},ownerCookie);
+    expect(saved.status,await saved.clone().text()).toBe(200);
+    const submit=await request('/listings/'+item.id+'/revision/submit','POST',{expectedVersion:1},ownerCookie);
+    expect(submit.status).toBe(200);
+    const reject=await request('/admin/listings/'+item.id+'/revision/review','POST',{action:'reject',expectedVersion:2,reason:'La ubicación requiere aclaración'},adminCookie);
+    expect(reject.status,await reject.clone().text()).toBe(200);
+    expect((await reject.json() as any).revision).toMatchObject({state:'REJECTED',version:3,rejectionReason:'La ubicación requiere aclaración'});
+    expect(await env.DB.prepare('SELECT title,updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first()).toEqual(baseline);
+    const edited=await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:3,baseUpdatedAt,fields:{...proposed,description:'Descripción corregida'}},ownerCookie);
+    expect(edited.status,await edited.clone().text()).toBe(200);
+    expect((await edited.json() as any).revision).toMatchObject({state:'DRAFT',version:4,rejectionReason:null,fields:{description:'Descripción corregida'}});
+    expect((await request('/listings/'+item.id+'/revision/submit','POST',{expectedVersion:3},ownerCookie)).status).toBe(409);
+    expect(await env.DB.prepare('SELECT title,updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first()).toEqual(baseline);
+  });
+
 
   it('keeps a published listing immutable while OWNER saves and submits a private revision',async()=>{
     const item=await create(ownerCookie,'Alojamiento publicado sintético');
