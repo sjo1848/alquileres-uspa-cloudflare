@@ -11,9 +11,24 @@ const png=new Uint8Array(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFc
 const ownerId='listing-mgmt-owner',otherId='listing-mgmt-other',adminId='listing-mgmt-admin';
 let ownerCookie='',otherCookie='',adminCookie='';
 const listingIds:string[]=[];
-function request(path:string,method='GET',body?:unknown,cookie?:string,key?:string,withOrigin=true,mediaStrategy:string|undefined|typeof UNSET_MEDIA_STRATEGY=bindings.MEDIA_STRATEGY){
-  const testBindings:{[key:string]:unknown}={...bindings};if(mediaStrategy===UNSET_MEDIA_STRATEGY)delete testBindings.MEDIA_STRATEGY;else testBindings.MEDIA_STRATEGY=mediaStrategy;
+function request(path:string,method='GET',body?:unknown,cookie?:string,key?:string,withOrigin=true,mediaStrategy:string|undefined|typeof UNSET_MEDIA_STRATEGY=bindings.MEDIA_STRATEGY,database:typeof env.DB=env.DB){
+  const testBindings:{[key:string]:unknown}={...bindings,DB:database};if(mediaStrategy===UNSET_MEDIA_STRATEGY)delete testBindings.MEDIA_STRATEGY;else testBindings.MEDIA_STRATEGY=mediaStrategy;
   return app.request(origin+path,{method,headers:{...(withOrigin?{Origin:origin}:{}),...(cookie?{Cookie:cookie}:{}),...(key?{'Idempotency-Key':key}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body)},testBindings as typeof bindings);
+}
+function pauseAfterListingImagesRead(database:typeof env.DB){
+  let signalRead!:()=>void,continueRead!:()=>void;
+  const readReached=new Promise<void>(resolve=>{signalRead=resolve}),release=new Promise<void>(resolve=>{continueRead=resolve});
+  let paused=false;
+  const wrap=(statement:any,sql:string):any=>new Proxy(statement,{get(target,property){
+    if(property==='bind')return (...args:any[])=>wrap(target.bind(...args),sql);
+    if(property==='all')return async(...args:any[])=>{const result=await target.all(...args);if(!paused&&sql.includes('FROM listing_images WHERE listing_id=?')){paused=true;signalRead();await release;}return result;};
+    const value=Reflect.get(target,property,target);return typeof value==='function'?value.bind(target):value;
+  }});
+  const gatedDatabase=new Proxy(database as any,{get(target,property){
+    if(property==='prepare')return (sql:string)=>wrap(target.prepare(sql),sql);
+    const value=Reflect.get(target,property,target);return typeof value==='function'?value.bind(target):value;
+  }}) as typeof env.DB;
+  return {database:gatedDatabase,readReached,release:continueRead};
 }
 async function login(email:string){const response=await request('/auth/login','POST',{email,password:'synthetic-owner-password-1'});expect(response.status).toBe(200);return response.headers.get('set-cookie')!.split(';')[0];}
 async function create(owner=ownerCookie,title=fields.title){const response=await request('/listings','POST',{...fields,title},owner,crypto.randomUUID());expect(response.status).toBe(201);const result=await response.json() as {id:string;updatedAt:string};listingIds.push(result.id);return result;}
@@ -278,6 +293,29 @@ describe('OWNER listing lifecycle',()=>{
     expect(approvedRevision).toMatchObject({state:'APPROVED',version:6,baseUpdatedAt:afterReconfirm.updatedAt});
     expect((await request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:6},adminCookie)).status).toBe(200);
     expect(await env.DB.prepare('SELECT title,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE id=?').bind(item.id).first()).toMatchObject({title:'Cambio corregido',availabilityStatus:'UNAVAILABLE',lastConfirmedAt:afterReconfirm.lastConfirmedAt});
+  });
+
+  it('preserves availability when it commits after publication reads but before publication acquires its lock',async()=>{
+    const item=await create(ownerCookie,'Publicación concurrente con disponibilidad');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const base=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first<{updatedAt:string}>();
+    expect((await request(`/listings/${item.id}/revision`,'PUT',{expectedVersion:0,baseUpdatedAt:base!.updatedAt,fields:{...fields,title:'Cambio publicado concurrentemente'}},ownerCookie)).status).toBe(200);
+    expect((await request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie)).status).toBe(200);
+    expect((await request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'approve',expectedVersion:2},adminCookie)).status).toBe(200);
+
+    const gate=pauseAfterListingImagesRead(env.DB);
+    const publishing=request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:3},adminCookie,undefined,true,bindings.MEDIA_STRATEGY,gate.database);
+    await gate.readReached;
+    const availability=await request(`/listings/${item.id}/availability`,'PATCH',{availabilityStatus:'UNAVAILABLE'},ownerCookie);
+    expect(availability.status,await availability.clone().text()).toBe(200);
+    const afterAvailability=await availability.json() as any;
+    expect(await env.DB.prepare('SELECT base_updated_at AS baseUpdatedAt,state FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toMatchObject({baseUpdatedAt:afterAvailability.updatedAt,state:'APPROVED'});
+    gate.release();
+
+    const published=await publishing;
+    expect(published.status,await published.clone().text()).toBe(200);
+    expect(await env.DB.prepare('SELECT title,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE id=?').bind(item.id).first()).toMatchObject({title:'Cambio publicado concurrentemente',availabilityStatus:'UNAVAILABLE',lastConfirmedAt:afterAvailability.lastConfirmedAt});
+    expect(await env.DB.prepare('SELECT state,version FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toEqual({state:'APPLIED',version:4});
   });
 
   it('paginates the ADMIN revision queue beyond 100 records without omissions',async()=>{
