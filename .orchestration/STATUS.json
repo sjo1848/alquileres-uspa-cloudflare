@@ -5,14 +5,14 @@
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
   "active_task": "M2.1 OWNER published revisions (Issue #61)",
-  "last_completed_task": "M2.1 OWNER revision implementation locally validated; exact GitHub CI run 40804803035 passed on code candidate 6e12dc4; reconciling canonical state and requiring fresh checks/reviews for the tracking checkpoint.",
+  "last_completed_task": "M2.1 OWNER revision implementation locally validated; exact GitHub CI run 40805091849 passed on tracking head e15a870; final exact-head reviews pending.",
   "last_completed_head": "main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
   "work_branch": "feature/m2-1-owner-publication-revisions",
-  "next_action": "Publish the canonical state reconciliation in PR #62; verify fresh worker/web CI on the resulting GitHub HEAD; then run Critic, Integration Review and GPT-6 Luna High read-only Controller on that exact SHA. Leave DRAFT for Human review.",
+  "next_action": "Verify worker/web CI on the current PR #62 HEAD, then complete Critic, Integration Review, and GPT-6 Luna High read-only Controller on that exact SHA. Repair substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
   "stop_reason": "No merge, remote migration 0015, Preview/deploy, production, Access/CD change, or M3. Stop only when exact technical gates pass and PR #62 is ready for Human review.",
   "event": {
-    "seq": 262,
-    "summary": "Exact CI run 40804803035 passed on candidate 6e12dc4; reconcile canonical state, then rerun CI and final reviews on the resulting tracking head"
+    "seq": 263,
+    "summary": "Exact CI run 40805091849 passed on tracking head e15a870; reconcile state, then validate resulting HEAD and complete final reviews"
   },
   "external_review": null,
   "human_gate": {
@@ -1323,9 +1323,11 @@
       "web_typecheck_build": "PASS: typecheck, build, build:preview",
       "orchestration": "PASS: canonical consistency validator and diff check"
     },
-    "prior_reviews": "Critic PASS and Integration REWORK/P2 plus Controller REWORK/P1 on previous SHA 7db8f14. Findings are being addressed; none of those are claimed as final for this code rework.",
-    "next": "Publish the canonical state reconciliation in PR #62; verify fresh worker/web CI on the resulting GitHub HEAD; then run Critic, Integration Review and GPT-6 Luna High read-only Controller on that exact SHA. Leave DRAFT for Human review.",
-    "prior_exact_ci": "40804803035 SUCCESS on 6e12dc4; fresh exact-head run pending after canonical checkpoint reconciliation."
+    "tracking_head_before_this_checkpoint": "e15a870a95da41336a285e206ff2a8ddebf7c601",
+    "tracking_tree_before_this_checkpoint": "e749382a366dd072f9daac29d3bd863a34120247",
+    "prior_reviews": "Critic/Integration/Controller attempts on 6e12dc4 were blocked by pending exact CI or unavailable live GitHub evidence; no final verdict is claimed. Earlier substantive findings were repaired in subsequent code commits and need exact-head confirmation.",
+    "next": "Verify worker/web CI on the current PR #62 HEAD, then complete Critic, Integration Review, and GPT-6 Luna High read-only Controller on that exact SHA. Repair substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
+    "prior_exact_ci": "40805091849 SUCCESS on tracking HEAD e15a870: worker/web SUCCESS; staging-private SKIPPED. This checkpoint changes tracking/evidence only; verify CI on the resulting HEAD."
   },
   "historical_candidate_review_mvp_m2_1_migration": {
     "status": "CONTROLLER_REWORK_P2_RECONCILED_NO_FINAL_PASS_CLAIMED",
