@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `AWAITING_HUMAN_AUTHORIZATION`
-Phase: `MVP_M2_1_REMOTE_PREFLIGHT`
-Active task: `M2.1 remote migration preflight (Issue #58)`
+State: `IN_PROGRESS`
+Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
+Active task: `M2.1 OWNER published revisions (Issue #61)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2073,3 +2073,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Guard tests are reconciled to 32/32, Python compilation and consistency/diff checks PASS. GitHub Actions run `40579143017` on artifact `f26df3033591fd40e8dac559cded50637f889c95`: `worker`/`web` SUCCESS; `staging-private` SKIPPED. Branch protection requires those checks and enforces admins; it requires zero approving reviews. No automated review record was observed and none is claimed.
 - Controller review on the exact artifact returned REWORK P2 only for the stale test count; this was corrected in the status-only follow-up, with no migration-guard code finding. **No final Controller PASS is claimed.** Runtime reports and provenance are preserved in `evidence/critics/MVP-M2.1-MIGRATION-CONTROLLER-REWORK-F26DF30.md`.
 - **Human Gate:** PR #60 remains open and unmerged. Await explicit authorization to merge/apply exactly 0014 to the synthetic D1. Preview publication is a separate gate. No M2.2/M3.
+
+
+## Event 258 — M2.1 OWNER published-listing revisions in PR #62
+
+- Issue #61 is the active increment. Product behavior was approved: OWNER edits a private revision; ADMIN reviews; approval and publication remain separate; the prior public listing remains unchanged until publication. PR #62 remains DRAFT on `feature/m2-1-owner-publication-revisions`, based on `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`.
+- Expanded regression candidate: executable `e1fce3de9611b7b522a5a3ad7a554ce8ad626d11`, tree `abaa8701d6f039e0c9945f8ea38d05a5d57ab879`. Worker D1-local checks: listing-management 19/19, rental-terms 5/5, public-listings 7/7, contact-workflow 6/6, admin-moderation 12/12; Worker typecheck PASS. Added simultaneous optimistic-version operations, injected D1 audit failures to assert batch rollback and safe retry, explicit role/owner denials, public API visibility before/after publication, monthly terms, term-free weekly compatibility, and preservation of D1 BLOB/static photos and contact events.
+- Existing synthetic D1 migration `0015` remains local/versioned only. No remote D1, Preview, Access, CD, production, real data, paid service, or source repository was changed.
+- Exact-head `worker`/`web` CI plus Critic, Integration Review and the operationally qualified read-only Controller are pending for the published tracking checkpoint. Do not claim P1A readiness, do not merge, do not apply `0015` remotely, and do not start M3.
+- **Next action:** publish the canonical checkpoint with this functional PR, derive the live PR HEAD from GitHub, run required exact-head checks and reviews, repair substantive findings, and leave PR #62 ready for Human review.
