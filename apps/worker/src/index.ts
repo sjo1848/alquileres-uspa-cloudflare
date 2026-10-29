@@ -546,12 +546,18 @@ async function updateOwnerAvailability(c:any,listingId:string,availabilityStatus
   try{
     const current=await ownerListing(c.env.DB,listingId,owner);if(!current)return c.json({error:'not found'},404);
     const at=monotonicTimestamp(current.updatedAt);
-    const result=availabilityStatus
-      ?await c.env.DB.prepare("UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(availabilityStatus,at,at,listingId,owner,current.updatedAt,listingId,lease).run()
-      :await c.env.DB.prepare("UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,at,listingId,owner,current.updatedAt,listingId,lease).run();
-    if(result.meta.changes!==1)return c.json({error:'listing changed; retry with the same idempotency key'},409);
+    const update=availabilityStatus
+      ?c.env.DB.prepare("UPDATE listings SET availability_status=?,last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(availabilityStatus,at,at,listingId,owner,current.updatedAt,listingId,lease)
+      :c.env.DB.prepare("UPDATE listings SET last_confirmed_at=?,updated_at=? WHERE id=? AND owner_id=? AND updated_at=? AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,at,listingId,owner,current.updatedAt,listingId,lease);
+    const revision=await getListingRevision(c.env.DB,listingId);
+    if(revision&&revision.baseUpdatedAt===current.updatedAt){
+      const rebase=c.env.DB.prepare("UPDATE listing_change_revisions SET base_updated_at=? WHERE listing_id=? AND owner_id=? AND state=? AND version=? AND base_updated_at=? AND EXISTS(SELECT 1 FROM listings WHERE id=? AND owner_id=? AND status='APPROVED' AND publication_status='PUBLISHED' AND updated_at=?) AND EXISTS(SELECT 1 FROM listing_locks WHERE listing_id=? AND token=? AND expires_at>unixepoch())").bind(at,listingId,owner,revision.state,revision.version,current.updatedAt,listingId,owner,at,listingId,lease);
+      const results=await c.env.DB.batch([update,rebase,c.env.DB.prepare(revisionAtomicGuard)]) as D1Result[];
+      if(results.length!==3||results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)return c.json({error:'revision changed during availability update; reload and retry'},409);
+    }else if((await update.run()).meta.changes!==1)return c.json({error:'listing changed; retry with the same idempotency key'},409);
     return c.json(await ownerListing(c.env.DB,listingId,owner));
-  }finally{await unlock(c.env.DB,listingId,lease);}
+  }catch{return c.json({error:'availability update outcome uncertain; reload before retry'},503);}
+  finally{await unlock(c.env.DB,listingId,lease);}
 }
 app.get('/owner/contact-events',async c=>{
   const owner=ownerId(c),afterCreatedAt=c.req.query('afterCreatedAt'),afterId=c.req.query('afterId'),hasCursor=afterCreatedAt!==undefined||afterId!==undefined;

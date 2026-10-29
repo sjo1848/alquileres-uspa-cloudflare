@@ -244,6 +244,42 @@ describe('OWNER listing lifecycle',()=>{
     expect((await request(`/listings/${item.id}/revision`,'PUT',{...proposal,baseUpdatedAt:published!.updatedAt},ownerCookie)).status).toBe(200);
   });
 
+  it('keeps availability and reconfirmation compatible with an in-flight owner revision',async()=>{
+    const item=await create(ownerCookie,'Publicación con revisión y disponibilidad');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const initial=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first<{updatedAt:string}>();
+    expect((await request(`/listings/${item.id}/revision`,'PUT',{expectedVersion:0,baseUpdatedAt:initial!.updatedAt,fields:{...fields,title:'Cambio sometido'}},ownerCookie)).status).toBe(200);
+    expect((await request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie)).status).toBe(200);
+
+    await env.DB.prepare("CREATE TRIGGER fail_revision_availability_rebase BEFORE UPDATE OF base_updated_at ON listing_change_revisions WHEN NEW.base_updated_at!=OLD.base_updated_at BEGIN SELECT RAISE(ABORT,'synthetic revision baseline failure'); END").run();
+    try{
+      expect((await request(`/listings/${item.id}/availability`,'PATCH',{availabilityStatus:'UNAVAILABLE'},ownerCookie)).status).toBe(503);
+      expect(await env.DB.prepare('SELECT availability_status AS availabilityStatus,updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first()).toMatchObject({availabilityStatus:'AVAILABLE',updatedAt:initial!.updatedAt});
+      expect(await env.DB.prepare('SELECT state,version,base_updated_at AS baseUpdatedAt FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toMatchObject({state:'SUBMITTED',version:2,baseUpdatedAt:initial!.updatedAt});
+    }finally{await env.DB.prepare('DROP TRIGGER IF EXISTS fail_revision_availability_rebase').run();}
+    const changed=await request(`/listings/${item.id}/availability`,'PATCH',{availabilityStatus:'UNAVAILABLE'},ownerCookie);
+    expect(changed.status,await changed.clone().text()).toBe(200);
+    const afterChange=await changed.json() as any;
+    const afterChangeRevision=await env.DB.prepare('SELECT state,version,base_updated_at AS baseUpdatedAt FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first();
+    expect(afterChangeRevision).toMatchObject({state:'SUBMITTED',version:2,baseUpdatedAt:afterChange.updatedAt});
+    const rejected=await request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'reject',reason:'Ajustar ubicación propuesta',expectedVersion:2},adminCookie);
+    expect(rejected.status,await rejected.clone().text()).toBe(200);
+    expect((await rejected.json() as any).revision).toMatchObject({state:'REJECTED',version:3});
+
+    const rebased=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first<{updatedAt:string}>();
+    expect((await request(`/listings/${item.id}/revision`,'PUT',{expectedVersion:3,baseUpdatedAt:rebased!.updatedAt,fields:{...fields,title:'Cambio corregido'}},ownerCookie)).status).toBe(200);
+    expect((await request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:4},ownerCookie)).status).toBe(200);
+    expect((await request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'approve',expectedVersion:5},adminCookie)).status).toBe(200);
+
+    const reconfirmed=await request(`/listings/${item.id}/reconfirm`,'POST',undefined,ownerCookie);
+    expect(reconfirmed.status,await reconfirmed.clone().text()).toBe(200);
+    const afterReconfirm=await reconfirmed.json() as any;
+    const approvedRevision=await env.DB.prepare('SELECT state,version,base_updated_at AS baseUpdatedAt FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first();
+    expect(approvedRevision).toMatchObject({state:'APPROVED',version:6,baseUpdatedAt:afterReconfirm.updatedAt});
+    expect((await request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:6},adminCookie)).status).toBe(200);
+    expect(await env.DB.prepare('SELECT title,availability_status AS availabilityStatus,last_confirmed_at AS lastConfirmedAt FROM listings WHERE id=?').bind(item.id).first()).toMatchObject({title:'Cambio corregido',availabilityStatus:'UNAVAILABLE',lastConfirmedAt:afterReconfirm.lastConfirmedAt});
+  });
+
   it('paginates the ADMIN revision queue beyond 100 records without omissions',async()=>{
     const stale=(await env.DB.prepare("SELECT id FROM listings WHERE id LIKE 'revision-page-%'").all<{id:string}>()).results.map(row=>row.id);
     for(let start=0;start<stale.length;start+=50){const batch=stale.slice(start,start+50),slots=batch.map(()=>'?').join(',');await env.DB.prepare(`DELETE FROM admin_audit_events WHERE listing_id IN (${slots})`).bind(...batch).run();await env.DB.prepare(`DELETE FROM listings WHERE id IN (${slots})`).bind(...batch).run();}

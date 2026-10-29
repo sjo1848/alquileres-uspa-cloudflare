@@ -30,6 +30,7 @@ El flujo de revisión de cambios de #61 aplica únicamente a una ficha `APPROVED
 - Mantener `/listings/:id` PATCH actual para `DRAFT/REJECTED`, sin eliminar sus controles. No habilitar un PATCH no moderado a `APPROVED/PUBLISHED`.
 - El catálogo público debe leer exclusivamente datos aprobados de `listings`, **nunca** los de la revisión pendiente. Las imágenes y `contact_events` no se copian, eliminan ni alteran.
 - Retener separación ADMIN aprobación/publicación: aprobar no hace public la modificación; rechazadas no alteran publicación; reintentos no duplican eventos/ediciones.
+- Availability/reconfirmation are orthogonal to revision fields and stay usable while a review is pending. When `listings.updated_at` advances through these actions, atomically advance a still-current revision's `base_updated_at` under the same listing lock; never rebase a revision already stale from a content edit. Keep the owner UI's base timestamp in sync, so an availability action cannot strand ADMIN approval/rejection or the explicit publish step.
 
 ### P3 — UI OWNER y ADMIN
 - OWNER: `Editar alojamiento` y `Guardar cambios` cuando el anuncio está `APPROVED/PUBLISHED`, identificando con claridad **borrador privado** vs **publicado**. `APPROVED/UNPUBLISHED` espera la primera publicación ADMIN y solo entonces habilita propuestas de cambios. Permitir guardar, recargar y reabrir sin perder cambios; `Enviar a revisión`; mostrar estado de revisión y errores de conflicto. Campos de alquiler mensual: depósito/garantía, servicios, mascotas, fecha; conservar coherencia `MONTH/WEEK`.
