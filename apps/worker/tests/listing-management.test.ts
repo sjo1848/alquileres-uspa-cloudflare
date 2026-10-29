@@ -24,10 +24,13 @@ beforeAll(async()=>{
   ownerCookie=await login('listing.mgmt.owner@example.test');otherCookie=await login('listing.mgmt.other@example.test');adminCookie=await login('listing.mgmt.admin@example.test');
 });
 afterAll(async()=>{
-  if(listingIds.length)await env.DB.prepare(`DELETE FROM image_operations WHERE listing_id IN (${listingIds.map(()=>'?').join(',')})`).bind(...listingIds).run();
-  await env.DB.prepare('DELETE FROM admin_audit_events WHERE listing_id IN ('+(listingIds.map(()=>'?').join(',')||"''")+')').bind(...listingIds).run();
   await env.DB.prepare('DELETE FROM idempotency_records WHERE (owner_id=? OR owner_id=?) AND (scope LIKE ? OR scope LIKE ?)').bind(ownerId,adminId,'OWNER_LISTING_DELETE:%','ADMIN_ASSISTED_%').run();
-  if(listingIds.length)await env.DB.prepare(`DELETE FROM listings WHERE id IN (${listingIds.map(()=>'?').join(',')})`).bind(...listingIds).run();
+  for(let start=0;start<listingIds.length;start+=50){
+    const batch=listingIds.slice(start,start+50),slots=batch.map(()=>'?').join(',');
+    await env.DB.prepare(`DELETE FROM image_operations WHERE listing_id IN (${slots})`).bind(...batch).run();
+    await env.DB.prepare(`DELETE FROM admin_audit_events WHERE listing_id IN (${slots})`).bind(...batch).run();
+    await env.DB.prepare(`DELETE FROM listings WHERE id IN (${slots})`).bind(...batch).run();
+  }
 });
 
 describe('OWNER listing lifecycle',()=>{
@@ -220,6 +223,43 @@ describe('OWNER listing lifecycle',()=>{
     }
     expect(await env.DB.prepare('SELECT listing_id FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toBeNull();
     expect(await env.DB.prepare('SELECT title FROM listings WHERE id=?').bind(item.id).first('title')).toBe('Acceso restringido a revisión');
+  });
+
+  it('keeps approved but unpublished listings on the existing first-publication flow',async()=>{
+    const item=await create(ownerCookie,'Aprobada antes de la primera publicación');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='UNPUBLISHED' WHERE id=?").bind(item.id).run();
+    const current=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first<{updatedAt:string}>();
+    const get=await request(`/listings/${item.id}/revision`,'GET',undefined,ownerCookie);
+    expect(get.status).toBe(200);expect((await get.json() as any).revision).toBeNull();
+    const proposal={expectedVersion:0,baseUpdatedAt:current!.updatedAt,fields:{...fields,title:'Cambio previo a publicación'}};
+    expect((await request(`/listings/${item.id}/revision`,'PUT',proposal,ownerCookie)).status).toBe(409);
+    expect((await request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie)).status).toBe(409);
+    const queue=await request('/admin/listings/revisions','GET',undefined,adminCookie);
+    expect((await queue.json() as any).items.some((revision:any)=>revision.listingId===item.id)).toBe(false);
+    expect((await request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'approve',expectedVersion:1},adminCookie)).status).toBe(409);
+    expect((await request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:1},adminCookie)).status).toBe(409);
+    expect((await request(`/admin/listings/${item.id}/publish`,'POST',{},adminCookie)).status).toBe(200);
+    const published=await env.DB.prepare('SELECT updated_at AS updatedAt,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first<{updatedAt:string;publicationStatus:string}>();
+    expect(published?.publicationStatus).toBe('PUBLISHED');
+    expect((await request(`/listings/${item.id}/revision`,'PUT',{...proposal,baseUpdatedAt:published!.updatedAt},ownerCookie)).status).toBe(200);
+  });
+
+  it('paginates the ADMIN revision queue beyond 100 records without omissions',async()=>{
+    const stale=(await env.DB.prepare("SELECT id FROM listings WHERE id LIKE 'revision-page-%'").all<{id:string}>()).results.map(row=>row.id);
+    for(let start=0;start<stale.length;start+=50){const batch=stale.slice(start,start+50),slots=batch.map(()=>'?').join(',');await env.DB.prepare(`DELETE FROM admin_audit_events WHERE listing_id IN (${slots})`).bind(...batch).run();await env.DB.prepare(`DELETE FROM listings WHERE id IN (${slots})`).bind(...batch).run();}
+    const at=new Date().toISOString(),prefix=`revision-page-${crypto.randomUUID().slice(0,8)}`,ids=Array.from({length:101},(_,index)=>`${prefix}-${String(index).padStart(3,'0')}`),payload=JSON.stringify(fields);
+    await env.DB.batch(ids.map((listingId,index)=>env.DB.prepare("INSERT INTO listings(id,owner_id,status,title,description,location,location_search,price_amount,price_period,rental_duration,max_occupants,currency,publication_status,availability_status,last_confirmed_at,rejection_reason,created_at,updated_at) VALUES(?,?,'APPROVED',?,'Synthetic revision pagination','Uspallata','uspallata',25000,'MONTH','FLEXIBLE',2,'ARS','PUBLISHED','AVAILABLE',NULL,NULL,?,?)").bind(listingId,ownerId,`Revisión ${index}`,at,at)));
+    listingIds.push(...ids);
+    await env.DB.batch(ids.map(listingId=>env.DB.prepare("INSERT INTO listing_change_revisions(listing_id,owner_id,state,payload,base_updated_at,version,created_at,updated_at) VALUES(?,?,'SUBMITTED',?,?,1,?,?)").bind(listingId,ownerId,payload,at,at,at)));
+    const first=await request('/admin/listings/revisions','GET',undefined,adminCookie),page1=await first.json() as any;
+    expect(first.status).toBe(200);expect(page1.items).toHaveLength(100);
+    expect(page1.nextCursor).toMatchObject({updatedAt:at,listingId:expect.any(String)});
+    const cursor=page1.nextCursor;
+    const second=await request(`/admin/listings/revisions?afterUpdatedAt=${encodeURIComponent(cursor.updatedAt)}&afterListingId=${encodeURIComponent(cursor.listingId)}`,'GET',undefined,adminCookie);
+    const page2=await second.json() as any;
+    expect(second.status).toBe(200);expect(page2.items,JSON.stringify({cursor,page2First:page2.items[0]?.listingId,page2Last:page2.items.at(-1)?.listingId,page2Cursor:page2.nextCursor})).toHaveLength(1);expect(page2.nextCursor).toBeNull();
+    expect([...page1.items,...page2.items].map((item:any)=>item.listingId).sort()).toEqual(ids.sort());
+    expect((await request('/admin/listings/revisions?afterUpdatedAt=invalid','GET',undefined,adminCookie)).status).toBe(400);
   });
 
   it('GET is OWNER-scoped and includes source listing state; role and missing IDs are denied',async()=>{

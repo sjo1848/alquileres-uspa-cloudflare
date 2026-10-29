@@ -23,7 +23,7 @@ CREATE TRIGGER listing_change_revisions_insert_owner
 BEFORE INSERT ON listing_change_revisions
 WHEN NOT EXISTS (
   SELECT 1 FROM listings l WHERE l.id=NEW.listing_id
-    AND l.owner_id=NEW.owner_id AND l.status='APPROVED'
+    AND l.owner_id=NEW.owner_id AND l.status='APPROVED' AND l.publication_status='PUBLISHED'
 )
 BEGIN
   SELECT RAISE(ABORT,'revision listing must belong to approved owner');
@@ -34,7 +34,7 @@ BEFORE UPDATE ON listing_change_revisions
 WHEN OLD.owner_id!=NEW.owner_id OR OLD.listing_id!=NEW.listing_id
   OR NOT EXISTS (
     SELECT 1 FROM listings l WHERE l.id=NEW.listing_id
-      AND l.owner_id=NEW.owner_id AND l.status='APPROVED'
+      AND l.owner_id=NEW.owner_id AND l.status='APPROVED' AND l.publication_status='PUBLISHED'
   )
 BEGIN
   SELECT RAISE(ABORT,'revision listing ownership changed');

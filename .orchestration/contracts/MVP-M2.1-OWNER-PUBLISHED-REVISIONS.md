@@ -1,6 +1,6 @@
 # MVP M2.1 — #61: revisiones de anuncios existentes (OWNER → ADMIN)
 
-Estado: `PRODUCT_RULE_APPROVED / IMPLEMENTATION_NOT_STARTED`
+Estado: `PRODUCT_RULE_APPROVED / IMPLEMENTED_IN_PR_62 / TECHNICAL_REVIEW_IN_PROGRESS`
 Aprobación de negocio: responsable del producto, 2026-10-28.
 Issue canónico: https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61
 Bloquea aceptación de #58; sin M3 hasta nueva aprobación.
@@ -10,7 +10,11 @@ Base de la rama: `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`.
 
 El propietario puede editar datos y condiciones de un alquiler existente, incluso ya publicado. **Guardar** persiste una revisión privada ligada al MISMO `listingId`; la ficha pública aprobada permanece sin modificaciones. **Enviar** somete la revisión a ADMIN. ADMIN puede **rechazar** con motivo o **aprobar**, pero solo una acción posterior y separada **Publicar cambios** actualiza la ficha pública. Conserva identidad, fotografías, consultas y datos históricos. Nada se publica automáticamente.
 
-Alquileres `DRAFT`/`REJECTED` conservan su edición directa existente. `SUBMITTED` continúa en lectura con mensaje claro durante revisión. Aplicar la revisión a `APPROVED` sin sobrescribir su versión pública prematuramente, y definir explícitamente el tratamiento de `APPROVED/UNPUBLISHED` antes de implementar su UI.
+Alquileres `DRAFT`/`REJECTED` conservan su edición directa existente. `SUBMITTED` continúa en lectura con mensaje claro durante revisión. Aplicar la revisión a `APPROVED` sin sobrescribir su versión pública prematuramente.
+
+### Tratamiento de `APPROVED/UNPUBLISHED` (límite de este incremento)
+
+El flujo de revisión de cambios de #61 aplica únicamente a una ficha `APPROVED/PUBLISHED`. Una ficha `APPROVED/UNPUBLISHED` permanece en el flujo existente de primera publicación: OWNER puede consultar su estado, pero no crear/enviar una revisión; ADMIN conserva la acción normal «Publicar en catálogo». Después de la primera publicación, OWNER puede crear una revisión privada. La API, la cola ADMIN y las restricciones D1 rechazan fail-closed propuestas sobre fichas aún no publicadas. Así, «Publicar cambios» nunca deja silenciosamente una ficha fuera del catálogo.
 
 ## Entrega técnica por etapas incrementales, en esta rama
 
@@ -28,7 +32,7 @@ Alquileres `DRAFT`/`REJECTED` conservan su edición directa existente. `SUBMITTE
 - Retener separación ADMIN aprobación/publicación: aprobar no hace public la modificación; rechazadas no alteran publicación; reintentos no duplican eventos/ediciones.
 
 ### P3 — UI OWNER y ADMIN
-- OWNER: `Editar alojamiento` y `Guardar cambios` cuando el anuncio está `APPROVED`, identificando con claridad **borrador privado** vs **publicado**. Permitir guardar, recargar y reabrir sin perder cambios; `Enviar a revisión`; mostrar estado de revisión y errores de conflicto. Campos de alquiler mensual: depósito/garantía, servicios, mascotas, fecha; conservar coherencia `MONTH/WEEK`.
+- OWNER: `Editar alojamiento` y `Guardar cambios` cuando el anuncio está `APPROVED/PUBLISHED`, identificando con claridad **borrador privado** vs **publicado**. `APPROVED/UNPUBLISHED` espera la primera publicación ADMIN y solo entonces habilita propuestas de cambios. Permitir guardar, recargar y reabrir sin perder cambios; `Enviar a revisión`; mostrar estado de revisión y errores de conflicto. Campos de alquiler mensual: depósito/garantía, servicios, mascotas, fecha; conservar coherencia `MONTH/WEEK`.
 - ADMIN: cola específica de revisiones, con diferencias entre versión vigente y propuesta, aprobar/rechazar y **Publicar cambios** aparte, con mensajes y auditoría. No mezclar la cola de nuevas publicaciones con revisiones de fichas aprobadas sin distinción.
 - Responsive 320px/390px/1440px, estados accesibles, sin pérdida de foco, sin exigir nueva cuenta ni modificar navegación general.
 

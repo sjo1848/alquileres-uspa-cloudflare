@@ -22,7 +22,7 @@ type ReviewCursor = { createdAt: string; id: string };
 type ReviewPage = { items: ReviewItem[]; nextCursor: ReviewCursor | null };
 type ChangeRevision = {
   listingId:string; state:'SUBMITTED'|'APPROVED'; version:number;
-  ownerEmail:string; publicationStatus:'PUBLISHED'|'UNPUBLISHED';
+  ownerEmail:string; publicationStatus:'PUBLISHED';
   fields:Record<string,string|number|null>;
   currentTitle:string;currentDescription:string;currentLocation:string;
   currentPriceAmount:number;currentPricePeriod:string;currentRentalDuration:string;currentMaxOccupants:number;currentCurrency:string;
@@ -30,11 +30,13 @@ type ChangeRevision = {
   currentInternetIncluded:string|null;currentWaterIncluded:string|null;currentElectricityIncluded:string|null;
   currentGasIncluded:string|null;currentPetsPolicy:string|null;currentAvailableFrom:string|null;
 };
+type RevisionCursor = { updatedAt:string; listingId:string };
 type Audit = { id: string; entityType: string; entityId: string | null; listingId: string | null; action: string; reason: string | null; createdAt: string; actor: { email: string }; targetOwner: { email: string } | null };
 
 const session = useSession();
 const queue = ref<ReviewItem[]>([]), audit = ref<Audit[]>([]);
 const changeRevisions=ref<ChangeRevision[]>([]),revisionsLoading=ref(false),revisionBusy=ref(false),revisionError=ref(''),revisionNotice=ref('');
+const revisionCursor=ref<RevisionCursor|null>(null);
 const revisionReasons=ref<Record<string,string>>({});
 const nextCursor = ref<ReviewCursor | null>(null);
 const selectedId = ref(''), reason = ref(''), busy = ref(false), loading = ref(true), auditLoading = ref(false);
@@ -88,12 +90,18 @@ async function load(append = false) {
     if (generation === requestGeneration) loading.value = false;
   }
 }
-async function loadRevisions(){
+async function loadRevisions(append=false){
   revisionsLoading.value=true;revisionError.value='';
-  try{const response=await session.apiRequest<{items:ChangeRevision[]}>('/admin/listings/revisions');changeRevisions.value=response.items;}
+  try{
+    const params=append&&revisionCursor.value?new URLSearchParams({afterUpdatedAt:revisionCursor.value.updatedAt,afterListingId:revisionCursor.value.listingId}):null;
+    const response=await session.apiRequest<{items:ChangeRevision[];nextCursor:RevisionCursor|null}>(`/admin/listings/revisions${params?`?${params}`:''}`);
+    changeRevisions.value=append?[...changeRevisions.value,...response.items.filter(item=>!changeRevisions.value.some(existing=>existing.listingId===item.listingId))]:response.items;
+    revisionCursor.value=response.nextCursor;
+  }
   catch(e){revisionError.value=e instanceof Error?e.message:'No pudimos cargar las modificaciones pendientes.';}
   finally{revisionsLoading.value=false;}
 }
+async function loadMoreRevisions(){if(!revisionsLoading.value&&revisionCursor.value)await loadRevisions(true);}
 const revisionLabels:Record<string,string>={
   title:'Título',description:'Descripción',location:'Ubicación',priceAmount:'Precio',pricePeriod:'Periodicidad',
   rentalDuration:'Duración',maxOccupants:'Capacidad',currency:'Moneda',depositStatus:'Depósito',
@@ -214,7 +222,7 @@ onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
     <section class="admin-audit-panel" aria-labelledby="admin-change-revisions-title">
       <header class="admin-panel-heading">
         <div><p class="admin-eyebrow">Cambios en anuncios existentes</p><h2 id="admin-change-revisions-title">Revisiones de propietarios</h2><p>La ficha pública se mantiene vigente hasta que publiques los cambios aprobados.</p></div>
-        <button type="button" class="admin-button admin-button-secondary" :disabled="revisionsLoading||revisionBusy" @click="loadRevisions">{{ revisionsLoading?'Cargando…':'Actualizar revisiones' }}</button>
+      <button type="button" class="admin-button admin-button-secondary" :disabled="revisionsLoading||revisionBusy" @click="loadRevisions()">{{ revisionsLoading?'Cargando…':'Actualizar revisiones' }}</button>
       </header>
       <p v-if="revisionNotice" class="admin-feedback is-success" role="status">{{ revisionNotice }}</p>
       <p v-if="revisionError" class="admin-feedback is-error" role="alert">{{ revisionError }}</p>
@@ -222,7 +230,7 @@ onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
       <p v-else-if="!changeRevisions.length" role="status" class="admin-muted-note">No hay cambios pendientes para revisar o publicar.</p>
       <div v-for="revision in changeRevisions" :key="revision.listingId" class="admin-decision-box">
         <div class="admin-detail-heading">
-          <div><h3>{{ revision.fields.title }}</h3><p class="admin-muted-note">Propietario: {{ revision.ownerEmail }} · {{ revision.publicationStatus==='PUBLISHED'?'Publicación vigente visible':'Alojamiento aprobado sin publicar' }}</p></div>
+          <div><h3>{{ revision.fields.title }}</h3><p class="admin-muted-note">Propietario: {{ revision.ownerEmail }} · Publicación vigente visible</p></div>
           <span class="admin-status-pill" :class="revision.state==='SUBMITTED'?'is-review':'is-approved'">{{ revision.state==='SUBMITTED'?'Cambios en revisión':'Cambios aprobados · pendientes de publicación' }}</span>
         </div>
         <p class="admin-muted-note">Compará la ficha actual con los cambios propuestos. La aprobación sola no altera la publicación.</p>
@@ -241,6 +249,7 @@ onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
           <button type="button" class="admin-button admin-button-primary" :disabled="revisionBusy" @click="publishRevision(revision)">Publicar cambios aprobados</button>
         </div>
       </div>
+      <button v-if="revisionCursor" type="button" class="admin-button admin-button-secondary admin-load-more" :disabled="revisionsLoading||revisionBusy" @click="loadMoreRevisions">{{ revisionsLoading?'Cargando…':'Cargar más revisiones' }}</button>
     </section>
 
     <div class="admin-moderation-layout">
