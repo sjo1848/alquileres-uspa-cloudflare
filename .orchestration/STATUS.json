@@ -5,14 +5,14 @@
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
   "active_task": "M2.1 OWNER published revisions (Issue #61)",
-  "last_completed_task": "M2.1 OWNER revision implementation locally validated; exact CI run 40805784116 passed on 3e0ba1a; Critic P1 interleaving claim checked against shared lock and deterministic regression added (23/23 local).",
+  "last_completed_task": "M2.1 OWNER revision implementation and deterministic publish/availability race regression locally validated; exact CI 40806351648 passed on f9e6013 (worker/web SUCCESS; staging-private SKIPPED); focused D1 suite 23/23 and Worker typecheck PASS.",
   "last_completed_head": "main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
   "work_branch": "feature/m2-1-owner-publication-revisions",
-  "next_action": "Verify exact worker/web CI on the resulting PR #62 rework HEAD, then repeat Critic, Integration Review, and separate GPT-6 Luna High read-only Controller on that exact SHA. Resolve any remaining substantive finding and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
+  "next_action": "Verify exact worker/web CI on the resulting PR #62 tracking HEAD, then repeat Critic, Integration Review, and separate GPT-6 Luna High read-only Controller on that exact SHA. Resolve any remaining substantive finding and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
   "stop_reason": "No merge, remote migration 0015, Preview/deploy, production, Access/CD change, or M3. Stop only when exact technical gates pass and PR #62 is ready for Human review.",
   "event": {
-    "seq": 265,
-    "summary": "Critic P1 publish/availability interleaving checked against shared lock; deterministic D1 regression passes 23/23; reconcile and revalidate rework HEAD"
+    "seq": 266,
+    "summary": "Exact regression candidate f9e6013 / tree 17d0d69 and CI 40806351648 reconciled; run checks and final reviews on resulting tracking HEAD"
   },
   "external_review": null,
   "human_gate": {
@@ -29,23 +29,23 @@
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Exact Quick checks 40805784116 pass on tracking head 3e0ba1a (worker/web SUCCESS; staging-private SKIPPED); fresh rework CI/reviews pending.",
-    "last_observed_head_sha": "3e0ba1a5f61cd5c98105743b98177d323e7f03e1",
-    "live_head_source": "GitHub PR #62 exact SHA and checks were inspected; this functional regression/state rework is being validated on its resulting head.",
-    "last_observed_head_tree": "61ee84150e474118ce6b2bf0a8c4f7043cce5dab"
+    "status": "Exact Quick checks 40806351648 pass on regression candidate f9e6013 (worker/web SUCCESS; staging-private SKIPPED); final reviews pending.",
+    "last_observed_head_sha": "f9e60136527574ac266efd8451dee9a142327b97",
+    "live_head_source": "Exact PR #62 candidate and checks verified; current issue status comment records this boundary. Reconcile/status commit requires fresh checks.",
+    "last_observed_head_tree": "17d0d69c776c90744605d31f70c69552e7e76fb3"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
-    "status": "P1_CRITIC_INTERLEAVING_CLAIM_ADDRESSED_WITH_LOCK_EVIDENCE_AND_DETERMINISTIC_REGRESSION; NEW_EXACT_HEAD_CHECKS_AND_REVIEWS_PENDING",
-    "artifact_sha": "3e0ba1a5f61cd5c98105743b98177d323e7f03e1",
+    "status": "PUBLICATION_AVAILABILITY_INTERLEAVING_REGRESSION_ADDED_AND_PASSING; NEW_EXACT_HEAD_CHECKS_AND_REVIEWS_PENDING",
+    "artifact_sha": "f9e60136527574ac266efd8451dee9a142327b97",
     "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
     "controller_reviewed_sha": null,
     "controller_evidence": null,
-    "controller_verdict": "Previous Controller REWORK P1 on 7db8f14 repaired in 8dec013; native review on later SHA blocked because read-only was unenforced; separate exact-head review pending.",
-    "github_checks": "Run 40805784116 SUCCESS on exact tracking SHA 3e0ba1a (worker/web SUCCESS; staging-private SKIPPED). New functional regression/state rework requires exact-head checks before final PASS.",
+    "controller_verdict": "Previous Controller REWORK P1 on 7db8f14 repaired in 8dec013; native attempt is BLOCKED_MODEL_CONFIG because read-only was unenforced; separate exact-head review pending.",
+    "github_checks": "Run 40806351648 SUCCESS on regression candidate f9e6013 (worker/web SUCCESS; staging-private SKIPPED). Canonical reconciliation requires exact-head checks before final PASS.",
     "github_review": "No final exact-head reviewer verdict claimed.",
     "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
   },
@@ -1323,11 +1323,11 @@
       "web_typecheck_build": "PASS: typecheck, build, build:preview",
       "orchestration": "PASS: canonical consistency validator and diff check"
     },
-    "tracking_head_before_this_checkpoint": "3e0ba1a5f61cd5c98105743b98177d323e7f03e1",
-    "tracking_tree_before_this_checkpoint": "61ee84150e474118ce6b2bf0a8c4f7043cce5dab",
-    "prior_reviews": "On 3e0ba1a, Critic reported a P1 race, but source inspection confirms publish already owns/rechecks the shared listing lease; a deterministic stale-prelock-read regression now verifies availability preservation. Integration reported stale tracking (3e0ba1a still recorded c9426dd); reconciled in this rework. No final verdict claimed.",
-    "next": "Verify worker/web CI on the resulting PR #62 rework HEAD, then repeat Critic, Integration Review, and separate GPT-6 Luna High read-only Controller on that exact SHA. Resolve remaining substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; no merge, remote migration/deploy, or M3.",
-    "prior_exact_ci": "40805784116 SUCCESS on tracking HEAD 3e0ba1a: worker/web SUCCESS; staging-private SKIPPED. This new regression and tracking reconciliation require fresh CI on the resulting HEAD."
+    "tracking_head_before_this_checkpoint": "f9e60136527574ac266efd8451dee9a142327b97",
+    "tracking_tree_before_this_checkpoint": "17d0d69c776c90744605d31f70c69552e7e76fb3",
+    "prior_reviews": "Critic P1 publish/availability allegation on f9e6013 was checked against source: the route obtains and enforces the shared listing lock, rereads under lock, and guards the timestamp. A deterministic D1 regression now pauses after the pre-lock read, commits availability, then resumes publication. Integration P2 on f9e6013 identified prior tracking fields; this checkpoint reconciles them. No final verdict claimed.",
+    "next": "Verify exact worker/web CI on the resulting PR #62 tracking HEAD, then repeat Critic, Integration Review, and separate GPT-6 Luna High read-only Controller on that exact SHA. Resolve remaining substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
+    "prior_exact_ci": "40806351648 SUCCESS on regression candidate f9e6013: worker/web SUCCESS; staging-private SKIPPED. This canonical reconciliation requires fresh CI on the resulting HEAD."
   },
   "historical_candidate_review_mvp_m2_1_migration": {
     "status": "CONTROLLER_REWORK_P2_RECONCILED_NO_FINAL_PASS_CLAIMED",
