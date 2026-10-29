@@ -2,22 +2,22 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "MVP_M2_1_OWNER_PUBLISHED_REVISIONS",
-  "runtime_status": "IN_PROGRESS",
-  "resume_authorized": true,
+  "runtime_status": "READY_FOR_HUMAN_REVIEW",
+  "resume_authorized": false,
   "active_task": "M2.1 OWNER published revisions (Issue #61)",
-  "last_completed_task": "M2.1 OWNER revision implementation and deterministic publish/availability race regression locally validated; exact CI 40806351648 passed on f9e6013 (worker/web SUCCESS; staging-private SKIPPED); focused D1 suite 23/23 and Worker typecheck PASS.",
+  "last_completed_task": "M2.1 OWNER published revisions implementation and QA complete; Critic PASS, Integration Review PASS, and delegated separate GPT-6 Luna High read-only Controller PASS on executable/test artifact f9e6013. PR #62 remains OPEN/DRAFT for Product Owner review.",
   "last_completed_head": "main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
   "work_branch": "feature/m2-1-owner-publication-revisions",
-  "next_action": "Verify exact worker/web CI on the resulting PR #62 tracking HEAD, then repeat Critic, Integration Review, and separate GPT-6 Luna High read-only Controller on that exact SHA. Resolve any remaining substantive finding and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
-  "stop_reason": "No merge, remote migration 0015, Preview/deploy, production, Access/CD change, or M3. Stop only when exact technical gates pass and PR #62 is ready for Human review.",
+  "next_action": "Review PR #62 and the linked Issue #61 evidence. No merge, remote migration 0015, Preview/deployment, production changes, or M3 without separate authorization.",
+  "stop_reason": "Technical gates passed. Awaiting Product Owner review of PR #62; no further remote or product action is authorized.",
   "event": {
-    "seq": 266,
-    "summary": "Exact regression candidate f9e6013 / tree 17d0d69 and CI 40806351648 reconciled; run checks and final reviews on resulting tracking HEAD"
+    "seq": 267,
+    "summary": "M2.1 local technical review complete: Critic, Integration, and delegated read-only Controller PASS on exact f9e6013; await Product Owner review"
   },
   "external_review": null,
   "human_gate": {
-    "status": "NOT_REQUIRED_FOR_LOCAL_TEST_AND_REVIEW_WORK",
-    "scope": "Local synthetic implementation, regression tests, CI and technical reviews only. Merge, remote D1 migration 0015, Preview publication, Access/CD changes and M3 remain unauthorized."
+    "status": "READY_FOR_PRODUCT_OWNER_REVIEW",
+    "scope": "PR #62 is technically ready for review; merge, remote D1 migration 0015, Preview publication, production, and M3 remain unauthorized."
   },
   "blocker": null,
   "pull_request": {
@@ -29,24 +29,24 @@
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Exact Quick checks 40806351648 pass on regression candidate f9e6013 (worker/web SUCCESS; staging-private SKIPPED); final reviews pending.",
-    "last_observed_head_sha": "f9e60136527574ac266efd8451dee9a142327b97",
-    "live_head_source": "Exact PR #62 candidate and checks verified; current issue status comment records this boundary. Reconcile/status commit requires fresh checks.",
-    "last_observed_head_tree": "17d0d69c776c90744605d31f70c69552e7e76fb3"
+    "status": "Technically ready for Product Owner review; PR remains OPEN/DRAFT and unmerged. Exact CI on f9e6013 and tracking-only fe97301 passed.",
+    "last_observed_head_sha": "fe973017677ddf9692b50ff85c1ee99e819f21b5",
+    "live_head_source": "GitHub PR #62; fe97301 is the tracking-only checkpoint. Current live SHA is linked in the latest Issue #61 status comment.",
+    "last_observed_head_tree": "e5748f74ff1575fefa08b4fac175535bcebe86f4"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
-    "status": "PUBLICATION_AVAILABILITY_INTERLEAVING_REGRESSION_ADDED_AND_PASSING; NEW_EXACT_HEAD_CHECKS_AND_REVIEWS_PENDING",
+    "status": "PASS_READY_FOR_PRODUCT_OWNER_REVIEW",
     "artifact_sha": "f9e60136527574ac266efd8451dee9a142327b97",
     "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
-    "controller_reviewed_sha": null,
-    "controller_evidence": null,
-    "controller_verdict": "Previous Controller REWORK P1 on 7db8f14 repaired in 8dec013; native attempt is BLOCKED_MODEL_CONFIG because read-only was unenforced; separate exact-head review pending.",
-    "github_checks": "Run 40806351648 SUCCESS on regression candidate f9e6013 (worker/web SUCCESS; staging-private SKIPPED). Canonical reconciliation requires exact-head checks before final PASS.",
-    "github_review": "No final exact-head reviewer verdict claimed.",
+    "controller_reviewed_sha": "f9e60136527574ac266efd8451dee9a142327b97",
+    "controller_evidence": ".orchestration/evidence/critics/MVP-M2.1-PR62-REVIEW-PASS.md",
+    "controller_verdict": "PASS: delegated separate codex exec, gpt-6-luna/high requested, --sandbox read-only accepted; backend identity UNVERIFIED. Native project_controller attempt was BLOCKED_MODEL_CONFIG and is not counted.",
+    "github_checks": "Run 40806351648 on f9e6013 and run 40806767272 on tracking-only fe97301 both SUCCESS: worker/web SUCCESS; staging-private SKIPPED.",
+    "github_review": "Critic PASS and Integration Review PASS on exact executable/test artifact f9e6013; both verified no executable/test changes in tracking-only fe97301.",
     "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
   },
   "human_acceptance": {
@@ -1323,11 +1323,11 @@
       "web_typecheck_build": "PASS: typecheck, build, build:preview",
       "orchestration": "PASS: canonical consistency validator and diff check"
     },
-    "tracking_head_before_this_checkpoint": "f9e60136527574ac266efd8451dee9a142327b97",
-    "tracking_tree_before_this_checkpoint": "17d0d69c776c90744605d31f70c69552e7e76fb3",
-    "prior_reviews": "Critic P1 publish/availability allegation on f9e6013 was checked against source: the route obtains and enforces the shared listing lock, rereads under lock, and guards the timestamp. A deterministic D1 regression now pauses after the pre-lock read, commits availability, then resumes publication. Integration P2 on f9e6013 identified prior tracking fields; this checkpoint reconciles them. No final verdict claimed.",
-    "next": "Verify exact worker/web CI on the resulting PR #62 tracking HEAD, then repeat Critic, Integration Review, and separate GPT-6 Luna High read-only Controller on that exact SHA. Resolve remaining substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
-    "prior_exact_ci": "40806351648 SUCCESS on regression candidate f9e6013: worker/web SUCCESS; staging-private SKIPPED. This canonical reconciliation requires fresh CI on the resulting HEAD."
+    "tracking_head_before_this_checkpoint": "fe973017677ddf9692b50ff85c1ee99e819f21b5",
+    "tracking_tree_before_this_checkpoint": "e5748f74ff1575fefa08b4fac175535bcebe86f4",
+    "prior_reviews": "Critic PASS, Integration Review PASS, and delegated separate read-only Controller PASS on f9e6013. Critic race report was verified against shared lock and closed by deterministic test; Integration tracking P2 was closed by exact artifact/CI reconciliation. Native Controller remained BLOCKED_MODEL_CONFIG and is not counted.",
+    "next": "Await Product Owner review of PR #62. Do not merge, migrate remote D1, deploy, change Access/production, or start M3 without separate authorization.",
+    "prior_exact_ci": "40806351648 SUCCESS on f9e6013 and 40806767272 SUCCESS on tracking-only fe97301; worker/web SUCCESS; staging-private SKIPPED."
   },
   "historical_candidate_review_mvp_m2_1_migration": {
     "status": "CONTROLLER_REWORK_P2_RECONCILED_NO_FINAL_PASS_CLAIMED",

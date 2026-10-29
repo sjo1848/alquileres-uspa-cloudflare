@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `IN_PROGRESS`
+State: `READY_FOR_HUMAN_REVIEW`
 Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
 Active task: `M2.1 OWNER published revisions (Issue #61)`
 
@@ -2139,3 +2139,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Critic's reported P1 scenario was checked against the code: revision publication acquires the same listing lease before rereading listing/revision, and its update checks the current timestamp plus lease token; availability uses the same lease. The described unprotected interleaving cannot happen. The new regression pauses after the pre-lock read, commits availability, resumes publication, and verifies the latest availability/confirmation survives.
 - Integration's P2 was canonical tracking lag (`STATE/STATUS` still named `3e0ba1a` / run `40805784116`). This checkpoint records `f9e6013` / run `40806351648`. The native Controller attempt was `BLOCKED_MODEL_CONFIG` because its sandbox was not technically read-only; use the separate read-only `codex exec` procedure.
 - **Next action:** run exact Quick checks for this tracking reconciliation, then complete Critic, Integration Review and separate GPT-6 Luna High read-only Controller on the exact resulting PR HEAD. Leave PR OPEN/DRAFT for Human review; no merge, remote migration/deploy, production or M3.
+
+
+## Event 267 — M2.1 technical review complete; awaiting Product Owner
+
+- Executable/test artifact `f9e60136527574ac266efd8451dee9a142327b97` / tree `17d0d69c776c90744605d31f70c69552e7e76fb3` is technically ready. PR #62 current tracking HEAD before this closeout `fe973017677ddf9692b50ff85c1ee99e819f21b5` / tree `e5748f74ff1575fefa08b4fac175535bcebe86f4` differs from f9 only in STATE/STATUS.
+- CI on f9 run `40806351648` and tracking checkpoint run `40806767272` both passed: worker/web SUCCESS, staging-private SKIPPED. Local D1 management tests 23/23, Worker typecheck PASS, Web typecheck/build/build:preview PASS, canonical validator and diff check PASS.
+- **Critic PASS**, **Integration Review PASS**, and **Controller PASS** on exact executable/test SHA f9. The Controller was a separate `codex exec` process with GPT-6 Luna / High and `--sandbox read-only` requested and accepted; backend identity remains UNVERIFIED. The native subagent attempt was BLOCKED_MODEL_CONFIG for unenforced read-only and is not counted. Review results are recorded in Issue #61's latest status comment.
+- Technical blocker: none. **Next action:** Product Owner reviews PR #62 (left OPEN/DRAFT). No merge, remote D1 migration, Preview/deployment, production, or M3 without separate authorization.
