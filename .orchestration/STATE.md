@@ -2083,3 +2083,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Exact-head CI and fresh Critic, Integration Review and GPT-6 Luna High read-only Controller reviews are pending for the consolidated candidate. Prior exact run `40803155254` applies only to `576b4b1` and is not claimed for this rework.
 - No remote migration, Preview/deployment, Access/CD, production, real data, paid resource, source-repository write, merge, or M3 work.
 - **Next action:** publish the canonical checkpoint in PR #62; confirm GitHub worker/web CI on its exact SHA; repeat all three requested reviews on that same SHA, repair substantive findings, then leave PR #62 DRAFT and ready for Human review.
+
+
+## Event 260 — M2.1 availability/revision consistency rework
+
+- Previous exact Controller review on `7db8f146a991d9bb90c2b5a3f49466c11793961d` found P1: OWNER availability/reconfirmation updated listing `updated_at`, invalidating the revision's `base_updated_at` and stranding a submitted proposal.
+- Repaired in executable commit `8dec013f7daff09fc82837d190a7845599178f68`, tree `c4fc1358f15598c529dea8b6a36f13730629d8c2`, based on `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`. Availability/reconfirmation now atomically updates the revision baseline only when it still matches the locked listing version; D1 assertion failure rolls back both writes. The OWNER UI tracks the new `updatedAt`. Tests prove rollback, safe retry, ADMIN rejection/re-edit/approval and successful publication after availability changes.
+- Local D1 `listing-management` 22/22; Worker typecheck PASS; Web typecheck/build/build:preview PASS; `git diff --check` PASS. Exact GitHub CI and final Critic/Integration/Controller reviews are pending after publication. Previous review verdicts apply to prior SHA only and are preserved as history, not carried forward.
+- No remote D1, migration `0015`, Preview/deployment, Access/CD, production, paid services, real data, source repo writes, merge or M3.
+- **Next action:** publish this functional rework and canonical checkpoint to PR #62, wait for exact-head worker/web CI, then run the three final independent reviews against the same exact GitHub HEAD and repair substantive findings; keep the PR DRAFT for Human review.

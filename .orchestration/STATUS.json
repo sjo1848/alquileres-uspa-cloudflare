@@ -5,19 +5,19 @@
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
   "active_task": "M2.1 OWNER published revisions (Issue #61)",
-  "last_completed_task": "Expanded D1-local concurrency, rollback, authorization, lifecycle and compatibility regressions; bounded published-only revision behavior and ADMIN pagination in PR #62; exact-head CI/reviews pending.",
+  "last_completed_task": "Resolved Critic/Integration findings for APPROVED/UNPUBLISHED and revision queue pagination; resolved Controller P1 where OWNER availability/reconfirmation could stale and strand a submitted revision. Exact CI and final reviews pending.",
   "last_completed_head": "main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
   "work_branch": "feature/m2-1-owner-publication-revisions",
-  "next_action": "Publish canonical checkpoint on PR #62; verify worker/web CI on the exact resulting SHA; rerun Critic, Integration Review and GPT-6 Luna High read-only Controller on that exact SHA; resolve substantive findings and leave the PR ready for Human review.",
-  "stop_reason": "No merge, remote migration 0015, Preview/deploy, production, Access/CD change, or M3. Stop only when exact technical checks/reviews are resolved and PR #62 is ready for Human review.",
+  "next_action": "Publish canonical checkpoint to PR #62, verify worker/web CI on the exact GitHub PR HEAD, then run final Critic, Integration Review and GPT-6 Luna High read-only Controller on that same SHA; repair any substantive findings and leave draft PR ready for Human review.",
+  "stop_reason": "No merge, remote migration 0015, Preview/deploy, production, Access/CD change, or M3. Stop only when exact technical gates pass and PR #62 is ready for Human review.",
   "event": {
-    "seq": 259,
-    "summary": "M2.1 PR #62 rework: define APPROVED/UNPUBLISHED boundary, fail closed until first publication, paginate ADMIN revisions; exact final CI/reviews pending"
+    "seq": 260,
+    "summary": "M2.1 PR #62 rework: resolve availability/reconfirmation changing updated_at and stranding in-flight revisions via atomic baseline sync; D1 rollback/retry regression added; exact final CI/reviews pending"
   },
   "external_review": null,
   "human_gate": {
     "status": "NOT_REQUIRED_FOR_LOCAL_TEST_AND_REVIEW_WORK",
-    "scope": "Local synthetic code/tests/reviews only. Merge, remote D1 migration 0015, Preview publication, Access/CD changes and M3 remain unauthorized."
+    "scope": "Local synthetic implementation, regression tests, CI and technical reviews only. Merge, remote D1 migration 0015, Preview publication, Access/CD changes and M3 remain unauthorized."
   },
   "blocker": null,
   "pull_request": {
@@ -25,27 +25,28 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/62",
     "branch": "feature/m2-1-owner-publication-revisions",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
-    "executable_sha": "31637ad3bd24c67420982aed3ecad49abc5e500c",
-    "executable_tree": "577af73dfaa487f8d6572b8e733446f415b0de43",
+    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
+    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Local D1 regression 21/21 and Worker typecheck; web typecheck/build/build:preview PASS. Exact-head CI/reviews pending.",
-    "last_observed_head_sha": "576b4b10c9377c3f98c6dc14f1274e43e4f2e3f5",
-    "live_head_source": "Derive the latest tracking checkpoint SHA from GitHub after publish."
+    "status": "P1 availability/revision baseline rework locally passes; exact-head worker/web CI and final independent reviews pending.",
+    "last_observed_head_sha": "7db8f146a991d9bb90c2b5a3f49466c11793961d",
+    "live_head_source": "Confirm exact tracking checkpoint HEAD from GitHub after publish.",
+    "last_observed_head_tree": "cbe0d6a2b06eb510d29887a68cc3ec727764aa30"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
     "status": "EXACT_HEAD_CI_AND_REQUESTED_REVIEWS_PENDING",
     "artifact_sha": null,
-    "executable_sha": "31637ad3bd24c67420982aed3ecad49abc5e500c",
-    "executable_tree": "577af73dfaa487f8d6572b8e733446f415b0de43",
+    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
+    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
     "controller_reviewed_sha": null,
     "controller_evidence": null,
-    "controller_verdict": "PENDING; no final PASS/REWORK claim for the consolidated PR #62 candidate.",
-    "github_checks": "Prior exact CI PASS run 40803155254 applies to previous SHA 576b4b1 only; new worker/web CI required.",
-    "github_review": "No exact-head review submission exists for the consolidated rework.",
+    "controller_verdict": "Previous exact review 7db8f14 returned REWORK P1 on availability/reconfirmation invalidating submitted revisions; repaired in 8dec013. Fresh exact-head Controller review pending.",
+    "github_checks": "Run 40803918105 PASS on prior SHA 7db8f14 only; exact CI must rerun after this rework.",
+    "github_review": "No exact-head automated review submission claimed for the repaired candidate.",
     "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
   },
   "human_acceptance": {
@@ -96,14 +97,14 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "contract": ".orchestration/contracts/MVP-M2.1-OWNER-PUBLISHED-REVISIONS.md",
-    "status": "Consolidated implementation and regressions prepared in PR #62; exact CI and final reviews pending. PR remains DRAFT.",
+    "status": "Consolidated M2.1 implementation and regressions in PR #62; P1 availability/revision-staleness fix locally passes. Exact-head CI/reviews pending; PR remains DRAFT.",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
     "branch": "feature/m2-1-owner-publication-revisions",
-    "scope": "OWNER privately edits an existing approved and published listing; ADMIN reviews, approves/rejects and separately publishes. Approved but unpublished listings stay on the existing initial-publication path. Preserve public data/photos/contacts, permissions, audit and MONTH/WEEK behavior. No M3.",
-    "executable_sha": "31637ad3bd24c67420982aed3ecad49abc5e500c",
-    "executable_tree": "577af73dfaa487f8d6572b8e733446f415b0de43",
-    "local_results": "D1-local listing-management 21/21; Worker typecheck PASS; web typecheck/build/build:preview PASS; git diff --check and canonical state validator PASS. Coverage includes concurrent CAS, rollback on injected audit failures and retry, role/owner denials, rejection/re-edit, unpublished first-publication boundary, 101-row ADMIN revision pagination, public visibility, monthly/weekly terms, photos/contact preservation.",
-    "remaining": "Publish tracking checkpoint; run exact-head worker/web CI and final Critic, Integration Review and operationally qualified GPT-6 Luna High read-only Controller; resolve any substantive findings. Leave PR draft for Human review.",
+    "scope": "OWNER privately edits an existing approved/published listing; ADMIN reviews, approves/rejects and separately publishes. Approved/unpublished listings retain first-publication workflow. Preserve availability, public data, photos, contact events, permissions, audit and MONTH/WEEK behavior. No M3.",
+    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
+    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
+    "local_results": "D1-local listing-management 22/22; Worker typecheck PASS; Web typecheck/build/build:preview PASS; canonical state validator and git diff --check PASS. Tests cover CAS races, audit failure rollback/retry, authorization, rejection/re-edit, first-publication boundary, 101-row revision pagination, MONTH/WEEK, photos/contact retention, and atomic availability/reconfirmation revision-base synchronization/rollback.",
+    "remaining": "Publish checkpoint; run exact-head protected worker/web CI plus final Critic, Integration Review and operationally qualified GPT-6 Luna High read-only Controller on the same SHA. Leave PR DRAFT for Human review; no merge/remote/M3.",
     "remote": "No remote D1 migration, Preview update, deployment, Access/CD/production change, real data or paid resource. Migration 0015 remains local only.",
     "artifact_sha": null
   },
@@ -1314,15 +1315,16 @@
   "m2_1_owner_published_revisions": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
-    "executable_sha": "31637ad3bd24c67420982aed3ecad49abc5e500c",
-    "executable_tree": "577af73dfaa487f8d6572b8e733446f415b0de43",
+    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
+    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "local_tests": {
-      "listing-management": "PASS: 21/21 D1 local, includes CAS races, audit rollback/retry, permissions, rejection/re-edit, APPROVED/UNPUBLISHED first-publication boundary, 101-row admin pagination, monthly/weekly, public visibility and photos/contact retention",
+      "listing-management": "PASS: 22/22 D1 local; CAS races, atomic audit rollback/retry, role/owner denials, rejection/re-edit, approved/unpublished boundary, 101-row queue pagination, public visibility, MONTH/WEEK, photo/contact retention and availability/reconfirmation atomic rebase/rollback",
       "worker_typecheck": "PASS",
       "web_typecheck_build": "PASS: typecheck, build, build:preview",
-      "orchestration": "PASS: consistency validator, diff check"
+      "orchestration": "PASS: canonical consistency validator and diff check"
     },
-    "next": "Publish the canonical checkpoint in PR #62, verify exact-head worker/web CI and run final independent Critic, Integration Review and requested Luna High read-only Controller on the exact published SHA; resolve substantive findings and leave draft for Human review."
+    "prior_reviews": "Critic PASS and Integration REWORK/P2 plus Controller REWORK/P1 on previous SHA 7db8f14. Findings are being addressed; none of those are claimed as final for this code rework.",
+    "next": "Publish canonical checkpoint, confirm exact worker/web CI, then run final Critic, Integration Review and GPT-6 Luna High read-only Controller on exact GitHub PR HEAD and process any substantive findings."
   },
   "historical_candidate_review_mvp_m2_1_migration": {
     "status": "CONTROLLER_REWORK_P2_RECONCILED_NO_FINAL_PASS_CLAIMED",
