@@ -62,6 +62,8 @@ describe('OWNER listing lifecycle',()=>{
     const item=await create(ownerCookie,'Alojamiento publicado sintético');
     await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
     const original=await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first<any>();
+    expect((await request(`/public/listings/${item.id}`)).status).toBe(200);
+    expect(await (await request(`/public/listings/${item.id}`)).json()).toMatchObject({title:original.title,priceAmount:original.priceAmount});
     expect(original.status).toBe('APPROVED');
     expect((await request('/listings/'+item.id+'/revision','GET',undefined,otherCookie)).status).toBe(404);
     expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:0,baseUpdatedAt:original.updatedAt,fields:{...fields,title:'Edición ajena'}},otherCookie)).status).toBe(404);
@@ -79,6 +81,7 @@ describe('OWNER listing lifecycle',()=>{
     expect((await submitted.json() as any).revision).toMatchObject({state:'SUBMITTED',version:2});
     expect((await request('/listings/'+item.id+'/revision','PUT',{expectedVersion:2,baseUpdatedAt:original.updatedAt,fields:changes},ownerCookie)).status).toBe(409);
     expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toEqual(original);
+    expect(await (await request(`/public/listings/${item.id}`)).json()).toMatchObject({title:original.title,priceAmount:original.priceAmount});
     const waiting=await request('/admin/listings/revisions','GET',undefined,adminCookie);
     expect(waiting.status).toBe(200);
     expect((await waiting.json() as any).items).toEqual(expect.arrayContaining([
@@ -89,16 +92,136 @@ describe('OWNER listing lifecycle',()=>{
     expect(approved.status,await approved.clone().text()).toBe(200);
     expect((await approved.json() as any).revision).toMatchObject({state:'APPROVED',version:3});
     expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toEqual(original);
+    expect(await (await request(`/public/listings/${item.id}`)).json()).toMatchObject({title:original.title,priceAmount:original.priceAmount});
     const published=await request('/admin/listings/'+item.id+'/revision/publish','POST',{expectedVersion:3},adminCookie);
     expect(published.status,await published.clone().text()).toBe(200);
     const final=(await published.json() as any);
     expect(final.revision).toMatchObject({state:'APPLIED',version:4});
     expect(final.listing).toMatchObject({id:item.id,title:changes.title,priceAmount:35000,status:'APPROVED',publicationStatus:'PUBLISHED'});
+    expect(await (await request(`/public/listings/${item.id}`)).json()).toMatchObject({title:changes.title,priceAmount:35000});
     const refreshed=await env.DB.prepare('SELECT title,price_amount AS priceAmount,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first();
     expect(refreshed).toMatchObject({title:changes.title,priceAmount:35000,status:'APPROVED',publicationStatus:'PUBLISHED'});
     expect((await request('/admin/listings/'+item.id+'/revision/publish','POST',{expectedVersion:3},adminCookie)).status).toBe(409);
     expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action IN (?,?,?)').bind(item.id,'ADMIN_LISTING_REVISION_APPROVED','ADMIN_LISTING_REVISION_REJECTED','ADMIN_LISTING_REVISION_PUBLISHED').first('n')).toBe(2);
   });
+  it('serializes concurrent revision saves, decisions and publication with version conflicts',async()=>{
+    const item=await create(ownerCookie,'Publicación para carreras sintéticas');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const original=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first<{updatedAt:string}>();
+    const baseUpdatedAt=original!.updatedAt;
+    const candidates=['Propuesta concurrente A','Propuesta concurrente B'];
+    const saves=await Promise.all(candidates.map(title=>request(`/listings/${item.id}/revision`,'PUT',{expectedVersion:0,baseUpdatedAt,fields:{...fields,title}},ownerCookie)));
+    expect(saves.map(response=>response.status).sort()).toEqual([200,409]);
+    const saved=await env.DB.prepare('SELECT state,version,payload FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first<{state:string;version:number;payload:string}>();
+    expect(saved).toMatchObject({state:'DRAFT',version:1});
+    const winnerTitle=(JSON.parse(saved!.payload) as {title:string}).title;
+    expect(candidates).toContain(winnerTitle);
+    const submissions=await Promise.all([
+      request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie),
+      request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie),
+    ]);
+    expect(submissions.map(response=>response.status).sort()).toEqual([200,409]);
+    const decisions=await Promise.all([
+      request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'approve',expectedVersion:2},adminCookie),
+      request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'approve',expectedVersion:2},adminCookie),
+    ]);
+    expect(decisions.map(response=>response.status).sort()).toEqual([200,409]);
+    const publications=await Promise.all([
+      request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:3},adminCookie),
+      request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:3},adminCookie),
+    ]);
+    expect(publications.map(response=>response.status).sort()).toEqual([200,409]);
+    expect(await env.DB.prepare('SELECT state,version FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toEqual({state:'APPLIED',version:4});
+    expect(await env.DB.prepare('SELECT title,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toMatchObject({title:winnerTitle,status:'APPROVED',publicationStatus:'PUBLISHED'});
+    expect(Number(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action IN ('ADMIN_LISTING_REVISION_APPROVED','ADMIN_LISTING_REVISION_PUBLISHED')").bind(item.id).first('n'))).toBe(2);
+  });
+
+  it('rolls back approval and publication atomically when revision audit insertion fails',async()=>{
+    const item=await create(ownerCookie,'Publicación para rollback transaccional');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const original=await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first<any>();
+    const changes={...fields,title:'Cambio que no debe quedar parcial',priceAmount:41000};
+    expect((await request(`/listings/${item.id}/revision`,'PUT',{expectedVersion:0,baseUpdatedAt:original.updatedAt,fields:changes},ownerCookie)).status).toBe(200);
+    expect((await request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie)).status).toBe(200);
+
+    await env.DB.prepare("CREATE TRIGGER fail_revision_approval_audit BEFORE INSERT ON admin_audit_events WHEN NEW.action='ADMIN_LISTING_REVISION_APPROVED' BEGIN SELECT RAISE(ABORT,'synthetic approval audit failure'); END").run();
+    try {
+      expect((await request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'approve',expectedVersion:2},adminCookie)).status).toBe(503);
+      expect(await env.DB.prepare('SELECT state,version FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toEqual({state:'SUBMITTED',version:2});
+      expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toEqual(original);
+      expect(Number(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_LISTING_REVISION_APPROVED'").bind(item.id).first('n'))).toBe(0);
+    } finally { await env.DB.prepare('DROP TRIGGER IF EXISTS fail_revision_approval_audit').run(); }
+
+    expect((await request(`/admin/listings/${item.id}/revision/review`,'POST',{action:'approve',expectedVersion:2},adminCookie)).status).toBe(200);
+    await env.DB.prepare("CREATE TRIGGER fail_revision_publication_audit BEFORE INSERT ON admin_audit_events WHEN NEW.action='ADMIN_LISTING_REVISION_PUBLISHED' BEGIN SELECT RAISE(ABORT,'synthetic publication audit failure'); END").run();
+    try {
+      expect((await request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:3},adminCookie)).status).toBe(503);
+      expect(await env.DB.prepare('SELECT state,version FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toEqual({state:'APPROVED',version:3});
+      expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,updated_at AS updatedAt,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toEqual(original);
+      expect(Number(await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_audit_events WHERE listing_id=? AND action='ADMIN_LISTING_REVISION_PUBLISHED'").bind(item.id).first('n'))).toBe(0);
+    } finally { await env.DB.prepare('DROP TRIGGER IF EXISTS fail_revision_publication_audit').run(); }
+
+    const retry=await request(`/admin/listings/${item.id}/revision/publish`,'POST',{expectedVersion:3},adminCookie);
+    expect(retry.status,await retry.clone().text()).toBe(200);
+    expect(await env.DB.prepare('SELECT title,price_amount AS priceAmount,status,publication_status AS publicationStatus FROM listings WHERE id=?').bind(item.id).first()).toMatchObject({title:changes.title,priceAmount:changes.priceAmount,status:'APPROVED',publicationStatus:'PUBLISHED'});
+  });
+
+  it('preserves photos and contacts through monthly publication and accepts term-free weekly revisions',async()=>{
+    const monthly=await create(ownerCookie,'Alquiler mensual con medios y consulta');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(monthly.id).run();
+    const at=new Date().toISOString(),blobId=`revision-blob-${monthly.id}`,staticId=`revision-static-${monthly.id}`,contactId=`revision-contact-${monthly.id}`;
+    await env.DB.prepare('INSERT INTO listing_images(id,listing_id,object_key,original_name,mime_type,byte_size,position,created_at,updated_at,blob_data) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(blobId,monthly.id,`d1blob:${blobId}`,'synthetic.png','image/png',png.byteLength,0,at,at,png).run();
+    await env.DB.prepare('INSERT INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES(?,?,?,?,?,?)').bind(staticId,monthly.id,'/media/catalog/revision-synthetic.svg','image/svg+xml',91,1).run();
+    await env.DB.prepare("INSERT INTO contact_events(id,listing_id,owner_id,visitor_name,visitor_email,message,state,created_at) VALUES(?,?,?,'Visitante sintético','visitor@example.test','Consulta sintética','UNREAD',?)").bind(contactId,monthly.id,ownerId,at).run();
+    const base=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(monthly.id).first<{updatedAt:string}>();
+    const changes={...fields,title:'Mensual con condiciones confirmadas',depositStatus:'FIXED_AMOUNT',depositAmount:30000,depositCurrency:'ARS',internetIncluded:'INCLUDED',availableFrom:'2026-12-01'};
+    expect((await request(`/listings/${monthly.id}/revision`,'PUT',{expectedVersion:0,baseUpdatedAt:base!.updatedAt,fields:changes},ownerCookie)).status).toBe(200);
+    expect((await request(`/listings/${monthly.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie)).status).toBe(200);
+    expect((await request(`/admin/listings/${monthly.id}/revision/review`,'POST',{action:'approve',expectedVersion:2},adminCookie)).status).toBe(200);
+    const published=await request(`/admin/listings/${monthly.id}/revision/publish`,'POST',{expectedVersion:3},adminCookie);
+    expect(published.status,await published.clone().text()).toBe(200);
+    expect(await env.DB.prepare('SELECT price_period AS pricePeriod,deposit_status AS depositStatus,deposit_amount AS depositAmount,deposit_currency AS depositCurrency,internet_included AS internetIncluded,available_from AS availableFrom FROM listings WHERE id=?').bind(monthly.id).first()).toEqual({pricePeriod:'MONTH',depositStatus:'FIXED_AMOUNT',depositAmount:30000,depositCurrency:'ARS',internetIncluded:'INCLUDED',availableFrom:'2026-12-01'});
+    expect(await env.DB.prepare('SELECT id,object_key AS objectKey,byte_size AS byteSize,position,blob_data FROM listing_images WHERE id=?').bind(blobId).first()).toMatchObject({id:blobId,objectKey:`d1blob:${blobId}`,byteSize:png.byteLength,position:0,blob_data:expect.anything()});
+    expect(await env.DB.prepare('SELECT id,asset_path AS assetPath,mime_type AS mimeType,byte_size AS byteSize,position FROM static_listing_images WHERE id=?').bind(staticId).first()).toEqual({id:staticId,assetPath:'/media/catalog/revision-synthetic.svg',mimeType:'image/svg+xml',byteSize:91,position:1});
+    expect(await env.DB.prepare('SELECT id,listing_id AS listingId,owner_id AS ownerId,state,message FROM contact_events WHERE id=?').bind(contactId).first()).toEqual({id:contactId,listingId:monthly.id,ownerId,state:'UNREAD',message:'Consulta sintética'});
+    expect(Number(await env.DB.prepare('SELECT COUNT(*) AS n FROM contact_events WHERE listing_id=?').bind(monthly.id).first('n'))).toBe(1);
+
+    const weekly=await create(ownerCookie,'Alquiler semanal sin condiciones mensuales');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED',price_period='WEEK' WHERE id=?").bind(weekly.id).run();
+    const weekBase=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(weekly.id).first<{updatedAt:string}>();
+    const weeklyFields={...fields,pricePeriod:'WEEK',depositStatus:'NOT_INFORMED',depositAmount:null,depositCurrency:null,internetIncluded:'NOT_INFORMED',waterIncluded:'NOT_INFORMED',electricityIncluded:'NOT_INFORMED',gasIncluded:'NOT_INFORMED',petsPolicy:'NOT_INFORMED',availableFrom:null};
+    const weeklySave=await request(`/listings/${weekly.id}/revision`,'PUT',{expectedVersion:0,baseUpdatedAt:weekBase!.updatedAt,fields:weeklyFields},ownerCookie);
+    expect(weeklySave.status,await weeklySave.clone().text()).toBe(200);
+    expect((await request(`/listings/${weekly.id}/revision/submit`,'POST',{expectedVersion:1},ownerCookie)).status).toBe(200);
+    expect((await request(`/admin/listings/${weekly.id}/revision/review`,'POST',{action:'approve',expectedVersion:2},adminCookie)).status).toBe(200);
+    expect((await request(`/admin/listings/${weekly.id}/revision/publish`,'POST',{expectedVersion:3},adminCookie)).status).toBe(200);
+    expect(await env.DB.prepare('SELECT price_period AS pricePeriod,deposit_status AS depositStatus,pets_policy AS petsPolicy FROM listings WHERE id=?').bind(weekly.id).first()).toMatchObject({pricePeriod:'WEEK',depositStatus:'NOT_INFORMED',petsPolicy:'NOT_INFORMED'});
+    const weeklyUpdated=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(weekly.id).first<{updatedAt:string}>();
+    expect((await request(`/listings/${weekly.id}/revision`,'PUT',{expectedVersion:4,baseUpdatedAt:weeklyUpdated!.updatedAt,fields:{...weeklyFields,petsPolicy:'ALLOWED'}},ownerCookie)).status).toBe(400);
+  });
+
+  it('denies anonymous, cross-role and cross-owner access to revision endpoints',async()=>{
+    const item=await create(ownerCookie,'Acceso restringido a revisión');
+    await env.DB.prepare("UPDATE listings SET status='APPROVED',publication_status='PUBLISHED' WHERE id=?").bind(item.id).run();
+    const base=await env.DB.prepare('SELECT updated_at AS updatedAt FROM listings WHERE id=?').bind(item.id).first<{updatedAt:string}>();
+    const body={expectedVersion:0,baseUpdatedAt:base!.updatedAt,fields:{...fields,title:'No autorizado'}};
+    for(const method of ['GET','PUT'] as const){
+      expect((await request(`/listings/${item.id}/revision`,method,method==='PUT'?body:undefined)).status).toBe(401);
+      expect((await request(`/listings/${item.id}/revision`,method,method==='PUT'?body:undefined,adminCookie)).status).toBe(401);
+      expect((await request(`/listings/${item.id}/revision`,method,method==='PUT'?body:undefined,otherCookie)).status).toBe(404);
+    }
+    expect((await request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1})).status).toBe(401);
+    expect((await request(`/listings/${item.id}/revision/submit`,'POST',{expectedVersion:1},adminCookie)).status).toBe(401);
+    expect((await request('/admin/listings/revisions')).status).toBe(401);
+    expect((await request('/admin/listings/revisions','GET',undefined,ownerCookie)).status).toBe(401);
+    for(const path of [`/admin/listings/${item.id}/revision/review`,`/admin/listings/${item.id}/revision/publish`]){
+      expect((await request(path,'POST',{action:'approve',expectedVersion:1},ownerCookie)).status).toBe(401);
+      expect((await request(path,'POST',{action:'approve',expectedVersion:1},otherCookie)).status).toBe(401);
+    }
+    expect(await env.DB.prepare('SELECT listing_id FROM listing_change_revisions WHERE listing_id=?').bind(item.id).first()).toBeNull();
+    expect(await env.DB.prepare('SELECT title FROM listings WHERE id=?').bind(item.id).first('title')).toBe('Acceso restringido a revisión');
+  });
+
   it('GET is OWNER-scoped and includes source listing state; role and missing IDs are denied',async()=>{
     const listing=await create();
     expect((await request(`/listings/${listing.id}`)).status).toBe(401);
