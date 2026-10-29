@@ -5,14 +5,14 @@
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
   "active_task": "M2.1 OWNER published revisions (Issue #61)",
-  "last_completed_task": "M2.1 OWNER revision implementation locally validated; exact GitHub CI run 40805091849 passed on tracking head e15a870; final exact-head reviews pending.",
+  "last_completed_task": "M2.1 OWNER revision implementation locally validated; exact GitHub CI run 40805323428 passed on tracking head c9426dd; final exact-head reviews pending.",
   "last_completed_head": "main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
   "work_branch": "feature/m2-1-owner-publication-revisions",
-  "next_action": "Verify worker/web CI on the current PR #62 HEAD, then complete Critic, Integration Review, and GPT-6 Luna High read-only Controller on that exact SHA. Repair substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
+  "next_action": "Verify exact worker/web CI on the resulting PR #62 tracking HEAD, then complete Critic, Integration Review, and separate GPT-6 Luna High read-only Controller on that exact SHA. Repair substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
   "stop_reason": "No merge, remote migration 0015, Preview/deploy, production, Access/CD change, or M3. Stop only when exact technical gates pass and PR #62 is ready for Human review.",
   "event": {
-    "seq": 263,
-    "summary": "Exact CI run 40805091849 passed on tracking head e15a870; reconcile state, then validate resulting HEAD and complete final reviews"
+    "seq": 264,
+    "summary": "Exact CI run 40805323428 passed on tracking head c9426dd; reconcile tracking state, then validate resulting HEAD and complete final reviews"
   },
   "external_review": null,
   "human_gate": {
@@ -29,23 +29,23 @@
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Local regression suite and exact CI 40804803035 pass on 6e12dc4; no final review PASS for the next canonical checkpoint.",
-    "last_observed_head_sha": "6e12dc40add72fe0943171cc64a1c040b4f24148",
-    "live_head_source": "Derive the live tracking checkpoint SHA from GitHub after this state-only commit; executable code remains 8dec013.",
-    "last_observed_head_tree": "e114c0beb11e65e8b79646234d1c028e80fe9cd7"
+    "status": "Exact Quick checks 40805323428 pass on tracking head c9426dd (worker/web SUCCESS; staging-private SKIPPED); final reviews pending.",
+    "last_observed_head_sha": "c9426dd32e1277dc320f993edc43d337e822c387",
+    "live_head_source": "GitHub PR #62 exact SHA and checks were inspected; this status-only checkpoint records that evidence. Executable code remains 8dec013.",
+    "last_observed_head_tree": "e656b217410017dc1e54e12d7de5295df65bb7ef"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
     "status": "FINAL_TRACKING_HEAD_CI_AND_REVIEWS_PENDING",
-    "artifact_sha": null,
+    "artifact_sha": "c9426dd32e1277dc320f993edc43d337e822c387",
     "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
     "controller_reviewed_sha": null,
     "controller_evidence": null,
     "controller_verdict": "Previous Controller REWORK P1 on 7db8f14 repaired in 8dec013; fresh exact tracking-head review pending.",
-    "github_checks": "Run 40804803035 SUCCESS on preceding code/tracking SHA 6e12dc4 (worker/web SUCCESS; staging-private SKIPPED). This state-only reconciliation requires a fresh exact-head worker/web CI.",
+    "github_checks": "Run 40805323428 SUCCESS on exact tracking SHA c9426dd (worker/web SUCCESS; staging-private SKIPPED). Resulting state-only checkpoint requires exact-head checks before final PASS.",
     "github_review": "No final exact-head reviewer verdict claimed.",
     "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
   },
@@ -1323,11 +1323,11 @@
       "web_typecheck_build": "PASS: typecheck, build, build:preview",
       "orchestration": "PASS: canonical consistency validator and diff check"
     },
-    "tracking_head_before_this_checkpoint": "e15a870a95da41336a285e206ff2a8ddebf7c601",
-    "tracking_tree_before_this_checkpoint": "e749382a366dd072f9daac29d3bd863a34120247",
+    "tracking_head_before_this_checkpoint": "c9426dd32e1277dc320f993edc43d337e822c387",
+    "tracking_tree_before_this_checkpoint": "e656b217410017dc1e54e12d7de5295df65bb7ef",
     "prior_reviews": "Critic/Integration/Controller attempts on 6e12dc4 were blocked by pending exact CI or unavailable live GitHub evidence; no final verdict is claimed. Earlier substantive findings were repaired in subsequent code commits and need exact-head confirmation.",
     "next": "Verify worker/web CI on the current PR #62 HEAD, then complete Critic, Integration Review, and GPT-6 Luna High read-only Controller on that exact SHA. Repair substantive findings and rerun affected checks. Leave the OPEN/DRAFT PR for Human review; do not merge, migrate remotely, deploy, or start M3.",
-    "prior_exact_ci": "40805091849 SUCCESS on tracking HEAD e15a870: worker/web SUCCESS; staging-private SKIPPED. This checkpoint changes tracking/evidence only; verify CI on the resulting HEAD."
+    "prior_exact_ci": "40805323428 SUCCESS on tracking HEAD c9426dd: worker/web SUCCESS; staging-private SKIPPED. This checkpoint changes tracking/evidence only; verify CI on the resulting HEAD."
   },
   "historical_candidate_review_mvp_m2_1_migration": {
     "status": "CONTROLLER_REWORK_P2_RECONCILED_NO_FINAL_PASS_CLAIMED",
