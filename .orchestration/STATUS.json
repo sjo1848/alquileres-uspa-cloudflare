@@ -8,11 +8,11 @@
   "last_completed_task": "Resolved Critic/Integration findings for APPROVED/UNPUBLISHED and revision queue pagination; resolved Controller P1 where OWNER availability/reconfirmation could stale and strand a submitted revision. Exact CI and final reviews pending.",
   "last_completed_head": "main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
   "work_branch": "feature/m2-1-owner-publication-revisions",
-  "next_action": "Publish canonical checkpoint to PR #62, verify worker/web CI on the exact GitHub PR HEAD, then run final Critic, Integration Review and GPT-6 Luna High read-only Controller on that same SHA; repair any substantive findings and leave draft PR ready for Human review.",
+  "next_action": "Verify the current GitHub PR #62 HEAD and require exact-head worker/web CI; then run Critic, Integration Review and GPT-6 Luna High read-only Controller against that same SHA. Resolve substantive findings and leave PR DRAFT for Human review.",
   "stop_reason": "No merge, remote migration 0015, Preview/deploy, production, Access/CD change, or M3. Stop only when exact technical gates pass and PR #62 is ready for Human review.",
   "event": {
-    "seq": 260,
-    "summary": "M2.1 PR #62 rework: resolve availability/reconfirmation changing updated_at and stranding in-flight revisions via atomic baseline sync; D1 rollback/retry regression added; exact final CI/reviews pending"
+    "seq": 261,
+    "summary": "M2.1 availability/revision consistency fix and rollback regression are committed; verify current exact-head CI and perform final reviews before Human review"
   },
   "external_review": null,
   "human_gate": {
@@ -29,15 +29,15 @@
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "state": "OPEN",
     "is_draft": true,
-    "status": "P1 availability/revision baseline rework locally passes; exact-head worker/web CI and final independent reviews pending.",
-    "last_observed_head_sha": "7db8f146a991d9bb90c2b5a3f49466c11793961d",
+    "status": "Availability/revision P1 fixed; exact-head worker/web CI and final independent reviews pending. PR remains DRAFT.",
+    "last_observed_head_sha": "297cd11b022cfb806faf03dc73de7249016c0662",
     "live_head_source": "Confirm exact tracking checkpoint HEAD from GitHub after publish.",
-    "last_observed_head_tree": "cbe0d6a2b06eb510d29887a68cc3ec727764aa30"
+    "last_observed_head_tree": "ae9efe1f0f7b6a17b97de780cb46fa2fdcadb5d8"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
   "candidate_review": {
-    "status": "EXACT_HEAD_CI_AND_REQUESTED_REVIEWS_PENDING",
+    "status": "FINAL_EXACT_HEAD_CI_AND_REVIEWS_PENDING",
     "artifact_sha": null,
     "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
@@ -45,8 +45,8 @@
     "controller_reviewed_sha": null,
     "controller_evidence": null,
     "controller_verdict": "Previous exact review 7db8f14 returned REWORK P1 on availability/reconfirmation invalidating submitted revisions; repaired in 8dec013. Fresh exact-head Controller review pending.",
-    "github_checks": "Run 40803918105 PASS on prior SHA 7db8f14 only; exact CI must rerun after this rework.",
-    "github_review": "No exact-head automated review submission claimed for the repaired candidate.",
+    "github_checks": "Run 40804747434 started on the preceding state checkpoint 297cd11; require a fresh exact-head run for the updated canonical checkpoint.",
+    "github_review": "No final exact-head review submission claimed.",
     "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
   },
   "human_acceptance": {
@@ -97,14 +97,14 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
     "contract": ".orchestration/contracts/MVP-M2.1-OWNER-PUBLISHED-REVISIONS.md",
-    "status": "Consolidated M2.1 implementation and regressions in PR #62; P1 availability/revision-staleness fix locally passes. Exact-head CI/reviews pending; PR remains DRAFT.",
+    "status": "Consolidated candidate in PR #62; availability/reconfirmation now atomically preserve revision concurrency and regression evidence passes locally. Exact-head CI/reviews pending; PR DRAFT.",
     "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
     "branch": "feature/m2-1-owner-publication-revisions",
     "scope": "OWNER privately edits an existing approved/published listing; ADMIN reviews, approves/rejects and separately publishes. Approved/unpublished listings retain first-publication workflow. Preserve availability, public data, photos, contact events, permissions, audit and MONTH/WEEK behavior. No M3.",
     "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
     "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
     "local_results": "D1-local listing-management 22/22; Worker typecheck PASS; Web typecheck/build/build:preview PASS; canonical state validator and git diff --check PASS. Tests cover CAS races, audit failure rollback/retry, authorization, rejection/re-edit, first-publication boundary, 101-row revision pagination, MONTH/WEEK, photos/contact retention, and atomic availability/reconfirmation revision-base synchronization/rollback.",
-    "remaining": "Publish checkpoint; run exact-head protected worker/web CI plus final Critic, Integration Review and operationally qualified GPT-6 Luna High read-only Controller on the same SHA. Leave PR DRAFT for Human review; no merge/remote/M3.",
+    "remaining": "Verify latest exact-head worker/web CI; run final Critic, Integration Review and operationally qualified GPT-6 Luna High read-only Controller on that same SHA; leave PR DRAFT for Human review.",
     "remote": "No remote D1 migration, Preview update, deployment, Access/CD/production change, real data or paid resource. Migration 0015 remains local only.",
     "artifact_sha": null
   },
@@ -1324,7 +1324,7 @@
       "orchestration": "PASS: canonical consistency validator and diff check"
     },
     "prior_reviews": "Critic PASS and Integration REWORK/P2 plus Controller REWORK/P1 on previous SHA 7db8f14. Findings are being addressed; none of those are claimed as final for this code rework.",
-    "next": "Publish canonical checkpoint, confirm exact worker/web CI, then run final Critic, Integration Review and GPT-6 Luna High read-only Controller on exact GitHub PR HEAD and process any substantive findings."
+    "next": "Verify the current GitHub PR #62 HEAD and require exact-head worker/web CI; then run Critic, Integration Review and GPT-6 Luna High read-only Controller against that same SHA. Resolve substantive findings and leave PR DRAFT for Human review."
   },
   "historical_candidate_review_mvp_m2_1_migration": {
     "status": "CONTROLLER_REWORK_P2_RECONCILED_NO_FINAL_PASS_CLAIMED",
