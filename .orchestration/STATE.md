@@ -2198,3 +2198,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - PR head `e599905516c11efde54269b6565b287fb3a3e298` changes only `.orchestration/STATE.md`, `STATUS.json`, and preflight evidence from the reviewed executable candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75` / tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`.
 - Critic and Integration Review found that this tracking checkpoint prematurely declared merge readiness and `is_draft=false` while GitHub still reported a draft and exact-head CI was in progress. The status is being corrected to keep the PR draft and technical review in progress until the current tracking head passes checks/review.
 - **Next action:** validate the corrected exact tracking SHA. If CI and all reviews remain PASS, mark the PR ready for separate protected-merge authorization. No merge, remote migration, deploy, production change or M3.
+
+
+## Event 274 — active M2.1 tracking pointers reconciled
+
+- The delegated read-only tracking review of PR #63 HEAD `b0542ab1245b52ce545d6fc9d16566bc96eb95bc` / tree `d011c035d4413694c646c672f362e2142dbba641` found two stale references: top-level `STATUS.json.candidate_review` still summarized PR #62, and the linked migration-preflight contract still described Issue #58 / migration 0014.
+- Reconciled the active candidate pointer with PR #63 / Issue #61 and retained the former PR #62 summary under `historical_candidate_review_mvp_m2_1_pr62`. Labeled the Issue #58 / 0014 contract historical and added the active Issue #61 / 0015 contract at `.orchestration/contracts/MVP-M2.1-0015-MIGRATION-PREFLIGHT.md`.
+- The reviewer found no executable defect in its read-only inspection, but its Controller execution was `BLOCKED_MODEL_CONFIG`; that result is not a PASS. Critic and Integration Review had passed the prior b054 tracking-only checkpoint. The next exact candidate must receive fresh reviews after this reconciliation.
+- **Next action:** validate and review the exact new tracking HEAD. Keep PR #63 OPEN/DRAFT; if all required gates pass, mark ready for separate protected-merge authorization. No merge, remote D1 migration, Worker publication, Access/CD/production change, or M3.

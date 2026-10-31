@@ -8,15 +8,15 @@
   "last_completed_task": "Read-only Preview/Access/D1 preflight; exact-hash guard and separate SHA-bound 0015 authorization gate prepared, private SQL backup rehearsed locally, no remote migration or Worker publication.",
   "last_completed_head": "main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
   "work_branch": "work/m2-1-0015-migration-preflight",
-  "next_action": "Complete exact-head checks and reviews on the current tracking commit. If they remain PASS, mark PR #63 ready for separate protected-merge authorization. Migration 0015 and Worker publication still require later independent authorization and fresh preflight.",
-  "stop_reason": "The executable candidate passed, but the latest state-only tracking SHA is still under exact-head validation. Keep the PR draft; no merge, remote D1 action, deployment, or production change is authorized.",
+  "next_action": "Validate exact-head CI, Critic, Integration Review and delegated read-only Controller on the corrected tracking checkpoint. If every gate passes, mark PR #63 ready for separate protected-merge authorization; no merge or remote migration is authorized.",
+  "stop_reason": "The prior tracking checkpoint exposed stale active pointers. Their reconciliation is prepared in PR #63; exact-head checks and reviews must pass before the PR can be marked ready. No merge, remote D1 action, deployment, or production change is authorized.",
   "event": {
-    "seq": 273,
-    "summary": "M2.1 executable guard candidate passed all controls; state-only tracking checkpoint still needs exact-head validation before PR ready status"
+    "seq": 274,
+    "summary": "Controller tracking review found stale generic candidate and 0014 contract pointers; reconcile active M2.1 tracking before exact-head re-review"
   },
   "external_review": null,
   "human_gate": {
-    "status": "AWAITING_TRACKING_HEAD_VALIDATION",
+    "status": "AWAITING_EXACT_HEAD_TECHNICAL_REVIEW",
     "scope": "After the exact tracking head passes CI/review, request authorization only for the protected merge of PR #63. This does not authorize applying 0015, publishing the Worker, changing Access/CD, production, or M3. Migration 0015 requires a separate later authorization and fresh preflight."
   },
   "blocker": null,
@@ -27,24 +27,11 @@
     "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Open/DRAFT; executable candidate e7c544b passed all controls, while state-only tracking head is being rechecked; no merge or remote migration.",
+    "status": "Open/DRAFT; correcting stale active tracking pointers from Controller REWORK, then exact-head validation; no merge or remote migration.",
     "live_head_source": "GitHub PR #63; derive current head after publication."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
-  "candidate_review": {
-    "status": "PASS_READY_FOR_PRODUCT_OWNER_REVIEW",
-    "artifact_sha": "f9e60136527574ac266efd8451dee9a142327b97",
-    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
-    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
-    "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
-    "controller_reviewed_sha": "f9e60136527574ac266efd8451dee9a142327b97",
-    "controller_evidence": ".orchestration/evidence/critics/MVP-M2.1-PR62-REVIEW-PASS.md",
-    "controller_verdict": "PASS: delegated separate codex exec, gpt-6-luna/high requested, --sandbox read-only accepted; backend identity UNVERIFIED. Native project_controller attempt was BLOCKED_MODEL_CONFIG and is not counted.",
-    "github_checks": "Run 40806351648 on f9e6013 and run 40806767272 on tracking-only fe97301 both SUCCESS: worker/web SUCCESS; staging-private SKIPPED.",
-    "github_review": "Critic PASS and Integration Review PASS on exact executable/test artifact f9e6013; both verified no executable/test changes in tracking-only fe97301.",
-    "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
-  },
   "human_acceptance": {
     "scope": "MVP M1 monthly-first search in the private Preview",
     "verdict": "ACCEPTED_M1; M2.1 awaits separate review and publication authorization",
@@ -1378,10 +1365,41 @@
     "independent_critic": "PASS on exact e7c544b/tree 7bb6efff; read-only, no files or remote commands",
     "integration_review": "PASS on exact e7c544b/tree 7bb6efff; no integration findings",
     "controller": "PASS on exact e7c544b/tree 7bb6efff; delegated_codex_separate_process; gpt-6-luna/high requested; --sandbox read-only; process exit 0; provider backend identity UNVERIFIED; Controller could not run full tests under read-only temp constraints; parent verified local 74/74 and GitHub CI",
-    "status": "PREPARED_UNMERGED_AWAITING_TRACKING_HEAD_VALIDATION",
+    "status": "TECHNICAL_REVIEW_IN_PROGRESS; PR #63 remains OPEN/DRAFT pending exact tracking-head checks and Controller re-review.",
     "remote_migration_applied": false,
     "worker_published": false,
-    "next_action": "Complete exact-head CI/reviews on tracking-only commit; if PASS, mark PR ready and await separate protected-merge authorization. After merge, re-run preflight and request distinct authorization to apply exactly 0015; no Worker publication or M3 is authorized.",
-    "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required when 0015 is the sole pending migration, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance. Any other pending migration fails regardless of allowlist/auth entries."
+    "next_action": "Complete exact-head independent reviews on the corrected tracking commit. If all PASS, mark PR #63 ready for separate protected-merge authorization; no merge or remote migration here.",
+    "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required when 0015 is the sole pending migration, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance. Any other pending migration fails regardless of allowlist/auth entries.",
+    "contract": ".orchestration/contracts/MVP-M2.1-0015-MIGRATION-PREFLIGHT.md"
+  },
+  "historical_candidate_review_mvp_m2_1_pr62": {
+    "status": "PASS_READY_FOR_PRODUCT_OWNER_REVIEW",
+    "artifact_sha": "f9e60136527574ac266efd8451dee9a142327b97",
+    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
+    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
+    "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
+    "controller_reviewed_sha": "f9e60136527574ac266efd8451dee9a142327b97",
+    "controller_evidence": ".orchestration/evidence/critics/MVP-M2.1-PR62-REVIEW-PASS.md",
+    "controller_verdict": "PASS: delegated separate codex exec, gpt-6-luna/high requested, --sandbox read-only accepted; backend identity UNVERIFIED. Native project_controller attempt was BLOCKED_MODEL_CONFIG and is not counted.",
+    "github_checks": "Run 40806351648 on f9e6013 and run 40806767272 on tracking-only fe97301 both SUCCESS: worker/web SUCCESS; staging-private SKIPPED.",
+    "github_review": "Critic PASS and Integration Review PASS on exact executable/test artifact f9e6013; both verified no executable/test changes in tracking-only fe97301.",
+    "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
+  },
+  "candidate_review": {
+    "status": "TRACKING_RECONCILIATION_PENDING_EXACT_HEAD_VALIDATION",
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
+    "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
+    "reviewed_executable_sha": "e7c544b839b9017ddaa7ce3f3a13929f2fb55f75",
+    "reviewed_executable_tree": "7bb6efff5b5b06f2b198f84f8b4236216c595ec9",
+    "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
+    "tracking_head_source": "GitHub PR #63; derive exact current tracking SHA from live PR before validation",
+    "previous_tracking_sha": "b0542ab1245b52ce545d6fc9d16566bc96eb95bc",
+    "previous_tracking_controller": "BLOCKED_MODEL_CONFIG; surfaced stale PR #62 candidate pointer and stale Issue #58/0014 contract. Corrected by this checkpoint; not a PASS.",
+    "independent_critic": "PENDING on corrected tracking HEAD",
+    "integration_review": "PENDING on corrected tracking HEAD",
+    "controller_review": "PENDING on corrected tracking HEAD; do not claim PASS until a valid exact-SHA read-only run completes",
+    "exact_head_ci": "PENDING on corrected tracking HEAD",
+    "is_draft": true,
+    "next_action": "After corrected tracking commit is published, verify CI and rerun all reviews on the live exact SHA; only then mark ready for separate protected-merge authorization. No merge or remote action."
   }
 }

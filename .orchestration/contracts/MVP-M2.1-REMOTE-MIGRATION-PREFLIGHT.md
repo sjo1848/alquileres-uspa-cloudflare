@@ -1,4 +1,6 @@
-# M2.1 — Remote migration preflight (Issue #58)
+# Historical contract — M2.1 remote migration preflight (Issue #58 / migration 0014)
+
+This contract is retained as historical evidence for the completed 0014 preflight. It is **not** the active contract for the 0015 preflight in Issue #61. The active contract is `.orchestration/contracts/MVP-M2.1-0015-MIGRATION-PREFLIGHT.md`.
 
 - **Authorized base:** `main@797e6656488d5473b9348542c2312ed0c90c94a6`.
 - **Scope:** read-only verification of the existing private Preview, Access, and synthetic D1; exact-hash allowlist and local guard tests for migration `0014_monthly_rental_terms.sql`; private SQL backup; isolated local rehearsal against the backup; report results in Issue #58.
