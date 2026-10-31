@@ -449,6 +449,40 @@ class PreviewCdGuardTests(unittest.TestCase):
                 guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
         run.assert_not_called()
 
+    def test_remote_backup_rejects_noncanonical_target_before_export(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             mock.patch.object(guard, "verify_provenance") as provenance, \
+             mock.patch.object(guard, "verify_migrations") as migrations, \
+             mock.patch.object(guard, "run_captured") as run:
+            root = Path(directory)
+            backup = root / "private" / "backup.sql"
+            persist = root / "persist"
+            with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                guard.backup_and_rehearse("wrangler.production.jsonc", backup, persist)
+            provenance.assert_not_called()
+            migrations.assert_not_called()
+            run.assert_not_called()
+            self.assertFalse(backup.parent.exists())
+            self.assertFalse(persist.exists())
+
+    def test_remote_backup_requires_0015_authorization_before_export(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             mock.patch.object(guard, "verify_target"), \
+             mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
+             mock.patch.object(guard, "run_captured") as run, \
+             mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA", None)
+            os.environ.pop("GITHUB_SHA", None)
+            root = Path(directory)
+            backup = root / "private" / "backup.sql"
+            persist = root / "persist"
+            with self.assertRaisesRegex(guard.PolicyError, "separate human authorization"):
+                guard.backup_and_rehearse("wrangler.preview-migrations-ci.jsonc", backup, persist)
+            run.assert_not_called()
+            self.assertFalse(backup.parent.exists())
+            self.assertFalse(persist.exists())
+
     def test_remote_commands_reject_noncanonical_target_before_any_remote_read_or_write(self):
         for remote_command in (guard.apply_remote, guard.authorize_remote):
             with self.subTest(remote_command=remote_command.__name__), \

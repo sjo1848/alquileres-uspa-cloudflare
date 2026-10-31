@@ -572,6 +572,10 @@ def run_captured(command: list[str], cwd: Path, timeout: int = 240) -> subproces
 
 
 def backup_and_rehearse(config: str, backup: Path, persist_to: Path) -> None:
+    _verify_remote_migration_target(config)
+    verify_provenance(config)
+    pending_remote = verify_migrations(config, MIGRATIONS, local=False)
+    _require_remote_migration_authorization(pending_remote)
     persist_to.mkdir(parents=True, exist_ok=True, mode=0o700)
     os.chmod(persist_to, 0o700)
     backup.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
