@@ -2206,3 +2206,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Reconciled the active candidate pointer with PR #63 / Issue #61 and retained the former PR #62 summary under `historical_candidate_review_mvp_m2_1_pr62`. Labeled the Issue #58 / 0014 contract historical and added the active Issue #61 / 0015 contract at `.orchestration/contracts/MVP-M2.1-0015-MIGRATION-PREFLIGHT.md`.
 - The reviewer found no executable defect in its read-only inspection, but its Controller execution was `BLOCKED_MODEL_CONFIG`; that result is not a PASS. Critic and Integration Review had passed the prior b054 tracking-only checkpoint. The next exact candidate must receive fresh reviews after this reconciliation.
 - **Next action:** validate and review the exact new tracking HEAD. Keep PR #63 OPEN/DRAFT; if all required gates pass, mark ready for separate protected-merge authorization. No merge, remote D1 migration, Worker publication, Access/CD/production change, or M3.
+
+
+## Event 275 — PR #63 technical review passed
+
+- Exact reviewed candidate: PR #63 HEAD `76eb52a281108a80cc6d8464fa053c787e53e97e`, tree `2bff2cea84cf2f3372a7470406f1a6114cc9151b`, base `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4`. Exact Quick checks run `41226185514`: Worker/Web SUCCESS; `staging-private` SKIPPED.
+- **Independent Critic PASS**, **Integration Review PASS**, and **delegated Controller PASS** on the exact SHA/tree. Controller was a separate `codex exec` process requested with GPT-6 Luna, High and read-only; backend identity remains UNVERIFIED. The Controller did not run suites or remote tooling; parent verified tests and CI.
+- The corrected active candidate/contract pointers are consistent: PR #63 and Issue #61 / 0015 are active; PR #62 and Issue #58 / 0014 are historical. The reviewed code remains the executable candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75` / tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`, with 74/74 local scripts tests, 49 focused guard tests, canonical validator and diff check passing. The tracking-only delta adds no executable/test/workflow changes.
+- PR #63 is OPEN and ready for **separate protected-merge authorization**. **0015 is still unapplied remotely**; no merge, migration, Worker publication, Access/CD/production change, or M3 action occurred.
+- **Next action:** await authorization for the protected merge only. Any remote 0015 application requires a separate later authorization and fresh preflight.

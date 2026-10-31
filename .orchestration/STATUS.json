@@ -8,16 +8,16 @@
   "last_completed_task": "Read-only Preview/Access/D1 preflight; exact-hash guard and separate SHA-bound 0015 authorization gate prepared, private SQL backup rehearsed locally, no remote migration or Worker publication.",
   "last_completed_head": "main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
   "work_branch": "work/m2-1-0015-migration-preflight",
-  "next_action": "Validate exact-head CI, Critic, Integration Review and delegated read-only Controller on the corrected tracking checkpoint. If every gate passes, mark PR #63 ready for separate protected-merge authorization; no merge or remote migration is authorized.",
-  "stop_reason": "The prior tracking checkpoint exposed stale active pointers. Their reconciliation is prepared in PR #63; exact-head checks and reviews must pass before the PR can be marked ready. No merge, remote D1 action, deployment, or production change is authorized.",
+  "next_action": "Await separate Human authorization for the protected merge of PR #63. After any later merge, run a fresh preflight and require a distinct authorization before applying 0015; no migration or deployment is currently authorized.",
+  "stop_reason": "All technical reviews and exact-head checks on the candidate passed. PR #63 is ready for separate protected-merge authorization; no merge, remote D1 action, deployment, or production change is authorized.",
   "event": {
-    "seq": 274,
-    "summary": "Controller tracking review found stale generic candidate and 0014 contract pointers; reconcile active M2.1 tracking before exact-head re-review"
+    "seq": 275,
+    "summary": "PR #63 exact candidate passed Critic, Integration, Controller and Quick checks; ready for separate protected-merge authorization"
   },
   "external_review": null,
   "human_gate": {
-    "status": "AWAITING_EXACT_HEAD_TECHNICAL_REVIEW",
-    "scope": "After the exact tracking head passes CI/review, request authorization only for the protected merge of PR #63. This does not authorize applying 0015, publishing the Worker, changing Access/CD, production, or M3. Migration 0015 requires a separate later authorization and fresh preflight."
+    "status": "AWAITING_PROTECTED_MERGE_AUTHORIZATION",
+    "scope": "Authorize protected merge of PR #63 only. This does not authorize remote migration 0015, Worker publication, Access/CD/production changes, billing, resources, or M3."
   },
   "blocker": null,
   "pull_request": {
@@ -26,8 +26,8 @@
     "branch": "work/m2-1-0015-migration-preflight",
     "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
     "state": "OPEN",
-    "is_draft": true,
-    "status": "Open/DRAFT; correcting stale active tracking pointers from Controller REWORK, then exact-head validation; no merge or remote migration.",
+    "is_draft": false,
+    "status": "OPEN/READY; all technical controls passed on the executable candidate and current tracking checkpoint; awaiting separate protected-merge authorization. No merge or remote migration.",
     "live_head_source": "GitHub PR #63; derive current head after publication."
   },
   "issue_4": "CLOSED",
@@ -1361,14 +1361,14 @@
     "guard_pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
     "reviewed_candidate_sha": "e7c544b839b9017ddaa7ce3f3a13929f2fb55f75",
     "reviewed_candidate_tree": "7bb6efff5b5b06f2b198f84f8b4236216c595ec9",
-    "exact_head_ci": "41225294252 PASS: worker/web SUCCESS; staging-private SKIPPED",
-    "independent_critic": "PASS on exact e7c544b/tree 7bb6efff; read-only, no files or remote commands",
-    "integration_review": "PASS on exact e7c544b/tree 7bb6efff; no integration findings",
-    "controller": "PASS on exact e7c544b/tree 7bb6efff; delegated_codex_separate_process; gpt-6-luna/high requested; --sandbox read-only; process exit 0; provider backend identity UNVERIFIED; Controller could not run full tests under read-only temp constraints; parent verified local 74/74 and GitHub CI",
-    "status": "TECHNICAL_REVIEW_IN_PROGRESS; PR #63 remains OPEN/DRAFT pending exact tracking-head checks and Controller re-review.",
+    "exact_head_ci": "Run 41226185514 on exact reviewed HEAD 76eb52a281108a80cc6d8464fa053c787e53e97e: worker/web SUCCESS; staging-private SKIPPED.",
+    "independent_critic": "PASS on exact 76eb52a281108a80cc6d8464fa053c787e53e97e / tree 2bff2cea84cf2f3372a7470406f1a6114cc9151b; no findings.",
+    "integration_review": "PASS on exact 76eb52a281108a80cc6d8464fa053c787e53e97e / tree 2bff2cea84cf2f3372a7470406f1a6114cc9151b; active state/contract pointers aligned.",
+    "controller": "PASS via delegated_codex_separate_process on exact 76eb52a281108a80cc6d8464fa053c787e53e97e / tree 2bff2cea84cf2f3372a7470406f1a6114cc9151b; gpt-6-luna/high/read-only requested and accepted; backend identity UNVERIFIED. No tests or remote operations run.",
+    "status": "PREPARED_UNMERGED_AWAITING_PROTECTED_MERGE_AUTHORIZATION",
     "remote_migration_applied": false,
     "worker_published": false,
-    "next_action": "Complete exact-head independent reviews on the corrected tracking commit. If all PASS, mark PR #63 ready for separate protected-merge authorization; no merge or remote migration here.",
+    "next_action": "Await separate authorization for protected merge only. After merge, repeat preflight and request independent authorization to apply exactly 0015. No Worker publication or M3.",
     "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required when 0015 is the sole pending migration, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance. Any other pending migration fails regardless of allowlist/auth entries.",
     "contract": ".orchestration/contracts/MVP-M2.1-0015-MIGRATION-PREFLIGHT.md"
   },
@@ -1386,7 +1386,7 @@
     "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
   },
   "candidate_review": {
-    "status": "TRACKING_RECONCILIATION_PENDING_EXACT_HEAD_VALIDATION",
+    "status": "PASS_READY_FOR_PROTECTED_MERGE_AUTHORIZATION",
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
     "reviewed_executable_sha": "e7c544b839b9017ddaa7ce3f3a13929f2fb55f75",
@@ -1395,11 +1395,13 @@
     "tracking_head_source": "GitHub PR #63; derive exact current tracking SHA from live PR before validation",
     "previous_tracking_sha": "b0542ab1245b52ce545d6fc9d16566bc96eb95bc",
     "previous_tracking_controller": "BLOCKED_MODEL_CONFIG; surfaced stale PR #62 candidate pointer and stale Issue #58/0014 contract. Corrected by this checkpoint; not a PASS.",
-    "independent_critic": "PENDING on corrected tracking HEAD",
-    "integration_review": "PENDING on corrected tracking HEAD",
-    "controller_review": "PENDING on corrected tracking HEAD; do not claim PASS until a valid exact-SHA read-only run completes",
-    "exact_head_ci": "PENDING on corrected tracking HEAD",
-    "is_draft": true,
-    "next_action": "After corrected tracking commit is published, verify CI and rerun all reviews on the live exact SHA; only then mark ready for separate protected-merge authorization. No merge or remote action."
+    "independent_critic": "PASS exact SHA/tree; no findings",
+    "integration_review": "PASS exact SHA/tree; no findings",
+    "controller_review": "PASS exact SHA/tree; delegated_codex_separate_process; gpt-6-luna/high/read-only accepted; backend identity UNVERIFIED",
+    "exact_head_ci": "PASS run 41226185514: worker/web SUCCESS; staging-private SKIPPED",
+    "is_draft": false,
+    "next_action": "Await Human authorization for protected merge. Remote migration 0015 requires a separate authorization after merge and fresh preflight.",
+    "reviewed_head_sha": "76eb52a281108a80cc6d8464fa053c787e53e97e",
+    "reviewed_head_tree": "2bff2cea84cf2f3372a7470406f1a6114cc9151b"
   }
 }
