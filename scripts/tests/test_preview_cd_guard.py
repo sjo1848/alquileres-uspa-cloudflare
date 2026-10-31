@@ -513,7 +513,7 @@ class PreviewCdGuardTests(unittest.TestCase):
         latest_main.assert_not_called()
 
     def test_remote_apply_requires_separate_0015_authorization_bound_to_current_main(self):
-        pending = ["0013_owner_auth_local.sql", "0015_listing_change_revisions.sql"]
+        pending = ["0015_listing_change_revisions.sql"]
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
         approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
         cases = ((None, current_main), ("true", current_main), ("e" * 40, current_main), (current_main, "not-a-commit-sha"))
@@ -531,14 +531,13 @@ class PreviewCdGuardTests(unittest.TestCase):
                 run.assert_not_called()
 
     def test_remote_apply_accepts_only_matching_authorized_main_sha(self):
-        pending = ["0013_owner_auth_local.sql", "0015_listing_change_revisions.sql"]
+        pending = ["0015_listing_change_revisions.sql"]
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
         approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
         with mock.patch.object(guard, "verify_migrations", side_effect=[pending, []]), \
              mock.patch.object(guard, "verify_provenance") as provenance, \
              mock.patch.object(guard, "verify_latest_main") as latest_main, \
              mock.patch.object(guard, "run_captured") as run, \
-             mock.patch.object(guard, "verify_provenance") as provenance, \
              mock.patch.dict(os.environ, {"GITHUB_SHA": current_main, approval_env: current_main}, clear=False):
             guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
         latest_main.assert_called_once_with(current_main)
@@ -546,6 +545,37 @@ class PreviewCdGuardTests(unittest.TestCase):
         self.assertIn("--remote", run.call_args.args[0])
         self.assertEqual(provenance.call_count, 2)
         self.assertEqual(provenance.call_args_list[0].args, ("wrangler.preview-migrations-ci.jsonc",))
+
+    def test_remote_paths_reject_extra_or_unscoped_pending_migrations(self):
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
+        cases = (
+            (["0013_owner_auth_local.sql", "0015_listing_change_revisions.sql"], "must be the sole pending"),
+            (["0013_owner_auth_local.sql"], "no separate remote-authorization policy"),
+        )
+        for pending, expected_error in cases:
+            for command in ("authorize", "backup", "apply"):
+                with self.subTest(pending=pending, command=command), tempfile.TemporaryDirectory() as directory, \
+                     mock.patch.object(guard, "verify_target"), \
+                     mock.patch.object(guard, "verify_provenance"), \
+                     mock.patch.object(guard, "verify_migrations", return_value=pending), \
+                     mock.patch.object(guard, "verify_latest_main") as latest_main, \
+                     mock.patch.object(guard, "run_captured") as run, \
+                     mock.patch.dict(os.environ, {"GITHUB_SHA": current_main, approval_env: current_main}, clear=False):
+                    if command == "authorize":
+                        operation = lambda: guard.authorize_remote("wrangler.preview-migrations-ci.jsonc")
+                    elif command == "backup":
+                        root = Path(directory)
+                        operation = lambda: guard.backup_and_rehearse("wrangler.preview-migrations-ci.jsonc", root / "private" / "backup.sql", root / "persist")
+                    else:
+                        operation = lambda: guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+                    with self.assertRaisesRegex(guard.PolicyError, expected_error):
+                        operation()
+                    latest_main.assert_not_called()
+                    run.assert_not_called()
+                    if command == "backup":
+                        self.assertFalse((Path(directory) / "private").exists())
+                        self.assertFalse((Path(directory) / "persist").exists())
 
     def test_remote_apply_fails_closed_if_0015_authorization_policy_is_removed(self):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
@@ -557,7 +587,6 @@ class PreviewCdGuardTests(unittest.TestCase):
              mock.patch.object(guard, "verify_target"), \
              mock.patch.object(guard, "verify_provenance"), \
              mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
-             mock.patch.object(guard, "verify_provenance"), \
              mock.patch.object(guard, "run_captured") as run, \
              mock.patch.dict(os.environ, {"GITHUB_SHA": current_main, approval_env: current_main}, clear=False):
             with self.assertRaisesRegex(guard.PolicyError, "requires its separate SHA-bound authorization policy"):

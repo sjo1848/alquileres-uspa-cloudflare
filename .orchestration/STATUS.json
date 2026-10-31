@@ -1370,7 +1370,7 @@
     "migration_sha256": "4932baa752f60f6d25813663dcdafa6454eff2e0cd97a9da16270731d030a22e",
     "private_backup": "SQL export stored outside repository; 65021 bytes; file 0600 under directory 0700; no contents/path published",
     "local_rehearsal": "PASS on isolated Wrangler local D1 imported from private backup; 0015 applied locally; aggregates unchanged; 11-column revision table/two ownership triggers; zero local pending migrations",
-    "guard_tests": "69/69 PASS (44 focused); exact hash and trigger/DML/destructive/unapproved negatives; all three remote paths reject noncanonical config, workflow passes SHA auth into each gate, and backup/apply reject missing or mismatched auth before export/Wrangler.",
+    "guard_tests": "70/70 PASS (45 focused); exact hash and trigger/DML/destructive/unapproved negatives; all three remote paths reject noncanonical config, extra pending migrations fail closed, and workflow passes SHA auth into each gate.",
     "guard_pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
     "status": "PREPARED_UNMERGED_AWAITING_HUMAN_AUTHORIZATION",
     "remote_migration_applied": false,
