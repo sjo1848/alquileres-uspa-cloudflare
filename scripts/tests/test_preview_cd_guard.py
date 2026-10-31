@@ -55,7 +55,13 @@ class PreviewCdGuardTests(unittest.TestCase):
         self.assertIn("deploy-output", staging)
         self.assertIn('--file "$RUNNER_TEMP/preview-result.json"', staging)
         self.assertNotIn('>> "$GITHUB_OUTPUT"', staging)
-        self.assertIn("CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}", staging)
+        authorization_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}"
+        authorization_preflight_step = staging.split("- name: Require separate SHA-bound authorization before backup or migration", 1)[1].split("\n      - name:", 1)[0]
+        backup_step = staging.split("- name: Backup the D1 and rehearse pending migrations locally", 1)[1].split("\n      - name:", 1)[0]
+        apply_step = staging.split("- name: Apply only the reviewed migration allowlist to the existing Preview D1", 1)[1].split("\n      - name:", 1)[0]
+        self.assertIn(authorization_env, authorization_preflight_step)
+        self.assertIn(authorization_env, backup_step)
+        self.assertIn(authorization_env, apply_step)
         self.assertLess(
             staging.index("Require separate SHA-bound authorization before backup or migration"),
             staging.index("Backup the D1 and rehearse pending migrations locally"),
