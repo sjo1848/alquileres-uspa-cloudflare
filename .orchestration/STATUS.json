@@ -5,11 +5,11 @@
   "runtime_status": "AWAITING_HUMAN_MIGRATION_AUTHORIZATION",
   "resume_authorized": false,
   "active_task": "M2.1 — Issue #61 / preflight D1 migration 0015",
-  "last_completed_task": "Read-only Preview/Access/D1 preflight; exact-hash migration guard prepared, SQL backup kept private, and 0015 rehearsed on isolated local D1. Remote migration and Worker publication remain untouched.",
+  "last_completed_task": "Read-only Preview/Access/D1 preflight; exact-hash guard and separate SHA-bound 0015 authorization gate prepared, private SQL backup rehearsed locally, no remote migration or Worker publication.",
   "last_completed_head": "main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
   "work_branch": "work/m2-1-0015-migration-preflight",
-  "next_action": "Review the unmerged exact-hash guard PR for 0015 and, if acceptable, provide separate authorization for applying only 0015 to the existing synthetic Preview D1. Do not publish the Worker or start M3.",
-  "stop_reason": "Preflight complete; awaiting separate Human authorization for the irreversible remote D1 migration.",
+  "next_action": "Complete exact-head Worker/Web CI and Independent Critic, Integration Review, and Controller on PR #63. If all PASS, leave it ready for separate protected-merge authorization. Remote migration requires a later, distinct authorization after merge and a fresh preflight.",
+  "stop_reason": "No remote migration, merge, deployment, or production change is authorized; await exact-head technical reviews, then Human authorization for protected merge.",
   "event": {
     "seq": 268,
     "summary": "M2.1 0015 preflight PASS; sole remote pending migration hash-pinned in unmerged PR; awaiting separate Human migration authorization"
@@ -27,7 +27,7 @@
     "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Exact-hash guard for 0015 and positive/negative regressions; unmerged and no remote migration authorized.",
+    "status": "Open/DRAFT; exact hash pin plus separate authorization SHA bound to current main; no merge or remote migration. Final checks/reviews must be attached to the exact live HEAD.",
     "live_head_source": "GitHub PR #63; derive current head after publication."
   },
   "issue_4": "CLOSED",
@@ -1370,11 +1370,12 @@
     "migration_sha256": "4932baa752f60f6d25813663dcdafa6454eff2e0cd97a9da16270731d030a22e",
     "private_backup": "SQL export stored outside repository; 65021 bytes; file 0600 under directory 0700; no contents/path published",
     "local_rehearsal": "PASS on isolated Wrangler local D1 imported from private backup; 0015 applied locally; aggregates unchanged; 11-column revision table/two ownership triggers; zero local pending migrations",
-    "guard_tests": "61/61 PASS; exact hash positive and hash-mismatch, trigger/DML/destructive/unapproved negative cases",
+    "guard_tests": "66/66 PASS; exact hash and trigger/DML/destructive/unapproved negatives; mocked apply_remote rejects before Wrangler if migration is unapproved, SHA authorization is absent/mismatched, or its policy entry is removed.",
     "guard_pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
     "status": "PREPARED_UNMERGED_AWAITING_HUMAN_AUTHORIZATION",
     "remote_migration_applied": false,
     "worker_published": false,
-    "next_action": "Await Human review/authorization for exact remote migration. No merge of PR #63, remote migration, Worker deploy or M3."
+    "next_action": "Complete exact-head CI and all three requested read-only reviews. If PASS, await separate protected-merge authorization; remote migration remains a later Human Gate.",
+    "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required for 0015, must equal GITHUB_SHA and current origin/main; the guard fails closed if the policy field is absent."
   }
 }

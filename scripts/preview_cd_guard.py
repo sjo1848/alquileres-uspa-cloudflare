@@ -18,6 +18,9 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "apps/worker"
 CANONICAL_UUID = re.compile(r"^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$")
+CANONICAL_SHA = re.compile(r"^[0-9a-f]{40}$")
+MIGRATION_0015_NAME = "0015_listing_change_revisions.sql"
+MIGRATION_0015_AUTHORIZATION_ENV = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
 PROVENANCE = ROOT / ".orchestration/evidence/CF-AU-PREVIEW-D1-PROVENANCE.json"
 MIGRATIONS = ROOT / ".orchestration/evidence/preview-migration-allowlist.json"
 TARGET = {
@@ -599,6 +602,7 @@ def apply_remote(config: str) -> None:
     if not pending:
         print("PASS: no remote migration pending")
         return
+    _require_remote_migration_authorization(pending)
     # Wrangler applies each migration atomically and captures its provider backup in CI.
     command = ["npx", "--no-install", "wrangler", "d1", "migrations", "apply", "DB", "--remote", "--config", config]
     run_captured(command, WORKER, timeout=240)
@@ -606,6 +610,31 @@ def apply_remote(config: str) -> None:
         raise PolicyError("remote migration verification found unapplied migrations")
     verify_provenance(config)
     print("PASS: approved migration applied to the pinned synthetic Preview D1")
+
+
+def authorize_remote(config: str) -> None:
+    pending = verify_migrations(config, MIGRATIONS, local=False)
+    _require_remote_migration_authorization(pending)
+    print("PASS: pending remote migrations have explicit authorization")
+
+
+def _require_remote_migration_authorization(pending: list[str]) -> None:
+    allowlist = _load_json(MIGRATIONS)
+    allowed = {item["name"]: item for item in allowlist.get("migrations", [])}
+    for name in pending:
+        policy = allowed.get(name, {})
+        approval_env = policy.get("remote_authorization_env")
+        if name == MIGRATION_0015_NAME and approval_env != MIGRATION_0015_AUTHORIZATION_ENV:
+            raise PolicyError("migration 0015 requires its separate SHA-bound authorization policy")
+        if approval_env is None:
+            continue
+        if not isinstance(approval_env, str) or not re.fullmatch(r"CF_PREVIEW_MIGRATION_[A-Z0-9]+_AUTHORIZED_SHA", approval_env):
+            raise PolicyError(f"invalid separate remote-authorization variable for migration {name}")
+        approved_sha = os.environ.get(approval_env, "")
+        current_sha = os.environ.get("GITHUB_SHA", "")
+        if not CANONICAL_SHA.fullmatch(current_sha) or approved_sha != current_sha:
+            raise PolicyError(f"separate human authorization for migration {name} must equal the current main SHA")
+        verify_latest_main(current_sha)
 
 
 def verify_latest_main(current_sha: str) -> None:
@@ -649,6 +678,8 @@ def main() -> int:
     backup.add_argument("--persist-to", type=Path, required=True)
     remote = subs.add_parser("apply-remote")
     remote.add_argument("--config", default="wrangler.preview-migrations-ci.jsonc")
+    authorize = subs.add_parser("authorize-remote")
+    authorize.add_argument("--config", default="wrangler.preview-migrations-ci.jsonc")
     latest = subs.add_parser("latest-main")
     latest.add_argument("--sha", required=True)
     subs.add_parser("current-preview")
@@ -682,6 +713,8 @@ def main() -> int:
             backup_and_rehearse(args.config, args.backup, args.persist_to)
         elif args.command == "apply-remote":
             apply_remote(args.config)
+        elif args.command == "authorize-remote":
+            authorize_remote(args.config)
         elif args.command == "latest-main":
             verify_latest_main(args.sha)
         elif args.command == "current-preview":
