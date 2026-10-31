@@ -20,10 +20,24 @@ type ReviewItem = {
 };
 type ReviewCursor = { createdAt: string; id: string };
 type ReviewPage = { items: ReviewItem[]; nextCursor: ReviewCursor | null };
+type ChangeRevision = {
+  listingId:string; state:'SUBMITTED'|'APPROVED'; version:number;
+  ownerEmail:string; publicationStatus:'PUBLISHED';
+  fields:Record<string,string|number|null>;
+  currentTitle:string;currentDescription:string;currentLocation:string;
+  currentPriceAmount:number;currentPricePeriod:string;currentRentalDuration:string;currentMaxOccupants:number;currentCurrency:string;
+  currentDepositStatus:string|null;currentDepositAmount:number|null;currentDepositCurrency:string|null;
+  currentInternetIncluded:string|null;currentWaterIncluded:string|null;currentElectricityIncluded:string|null;
+  currentGasIncluded:string|null;currentPetsPolicy:string|null;currentAvailableFrom:string|null;
+};
+type RevisionCursor = { updatedAt:string; listingId:string };
 type Audit = { id: string; entityType: string; entityId: string | null; listingId: string | null; action: string; reason: string | null; createdAt: string; actor: { email: string }; targetOwner: { email: string } | null };
 
 const session = useSession();
 const queue = ref<ReviewItem[]>([]), audit = ref<Audit[]>([]);
+const changeRevisions=ref<ChangeRevision[]>([]),revisionsLoading=ref(false),revisionBusy=ref(false),revisionError=ref(''),revisionNotice=ref('');
+const revisionCursor=ref<RevisionCursor|null>(null);
+const revisionReasons=ref<Record<string,string>>({});
 const nextCursor = ref<ReviewCursor | null>(null);
 const selectedId = ref(''), reason = ref(''), busy = ref(false), loading = ref(true), auditLoading = ref(false);
 const error = ref(''), auditError = ref(''), notice = ref(''), compact = ref(false), mobileDetailOpen = ref(false);
@@ -76,7 +90,63 @@ async function load(append = false) {
     if (generation === requestGeneration) loading.value = false;
   }
 }
-async function refresh() { await Promise.all([load(false), loadAudit()]); }
+async function loadRevisions(append=false){
+  revisionsLoading.value=true;revisionError.value='';
+  try{
+    const params=append&&revisionCursor.value?new URLSearchParams({afterUpdatedAt:revisionCursor.value.updatedAt,afterListingId:revisionCursor.value.listingId}):null;
+    const response=await session.apiRequest<{items:ChangeRevision[];nextCursor:RevisionCursor|null}>(`/admin/listings/revisions${params?`?${params}`:''}`);
+    changeRevisions.value=append?[...changeRevisions.value,...response.items.filter(item=>!changeRevisions.value.some(existing=>existing.listingId===item.listingId))]:response.items;
+    revisionCursor.value=response.nextCursor;
+  }
+  catch(e){revisionError.value=e instanceof Error?e.message:'No pudimos cargar las modificaciones pendientes.';}
+  finally{revisionsLoading.value=false;}
+}
+async function loadMoreRevisions(){if(!revisionsLoading.value&&revisionCursor.value)await loadRevisions(true);}
+const revisionLabels:Record<string,string>={
+  title:'Título',description:'Descripción',location:'Ubicación',priceAmount:'Precio',pricePeriod:'Periodicidad',
+  rentalDuration:'Duración',maxOccupants:'Capacidad',currency:'Moneda',depositStatus:'Depósito',
+  depositAmount:'Monto del depósito',depositCurrency:'Moneda del depósito',internetIncluded:'Internet',
+  waterIncluded:'Agua',electricityIncluded:'Electricidad',gasIncluded:'Gas',petsPolicy:'Mascotas',availableFrom:'Ingreso estimado',
+};
+function revisionDifferences(item:ChangeRevision){
+  const current:Record<string,string|number|null>={
+    title:item.currentTitle,description:item.currentDescription,location:item.currentLocation,priceAmount:item.currentPriceAmount,
+    pricePeriod:item.currentPricePeriod,rentalDuration:item.currentRentalDuration,maxOccupants:item.currentMaxOccupants,
+    currency:item.currentCurrency,depositStatus:item.currentDepositStatus,depositAmount:item.currentDepositAmount,
+    depositCurrency:item.currentDepositCurrency,internetIncluded:item.currentInternetIncluded,waterIncluded:item.currentWaterIncluded,
+    electricityIncluded:item.currentElectricityIncluded,gasIncluded:item.currentGasIncluded,petsPolicy:item.currentPetsPolicy,
+    availableFrom:item.currentAvailableFrom,
+  };
+  return Object.entries(revisionLabels).filter(([key])=>(item.fields[key]??null)!==(current[key]??null)).map(([key,label])=>({
+    key,label,before:String(current[key]??'No informado'),after:String(item.fields[key]??'No informado'),
+  }));
+}
+async function decideRevision(item:ChangeRevision,action:'approve'|'reject'){
+  if(revisionBusy.value)return;
+  const reason=revisionReasons.value[item.listingId]?.trim()??'';
+  if(action==='reject'&&reason.length<3){revisionError.value='Escribí un motivo de rechazo de al menos tres caracteres.';return;}
+  revisionBusy.value=true;revisionError.value='';revisionNotice.value='';
+  try{
+    await session.apiRequest(`/admin/listings/${encodeURIComponent(item.listingId)}/revision/review`,{
+      method:'POST',body:JSON.stringify({action,expectedVersion:item.version,...(action==='reject'?{reason}:{})}),
+    });
+    revisionNotice.value=action==='approve'?'Revisión aprobada; aún no se publicó.':'Revisión rechazada; la publicación actual se conserva.';
+    await Promise.all([loadRevisions(),loadAudit()]);
+  }catch(e){revisionError.value=e instanceof Error?e.message:'No se pudo revisar el cambio.';}
+  finally{revisionBusy.value=false;}
+}
+async function publishRevision(item:ChangeRevision){
+  if(revisionBusy.value)return;revisionBusy.value=true;revisionError.value='';revisionNotice.value='';
+  try{
+    await session.apiRequest(`/admin/listings/${encodeURIComponent(item.listingId)}/revision/publish`,{
+      method:'POST',body:JSON.stringify({expectedVersion:item.version}),
+    });
+    revisionNotice.value='Cambios publicados sobre el mismo alojamiento.';
+    await Promise.all([loadRevisions(),loadAudit(),load(false)]);
+  }catch(e){revisionError.value=e instanceof Error?e.message:'No se pudieron publicar los cambios.';}
+  finally{revisionBusy.value=false;}
+}
+async function refresh() { await Promise.all([load(false), loadAudit(),loadRevisions()]); }
 async function loadMore() { if (!loading.value && nextCursor.value) await load(true); }
 async function selectListing(id: string) {
   if (busy.value) return;
@@ -131,7 +201,7 @@ function statusClass(item: ReviewItem) {
   return item.status === 'SUBMITTED' ? 'is-review' : item.publicationStatus === 'PUBLISHED' ? 'is-published' : 'is-approved';
 }
 function imageSrc(url: string) { return url.startsWith('/media/catalog/') ? url : apiUrl(url); }
-onMounted(() => { mediaQuery = window.matchMedia('(max-width: 48rem)'); setCompact(); mediaQuery.addEventListener('change', setCompact); void Promise.all([load(), loadAudit()]); });
+onMounted(() => { mediaQuery = window.matchMedia('(max-width: 48rem)'); setCompact(); mediaQuery.addEventListener('change', setCompact); void Promise.all([load(), loadAudit(), loadRevisions()]); });
 onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
 </script>
 
@@ -148,6 +218,39 @@ onBeforeUnmount(() => mediaQuery?.removeEventListener('change', setCompact));
     </div>
     <p v-if="notice" class="admin-feedback is-success" role="status">{{ notice }}</p>
     <p v-if="error" class="admin-feedback is-error" role="alert">{{ error }} <button v-if="error.includes('Actualizá')" type="button" class="admin-inline-button" :disabled="loading || busy" @click="load(false)">Actualizar cola</button></p>
+
+    <section class="admin-audit-panel" aria-labelledby="admin-change-revisions-title">
+      <header class="admin-panel-heading">
+        <div><p class="admin-eyebrow">Cambios en anuncios existentes</p><h2 id="admin-change-revisions-title">Revisiones de propietarios</h2><p>La ficha pública se mantiene vigente hasta que publiques los cambios aprobados.</p></div>
+      <button type="button" class="admin-button admin-button-secondary" :disabled="revisionsLoading||revisionBusy" @click="loadRevisions()">{{ revisionsLoading?'Cargando…':'Actualizar revisiones' }}</button>
+      </header>
+      <p v-if="revisionNotice" class="admin-feedback is-success" role="status">{{ revisionNotice }}</p>
+      <p v-if="revisionError" class="admin-feedback is-error" role="alert">{{ revisionError }}</p>
+      <p v-if="revisionsLoading" role="status" class="admin-muted-note">Cargando cambios pendientes…</p>
+      <p v-else-if="!changeRevisions.length" role="status" class="admin-muted-note">No hay cambios pendientes para revisar o publicar.</p>
+      <div v-for="revision in changeRevisions" :key="revision.listingId" class="admin-decision-box">
+        <div class="admin-detail-heading">
+          <div><h3>{{ revision.fields.title }}</h3><p class="admin-muted-note">Propietario: {{ revision.ownerEmail }} · Publicación vigente visible</p></div>
+          <span class="admin-status-pill" :class="revision.state==='SUBMITTED'?'is-review':'is-approved'">{{ revision.state==='SUBMITTED'?'Cambios en revisión':'Cambios aprobados · pendientes de publicación' }}</span>
+        </div>
+        <p class="admin-muted-note">Compará la ficha actual con los cambios propuestos. La aprobación sola no altera la publicación.</p>
+        <dl class="admin-property-facts">
+          <div v-for="change in revisionDifferences(revision)" :key="change.key"><span>{{ change.label }}</span><strong>Actual: {{ change.before }}</strong><span>Propuesto: {{ change.after }}</span></div>
+          <div v-if="!revisionDifferences(revision).length"><strong>Sin diferencias respecto de la ficha actual</strong></div>
+        </dl>
+        <template v-if="revision.state==='SUBMITTED'">
+          <label class="admin-field"><span>Motivo del rechazo (solo para rechazar)</span><textarea v-model="revisionReasons[revision.listingId]" rows="2" maxlength="1000" /></label>
+          <div class="admin-decision-actions">
+            <button type="button" class="admin-button admin-button-primary" :disabled="revisionBusy" @click="decideRevision(revision,'approve')">Aprobar cambios</button>
+            <button type="button" class="admin-button admin-button-danger" :disabled="revisionBusy||(revisionReasons[revision.listingId]?.trim().length??0)<3" @click="decideRevision(revision,'reject')">Rechazar con motivo</button>
+          </div>
+        </template>
+        <div v-else class="admin-decision-actions">
+          <button type="button" class="admin-button admin-button-primary" :disabled="revisionBusy" @click="publishRevision(revision)">Publicar cambios aprobados</button>
+        </div>
+      </div>
+      <button v-if="revisionCursor" type="button" class="admin-button admin-button-secondary admin-load-more" :disabled="revisionsLoading||revisionBusy" @click="loadMoreRevisions">{{ revisionsLoading?'Cargando…':'Cargar más revisiones' }}</button>
+    </section>
 
     <div class="admin-moderation-layout">
       <aside class="admin-queue-panel" :class="{ 'is-mobile-hidden': compact && mobileDetailOpen }" aria-labelledby="admin-queue-title">

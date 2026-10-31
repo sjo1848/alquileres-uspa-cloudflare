@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `AWAITING_HUMAN_AUTHORIZATION`
-Phase: `MVP_M2_1_REMOTE_PREFLIGHT`
-Active task: `M2.1 remote migration preflight (Issue #58)`
+State: `READY_FOR_HUMAN_REVIEW`
+Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
+Active task: `M2.1 OWNER published revisions (Issue #61)`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2073,3 +2073,77 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Guard tests are reconciled to 32/32, Python compilation and consistency/diff checks PASS. GitHub Actions run `40579143017` on artifact `f26df3033591fd40e8dac559cded50637f889c95`: `worker`/`web` SUCCESS; `staging-private` SKIPPED. Branch protection requires those checks and enforces admins; it requires zero approving reviews. No automated review record was observed and none is claimed.
 - Controller review on the exact artifact returned REWORK P2 only for the stale test count; this was corrected in the status-only follow-up, with no migration-guard code finding. **No final Controller PASS is claimed.** Runtime reports and provenance are preserved in `evidence/critics/MVP-M2.1-MIGRATION-CONTROLLER-REWORK-F26DF30.md`.
 - **Human Gate:** PR #60 remains open and unmerged. Await explicit authorization to merge/apply exactly 0014 to the synthetic D1. Preview publication is a separate gate. No M2.2/M3.
+
+
+## Event 259 — M2.1 PR #62 consolidated rework
+
+- Issue #61 and its contract remain the active scope; product behavior remains OWNER private revision → ADMIN review → separate publication. The contract now explicitly limits this revision flow to `APPROVED/PUBLISHED`; `APPROVED/UNPUBLISHED` remains on the existing initial-publication path. API, queue, and D1 triggers fail closed for revisions before first publication. ADMIN revision discovery is cursor-paginated beyond 100 records.
+- Candidate executable commit `31637ad3bd24c67420982aed3ecad49abc5e500c`, tree `577af73dfaa487f8d6572b8e733446f415b0de43`, based on `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`. Local D1 `listing-management` 21/21; Worker typecheck PASS; web typecheck/build/build:preview PASS. Tests cover simultaneous CAS changes, injected audit failures with rollback and safe retry, permission boundaries, rejected revision re-edit, first-publication boundary, 101-row ADMIN pagination, public visibility, MONTH/WEEK compatibility, and D1 BLOB/static photo/contact-event preservation.
+- Previous reviewers returned substantive REWORK: Critic and Controller identified undefined `APPROVED/UNPUBLISHED` behavior; Integration Review additionally identified an unpaginated 100-row ADMIN revision queue and stale Issue/contract status. Product boundary is now explicit and tested; cursor pagination and UI load-more are implemented. Canonical Issue status will be reconciled with the review-ready result after final checks.
+- Exact-head CI and fresh Critic, Integration Review and GPT-6 Luna High read-only Controller reviews are pending for the consolidated candidate. Prior exact run `40803155254` applies only to `576b4b1` and is not claimed for this rework.
+- No remote migration, Preview/deployment, Access/CD, production, real data, paid resource, source-repository write, merge, or M3 work.
+- **Next action:** publish the canonical checkpoint in PR #62; confirm GitHub worker/web CI on its exact SHA; repeat all three requested reviews on that same SHA, repair substantive findings, then leave PR #62 DRAFT and ready for Human review.
+
+
+## Event 260 — M2.1 availability/revision consistency rework
+
+- Previous exact Controller review on `7db8f146a991d9bb90c2b5a3f49466c11793961d` found P1: OWNER availability/reconfirmation updated listing `updated_at`, invalidating the revision's `base_updated_at` and stranding a submitted proposal.
+- Repaired in executable commit `8dec013f7daff09fc82837d190a7845599178f68`, tree `c4fc1358f15598c529dea8b6a36f13730629d8c2`, based on `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`. Availability/reconfirmation now atomically updates the revision baseline only when it still matches the locked listing version; D1 assertion failure rolls back both writes. The OWNER UI tracks the new `updatedAt`. Tests prove rollback, safe retry, ADMIN rejection/re-edit/approval and successful publication after availability changes.
+- Local D1 `listing-management` 22/22; Worker typecheck PASS; Web typecheck/build/build:preview PASS; `git diff --check` PASS. Exact GitHub CI and final Critic/Integration/Controller reviews are pending after publication. Previous review verdicts apply to prior SHA only and are preserved as history, not carried forward.
+- No remote D1, migration `0015`, Preview/deployment, Access/CD, production, paid services, real data, source repo writes, merge or M3.
+- **Next action:** publish this functional rework and canonical checkpoint to PR #62, wait for exact-head worker/web CI, then run the three final independent reviews against the same exact GitHub HEAD and repair substantive findings; keep the PR DRAFT for Human review.
+
+
+## Event 261 — final CI/review boundary for PR #62
+
+- P1 availability/reconfirmation rework is committed as executable `8dec013f7daff09fc82837d190a7845599178f68`, tree `c4fc1358f15598c529dea8b6a36f13730629d8c2`; local D1 management tests are 22/22, Worker typecheck PASS, Web typecheck/build/build:preview PASS. The tracking checkpoint at `297cd11b022cfb806faf03dc73de7249016c0662` has been published to PR #62; a fresh exact-head CI is required after this canonical checkpoint.
+- Prior Critic PASS, Integration REWORK/P2 and Controller REWORK/P1 on `7db8f14` are historical only; their P2/P1 findings were repaired in later executable commits. No final verdict is claimed for the current branch.
+- **Next action:** derive the live PR #62 HEAD, require exact-head worker/web CI, then obtain final Critic, Integration Review and GPT-6 Luna High read-only Controller on that same exact SHA. Leave PR DRAFT for Human review; no merge, remote migration, deploy or M3.
+
+
+## Event 262 — exact CI PASS, canonical checkpoint reconciliation
+
+- Exact run `40804803035` completed SUCCESS on candidate `6e12dc40add72fe0943171cc64a1c040b4f24148`, tree `e114c0beb11e65e8b79646234d1c028e80fe9cd7`: Worker/Web SUCCESS; `staging-private` SKIPPED. Issue #61 now records that SHA, the exact CI result, local D1 `listing-management` 22/22 and local builds.
+- Executable code remains `8dec013f7daff09fc82837d190a7845599178f68`, tree `c4fc1358f15598c529dea8b6a36f13730629d8c2`. This follow-up reconciles `STATE.md`/`STATUS.json` to the exact completed run and availability P1 repair; it changes no application code. Since CI triggers on the functional PR branch, require a fresh worker/web run on the resulting tracking HEAD.
+- Critic review of `6e12dc4` found no code-level rework but correctly withheld final verdict while exact CI was running. Integration's prior `BLOCKED` was caused by its read-only session being unable to query GitHub; source findings are being addressed by this canonical reconciliation and current GitHub evidence. Final reviewers must evaluate the next exact HEAD and actual check status.
+- **Next action:** publish this checkpoint; verify exact worker/web CI; run Critic, Integration Review and GPT-6 Luna High read-only Controller on the resulting exact GitHub SHA. No merge, remote migration, deploy, Access/CD, production, paid resources, source writes, real data or M3.
+
+
+## Event 263 — PR #62 final review checkpoint
+
+- GitHub PR #62 is OPEN/DRAFT, based on `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`; tracking HEAD `e15a870a95da41336a285e206ff2a8ddebf7c601`, tree `e749382a366dd072f9daac29d3bd863a34120247`. The unchanged executable candidate is `8dec013f7daff09fc82837d190a7845599178f68` / tree `c4fc1358f15598c529dea8b6a36f13730629d8c2`.
+- Exact Quick checks run `40805091849` on tracking HEAD `e15a870`: `worker` and `web` SUCCESS; `staging-private` SKIPPED. It ran Worker typecheck, all worker suites including `test:management`, Python tests and orchestration validator; Web typecheck/build/build:preview. Local D1 management remains 22/22, with all requested concurrency, transaction/rollback/retry, permission, rejection, monthly/weekly, photo/contact retention, first-publication, pagination, and availability/reconfirmation regressions.
+- Previous final-review attempts on `6e12dc4` were blocked by then-running CI or unavailable live GitHub evidence; they are not final verdicts. The active Issue #61 status update records the live PR/CI evidence. Final Critic, Integration Review, and delegated read-only Controller must inspect one exact current PR HEAD before readiness is claimed.
+- **Next action:** verify exact-head worker/web CI and all three review verdicts for the current PR #62 HEAD, repair only substantive findings and repeat affected controls. Leave PR OPEN/DRAFT for Human review. No merge, remote migration, Preview/deployment, Access/CD, production, paid services, real data, source-repository writes, or M3.
+
+
+## Event 264 — tracking checkpoint and exact checks reconciled
+
+- GitHub PR #62 was verified OPEN/DRAFT at `c9426dd32e1277dc320f993edc43d337e822c387`, tree `e656b217410017dc1e54e12d7de5295df65bb7ef`, based on `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`. Its executable candidate remains `8dec013f7daff09fc82837d190a7845599178f68` / `c4fc1358f15598c529dea8b6a36f13730629d8c2`; the only intervening deltas are canonical status/evidence updates.
+- Exact Quick checks run `40805323428` passed on `c9426dd`: Worker/Web SUCCESS; `staging-private` SKIPPED. Local D1 `listing-management` remains 22/22, and the exact CI ran the complete Worker/Web quick suite plus canonical-state validation.
+- The native project_controller attempt was `BLOCKED_MODEL_CONFIG` because its sandbox was not technically read-only; it is not a technical PASS. A separate `codex exec` Controller review is required by the runtime-correction decision, alongside final Critic and Integration Review on the resulting exact tracking HEAD.
+- **Next action:** publish/verify the current state-only tracking checkpoint, require exact-head Quick checks, then complete final Critic, Integration Review and separate GPT-6 Luna High read-only Controller. Leave PR OPEN/DRAFT for Human review; no merge, remote migration/deploy, production, or M3.
+
+
+## Event 265 — publication/availability race rework and regression
+
+- Critic on PR #62 `3e0ba1a5f61cd5c98105743b98177d323e7f03e1` reported P1 that revision publication could overwrite a concurrent availability/reconfirmation update. Inspection shows the reviewed code already obtains the shared listing lease before rereading listing/revision, and the write checks the locked `updated_at` plus lease token; availability uses the same lease. The specific interleaving in that report cannot occur. To make the guard executable and reproducible, `listing-management.test.ts` now pauses ADMIN publication after its pre-lock listing/media read, commits OWNER availability/reconfirmation, then resumes publication and verifies the rebased current values survive.
+- The contract now spells out that publish must take the shared lock and reread current state. Focused D1 management suite PASS 23/23 and Worker typecheck PASS; no production code change was needed for this finding. A fresh exact-head review is required; the Critic P1 is treated as addressed by source evidence and deterministic regression, not as a changed-code repair.
+- Integration Review on `3e0ba1a` found a P2 tracking mismatch: its canonical files still named the prior checkpoint `c9426dd` / run `40805323428`. This rework reconciles tracking with `3e0ba1a` / run `40805784116` in the same functional PR and records the review response. The Issue #61 current-status comment is kept in sync after final CI.
+- **Next action:** run full quick CI on the resulting PR #62 HEAD, then repeat Critic, Integration Review and separate GPT-6 Luna High read-only Controller on that exact SHA. Leave PR OPEN/DRAFT for Human review. No merge, remote migration, Preview/deploy, Access/CD, production, real data or M3.
+
+
+## Event 266 — PR #62 review checkpoint reconciled to regression candidate
+
+- PR #62 tracking candidate `f9e60136527574ac266efd8451dee9a142327b97`, tree `17d0d69c776c90744605d31f70c69552e7e76fb3`, base `main@5feecd42634a50b192fb1aa66a1a8c08ec3806e1`; exact Quick checks `40806351648`: worker/web SUCCESS, staging-private SKIPPED. It includes the deterministic publish/availability concurrency regression; local `listing-management` is 23/23 and Worker typecheck PASS.
+- Critic's reported P1 scenario was checked against the code: revision publication acquires the same listing lease before rereading listing/revision, and its update checks the current timestamp plus lease token; availability uses the same lease. The described unprotected interleaving cannot happen. The new regression pauses after the pre-lock read, commits availability, resumes publication, and verifies the latest availability/confirmation survives.
+- Integration's P2 was canonical tracking lag (`STATE/STATUS` still named `3e0ba1a` / run `40805784116`). This checkpoint records `f9e6013` / run `40806351648`. The native Controller attempt was `BLOCKED_MODEL_CONFIG` because its sandbox was not technically read-only; use the separate read-only `codex exec` procedure.
+- **Next action:** run exact Quick checks for this tracking reconciliation, then complete Critic, Integration Review and separate GPT-6 Luna High read-only Controller on the exact resulting PR HEAD. Leave PR OPEN/DRAFT for Human review; no merge, remote migration/deploy, production or M3.
+
+
+## Event 267 — M2.1 technical review complete; awaiting Product Owner
+
+- Executable/test artifact `f9e60136527574ac266efd8451dee9a142327b97` / tree `17d0d69c776c90744605d31f70c69552e7e76fb3` is technically ready. PR #62 current tracking HEAD before this closeout `fe973017677ddf9692b50ff85c1ee99e819f21b5` / tree `e5748f74ff1575fefa08b4fac175535bcebe86f4` differs from f9 only in STATE/STATUS.
+- CI on f9 run `40806351648` and tracking checkpoint run `40806767272` both passed: worker/web SUCCESS, staging-private SKIPPED. Local D1 management tests 23/23, Worker typecheck PASS, Web typecheck/build/build:preview PASS, canonical validator and diff check PASS.
+- **Critic PASS**, **Integration Review PASS**, and **Controller PASS** on exact executable/test SHA f9. The Controller was a separate `codex exec` process with GPT-6 Luna / High and `--sandbox read-only` requested and accepted; backend identity remains UNVERIFIED. The native subagent attempt was BLOCKED_MODEL_CONFIG for unenforced read-only and is not counted. Review results are recorded in Issue #61's latest status comment.
+- Technical blocker: none. **Next action:** Product Owner reviews PR #62 (left OPEN/DRAFT). No merge, remote D1 migration, Preview/deployment, production, or M3 without separate authorization.

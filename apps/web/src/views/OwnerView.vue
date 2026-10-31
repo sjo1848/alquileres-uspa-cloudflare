@@ -9,7 +9,8 @@ type DepositStatus='NOT_INFORMED'|'ASK_OWNER'|'NOT_REQUIRED'|'FIXED_AMOUNT';
 type ServiceInclusion='INCLUDED'|'NOT_INCLUDED'|'NOT_INFORMED';
 type PetsPolicy='ALLOWED'|'NOT_ALLOWED'|'ASK_OWNER'|'NOT_INFORMED';
 type Fields = { title:string; description:string; location:string; priceAmount:number; currency:Currency; pricePeriod:PricePeriod; rentalDuration:RentalDuration; maxOccupants:number; depositStatus:DepositStatus; depositAmount:number|null; depositCurrency:Currency|null; internetIncluded:ServiceInclusion; waterIncluded:ServiceInclusion; electricityIncluded:ServiceInclusion; gasIncluded:ServiceInclusion; petsPolicy:PetsPolicy; availableFrom:string|null };
-type Listing = Omit<Fields,'depositStatus'|'depositAmount'|'depositCurrency'|'internetIncluded'|'waterIncluded'|'electricityIncluded'|'gasIncluded'|'petsPolicy'|'availableFrom'> & { depositStatus:DepositStatus|null; depositAmount:number|null; depositCurrency:Currency|null; internetIncluded:ServiceInclusion|null; waterIncluded:ServiceInclusion|null; electricityIncluded:ServiceInclusion|null; gasIncluded:ServiceInclusion|null; petsPolicy:PetsPolicy|null; availableFrom:string|null; id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null };
+type Listing = Omit<Fields,'depositStatus'|'depositAmount'|'depositCurrency'|'internetIncluded'|'waterIncluded'|'electricityIncluded'|'gasIncluded'|'petsPolicy'|'availableFrom'> & { depositStatus:DepositStatus|null; depositAmount:number|null; depositCurrency:Currency|null; internetIncluded:ServiceInclusion|null; waterIncluded:ServiceInclusion|null; electricityIncluded:ServiceInclusion|null; gasIncluded:ServiceInclusion|null; petsPolicy:PetsPolicy|null; availableFrom:string|null; id:string; status:'DRAFT'|'REJECTED'|'SUBMITTED'|'APPROVED'; rejectionReason:string|null; publicationStatus:string; availabilityStatus:'AVAILABLE'|'UNAVAILABLE'; lastConfirmedAt:string|null; updatedAt:string };
+type OwnerRevision = { listingId:string; state:'DRAFT'|'SUBMITTED'|'REJECTED'|'APPROVED'|'APPLIED'; version:number; baseUpdatedAt:string; rejectionReason:string|null; fields:Fields };
 type Image = { id:string; originalName:string; contentType:string; sizeBytes:number; position:number; createdAt?:string; source?:'STATIC_ASSET'|'OWNER_UPLOAD' };
 type ContactEvent = { id:string; state:'UNREAD'|'READ'; visitorName:string; visitorEmail:string; message:string; createdAt:string; listing:{id:string;title:string;location:string} };
 type OwnerSection = 'information'|'photographs'|'availability';
@@ -17,6 +18,8 @@ const MAX_IMAGE_BYTES=1_800_000, MAX_IMAGES=20;
 const MAX_IMAGE_WIDTH=640,MAX_IMAGE_HEIGHT=480;
 const session=useSession(), listings=ref<Listing[]>([]), selectedId=ref<string|null>(null);
 const creating=ref(false);
+const ownerRevision=ref<OwnerRevision|null>(null),revisionLoading=ref(false),revisionLoadError=ref(''),revisionBaseUpdatedAt=ref('');
+let revisionLoadSequence=0;
 const busy=ref(false), loading=ref(true), error=ref(''), notice=ref('');
 const images=ref<Image[]>([]),imagesLoading=ref(false),imagesLoadError=ref(''),imageBusy=ref<'upload'|'delete'|'reorder'|null>(null);
 const contacts=ref<ContactEvent[]>([]), unreadContacts=ref(0), contactsLoading=ref(false), contactBusy=ref('');
@@ -36,16 +39,18 @@ const listingsLoadError=ref('');
 const selected=computed(()=>listings.value.find(x=>x.id===selectedId.value));
 const visibleListings=computed(()=>statusFilter.value==='ALL'?listings.value:listings.value.filter(item=>item.status===statusFilter.value));
 const listingCounts=computed(()=>({all:listings.value.length,drafts:listings.value.filter(item=>item.status==='DRAFT'||item.status==='REJECTED').length,review:listings.value.filter(item=>item.status==='SUBMITTED').length,published:listings.value.filter(item=>item.status==='APPROVED'&&item.publicationStatus==='PUBLISHED').length}));
-const nextStep=computed(()=>{if(!selected.value)return 'Elegí una publicación o empezá un nuevo borrador.';if(selected.value.status==='REJECTED')return 'Revisá el motivo, corregí los datos y volvé a enviarla.';if(selected.value.status==='DRAFT')return dirty.value?'Guardá tus cambios para continuar.':'Completá la publicación y enviála a revisión cuando esté lista.';if(selected.value.status==='SUBMITTED')return 'El equipo está revisando esta publicación. Te avisaremos cuando cambie.';if(selected.value.publicationStatus==='PUBLISHED')return 'Tu alojamiento está publicado. Revisá la disponibilidad cuando cambie.';return 'La publicación fue aprobada y está pendiente de publicación.';});
+const nextStep=computed(()=>{if(!selected.value)return 'Elegí una publicación o empezá un nuevo borrador.';if(selected.value.status==='APPROVED'&&selected.value.publicationStatus!=='PUBLISHED')return 'La aprobación está completa; ADMIN debe publicar el alojamiento antes de habilitar revisiones de cambios.';if(selected.value.status==='APPROVED'&&ownerRevision.value?.state==='DRAFT')return 'Tus cambios están guardados de forma privada. Enviá la revisión al equipo cuando termines.';if(selected.value.status==='APPROVED'&&ownerRevision.value?.state==='REJECTED')return 'El equipo rechazó la revisión. Corregí los datos y volvé a enviarlos.';if(selected.value.status==='APPROVED'&&ownerRevision.value?.state==='SUBMITTED')return 'Tus cambios están en revisión. La publicación actual sigue visible.';if(selected.value.status==='APPROVED'&&ownerRevision.value?.state==='APPROVED')return 'Cambios aprobados. Esperando la publicación por ADMIN; el alojamiento actual sigue visible.';if(selected.value.status==='REJECTED')return 'Revisá el motivo, corregí los datos y volvé a enviarla.';if(selected.value.status==='DRAFT')return dirty.value?'Guardá tus cambios para continuar.':'Completá la publicación y enviála a revisión cuando esté lista.';if(selected.value.status==='SUBMITTED')return 'El equipo está revisando esta publicación. Te avisaremos cuando cambie.';if(selected.value.publicationStatus==='PUBLISHED')return 'Tu alojamiento está publicado. Revisá la disponibilidad cuando cambie.';return 'La publicación fue aprobada y está pendiente de publicación.';});
 const confirmedLabel=computed(()=>selected.value?.lastConfirmedAt?new Date(selected.value.lastConfirmedAt).toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Argentina/Mendoza'}):'Todavía no confirmaste la disponibilidad.');
-const canEdit=computed(()=>!selected.value||['DRAFT','REJECTED'].includes(selected.value.status));
+const canManagePhotos=computed(()=>!selected.value||['DRAFT','REJECTED'].includes(selected.value.status));
+const canEdit=computed(()=>canManagePhotos.value||(selected.value?.status==='APPROVED'&&selected.value.publicationStatus==='PUBLISHED'&&!revisionLoading.value&&!revisionLoadError.value&&(!ownerRevision.value||['DRAFT','REJECTED','APPLIED'].includes(ownerRevision.value.state))));
 const ownerUploadsEnabled=computed(()=>session.mediaStrategy.value==='D1_BLOB');
 const hasRepositoryManagedImages=computed(()=>images.value.some(image=>image.source==='STATIC_ASSET'));
 const ownerCanUpload=computed(()=>ownerUploadsEnabled.value&&!imagesLoading.value&&!imagesLoadError.value&&!hasRepositoryManagedImages.value);
 const mutableImages=computed(()=>images.value.filter(image=>image.source!=='STATIC_ASSET'));
-const dirty=computed(()=>selected.value&&Object.keys(blank()).some(key=>form[key as keyof Fields]!==selected.value![key as keyof Fields]));
+const savedFields=computed(()=>selected.value?.status==='APPROVED'&&ownerRevision.value&&ownerRevision.value.state!=='APPLIED'?ownerRevision.value.fields:(selected.value??blank()));
+const dirty=computed(()=>selected.value&&Object.keys(blank()).some(key=>form[key as keyof Fields]!==savedFields.value[key as keyof Fields]));
 const unsaved=computed(()=>{
-  const baseline=selected.value??blank();
+  const baseline=savedFields.value;
   return selectedPhoto.value!==null||Object.keys(blank()).some(key=>form[key as keyof Fields]!==baseline[key as keyof Fields]);
 });
 let pendingCreate:{body:string;key:string}|undefined;
@@ -117,13 +122,24 @@ function choose(item?:Listing){
   activeOwnerSection.value='information';mobilePane.value='detail';
   const normalized=item?normalizeListing(item):undefined;
   selectedId.value=normalized?.id??null;
+  ownerRevision.value=null;revisionLoading.value=false;revisionLoadError.value='';revisionBaseUpdatedAt.value='';revisionLoadSequence++;
   Object.assign(form,normalized?Object.fromEntries(Object.keys(blank()).map(key=>[key,normalized[key as keyof Fields]])):blank());
   error.value='';notice.value='';pendingCreate=undefined;
   confirmReload.value=false;
   pendingSelection.value=null;
   confirmDelete.value=false;
   images.value=[];imagesLoading.value=false;imagesLoadError.value='';imageLoadVersion++;
-  if(item)void loadImages(item);
+  if(item){void loadImages(item);if(item.status==='APPROVED')void loadRevision(item);}
+}
+async function loadRevision(item:Listing){
+  const version=++revisionLoadSequence;revisionLoading.value=true;revisionLoadError.value='';
+  try{
+    const data=await session.apiRequest<{listingUpdatedAt:string;revision:OwnerRevision|null}>(`/listings/${encodeURIComponent(item.id)}/revision`);
+    if(version!==revisionLoadSequence||selectedId.value!==item.id)return;
+    ownerRevision.value=data.revision;revisionBaseUpdatedAt.value=data.listingUpdatedAt;
+    if(data.revision&&data.revision.state!=='APPLIED')Object.assign(form,data.revision.fields);
+  }catch(e){if(version===revisionLoadSequence){revisionLoadError.value='No pudimos cargar los cambios pendientes. Reintentá desde Actualizar lista.';error.value=message(e);}}
+  finally{if(version===revisionLoadSequence)revisionLoading.value=false;}
 }
 function changeDepositStatus(value:DepositStatus){form.depositStatus=value;if(value!=='FIXED_AMOUNT'){form.depositAmount=null;form.depositCurrency=null;}}
 function changePricePeriod(value:PricePeriod){form.pricePeriod=value;if(value==='WEEK'){Object.assign(form,{depositStatus:'NOT_INFORMED',depositAmount:null,depositCurrency:null,internetIncluded:'NOT_INFORMED',waterIncluded:'NOT_INFORMED',electricityIncluded:'NOT_INFORMED',gasIncluded:'NOT_INFORMED',petsPolicy:'NOT_INFORMED',availableFrom:null});}}
@@ -179,17 +195,17 @@ async function discardAndReload(){confirmReload.value=false;closeDialogFocus('re
 async function refreshSelected(){
   const item=selected.value;if(!item||busy.value||unsaved.value)return;
   busy.value=true;error.value='';notice.value='';
-  try{const current=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(item.id)}`);remember(current);await loadImages(current);notice.value='Publicación actualizada.';}
+  try{const current=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(item.id)}`);remember(current);if(current.status==='APPROVED')await loadRevision(current);await loadImages(current);notice.value='Publicación actualizada.';}
   catch(e){error.value=message(e);}
   finally{busy.value=false;}
 }
 async function removeListing(event?:MouseEvent){
-  const item=selected.value;if(!item||busy.value||!canEdit.value)return;
+  const item=selected.value;if(!item||busy.value||!canManagePhotos.value)return;
   confirmDelete.value=true;
   openDialog('listing-delete',listingDeleteDialog,event?.currentTarget instanceof HTMLElement?event.currentTarget:null);
 }
 async function confirmRemoveListing(){
-  const item=selected.value;if(!item||busy.value||!canEdit.value)return;
+  const item=selected.value;if(!item||busy.value||!canManagePhotos.value)return;
   confirmDelete.value=false;
   if(pendingListingDelete?.id!==item.id)pendingListingDelete={id:item.id,key:crypto.randomUUID()};
   busy.value=true;error.value='';notice.value='';
@@ -210,6 +226,10 @@ async function save(){
   busy.value=true;error.value='';notice.value='';
   const existing=selectedId.value,body=JSON.stringify({...form});
   try{
+    if(selected.value?.status==='APPROVED'){
+      const response=await session.apiRequest<{revision:OwnerRevision}>(`/listings/${encodeURIComponent(selected.value.id)}/revision`,{method:'PUT',body:JSON.stringify({fields:{...form},expectedVersion:ownerRevision.value?.version??0,baseUpdatedAt:revisionBaseUpdatedAt.value})});
+      ownerRevision.value=response.revision;notice.value='Borrador de cambios guardado. Tu publicación original sigue visible.';return;
+    }
     if(!existing&&pendingCreate?.body!==body)pendingCreate={body,key:crypto.randomUUID()};
     const item=await session.apiRequest<Listing>(existing?`/listings/${encodeURIComponent(existing)}`:'/listings',{
       method:existing?'PATCH':'POST',body,
@@ -223,6 +243,11 @@ async function submit(){
   if(!selected.value||busy.value||!canEdit.value||dirty.value)return;
   busy.value=true;error.value='';notice.value='';
   try{
+    if(selected.value.status==='APPROVED'){
+      if(!ownerRevision.value||ownerRevision.value.state!=='DRAFT'){error.value='Guardá una revisión antes de enviarla.';return;}
+      const response=await session.apiRequest<{revision:OwnerRevision}>(`/listings/${encodeURIComponent(selected.value.id)}/revision/submit`,{method:'POST',body:JSON.stringify({expectedVersion:ownerRevision.value.version})});
+      ownerRevision.value=response.revision;notice.value='Cambios enviados a revisión. Tu publicación sigue visible sin modificaciones.';return;
+    }
     const item=await session.apiRequest<Listing>(`/listings/${encodeURIComponent(selected.value.id)}/submit`,{method:'POST'});
     remember(item);notice.value='Publicación enviada a revisión.';
   }catch(e){error.value=message(e);}
@@ -237,7 +262,7 @@ async function upload(event:Event){
 }
 function discardSelectedPhoto(){if(selectedPhoto.value)URL.revokeObjectURL(selectedPhoto.value.previewUrl);selectedPhoto.value=null;}
 async function uploadSelectedPhoto(){
-  const file=selectedPhoto.value?.file,item=selected.value;if(!file||!item||!canEdit.value||busy.value)return;
+  const file=selectedPhoto.value?.file,item=selected.value;if(!file||!item||!canManagePhotos.value||busy.value)return;
   busy.value=true;imageBusy.value='upload';error.value='';notice.value='';
   try{
     const {image,name}=await normalizePhoto(file),bytes=await image.arrayBuffer(),digest=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
@@ -250,12 +275,12 @@ async function uploadSelectedPhoto(){
   }catch(e){error.value=imageMessage(e);}
   finally{busy.value=false;imageBusy.value=null;}
 }
-function requestRemoveImage(image:Image,event?:MouseEvent){if(!busy.value&&canEdit.value){pendingImageDelete.value=image;openDialog('image-delete',imageDeleteDialog,event?.currentTarget instanceof HTMLElement?event.currentTarget:null);}}
+function requestRemoveImage(image:Image,event?:MouseEvent){if(!busy.value&&canManagePhotos.value){pendingImageDelete.value=image;openDialog('image-delete',imageDeleteDialog,event?.currentTarget instanceof HTMLElement?event.currentTarget:null);}}
 function closeImageDelete(){pendingImageDelete.value=null;closeDialogFocus('image-delete');}
 function closeListingDelete(){confirmDelete.value=false;closeDialogFocus('listing-delete');}
 async function removeImage(){
   const image=pendingImageDelete.value;
-  const item=selected.value;if(!item||!image||busy.value||!canEdit.value)return;
+  const item=selected.value;if(!item||!image||busy.value||!canManagePhotos.value)return;
   busy.value=true;imageBusy.value='delete';error.value='';notice.value='';
   const keyScope=`delete:${item.id}:${image.id}`,key=imageMutationKey(keyScope);
   try{await session.apiRequest(`/listings/${encodeURIComponent(item.id)}/images/${encodeURIComponent(image.id)}`,{method:'DELETE',headers:{'Idempotency-Key':key}});imageKeys.delete(keyScope);pendingImageDelete.value=null;closeDialogFocus('image-delete','owner-images-title',true);await loadImages(item);notice.value='Imagen eliminada.';}
@@ -263,7 +288,7 @@ async function removeImage(){
   finally{busy.value=false;imageBusy.value=null;}
 }
 async function moveImage(image:Image,delta:number){
-  const item=selected.value;if(!item||busy.value||!canEdit.value)return;
+  const item=selected.value;if(!item||busy.value||!canManagePhotos.value)return;
   const position=image.position+delta;if(position<0||position>=mutableImages.value.length)return;
   const keyScope=`reorder:${item.id}:${image.id}:${position}`,key=imageMutationKey(keyScope);
   busy.value=true;imageBusy.value='reorder';error.value='';notice.value='';
@@ -276,8 +301,8 @@ async function fetchContactPage(cursor:ContactCursor|null){const params=new URLS
 async function loadContacts(cursor:ContactCursor|null=null,append=false){contactsLoading.value=true;contactsLoadError.value='';try{const result=await fetchContactPage(cursor);contacts.value=append?[...contacts.value,...result.items]:result.items;unreadContacts.value=result.unreadCount;nextContactCursor.value=result.nextCursor;}catch{contactsLoadError.value='No pudimos cargar tus consultas.';}finally{contactsLoading.value=false;}}
 async function setContactState(event:ContactEvent,state:'UNREAD'|'READ'){if(contactBusy.value)return;contactBusy.value=event.id;error.value='';try{await session.apiRequest(`/owner/contact-events/${encodeURIComponent(event.id)}/state`,{method:'PATCH',body:JSON.stringify({state})});const loaded=contacts.value.find(item=>item.id===event.id);if(loaded&&loaded.state!==state){unreadContacts.value=Math.max(0,unreadContacts.value+(state==='UNREAD'?1:-1));loaded.state=state;}notice.value=state==='READ'?'Consulta marcada como leída.':'Consulta marcada como no leída.';try{unreadContacts.value=(await fetchContactPage(null)).unreadCount;}catch{/* Keep the confirmed local update if refreshing the aggregate count fails. */}}catch{error.value='No pudimos actualizar el estado de la consulta.';}finally{contactBusy.value='';}}
 async function loadMoreContacts(){if(nextContactCursor.value)await loadContacts(nextContactCursor.value,true);}
-async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/availability`,{method:'PATCH',body:JSON.stringify({availabilityStatus:status})});Object.assign(item,updated);notice.value='Disponibilidad actualizada.';}catch{error.value='No pudimos actualizar la disponibilidad.';}finally{contactBusy.value='';}}
-async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
+async function updateAvailability(status:'AVAILABLE'|'UNAVAILABLE'){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/availability`,{method:'PATCH',body:JSON.stringify({availabilityStatus:status})});Object.assign(item,updated);if(item.status==='APPROVED')revisionBaseUpdatedAt.value=updated.updatedAt;notice.value='Disponibilidad actualizada.';}catch{error.value='No pudimos actualizar la disponibilidad.';}finally{contactBusy.value='';}}
+async function reconfirmAvailability(){const item=selected.value;if(!item||contactBusy.value)return;contactBusy.value='availability';error.value='';try{const updated=await session.apiRequest<Listing&{availabilityStatus:string;lastConfirmedAt:string|null}>(`/listings/${encodeURIComponent(item.id)}/reconfirm`,{method:'POST'});Object.assign(item,updated);if(item.status==='APPROVED')revisionBaseUpdatedAt.value=updated.updatedAt;notice.value='Disponibilidad confirmada.';}catch{error.value='No pudimos confirmar la disponibilidad.';}finally{contactBusy.value='';}}
 function resolvePendingLeave(leave:boolean){const resolve=resolveLeave;resolveLeave=null;confirmLeave.value=false;resolve?.(leave);if(!leave)closeDialogFocus('leave');else delete dialogReturnFocus.leave;}
 onBeforeRouteLeave(()=>{
   if(!session.isAuthenticated.value)return true;
@@ -371,6 +396,11 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <span class="owner-next-icon" aria-hidden="true">→</span>
             <div><h3 id="owner-next-step-title">Siguiente paso</h3><p>{{ nextStep }}</p></div>
           </section>
+          <p v-if="selected?.status==='APPROVED'&&selected.publicationStatus==='PUBLISHED'" class="owner-save-hint" role="status">Podés editar los datos de este alojamiento. Los cambios se guardan de forma privada y solo aparecen en la ficha cuando ADMIN los aprueba y publica.</p>
+          <p v-else-if="selected?.status==='APPROVED'&&selected.publicationStatus==='UNPUBLISHED'" class="owner-save-hint" role="status">Este alojamiento está aprobado y espera su primera publicación por ADMIN. Después de publicarse, vas a poder proponer cambios privados.</p>
+          <p v-if="revisionLoading" role="status" class="owner-save-hint">Cargando revisión del alojamiento…</p>
+          <p v-if="revisionLoadError" role="alert" class="error">{{ revisionLoadError }}</p>
+          <p v-if="ownerRevision?.rejectionReason" class="owner-rejection"><strong>Revisión rechazada</strong><span>{{ ownerRevision.rejectionReason }}</span></p>
           <p v-if="selected?.rejectionReason" class="owner-rejection"><strong>Observación del equipo</strong><span>{{ selected.rejectionReason }}</span></p>
           <p v-if="selectedPhoto" class="owner-pending-photo" role="status">Hay una foto seleccionada que todavía no se guardó. <button type="button" class="text-button" @click="selectOwnerSection('photographs')">Ir a fotografías</button></p>
 
@@ -418,14 +448,14 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
               <p class="owner-save-hint">Los servicios indican si están incluidos en el precio publicado, no si existen en la zona. La fecha es una estimación y no confirma disponibilidad.</p>
             </fieldset>
             <p v-if="selected && canEdit && dirty" class="owner-unsaved" role="status">Tenés cambios sin guardar. Guardalos antes de enviarlos a revisión o salir.</p>
-            <p v-else-if="selected && !canEdit" class="owner-save-hint">La información queda en modo lectura mientras el equipo revisa o publica este alojamiento.</p>
+            <p v-else-if="selected && !canEdit" class="owner-save-hint">Los cambios están en revisión o pendientes de publicación por ADMIN. La ficha actual sigue visible.</p>
             <p v-else-if="selected && canEdit" class="owner-save-hint">{{ formatRentalPrice(selected) }}</p>
             <div v-if="creating" class="owner-save-hint">Guardá el borrador para habilitar las secciones de fotografías y disponibilidad.</div>
             <div class="owner-form-actions">
               <button type="submit" :disabled="busy||loading||!canEdit">{{ busy?'Guardando…':selected?'Guardar cambios':'Guardar borrador' }}</button>
-              <button v-if="selected && canEdit" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing($event)">Eliminar borrador</button>
+              <button v-if="selected && canManagePhotos" type="button" class="secondary" :disabled="busy||loading||imageBusy!==null" @click="removeListing($event)">Eliminar borrador</button>
               <button v-if="canEdit && selected" type="button" class="secondary" :disabled="busy||loading||unsaved" @click="refreshSelected">Actualizar</button>
-              <button v-if="canEdit && selected" type="button" :disabled="busy||dirty||imagesLoading||selectedPhoto!==null" @click="submit">{{ busy?'Enviando…':'Enviar a revisión' }}</button>
+              <button v-if="canEdit && selected" type="button" :disabled="busy||dirty||imagesLoading||selectedPhoto!==null||(selected?.status==='APPROVED'&&ownerRevision?.state!=='DRAFT')" @click="submit">{{ busy?'Enviando…':'Enviar a revisión' }}</button>
             </div>
           </form>
 
@@ -435,19 +465,19 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',beforeUnload);res
             <p v-else-if="mediaConfigLoading" class="owner-section-copy" role="status">Comprobando las opciones disponibles para las fotos…</p>
             <p v-else class="owner-section-copy">{{ hasRepositoryManagedImages?'Esta publicación tiene fotos administradas desde el repositorio; no se pueden combinar con nuevas cargas.':ownerUploadsEnabled?'JPEG, PNG o WebP. Hasta 1,8 MB por foto; optimizamos a 640 × 480 px. Las fotos nuevas se guardan de forma privada.':session.mediaStrategy.value==='STATIC_ASSETS'?'Las fotos de esta publicación son administradas desde el repositorio y solo se pueden consultar desde acá.':'La gestión de fotos no está habilitada en este entorno.' }}</p>
             <p v-if="imagesLoadError" class="error" role="alert">{{ imagesLoadError }} <button type="button" class="secondary" :disabled="imagesLoading" @click="retryLoadImages">Reintentar carga de fotos</button></p>
-            <label v-if="canEdit&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Agregar fotografías<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
+            <label v-if="canManagePhotos&&ownerCanUpload&&images.length<MAX_IMAGES&&!selectedPhoto&&!mediaConfigLoading" class="owner-upload">Agregar fotografías<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="busy||loading" @change="upload" /></label>
             <div v-if="selectedPhoto" class="owner-photo-preview" aria-label="Vista previa de la foto seleccionada">
               <img :src="selectedPhoto.previewUrl" :alt="`Vista previa de ${selectedPhoto.file.name}`" width="640" height="480" />
               <div><strong>{{ selectedPhoto.file.name }}</strong><small>{{ formatImageSize(selectedPhoto.file.size) }} · Vista previa, todavía no guardada</small></div>
               <div class="owner-image-actions"><button type="button" :disabled="busy" @click="uploadSelectedPhoto">{{ imageBusy==='upload'?'Guardando…':'Guardar foto' }}</button><button type="button" class="secondary" :disabled="busy" @click="discardSelectedPhoto">Cancelar</button></div>
             </div>
             <p v-if="imagesLoading" role="status">Cargando fotos…</p>
-            <div v-else-if="!imagesLoadError&&!images.length" class="owner-photo-empty"><span aria-hidden="true">▧</span><div><strong>Todavía no hay fotografías</strong><p>{{ canEdit?'Elegí una foto para mostrar mejor tu alojamiento.':'Esta publicación no tiene fotos guardadas.' }}</p></div></div>
+            <div v-else-if="!imagesLoadError&&!images.length" class="owner-photo-empty"><span aria-hidden="true">▧</span><div><strong>Todavía no hay fotografías</strong><p>{{ canManagePhotos?'Elegí una foto para mostrar mejor tu alojamiento.':'Esta publicación no tiene fotos guardadas.' }}</p></div></div>
             <ul v-else-if="images.length" class="owner-image-grid" :aria-busy="imageBusy!==null">
               <li v-for="(image,index) in images" :key="image.id" class="owner-image-card" :class="{ 'is-cover':index===0 }">
                 <div class="owner-image-frame"><img :src="apiUrl(`/listings/${encodeURIComponent(selected.id)}/images/${encodeURIComponent(image.id)}`)" :alt="`Foto ${index+1} de ${selected.title}`" width="640" height="480" loading="lazy" /><span v-if="index===0" class="owner-cover-label">Portada</span></div>
                 <div class="owner-image-meta"><span><strong>{{ image.originalName }}</strong><small>{{ index+1 }} de {{ images.length }}<template v-if="image.source==='STATIC_ASSET'"> · Gestionada desde el repositorio</template></small></span><small>{{ formatImageSize(image.sizeBytes) }}</small></div>
-                <div v-if="canEdit&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image,$event)">Quitar</button></div>
+                <div v-if="canManagePhotos&&ownerUploadsEnabled&&image.source!=='STATIC_ASSET'" class="owner-image-actions"><button type="button" class="secondary" :disabled="busy||image.position===0" :aria-label="`Mover ${image.originalName} hacia arriba`" @click="moveImage(image,-1)">Subir</button><button type="button" class="secondary" :disabled="busy||image.position===mutableImages.length-1" :aria-label="`Mover ${image.originalName} hacia abajo`" @click="moveImage(image,1)">Bajar</button><button type="button" class="danger" :disabled="busy" :aria-label="`Eliminar ${image.originalName}`" @click="requestRemoveImage(image,$event)">Quitar</button></div>
               </li>
             </ul>
             <p v-if="selected.status==='APPROVED'&&images.length" class="owner-readonly-note">Las fotografías de una publicación aprobada se muestran en modo lectura.</p>
