@@ -11,8 +11,8 @@
   "next_action": "Complete exact-head Worker/Web CI and Independent Critic, Integration Review, and Controller on PR #63. If all PASS, leave it ready for separate protected-merge authorization. Remote migration requires a later, distinct authorization after merge and a fresh preflight.",
   "stop_reason": "Await final exact-head technical reviews. No merge, remote D1 action, deployment, or production change is authorized.",
   "event": {
-    "seq": 269,
-    "summary": "M2.1 migration guard repaired for exact-0015 scope and remote target; final exact-head technical reviews pending; no remote D1 action or merge"
+    "seq": 270,
+    "summary": "M2.1 migration guard repaired for exact-0015 scope and remote target; Controller remote-read REWORK fixed; exact-head reviews pending; no remote D1 action or merge"
   },
   "external_review": null,
   "human_gate": {
