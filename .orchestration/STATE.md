@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `AWAITING_HUMAN_PROTECTED_MERGE_AUTHORIZATION`
+State: `TECHNICAL_REVIEW_IN_PROGRESS`
 Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
 Active task: `M2.1 — Issue #61 / preflight D1 migration 0015`
 
@@ -2184,10 +2184,17 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - No D1 migration, backup/export, Preview update, Access/CD change, or production change occurred. PR #63 remains unmerged. Remote migration remains a later independent Human Gate.
 
 
-## Event 272 — PR #63 exact-head technical review complete
+## Event 272 — PR #63 executable candidate review complete
 
 - Executable/test candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75`, tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`, base `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4`.
 - GitHub Quick checks run `41225294252`: Worker SUCCESS, Web SUCCESS, `staging-private` SKIPPED. Local script suite: 74/74 PASS (49 focused); canonical validator and diff check PASS.
 - Independent Critic PASS and Integration Review PASS on exact e7 SHA/tree. Delegated Controller PASS on exact e7 SHA/tree via separate Codex process requested with `gpt-6-luna`, High, read-only; captured CLI invocation completed with exit 0. Provider backend identity remains UNVERIFIED; Controller inspected tests but could not run the full suite in its read-only scratch environment. The parent verified exact-head GitHub CI and local test evidence.
 - All review findings were repaired: SHA-bound per-migration gate; canonical target/provenance across read/export/apply paths; workflow variable wiring before backup; only exactly 0015 may be pending, regardless of other allowlist/auth entries. No reviewer found a remaining defect.
-- **Next boundary:** PR #63 is ready for a separate Human authorization to merge through protected controls. No merge is performed by this checkpoint. Migration 0015 still requires a separate authorization after merge and fresh preflight. No Worker deployment, Preview/Access/CD/production change, or M3.
+- **Next boundary:** the executable candidate is technically accepted; a later state-only checkpoint still needs its own exact-head checks before PR #63 is marked ready for protected-merge authorization. No merge is performed here. Migration 0015 requires a separate authorization after merge and fresh preflight. No Worker deployment, Preview/Access/CD/production change, or M3.
+
+
+## Event 273 — tracking checkpoint validation pending
+
+- PR head `e599905516c11efde54269b6565b287fb3a3e298` changes only `.orchestration/STATE.md`, `STATUS.json`, and preflight evidence from the reviewed executable candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75` / tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`.
+- Critic and Integration Review found that this tracking checkpoint prematurely declared merge readiness and `is_draft=false` while GitHub still reported a draft and exact-head CI was in progress. The status is being corrected to keep the PR draft and technical review in progress until the current tracking head passes checks/review.
+- **Next action:** validate the corrected exact tracking SHA. If CI and all reviews remain PASS, mark the PR ready for separate protected-merge authorization. No merge, remote migration, deploy, production change or M3.

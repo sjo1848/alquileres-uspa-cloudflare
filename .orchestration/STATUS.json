@@ -2,22 +2,22 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "MVP_M2_1_OWNER_PUBLISHED_REVISIONS",
-  "runtime_status": "AWAITING_HUMAN_PROTECTED_MERGE_AUTHORIZATION",
+  "runtime_status": "TECHNICAL_REVIEW_IN_PROGRESS",
   "resume_authorized": false,
   "active_task": "M2.1 — Issue #61 / preflight D1 migration 0015",
   "last_completed_task": "Read-only Preview/Access/D1 preflight; exact-hash guard and separate SHA-bound 0015 authorization gate prepared, private SQL backup rehearsed locally, no remote migration or Worker publication.",
   "last_completed_head": "main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
   "work_branch": "work/m2-1-0015-migration-preflight",
-  "next_action": "Product Owner may authorize protected merge of PR #63. Do not apply migration 0015 or publish Worker; both require later separate authorization and a fresh preflight.",
-  "stop_reason": "All required technical controls passed on the exact executable candidate. Stop for explicit protected-merge authorization; remote migration, publication and production remain unauthorized.",
+  "next_action": "Complete exact-head checks and reviews on the current tracking commit. If they remain PASS, mark PR #63 ready for separate protected-merge authorization. Migration 0015 and Worker publication still require later independent authorization and fresh preflight.",
+  "stop_reason": "The executable candidate passed, but the latest state-only tracking SHA is still under exact-head validation. Keep the PR draft; no merge, remote D1 action, deployment, or production change is authorized.",
   "event": {
-    "seq": 272,
-    "summary": "M2.1 exact-0015 guard passed exact-head CI, Independent Critic, Integration Review and delegated Controller; awaiting separate protected-merge authorization"
+    "seq": 273,
+    "summary": "M2.1 executable guard candidate passed all controls; state-only tracking checkpoint still needs exact-head validation before PR ready status"
   },
   "external_review": null,
   "human_gate": {
-    "status": "AWAITING_PROTECTED_MERGE_AUTHORIZATION",
-    "scope": "Authorize only the protected merge of PR #63. This does not authorize applying 0015, publishing the Worker, changing Access/CD, production, or M3. Migration 0015 requires a separate later authorization and fresh preflight."
+    "status": "AWAITING_TRACKING_HEAD_VALIDATION",
+    "scope": "After the exact tracking head passes CI/review, request authorization only for the protected merge of PR #63. This does not authorize applying 0015, publishing the Worker, changing Access/CD, production, or M3. Migration 0015 requires a separate later authorization and fresh preflight."
   },
   "blocker": null,
   "pull_request": {
@@ -26,8 +26,8 @@
     "branch": "work/m2-1-0015-migration-preflight",
     "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
     "state": "OPEN",
-    "is_draft": false,
-    "status": "Open/READY; executable candidate e7c544b with Worker/Web CI and all three exact-head reviews PASS; no merge or remote migration. Ready for separate protected-merge authorization.",
+    "is_draft": true,
+    "status": "Open/DRAFT; executable candidate e7c544b passed all controls, while state-only tracking head is being rechecked; no merge or remote migration.",
     "live_head_source": "GitHub PR #63; derive current head after publication."
   },
   "issue_4": "CLOSED",
@@ -1378,10 +1378,10 @@
     "independent_critic": "PASS on exact e7c544b/tree 7bb6efff; read-only, no files or remote commands",
     "integration_review": "PASS on exact e7c544b/tree 7bb6efff; no integration findings",
     "controller": "PASS on exact e7c544b/tree 7bb6efff; delegated_codex_separate_process; gpt-6-luna/high requested; --sandbox read-only; process exit 0; provider backend identity UNVERIFIED; Controller could not run full tests under read-only temp constraints; parent verified local 74/74 and GitHub CI",
-    "status": "PREPARED_UNMERGED_AWAITING_HUMAN_PROTECTED_MERGE_AUTHORIZATION",
+    "status": "PREPARED_UNMERGED_AWAITING_TRACKING_HEAD_VALIDATION",
     "remote_migration_applied": false,
     "worker_published": false,
-    "next_action": "Await separate protected-merge authorization. After merge, re-run preflight and request distinct authorization to apply exactly 0015; no Worker publication or M3 is authorized.",
+    "next_action": "Complete exact-head CI/reviews on tracking-only commit; if PASS, mark PR ready and await separate protected-merge authorization. After merge, re-run preflight and request distinct authorization to apply exactly 0015; no Worker publication or M3 is authorized.",
     "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required when 0015 is the sole pending migration, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance. Any other pending migration fails regardless of allowlist/auth entries."
   }
 }
