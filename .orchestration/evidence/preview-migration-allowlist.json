@@ -19,6 +19,20 @@
           "columns": ["DEPOSIT_STATUS", "DEPOSIT_AMOUNT", "DEPOSIT_CURRENCY"]
         }
       ]
+    },
+    {
+      "name": "0015_listing_change_revisions.sql",
+      "sha256": "4932baa752f60f6d25813663dcdafa6454eff2e0cd97a9da16270731d030a22e",
+      "approved_by_issue": 61,
+      "change_class": "additive_private_revision_table_and_ownership_triggers",
+      "allowed_update_trigger_ddl": [
+        {
+          "name": "LISTING_CHANGE_REVISIONS_UPDATE_OWNER",
+          "table": "LISTING_CHANGE_REVISIONS",
+          "operation": "UPDATE",
+          "columns": []
+        }
+      ]
     }
   ]
 }

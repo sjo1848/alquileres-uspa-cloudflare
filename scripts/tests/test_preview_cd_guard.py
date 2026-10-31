@@ -367,6 +367,71 @@ class PreviewCdGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(guard.PolicyError, "general data update"):
                 guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
 
+    def test_exact_0015_hash_allows_only_reviewed_update_owner_trigger(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0015_listing_change_revisions.sql"
+        guard.validate_pending_migrations([sql_file.name], allowed, {sql_file.name: sql_file})
+
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            altered.write_text(sql_file.read_text() + "\n-- altered hash\n")
+            with self.assertRaisesRegex(guard.PolicyError, "hash mismatch"):
+                guard.validate_pending_migrations([sql_file.name], allowed, {sql_file.name: altered})
+
+    def test_0015_policy_rejects_update_dml_even_with_matching_fixture_hash(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0015_listing_change_revisions.sql"
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            altered.write_text(sql_file.read_text() + "\nUPDATE listings SET title='bypass';\n")
+            import hashlib
+            fixture_policy = dict(allowed[sql_file.name])
+            fixture_policy["sha256"] = hashlib.sha256(altered.read_bytes()).hexdigest()
+            fixture_allowlist = {**allowed, sql_file.name: fixture_policy}
+            with self.assertRaisesRegex(guard.PolicyError, "general data update"):
+                guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
+    def test_0015_policy_rejects_extra_or_altered_update_trigger(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0015_listing_change_revisions.sql"
+        variants = [
+            sql_file.read_text().replace(
+                "BEFORE UPDATE ON listing_change_revisions",
+                "BEFORE UPDATE OF owner_id ON listing_change_revisions",
+            ),
+            sql_file.read_text() + "\nCREATE TRIGGER unreviewed BEFORE UPDATE ON listings BEGIN SELECT RAISE(ABORT,'no'); END;\n",
+        ]
+        for index, text in enumerate(variants):
+            with self.subTest(variant=index), tempfile.TemporaryDirectory() as directory:
+                altered = Path(directory) / sql_file.name
+                altered.write_text(text)
+                import hashlib
+                fixture_policy = dict(allowed[sql_file.name])
+                fixture_policy["sha256"] = hashlib.sha256(altered.read_bytes()).hexdigest()
+                fixture_allowlist = {**allowed, sql_file.name: fixture_policy}
+                expected = "trigger DDL was not found" if index == 0 else "general data update"
+                with self.assertRaisesRegex(guard.PolicyError, expected):
+                    guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
+    def test_0015_does_not_authorize_unreviewed_or_destructive_migrations(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "0016_unreviewed.sql"
+            path.write_text("CREATE TABLE arbitrary(id TEXT);\n")
+            with self.assertRaisesRegex(guard.PolicyError, "not explicitly approved"):
+                guard.validate_pending_migrations([path.name], allowed, {path.name: path})
+            path = Path(directory) / "0015_listing_change_revisions.sql"
+            path.write_text("DROP TABLE listings;\n")
+            fixture_policy = dict(allowed[path.name])
+            import hashlib
+            fixture_policy["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(guard.PolicyError, "destructive SQL"):
+                guard.validate_pending_migrations([path.name], {path.name: fixture_policy}, {path.name: path})
+
     def test_unapproved_and_destructive_migrations_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "0014_bad.sql"

@@ -369,7 +369,7 @@ def validate_pending_migrations(pending: list[str], allowed: dict, sql_files: di
 
 
 def _remove_approved_update_trigger_headers(sql: str, policy: dict) -> str:
-    """Strip only exact, policy-listed BEFORE UPDATE OF trigger headers.
+    """Strip only exact, policy-listed UPDATE trigger headers.
 
     The migration hash is checked before this function runs. Any UPDATE remaining
     after stripping these DDL headers is DML or an unlisted trigger and fails closed.
@@ -379,22 +379,36 @@ def _remove_approved_update_trigger_headers(sql: str, policy: dict) -> str:
         return sql
     remaining = sql
     for trigger in triggers:
-        if not isinstance(trigger, dict) or set(trigger) != {"name", "table", "columns"}:
+        if not isinstance(trigger, dict):
+            raise PolicyError("invalid update-trigger DDL allowlist policy")
+        keys = set(trigger)
+        if keys not in ({"name", "table", "columns"}, {"name", "table", "columns", "operation"}):
             raise PolicyError("invalid update-trigger DDL allowlist policy")
         name, table, columns = trigger["name"], trigger["table"], trigger["columns"]
         if not all(isinstance(value, str) and re.fullmatch(r"[A-Z][A-Z0-9_]*", value) for value in [name, table]):
             raise PolicyError("invalid update-trigger DDL identifier in allowlist")
-        if not isinstance(columns, list) or not columns or any(
+        if not isinstance(columns, list) or any(
             not isinstance(column, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]*", column)
             for column in columns
         ):
             raise PolicyError("invalid update-trigger DDL columns in allowlist")
-        column_pattern = r"\s*,\s*".join(re.escape(column) for column in columns)
-        pattern = re.compile(
-            rf"CREATE\s+TRIGGER\s+{re.escape(name)}\s+BEFORE\s+UPDATE\s+OF\s+"
-            rf"{column_pattern}\s+ON\s+{re.escape(table)}\b",
-            re.IGNORECASE,
-        )
+        if keys == {"name", "table", "columns"} and columns:
+            column_pattern = r"\s*,\s*".join(re.escape(column) for column in columns)
+            pattern = re.compile(
+                rf"CREATE\s+TRIGGER\s+{re.escape(name)}\s+BEFORE\s+UPDATE\s+OF\s+"
+                rf"{column_pattern}\s+ON\s+{re.escape(table)}\b",
+                re.IGNORECASE,
+            )
+        elif keys == {"name", "table", "columns", "operation"} and trigger["operation"] == "UPDATE" and columns == []:
+            # 0015's owner-binding trigger intentionally fires for any update. Only
+            # this exact hash-pinned header is exempted; UPDATE/DML in its body still
+            # remains in the string and is rejected below.
+            pattern = re.compile(
+                rf"CREATE\s+TRIGGER\s+{re.escape(name)}\s+BEFORE\s+UPDATE\s+ON\s+{re.escape(table)}\b",
+                re.IGNORECASE,
+            )
+        else:
+            raise PolicyError("invalid update-trigger DDL operation/columns in allowlist")
         remaining, count = pattern.subn("CREATE TRIGGER", remaining, count=1)
         if count != 1:
             raise PolicyError("allowlisted UPDATE trigger DDL was not found exactly once")

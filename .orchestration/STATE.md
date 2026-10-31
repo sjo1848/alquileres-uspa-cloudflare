@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_FOR_HUMAN_REVIEW`
+State: `AWAITING_HUMAN_MIGRATION_AUTHORIZATION`
 Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
-Active task: `M2.1 OWNER published revisions (Issue #61)`
+Active task: `M2.1 — Issue #61 / preflight D1 migration 0015`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2147,3 +2147,14 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - CI on f9 run `40806351648` and tracking checkpoint run `40806767272` both passed: worker/web SUCCESS, staging-private SKIPPED. Local D1 management tests 23/23, Worker typecheck PASS, Web typecheck/build/build:preview PASS, canonical validator and diff check PASS.
 - **Critic PASS**, **Integration Review PASS**, and **Controller PASS** on exact executable/test SHA f9. The Controller was a separate `codex exec` process with GPT-6 Luna / High and `--sandbox read-only` requested and accepted; backend identity remains UNVERIFIED. The native subagent attempt was BLOCKED_MODEL_CONFIG for unenforced read-only and is not counted. Review results are recorded in Issue #61's latest status comment.
 - Technical blocker: none. **Next action:** Product Owner reviews PR #62 (left OPEN/DRAFT). No merge, remote D1 migration, Preview/deployment, production, or M3 without separate authorization.
+
+
+## Event 268 — M2.1 migration 0015 preflight complete
+
+- Canonical `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4` verified; PR #62 is merged. Post-merge Quick checks run `41206139855` passed Worker/Web; staging-private passed its fail-closed gate and migration/deploy steps were skipped.
+- Read-only Cloudflare checks verified the existing private Preview and latest deployment `b06c0fdc-5e76-45e4-829c-650e0890bbd7`; exact Worker/D1 config; named Access application and `Operator only` policy; 12/12 anonymous denials; and synthetic D1 provenance without selecting listing/contact/media content.
+- Remote D1 ledger contains migrations 0001–0014; only `0015_listing_change_revisions.sql` is pending. Exact SHA-256: `4932baa752f60f6d25813663dcdafa6454eff2e0cd97a9da16270731d030a22e`.
+- A mode-0600 SQL backup (65,021 bytes) is stored outside the repository under a mode-0700 private directory. Imported to isolated local Wrangler D1 and rehearsed 0015: migration ledger advanced locally, 11-column revision table and two ownership triggers appeared, and aggregate counts for users/listings/images/contacts/audit/idempotency remained unchanged. Synthetic provenance passed; local pending migrations: zero.
+- The PR #63 candidate `work/m2-1-0015-migration-preflight` adds an exact-hash allowlist entry and tests. **It is unmerged.** Full scripts suite: 61/61 PASS; exact-hash check, canonical validator and diff check PASS.
+- No remote migration, Preview Worker publication, Access/CD change, production change, billing/resource action, or M3 occurred. Recovery: retain private SQL export; stop on any mismatch; do not auto-restore because restoration overwrites the full database and requires separate authorization.
+- **Next action / stop boundary:** Product Owner reviews the preflight evidence and separately authorizes remote application of exactly 0015. Do not merge the guard PR, apply the migration, publish Worker, or start M3 without the corresponding distinct authorization.
