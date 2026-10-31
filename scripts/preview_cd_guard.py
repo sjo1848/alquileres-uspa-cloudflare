@@ -196,6 +196,8 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
 
 
 def verify_provenance(config: str, local: bool = False, persist_to: str | None = None) -> None:
+    if not local:
+        _verify_remote_migration_target(config)
     manifest = _load_json(PROVENANCE)
     observed = _snapshot(config, local, persist_to)
     validate_synthetic_provenance(observed, manifest)
@@ -341,6 +343,8 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
 
 
 def verify_migrations(config: str, allowlist_path: Path, local: bool = False, persist_to: str | None = None) -> list[str]:
+    if not local:
+        _verify_remote_migration_target(config)
     allowlist = _load_json(allowlist_path)
     allowed = {item["name"]: item for item in allowlist.get("migrations", [])}
     rows = _wrangler_query("SELECT name FROM d1_migrations ORDER BY name", config, local, persist_to)
@@ -724,6 +728,8 @@ def main() -> int:
         elif args.command == "provenance":
             verify_provenance(args.config, args.local, args.persist_to)
         elif args.command == "migrations":
+            if not args.local:
+                verify_provenance(args.config)
             verify_migrations(args.config, MIGRATIONS, args.local, args.persist_to)
         elif args.command == "smoke":
             verify_anonymous(args.urls)

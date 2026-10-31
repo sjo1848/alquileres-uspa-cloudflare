@@ -501,6 +501,24 @@ class PreviewCdGuardTests(unittest.TestCase):
             migrations.assert_not_called()
             run.assert_not_called()
 
+    def test_remote_provenance_and_migration_reads_reject_noncanonical_target_before_query(self):
+        with mock.patch.object(guard, "_snapshot") as snapshot, \
+             mock.patch.object(guard, "_wrangler_query") as query:
+            with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                guard.verify_provenance("wrangler.production.jsonc")
+            with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                guard.verify_migrations("wrangler.production.jsonc", guard.MIGRATIONS)
+        snapshot.assert_not_called()
+        query.assert_not_called()
+
+    def test_remote_migrations_cli_verifies_synthetic_provenance_before_ledger_read(self):
+        with mock.patch.object(guard.sys, "argv", ["preview_cd_guard.py", "migrations"]), \
+             mock.patch.object(guard, "verify_provenance") as provenance, \
+             mock.patch.object(guard, "verify_migrations", return_value=[]) as migrations:
+            self.assertEqual(guard.main(), 0)
+        provenance.assert_called_once_with("wrangler.preview-migrations-ci.jsonc")
+        migrations.assert_called_once_with("wrangler.preview-migrations-ci.jsonc", guard.MIGRATIONS, False, None)
+
     def test_remote_authorization_preflight_fails_before_backup_when_0015_is_unapproved(self):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
         with mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
