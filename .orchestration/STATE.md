@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_FOR_HUMAN_REVIEW`
+State: `TECHNICAL_REVIEW_IN_PROGRESS`
 Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
-Active task: `M2.1 OWNER published revisions (Issue #61)`
+Active task: `M2.1 — Issue #61 / preflight D1 migration 0015`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2147,3 +2147,71 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - CI on f9 run `40806351648` and tracking checkpoint run `40806767272` both passed: worker/web SUCCESS, staging-private SKIPPED. Local D1 management tests 23/23, Worker typecheck PASS, Web typecheck/build/build:preview PASS, canonical validator and diff check PASS.
 - **Critic PASS**, **Integration Review PASS**, and **Controller PASS** on exact executable/test SHA f9. The Controller was a separate `codex exec` process with GPT-6 Luna / High and `--sandbox read-only` requested and accepted; backend identity remains UNVERIFIED. The native subagent attempt was BLOCKED_MODEL_CONFIG for unenforced read-only and is not counted. Review results are recorded in Issue #61's latest status comment.
 - Technical blocker: none. **Next action:** Product Owner reviews PR #62 (left OPEN/DRAFT). No merge, remote D1 migration, Preview/deployment, production, or M3 without separate authorization.
+
+
+## Event 268 — M2.1 migration 0015 preflight complete
+
+- Canonical `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4` verified; PR #62 is merged. Post-merge Quick checks run `41206139855` passed Worker/Web; staging-private passed its fail-closed gate and migration/deploy steps were skipped.
+- Read-only Cloudflare checks verified the existing private Preview and latest deployment `b06c0fdc-5e76-45e4-829c-650e0890bbd7`; exact Worker/D1 config; named Access application and `Operator only` policy; 12/12 anonymous denials; and synthetic D1 provenance without selecting listing/contact/media content.
+- Remote D1 ledger contains migrations 0001–0014; only `0015_listing_change_revisions.sql` is pending. Exact SHA-256: `4932baa752f60f6d25813663dcdafa6454eff2e0cd97a9da16270731d030a22e`.
+- A mode-0600 SQL backup (65,021 bytes) is stored outside the repository under a mode-0700 private directory. Imported to isolated local Wrangler D1 and rehearsed 0015: migration ledger advanced locally, 11-column revision table and two ownership triggers appeared, and aggregate counts for users/listings/images/contacts/audit/idempotency remained unchanged. Synthetic provenance passed; local pending migrations: zero.
+- The PR #63 candidate `work/m2-1-0015-migration-preflight` pins 0015 by exact hash, requires a separate authorization SHA equal to current protected `main` before remote backup/export or apply, requires 0015 to be the sole pending migration, and validates canonical private Preview config/target/provenance for remote D1 reads and all mutation/export entry points. The workflow passes authorization explicitly to preflight, rehearsal and apply. Regressions prove bad authorization, extra/unscoped migrations, and noncanonical targets stop before remote queries/export/Wrangler; the README no longer documents direct raw remote migration. **It is unmerged.** Local scripts suite: 72/72 PASS (47 focused guard tests); canonical validator and diff check PASS. The separate Controller's latest REWORK P2 on noncanonical read-only D1 config has been repaired and awaits exact-head re-review.
+- No remote migration, Preview Worker publication, Access/CD change, production change, billing/resource action, or M3 occurred. Recovery: retain private SQL export; stop on any mismatch; do not auto-restore because restoration overwrites the full database and requires separate authorization.
+- **Next action / stop boundary:** verify exact-head CI and all requested read-only reviews. If they PASS, leave PR #63 ready for protected-merge authorization. A later, separate Human authorization is still required to apply exactly 0015 after merge and a fresh preflight. Do not merge, apply the migration, publish Worker, or start M3 now.
+
+
+## Event 269 — exact-0015 and remote-read guard rework
+
+- The separate read-only Controller reviewed `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4` / PR candidate `178a800999c7cb6c67ac411f74275f8fe095cd64` and returned REWORK P2: an authorized 0015 could piggyback another allowlisted pending migration; `provenance`/`migrations` remote-read CLI commands accepted arbitrary D1 configs.
+- Repair: migration 0015 must be the sole pending migration; any unscoped migration is rejected before backup/export/apply. Read-only remote provenance/migration paths now enforce the canonical private Preview D1, and the migrations command verifies synthetic provenance before querying the ledger. New regressions test alternate configs before Wrangler queries and extra migrations across all three remote export/apply authorization paths.
+- Local script tests: 72/72 PASS, including 47 guard tests; state validator and diff check PASS. These results describe the local repaired candidate; final exact-head CI, Independent Critic, Integration Review and Controller are pending.
+- No D1 migration, backup/export, Preview update, Access/CD change, production change, or resource action was performed during this review/rework. PR #63 remains open and unmerged. If all final gates pass, next boundary is separate protected-merge authorization; migration still requires an independent later authorization.
+
+
+## Event 270 — remote D1 read-path rework
+
+- Controller reviewed exact candidate `178a800999c7cb6c67ac411f74275f8fe095cd64` / tree `1c904edc93501c4a8afba448c7ceaed0572dc17a` and reported a remote-read config gap in `provenance`/`migrations`. The requested separate Codex process did inspect the exact commit and return a report, but labeled itself BLOCKED/CLI_CONFIG_ACCEPTED=false due to read-only runtime/temp-dir and GitHub CLI connectivity limitations; do not count that report as a Controller PASS. Provider backend identity remains UNVERIFIED.
+- Its read-path finding is repaired in the current local candidate: noncanonical remote configs fail before queries; remote ledger reads run synthetic provenance first. Local tests now report 72/72 PASS (47 focused), exact migration hash still matches, and no remote command/resource action occurred.
+- The repair is committed and pushed on PR #63; the current live HEAD is determined from GitHub, not this historical event. The last exact-head Controller review on `178a800` returned REWORK for the remote-read target/provenance path; the new guard and regressions are on the live candidate. The latest delegated Controller attempt on `5299c2b` is not yet accepted as PASS until its final output is reconciled with the captured CLI/session evidence.
+- **Next action:** finish checks and all three read-only reviews on the exact live PR HEAD, record their verdicts in PR #63 and Issue #61, then leave the PR ready for separate protected-merge authorization if every gate passes. No merge, migration, deployment, production, or M3 action is authorized.
+
+
+## Event 271 — exact 0015 remote migration scope
+
+- Controller reviewed PR HEAD `5299c2bee2f9990ce9e2248396f03a1b2c629472` / tree `6d06a0d89289588d6d178b07a13f3ae475ecf795` using separate Codex `gpt-6-luna`, High, `--sandbox read-only`; CLI configuration/process completion were accepted, backend model identity remains UNVERIFIED. It returned REWORK P2: a hypothetical different migration might pass if added to the allowlist with its own SHA authorization.
+- Repair hardcodes the scope: the remote guard accepts only no pending migrations or exactly 0015, independent of any other allowlist/auth variable. Regressions cover an alternative 0016 with its own matching SHA across authorization, backup/rehearsal and apply, plus empty pending set.
+- Local scripts tests: 74/74 PASS (49 focused guard tests); state validator and diff check PASS. The exact-head CI/review result is recorded in Event 272 below.
+- No D1 migration, backup/export, Preview update, Access/CD change, or production change occurred. PR #63 remains unmerged. Remote migration remains a later independent Human Gate.
+
+
+## Event 272 — PR #63 executable candidate review complete
+
+- Executable/test candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75`, tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`, base `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4`.
+- GitHub Quick checks run `41225294252`: Worker SUCCESS, Web SUCCESS, `staging-private` SKIPPED. Local script suite: 74/74 PASS (49 focused); canonical validator and diff check PASS.
+- Independent Critic PASS and Integration Review PASS on exact e7 SHA/tree. Delegated Controller PASS on exact e7 SHA/tree via separate Codex process requested with `gpt-6-luna`, High, read-only; captured CLI invocation completed with exit 0. Provider backend identity remains UNVERIFIED; Controller inspected tests but could not run the full suite in its read-only scratch environment. The parent verified exact-head GitHub CI and local test evidence.
+- All review findings were repaired: SHA-bound per-migration gate; canonical target/provenance across read/export/apply paths; workflow variable wiring before backup; only exactly 0015 may be pending, regardless of other allowlist/auth entries. No reviewer found a remaining defect.
+- **Next boundary:** the executable candidate is technically accepted; a later state-only checkpoint still needs its own exact-head checks before PR #63 is marked ready for protected-merge authorization. No merge is performed here. Migration 0015 requires a separate authorization after merge and fresh preflight. No Worker deployment, Preview/Access/CD/production change, or M3.
+
+
+## Event 273 — tracking checkpoint validation pending
+
+- PR head `e599905516c11efde54269b6565b287fb3a3e298` changes only `.orchestration/STATE.md`, `STATUS.json`, and preflight evidence from the reviewed executable candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75` / tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`.
+- Critic and Integration Review found that this tracking checkpoint prematurely declared merge readiness and `is_draft=false` while GitHub still reported a draft and exact-head CI was in progress. The status is being corrected to keep the PR draft and technical review in progress until the current tracking head passes checks/review.
+- **Next action:** validate the corrected exact tracking SHA. If CI and all reviews remain PASS, mark the PR ready for separate protected-merge authorization. No merge, remote migration, deploy, production change or M3.
+
+
+## Event 274 — active M2.1 tracking pointers reconciled
+
+- The delegated read-only tracking review of PR #63 HEAD `b0542ab1245b52ce545d6fc9d16566bc96eb95bc` / tree `d011c035d4413694c646c672f362e2142dbba641` found two stale references: top-level `STATUS.json.candidate_review` still summarized PR #62, and the linked migration-preflight contract still described Issue #58 / migration 0014.
+- Reconciled the active candidate pointer with PR #63 / Issue #61 and retained the former PR #62 summary under `historical_candidate_review_mvp_m2_1_pr62`. Labeled the Issue #58 / 0014 contract historical and added the active Issue #61 / 0015 contract at `.orchestration/contracts/MVP-M2.1-0015-MIGRATION-PREFLIGHT.md`.
+- The reviewer found no executable defect in its read-only inspection, but its Controller execution was `BLOCKED_MODEL_CONFIG`; that result is not a PASS. Critic and Integration Review had passed the prior b054 tracking-only checkpoint. The next exact candidate must receive fresh reviews after this reconciliation.
+- **Next action:** validate and review the exact new tracking HEAD. Keep PR #63 OPEN/DRAFT; if all required gates pass, mark ready for separate protected-merge authorization. No merge, remote D1 migration, Worker publication, Access/CD/production change, or M3.
+
+
+## Event 275 — PR #63 technical review passed
+
+- Exact reviewed candidate: PR #63 HEAD `76eb52a281108a80cc6d8464fa053c787e53e97e`, tree `2bff2cea84cf2f3372a7470406f1a6114cc9151b`, base `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4`. Exact Quick checks run `41226185514`: Worker/Web SUCCESS; `staging-private` SKIPPED.
+- **Independent Critic PASS**, **Integration Review PASS**, and **delegated Controller PASS** on the exact SHA/tree. Controller was a separate `codex exec` process requested with GPT-6 Luna, High and read-only; backend identity remains UNVERIFIED. The Controller did not run suites or remote tooling; parent verified tests and CI.
+- The corrected active candidate/contract pointers are consistent: PR #63 and Issue #61 / 0015 are active; PR #62 and Issue #58 / 0014 are historical. The reviewed code remains the executable candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75` / tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`, with 74/74 local scripts tests, 49 focused guard tests, canonical validator and diff check passing. The tracking-only delta adds no executable/test/workflow changes.
+- PR #63 is OPEN and ready for **separate protected-merge authorization**. **0015 is still unapplied remotely**; no merge, migration, Worker publication, Access/CD/production change, or M3 action occurred.
+- **Next action:** await authorization for the protected merge only. Any remote 0015 application requires a separate later authorization and fresh preflight.

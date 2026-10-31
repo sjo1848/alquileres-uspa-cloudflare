@@ -18,6 +18,9 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "apps/worker"
 CANONICAL_UUID = re.compile(r"^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$")
+CANONICAL_SHA = re.compile(r"^[0-9a-f]{40}$")
+MIGRATION_0015_NAME = "0015_listing_change_revisions.sql"
+MIGRATION_0015_AUTHORIZATION_ENV = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
 PROVENANCE = ROOT / ".orchestration/evidence/CF-AU-PREVIEW-D1-PROVENANCE.json"
 MIGRATIONS = ROOT / ".orchestration/evidence/preview-migration-allowlist.json"
 TARGET = {
@@ -193,6 +196,8 @@ def _snapshot(config: str, local: bool = False, persist_to: str | None = None) -
 
 
 def verify_provenance(config: str, local: bool = False, persist_to: str | None = None) -> None:
+    if not local:
+        _verify_remote_migration_target(config)
     manifest = _load_json(PROVENANCE)
     observed = _snapshot(config, local, persist_to)
     validate_synthetic_provenance(observed, manifest)
@@ -338,6 +343,8 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
 
 
 def verify_migrations(config: str, allowlist_path: Path, local: bool = False, persist_to: str | None = None) -> list[str]:
+    if not local:
+        _verify_remote_migration_target(config)
     allowlist = _load_json(allowlist_path)
     allowed = {item["name"]: item for item in allowlist.get("migrations", [])}
     rows = _wrangler_query("SELECT name FROM d1_migrations ORDER BY name", config, local, persist_to)
@@ -369,7 +376,7 @@ def validate_pending_migrations(pending: list[str], allowed: dict, sql_files: di
 
 
 def _remove_approved_update_trigger_headers(sql: str, policy: dict) -> str:
-    """Strip only exact, policy-listed BEFORE UPDATE OF trigger headers.
+    """Strip only exact, policy-listed UPDATE trigger headers.
 
     The migration hash is checked before this function runs. Any UPDATE remaining
     after stripping these DDL headers is DML or an unlisted trigger and fails closed.
@@ -379,22 +386,36 @@ def _remove_approved_update_trigger_headers(sql: str, policy: dict) -> str:
         return sql
     remaining = sql
     for trigger in triggers:
-        if not isinstance(trigger, dict) or set(trigger) != {"name", "table", "columns"}:
+        if not isinstance(trigger, dict):
+            raise PolicyError("invalid update-trigger DDL allowlist policy")
+        keys = set(trigger)
+        if keys not in ({"name", "table", "columns"}, {"name", "table", "columns", "operation"}):
             raise PolicyError("invalid update-trigger DDL allowlist policy")
         name, table, columns = trigger["name"], trigger["table"], trigger["columns"]
         if not all(isinstance(value, str) and re.fullmatch(r"[A-Z][A-Z0-9_]*", value) for value in [name, table]):
             raise PolicyError("invalid update-trigger DDL identifier in allowlist")
-        if not isinstance(columns, list) or not columns or any(
+        if not isinstance(columns, list) or any(
             not isinstance(column, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]*", column)
             for column in columns
         ):
             raise PolicyError("invalid update-trigger DDL columns in allowlist")
-        column_pattern = r"\s*,\s*".join(re.escape(column) for column in columns)
-        pattern = re.compile(
-            rf"CREATE\s+TRIGGER\s+{re.escape(name)}\s+BEFORE\s+UPDATE\s+OF\s+"
-            rf"{column_pattern}\s+ON\s+{re.escape(table)}\b",
-            re.IGNORECASE,
-        )
+        if keys == {"name", "table", "columns"} and columns:
+            column_pattern = r"\s*,\s*".join(re.escape(column) for column in columns)
+            pattern = re.compile(
+                rf"CREATE\s+TRIGGER\s+{re.escape(name)}\s+BEFORE\s+UPDATE\s+OF\s+"
+                rf"{column_pattern}\s+ON\s+{re.escape(table)}\b",
+                re.IGNORECASE,
+            )
+        elif keys == {"name", "table", "columns", "operation"} and trigger["operation"] == "UPDATE" and columns == []:
+            # 0015's owner-binding trigger intentionally fires for any update. Only
+            # this exact hash-pinned header is exempted; UPDATE/DML in its body still
+            # remains in the string and is rejected below.
+            pattern = re.compile(
+                rf"CREATE\s+TRIGGER\s+{re.escape(name)}\s+BEFORE\s+UPDATE\s+ON\s+{re.escape(table)}\b",
+                re.IGNORECASE,
+            )
+        else:
+            raise PolicyError("invalid update-trigger DDL operation/columns in allowlist")
         remaining, count = pattern.subn("CREATE TRIGGER", remaining, count=1)
         if count != 1:
             raise PolicyError("allowlisted UPDATE trigger DDL was not found exactly once")
@@ -555,6 +576,10 @@ def run_captured(command: list[str], cwd: Path, timeout: int = 240) -> subproces
 
 
 def backup_and_rehearse(config: str, backup: Path, persist_to: Path) -> None:
+    _verify_remote_migration_target(config)
+    verify_provenance(config)
+    pending_remote = verify_migrations(config, MIGRATIONS, local=False)
+    _require_remote_migration_authorization(pending_remote)
     persist_to.mkdir(parents=True, exist_ok=True, mode=0o700)
     os.chmod(persist_to, 0o700)
     backup.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -581,10 +606,13 @@ def backup_and_rehearse(config: str, backup: Path, persist_to: Path) -> None:
 
 
 def apply_remote(config: str) -> None:
+    _verify_remote_migration_target(config)
+    verify_provenance(config)
     pending = verify_migrations(config, MIGRATIONS, local=False)
     if not pending:
         print("PASS: no remote migration pending")
         return
+    _require_remote_migration_authorization(pending)
     # Wrangler applies each migration atomically and captures its provider backup in CI.
     command = ["npx", "--no-install", "wrangler", "d1", "migrations", "apply", "DB", "--remote", "--config", config]
     run_captured(command, WORKER, timeout=240)
@@ -592,6 +620,40 @@ def apply_remote(config: str) -> None:
         raise PolicyError("remote migration verification found unapplied migrations")
     verify_provenance(config)
     print("PASS: approved migration applied to the pinned synthetic Preview D1")
+
+
+def authorize_remote(config: str) -> None:
+    _verify_remote_migration_target(config)
+    verify_provenance(config)
+    pending = verify_migrations(config, MIGRATIONS, local=False)
+    _require_remote_migration_authorization(pending)
+    print("PASS: pending remote migrations have explicit authorization")
+
+
+def _verify_remote_migration_target(config: str) -> None:
+    expected_migrations_config = (WORKER / "wrangler.preview-migrations-ci.jsonc").resolve()
+    provided_config = (WORKER / config).resolve()
+    if provided_config != expected_migrations_config:
+        raise PolicyError("remote migrations require the canonical existing Preview migration config")
+    verify_target(WORKER / "wrangler.preview-ci.jsonc", expected_migrations_config)
+
+
+def _require_remote_migration_authorization(pending: list[str]) -> None:
+    if not pending:
+        return
+    if pending != [MIGRATION_0015_NAME]:
+        raise PolicyError("only migration 0015 may be pending for this remote migration task")
+    allowlist = _load_json(MIGRATIONS)
+    allowed = {item["name"]: item for item in allowlist.get("migrations", [])}
+    policy = allowed.get(MIGRATION_0015_NAME, {})
+    approval_env = policy.get("remote_authorization_env")
+    if approval_env != MIGRATION_0015_AUTHORIZATION_ENV:
+        raise PolicyError("migration 0015 requires its separate SHA-bound authorization policy")
+    approved_sha = os.environ.get(approval_env, "")
+    current_sha = os.environ.get("GITHUB_SHA", "")
+    if not CANONICAL_SHA.fullmatch(current_sha) or approved_sha != current_sha:
+        raise PolicyError("separate human authorization for migration 0015 must equal the current main SHA")
+    verify_latest_main(current_sha)
 
 
 def verify_latest_main(current_sha: str) -> None:
@@ -635,6 +697,8 @@ def main() -> int:
     backup.add_argument("--persist-to", type=Path, required=True)
     remote = subs.add_parser("apply-remote")
     remote.add_argument("--config", default="wrangler.preview-migrations-ci.jsonc")
+    authorize = subs.add_parser("authorize-remote")
+    authorize.add_argument("--config", default="wrangler.preview-migrations-ci.jsonc")
     latest = subs.add_parser("latest-main")
     latest.add_argument("--sha", required=True)
     subs.add_parser("current-preview")
@@ -661,6 +725,8 @@ def main() -> int:
         elif args.command == "provenance":
             verify_provenance(args.config, args.local, args.persist_to)
         elif args.command == "migrations":
+            if not args.local:
+                verify_provenance(args.config)
             verify_migrations(args.config, MIGRATIONS, args.local, args.persist_to)
         elif args.command == "smoke":
             verify_anonymous(args.urls)
@@ -668,6 +734,8 @@ def main() -> int:
             backup_and_rehearse(args.config, args.backup, args.persist_to)
         elif args.command == "apply-remote":
             apply_remote(args.config)
+        elif args.command == "authorize-remote":
+            authorize_remote(args.config)
         elif args.command == "latest-main":
             verify_latest_main(args.sha)
         elif args.command == "current-preview":

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "scripts/preview_cd_guard.py"
@@ -48,10 +49,23 @@ class PreviewCdGuardTests(unittest.TestCase):
         self.assertIn("--name private --worker-name alquileres-uspa-lab", staging)
         self.assertIn("wrangler preview", staging)
         self.assertNotIn("wrangler deploy", staging)
+        self.assertIn("apply-remote", staging)
+        self.assertNotIn("wrangler d1 migrations apply", staging)
         self.assertIn("WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/preview-result.json", staging)
         self.assertIn("deploy-output", staging)
         self.assertIn('--file "$RUNNER_TEMP/preview-result.json"', staging)
         self.assertNotIn('>> "$GITHUB_OUTPUT"', staging)
+        authorization_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}"
+        authorization_preflight_step = staging.split("- name: Require separate SHA-bound authorization before backup or migration", 1)[1].split("\n      - name:", 1)[0]
+        backup_step = staging.split("- name: Backup the D1 and rehearse pending migrations locally", 1)[1].split("\n      - name:", 1)[0]
+        apply_step = staging.split("- name: Apply only the reviewed migration allowlist to the existing Preview D1", 1)[1].split("\n      - name:", 1)[0]
+        self.assertIn(authorization_env, authorization_preflight_step)
+        self.assertIn(authorization_env, backup_step)
+        self.assertIn(authorization_env, apply_step)
+        self.assertLess(
+            staging.index("Require separate SHA-bound authorization before backup or migration"),
+            staging.index("Backup the D1 and rehearse pending migrations locally"),
+        )
 
     def test_exact_target_configs_pass(self):
         guard.verify_target(
@@ -366,6 +380,272 @@ class PreviewCdGuardTests(unittest.TestCase):
             fixture_allowlist = {**allowed, sql_file.name: policy_for_fixture}
             with self.assertRaisesRegex(guard.PolicyError, "general data update"):
                 guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
+    def test_exact_0015_hash_allows_only_reviewed_update_owner_trigger(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0015_listing_change_revisions.sql"
+        guard.validate_pending_migrations([sql_file.name], allowed, {sql_file.name: sql_file})
+        self.assertEqual(allowed[sql_file.name]["remote_authorization_env"], "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA")
+
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            altered.write_text(sql_file.read_text() + "\n-- altered hash\n")
+            with self.assertRaisesRegex(guard.PolicyError, "hash mismatch"):
+                guard.validate_pending_migrations([sql_file.name], allowed, {sql_file.name: altered})
+
+    def test_0015_policy_rejects_update_dml_even_with_matching_fixture_hash(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0015_listing_change_revisions.sql"
+        with tempfile.TemporaryDirectory() as directory:
+            altered = Path(directory) / sql_file.name
+            altered.write_text(sql_file.read_text() + "\nUPDATE listings SET title='bypass';\n")
+            import hashlib
+            fixture_policy = dict(allowed[sql_file.name])
+            fixture_policy["sha256"] = hashlib.sha256(altered.read_bytes()).hexdigest()
+            fixture_allowlist = {**allowed, sql_file.name: fixture_policy}
+            with self.assertRaisesRegex(guard.PolicyError, "general data update"):
+                guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
+    def test_0015_policy_rejects_extra_or_altered_update_trigger(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        sql_file = ROOT / "apps/worker/migrations/0015_listing_change_revisions.sql"
+        variants = [
+            sql_file.read_text().replace(
+                "BEFORE UPDATE ON listing_change_revisions",
+                "BEFORE UPDATE OF owner_id ON listing_change_revisions",
+            ),
+            sql_file.read_text() + "\nCREATE TRIGGER unreviewed BEFORE UPDATE ON listings BEGIN SELECT RAISE(ABORT,'no'); END;\n",
+        ]
+        for index, text in enumerate(variants):
+            with self.subTest(variant=index), tempfile.TemporaryDirectory() as directory:
+                altered = Path(directory) / sql_file.name
+                altered.write_text(text)
+                import hashlib
+                fixture_policy = dict(allowed[sql_file.name])
+                fixture_policy["sha256"] = hashlib.sha256(altered.read_bytes()).hexdigest()
+                fixture_allowlist = {**allowed, sql_file.name: fixture_policy}
+                expected = "trigger DDL was not found" if index == 0 else "general data update"
+                with self.assertRaisesRegex(guard.PolicyError, expected):
+                    guard.validate_pending_migrations([sql_file.name], fixture_allowlist, {sql_file.name: altered})
+
+    def test_0015_does_not_authorize_unreviewed_or_destructive_migrations(self):
+        policy = guard._load_json(guard.MIGRATIONS)
+        allowed = {item["name"]: item for item in policy["migrations"]}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "0016_unreviewed.sql"
+            path.write_text("CREATE TABLE arbitrary(id TEXT);\n")
+            with self.assertRaisesRegex(guard.PolicyError, "not explicitly approved"):
+                guard.validate_pending_migrations([path.name], allowed, {path.name: path})
+            path = Path(directory) / "0015_listing_change_revisions.sql"
+            path.write_text("DROP TABLE listings;\n")
+            fixture_policy = dict(allowed[path.name])
+            import hashlib
+            fixture_policy["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(guard.PolicyError, "destructive SQL"):
+                guard.validate_pending_migrations([path.name], {path.name: fixture_policy}, {path.name: path})
+
+    def test_remote_apply_blocks_unapproved_migration_before_wrangler_side_effect(self):
+        with mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_migrations", side_effect=guard.PolicyError("pending migration 0016 is not approved")), \
+             mock.patch.object(guard, "run_captured") as run:
+            with self.assertRaisesRegex(guard.PolicyError, "not approved"):
+                guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+        run.assert_not_called()
+
+    def test_remote_backup_rejects_noncanonical_target_before_export(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             mock.patch.object(guard, "verify_provenance") as provenance, \
+             mock.patch.object(guard, "verify_migrations") as migrations, \
+             mock.patch.object(guard, "run_captured") as run:
+            root = Path(directory)
+            backup = root / "private" / "backup.sql"
+            persist = root / "persist"
+            with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                guard.backup_and_rehearse("wrangler.production.jsonc", backup, persist)
+            provenance.assert_not_called()
+            migrations.assert_not_called()
+            run.assert_not_called()
+            self.assertFalse(backup.parent.exists())
+            self.assertFalse(persist.exists())
+
+    def test_remote_backup_requires_0015_authorization_before_export(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             mock.patch.object(guard, "verify_target"), \
+             mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
+             mock.patch.object(guard, "run_captured") as run, \
+             mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA", None)
+            os.environ.pop("GITHUB_SHA", None)
+            root = Path(directory)
+            backup = root / "private" / "backup.sql"
+            persist = root / "persist"
+            with self.assertRaisesRegex(guard.PolicyError, "separate human authorization"):
+                guard.backup_and_rehearse("wrangler.preview-migrations-ci.jsonc", backup, persist)
+            run.assert_not_called()
+            self.assertFalse(backup.parent.exists())
+            self.assertFalse(persist.exists())
+
+    def test_remote_commands_reject_noncanonical_target_before_any_remote_read_or_write(self):
+        for remote_command in (guard.apply_remote, guard.authorize_remote):
+            with self.subTest(remote_command=remote_command.__name__), \
+                 mock.patch.object(guard, "verify_provenance") as provenance, \
+                 mock.patch.object(guard, "verify_migrations") as migrations, \
+                 mock.patch.object(guard, "run_captured") as run:
+                with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                    remote_command("wrangler.production.jsonc")
+            provenance.assert_not_called()
+            migrations.assert_not_called()
+            run.assert_not_called()
+
+    def test_remote_provenance_and_migration_reads_reject_noncanonical_target_before_query(self):
+        with mock.patch.object(guard, "_snapshot") as snapshot, \
+             mock.patch.object(guard, "_wrangler_query") as query:
+            with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                guard.verify_provenance("wrangler.production.jsonc")
+            with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                guard.verify_migrations("wrangler.production.jsonc", guard.MIGRATIONS)
+        snapshot.assert_not_called()
+        query.assert_not_called()
+
+    def test_remote_migrations_cli_verifies_synthetic_provenance_before_ledger_read(self):
+        with mock.patch.object(guard.sys, "argv", ["preview_cd_guard.py", "migrations"]), \
+             mock.patch.object(guard, "verify_provenance") as provenance, \
+             mock.patch.object(guard, "verify_migrations", return_value=[]) as migrations:
+            self.assertEqual(guard.main(), 0)
+        provenance.assert_called_once_with("wrangler.preview-migrations-ci.jsonc")
+        migrations.assert_called_once_with("wrangler.preview-migrations-ci.jsonc", guard.MIGRATIONS, False, None)
+
+    def test_remote_authorization_preflight_fails_before_backup_when_0015_is_unapproved(self):
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        with mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
+             mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_latest_main") as latest_main, \
+             mock.patch.dict(os.environ, {"GITHUB_SHA": current_main}, clear=False):
+            os.environ.pop("CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA", None)
+            with self.assertRaisesRegex(guard.PolicyError, "separate human authorization"):
+                guard.authorize_remote("wrangler.preview-migrations-ci.jsonc")
+        latest_main.assert_not_called()
+
+    def test_remote_apply_requires_separate_0015_authorization_bound_to_current_main(self):
+        pending = ["0015_listing_change_revisions.sql"]
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
+        cases = ((None, current_main), ("true", current_main), ("e" * 40, current_main), (current_main, "not-a-commit-sha"))
+        for authorization, workflow_sha in cases:
+            with self.subTest(authorization=authorization, workflow_sha=workflow_sha), \
+                 mock.patch.object(guard, "verify_migrations", return_value=pending), \
+                 mock.patch.object(guard, "verify_provenance"), \
+                 mock.patch.object(guard, "run_captured") as run, \
+                 mock.patch.dict(os.environ, {"GITHUB_SHA": workflow_sha}, clear=False):
+                os.environ.pop(approval_env, None)
+                if authorization is not None:
+                    os.environ[approval_env] = authorization
+                with self.assertRaisesRegex(guard.PolicyError, "separate human authorization"):
+                    guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+                run.assert_not_called()
+
+    def test_remote_apply_accepts_only_matching_authorized_main_sha(self):
+        pending = ["0015_listing_change_revisions.sql"]
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
+        with mock.patch.object(guard, "verify_migrations", side_effect=[pending, []]), \
+             mock.patch.object(guard, "verify_provenance") as provenance, \
+             mock.patch.object(guard, "verify_latest_main") as latest_main, \
+             mock.patch.object(guard, "run_captured") as run, \
+             mock.patch.dict(os.environ, {"GITHUB_SHA": current_main, approval_env: current_main}, clear=False):
+            guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+        latest_main.assert_called_once_with(current_main)
+        run.assert_called_once()
+        self.assertIn("--remote", run.call_args.args[0])
+        self.assertEqual(provenance.call_count, 2)
+        self.assertEqual(provenance.call_args_list[0].args, ("wrangler.preview-migrations-ci.jsonc",))
+
+    def test_remote_paths_reject_extra_or_unscoped_pending_migrations(self):
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
+        cases = (
+            (["0013_owner_auth_local.sql", "0015_listing_change_revisions.sql"], "only migration 0015 may be pending"),
+            (["0013_owner_auth_local.sql"], "only migration 0015 may be pending"),
+        )
+        for pending, expected_error in cases:
+            for command in ("authorize", "backup", "apply"):
+                with self.subTest(pending=pending, command=command), tempfile.TemporaryDirectory() as directory, \
+                     mock.patch.object(guard, "verify_target"), \
+                     mock.patch.object(guard, "verify_provenance"), \
+                     mock.patch.object(guard, "verify_migrations", return_value=pending), \
+                     mock.patch.object(guard, "verify_latest_main") as latest_main, \
+                     mock.patch.object(guard, "run_captured") as run, \
+                     mock.patch.dict(os.environ, {"GITHUB_SHA": current_main, approval_env: current_main}, clear=False):
+                    if command == "authorize":
+                        operation = lambda: guard.authorize_remote("wrangler.preview-migrations-ci.jsonc")
+                    elif command == "backup":
+                        root = Path(directory)
+                        operation = lambda: guard.backup_and_rehearse("wrangler.preview-migrations-ci.jsonc", root / "private" / "backup.sql", root / "persist")
+                    else:
+                        operation = lambda: guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+                    with self.assertRaisesRegex(guard.PolicyError, expected_error):
+                        operation()
+                    latest_main.assert_not_called()
+                    run.assert_not_called()
+                    if command == "backup":
+                        self.assertFalse((Path(directory) / "private").exists())
+                        self.assertFalse((Path(directory) / "persist").exists())
+
+    def test_remote_paths_reject_other_migration_even_with_its_own_sha_authorization(self):
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        environment = {
+            "GITHUB_SHA": current_main,
+            "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA": current_main,
+            "CF_PREVIEW_MIGRATION_0016_AUTHORIZED_SHA": current_main,
+        }
+        for command in ("authorize", "backup", "apply"):
+            with self.subTest(command=command), tempfile.TemporaryDirectory() as directory, \
+                 mock.patch.object(guard, "verify_target"), \
+                 mock.patch.object(guard, "verify_provenance"), \
+                 mock.patch.object(guard, "verify_migrations", return_value=["0016_alternative.sql"]), \
+                 mock.patch.object(guard, "verify_latest_main") as latest_main, \
+                 mock.patch.object(guard, "run_captured") as run, \
+                 mock.patch.dict(os.environ, environment, clear=False):
+                if command == "authorize":
+                    operation = lambda: guard.authorize_remote("wrangler.preview-migrations-ci.jsonc")
+                elif command == "backup":
+                    root = Path(directory)
+                    operation = lambda: guard.backup_and_rehearse("wrangler.preview-migrations-ci.jsonc", root / "private" / "backup.sql", root / "persist")
+                else:
+                    operation = lambda: guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+                with self.assertRaisesRegex(guard.PolicyError, "only migration 0015 may be pending"):
+                    operation()
+                latest_main.assert_not_called()
+                run.assert_not_called()
+                if command == "backup":
+                    self.assertFalse((Path(directory) / "private").exists())
+                    self.assertFalse((Path(directory) / "persist").exists())
+
+    def test_remote_authorization_succeeds_when_no_migration_is_pending(self):
+        with mock.patch.object(guard, "verify_target"), \
+             mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_migrations", return_value=[]):
+            guard.authorize_remote("wrangler.preview-migrations-ci.jsonc")
+
+    def test_remote_apply_fails_closed_if_0015_authorization_policy_is_removed(self):
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
+        policy = guard._load_json(guard.MIGRATIONS)
+        entry = next(x for x in policy["migrations"] if x["name"] == "0015_listing_change_revisions.sql")
+        entry.pop("remote_authorization_env")
+        with mock.patch.object(guard, "_load_json", return_value=policy), \
+             mock.patch.object(guard, "verify_target"), \
+             mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
+             mock.patch.object(guard, "run_captured") as run, \
+             mock.patch.dict(os.environ, {"GITHUB_SHA": current_main, approval_env: current_main}, clear=False):
+            with self.assertRaisesRegex(guard.PolicyError, "requires its separate SHA-bound authorization policy"):
+                guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+        run.assert_not_called()
 
     def test_unapproved_and_destructive_migrations_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:

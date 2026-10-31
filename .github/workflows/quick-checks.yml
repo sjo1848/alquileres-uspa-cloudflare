@@ -153,10 +153,17 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
         run: python3 scripts/preview_cd_guard.py migrations
+      - name: Require separate SHA-bound authorization before backup or migration
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+          CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}
+        run: python3 scripts/preview_cd_guard.py authorize-remote
       - name: Backup the D1 and rehearse pending migrations locally
         if: steps.gate.outputs.deploy == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+          CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}
         run: |
           python3 scripts/preview_cd_guard.py rehearse \
             --backup "$RUNNER_TEMP/alquileres-uspa-preview-pre-migration.sql" \
@@ -168,6 +175,7 @@ jobs:
         if: steps.gate.outputs.deploy == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+          CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}
         run: python3 scripts/preview_cd_guard.py apply-remote
       - name: Verify remote D1 after migration
         if: steps.gate.outputs.deploy == 'true'
