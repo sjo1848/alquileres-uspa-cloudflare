@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `TECHNICAL_REVIEW_IN_PROGRESS`
+State: `AWAITING_HUMAN_PROTECTED_MERGE_AUTHORIZATION`
 Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
 Active task: `M2.1 — Issue #61 / preflight D1 migration 0015`
 
@@ -2180,5 +2180,14 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 
 - Controller reviewed PR HEAD `5299c2bee2f9990ce9e2248396f03a1b2c629472` / tree `6d06a0d89289588d6d178b07a13f3ae475ecf795` using separate Codex `gpt-6-luna`, High, `--sandbox read-only`; CLI configuration/process completion were accepted, backend model identity remains UNVERIFIED. It returned REWORK P2: a hypothetical different migration might pass if added to the allowlist with its own SHA authorization.
 - Repair hardcodes the scope: the remote guard accepts only no pending migrations or exactly 0015, independent of any other allowlist/auth variable. Regressions cover an alternative 0016 with its own matching SHA across authorization, backup/rehearsal and apply, plus empty pending set.
-- Local scripts tests: 74/74 PASS (49 focused guard tests); state validator and diff check PASS. Final exact-head CI and all reviews remain pending.
-- No D1 migration, backup/export, Preview update, Access/CD change, or production change occurred. PR #63 remains unmerged. If all gates pass, stop for separate protected-merge authorization; remote migration remains a later independent Human Gate.
+- Local scripts tests: 74/74 PASS (49 focused guard tests); state validator and diff check PASS. The exact-head CI/review result is recorded in Event 272 below.
+- No D1 migration, backup/export, Preview update, Access/CD change, or production change occurred. PR #63 remains unmerged. Remote migration remains a later independent Human Gate.
+
+
+## Event 272 — PR #63 exact-head technical review complete
+
+- Executable/test candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75`, tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`, base `main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4`.
+- GitHub Quick checks run `41225294252`: Worker SUCCESS, Web SUCCESS, `staging-private` SKIPPED. Local script suite: 74/74 PASS (49 focused); canonical validator and diff check PASS.
+- Independent Critic PASS and Integration Review PASS on exact e7 SHA/tree. Delegated Controller PASS on exact e7 SHA/tree via separate Codex process requested with `gpt-6-luna`, High, read-only; captured CLI invocation completed with exit 0. Provider backend identity remains UNVERIFIED; Controller inspected tests but could not run the full suite in its read-only scratch environment. The parent verified exact-head GitHub CI and local test evidence.
+- All review findings were repaired: SHA-bound per-migration gate; canonical target/provenance across read/export/apply paths; workflow variable wiring before backup; only exactly 0015 may be pending, regardless of other allowlist/auth entries. No reviewer found a remaining defect.
+- **Next boundary:** PR #63 is ready for a separate Human authorization to merge through protected controls. No merge is performed by this checkpoint. Migration 0015 still requires a separate authorization after merge and fresh preflight. No Worker deployment, Preview/Access/CD/production change, or M3.

@@ -2,22 +2,22 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "MVP_M2_1_OWNER_PUBLISHED_REVISIONS",
-  "runtime_status": "TECHNICAL_REVIEW_IN_PROGRESS",
+  "runtime_status": "AWAITING_HUMAN_PROTECTED_MERGE_AUTHORIZATION",
   "resume_authorized": false,
   "active_task": "M2.1 — Issue #61 / preflight D1 migration 0015",
   "last_completed_task": "Read-only Preview/Access/D1 preflight; exact-hash guard and separate SHA-bound 0015 authorization gate prepared, private SQL backup rehearsed locally, no remote migration or Worker publication.",
   "last_completed_head": "main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
   "work_branch": "work/m2-1-0015-migration-preflight",
-  "next_action": "Complete exact-head Worker/Web CI and Independent Critic, Integration Review, and Controller on PR #63. If all PASS, leave it ready for separate protected-merge authorization. Remote migration requires a later, distinct authorization after merge and a fresh preflight.",
-  "stop_reason": "Await final exact-head technical reviews. No merge, remote D1 action, deployment, or production change is authorized.",
+  "next_action": "Product Owner may authorize protected merge of PR #63. Do not apply migration 0015 or publish Worker; both require later separate authorization and a fresh preflight.",
+  "stop_reason": "All required technical controls passed on the exact executable candidate. Stop for explicit protected-merge authorization; remote migration, publication and production remain unauthorized.",
   "event": {
-    "seq": 271,
-    "summary": "M2.1 migration guard hard-limited to sole 0015; Controller alternative-migration REWORK addressed; exact-head reviews pending; no remote D1 action or merge"
+    "seq": 272,
+    "summary": "M2.1 exact-0015 guard passed exact-head CI, Independent Critic, Integration Review and delegated Controller; awaiting separate protected-merge authorization"
   },
   "external_review": null,
   "human_gate": {
-    "status": "AWAITING_SEPARATE_HUMAN_MIGRATION_AUTHORIZATION",
-    "scope": "Apply exactly 0015_listing_change_revisions.sql to the existing synthetic Preview D1 only. No merge of new changes, Worker publication, Access/CD change, production, or M3 is authorized."
+    "status": "AWAITING_PROTECTED_MERGE_AUTHORIZATION",
+    "scope": "Authorize only the protected merge of PR #63. This does not authorize applying 0015, publishing the Worker, changing Access/CD, production, or M3. Migration 0015 requires a separate later authorization and fresh preflight."
   },
   "blocker": null,
   "pull_request": {
@@ -26,8 +26,8 @@
     "branch": "work/m2-1-0015-migration-preflight",
     "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
     "state": "OPEN",
-    "is_draft": true,
-    "status": "Open/DRAFT; exact hash pin plus separate authorization SHA bound to current main; no merge or remote migration. Final checks/reviews must be attached to the exact live HEAD.",
+    "is_draft": false,
+    "status": "Open/READY; executable candidate e7c544b with Worker/Web CI and all three exact-head reviews PASS; no merge or remote migration. Ready for separate protected-merge authorization.",
     "live_head_source": "GitHub PR #63; derive current head after publication."
   },
   "issue_4": "CLOSED",
@@ -1372,10 +1372,16 @@
     "local_rehearsal": "PASS on isolated Wrangler local D1 imported from private backup; 0015 applied locally; aggregates unchanged; 11-column revision table/two ownership triggers; zero local pending migrations",
     "guard_tests": "74/74 PASS (49 focused); exact hash and trigger/DML/destructive/unapproved negatives; remote reads require canonical target/provenance, only sole 0015 may be pending, workflow passes SHA auth into each gate.",
     "guard_pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
-    "status": "PREPARED_UNMERGED_AWAITING_EXACT_HEAD_REVIEWS",
+    "reviewed_candidate_sha": "e7c544b839b9017ddaa7ce3f3a13929f2fb55f75",
+    "reviewed_candidate_tree": "7bb6efff5b5b06f2b198f84f8b4236216c595ec9",
+    "exact_head_ci": "41225294252 PASS: worker/web SUCCESS; staging-private SKIPPED",
+    "independent_critic": "PASS on exact e7c544b/tree 7bb6efff; read-only, no files or remote commands",
+    "integration_review": "PASS on exact e7c544b/tree 7bb6efff; no integration findings",
+    "controller": "PASS on exact e7c544b/tree 7bb6efff; delegated_codex_separate_process; gpt-6-luna/high requested; --sandbox read-only; process exit 0; provider backend identity UNVERIFIED; Controller could not run full tests under read-only temp constraints; parent verified local 74/74 and GitHub CI",
+    "status": "PREPARED_UNMERGED_AWAITING_HUMAN_PROTECTED_MERGE_AUTHORIZATION",
     "remote_migration_applied": false,
     "worker_published": false,
-    "next_action": "Complete exact-head CI and all three requested read-only reviews. If PASS, await separate protected-merge authorization; remote migration remains a later Human Gate.",
+    "next_action": "Await separate protected-merge authorization. After merge, re-run preflight and request distinct authorization to apply exactly 0015; no Worker publication or M3 is authorized.",
     "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required when 0015 is the sole pending migration, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance. Any other pending migration fails regardless of allowlist/auth entries."
   }
 }
