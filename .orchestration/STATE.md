@@ -2174,3 +2174,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Its read-path finding is repaired in the current local candidate: noncanonical remote configs fail before queries; remote ledger reads run synthetic provenance first. Local tests now report 72/72 PASS (47 focused), exact migration hash still matches, and no remote command/resource action occurred.
 - The repair is committed and pushed on PR #63; the current live HEAD is determined from GitHub, not this historical event. The last exact-head Controller review on `178a800` returned REWORK for the remote-read target/provenance path; the new guard and regressions are on the live candidate. The latest delegated Controller attempt on `5299c2b` is not yet accepted as PASS until its final output is reconciled with the captured CLI/session evidence.
 - **Next action:** finish checks and all three read-only reviews on the exact live PR HEAD, record their verdicts in PR #63 and Issue #61, then leave the PR ready for separate protected-merge authorization if every gate passes. No merge, migration, deployment, production, or M3 action is authorized.
+
+
+## Event 271 — exact 0015 remote migration scope
+
+- Controller reviewed PR HEAD `5299c2bee2f9990ce9e2248396f03a1b2c629472` / tree `6d06a0d89289588d6d178b07a13f3ae475ecf795` using separate Codex `gpt-6-luna`, High, `--sandbox read-only`; CLI configuration/process completion were accepted, backend model identity remains UNVERIFIED. It returned REWORK P2: a hypothetical different migration might pass if added to the allowlist with its own SHA authorization.
+- Repair hardcodes the scope: the remote guard accepts only no pending migrations or exactly 0015, independent of any other allowlist/auth variable. Regressions cover an alternative 0016 with its own matching SHA across authorization, backup/rehearsal and apply, plus empty pending set.
+- Local scripts tests: 74/74 PASS (49 focused guard tests); state validator and diff check PASS. Final exact-head CI and all reviews remain pending.
+- No D1 migration, backup/export, Preview update, Access/CD change, or production change occurred. PR #63 remains unmerged. If all gates pass, stop for separate protected-merge authorization; remote migration remains a later independent Human Gate.

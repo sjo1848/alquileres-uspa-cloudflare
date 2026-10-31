@@ -639,24 +639,21 @@ def _verify_remote_migration_target(config: str) -> None:
 
 
 def _require_remote_migration_authorization(pending: list[str]) -> None:
-    if MIGRATION_0015_NAME in pending and pending != [MIGRATION_0015_NAME]:
-        raise PolicyError("migration 0015 must be the sole pending remote migration")
+    if not pending:
+        return
+    if pending != [MIGRATION_0015_NAME]:
+        raise PolicyError("only migration 0015 may be pending for this remote migration task")
     allowlist = _load_json(MIGRATIONS)
     allowed = {item["name"]: item for item in allowlist.get("migrations", [])}
-    for name in pending:
-        policy = allowed.get(name, {})
-        approval_env = policy.get("remote_authorization_env")
-        if name == MIGRATION_0015_NAME and approval_env != MIGRATION_0015_AUTHORIZATION_ENV:
-            raise PolicyError("migration 0015 requires its separate SHA-bound authorization policy")
-        if approval_env is None:
-            raise PolicyError(f"migration {name} has no separate remote-authorization policy")
-        if not isinstance(approval_env, str) or not re.fullmatch(r"CF_PREVIEW_MIGRATION_[A-Z0-9]+_AUTHORIZED_SHA", approval_env):
-            raise PolicyError(f"invalid separate remote-authorization variable for migration {name}")
-        approved_sha = os.environ.get(approval_env, "")
-        current_sha = os.environ.get("GITHUB_SHA", "")
-        if not CANONICAL_SHA.fullmatch(current_sha) or approved_sha != current_sha:
-            raise PolicyError(f"separate human authorization for migration {name} must equal the current main SHA")
-        verify_latest_main(current_sha)
+    policy = allowed.get(MIGRATION_0015_NAME, {})
+    approval_env = policy.get("remote_authorization_env")
+    if approval_env != MIGRATION_0015_AUTHORIZATION_ENV:
+        raise PolicyError("migration 0015 requires its separate SHA-bound authorization policy")
+    approved_sha = os.environ.get(approval_env, "")
+    current_sha = os.environ.get("GITHUB_SHA", "")
+    if not CANONICAL_SHA.fullmatch(current_sha) or approved_sha != current_sha:
+        raise PolicyError("separate human authorization for migration 0015 must equal the current main SHA")
+    verify_latest_main(current_sha)
 
 
 def verify_latest_main(current_sha: str) -> None:

@@ -11,8 +11,8 @@
   "next_action": "Complete exact-head Worker/Web CI and Independent Critic, Integration Review, and Controller on PR #63. If all PASS, leave it ready for separate protected-merge authorization. Remote migration requires a later, distinct authorization after merge and a fresh preflight.",
   "stop_reason": "Await final exact-head technical reviews. No merge, remote D1 action, deployment, or production change is authorized.",
   "event": {
-    "seq": 270,
-    "summary": "M2.1 migration guard repaired for exact-0015 scope and remote target; Controller remote-read REWORK fixed; exact-head reviews pending; no remote D1 action or merge"
+    "seq": 271,
+    "summary": "M2.1 migration guard hard-limited to sole 0015; Controller alternative-migration REWORK addressed; exact-head reviews pending; no remote D1 action or merge"
   },
   "external_review": null,
   "human_gate": {
@@ -1370,12 +1370,12 @@
     "migration_sha256": "4932baa752f60f6d25813663dcdafa6454eff2e0cd97a9da16270731d030a22e",
     "private_backup": "SQL export stored outside repository; 65021 bytes; file 0600 under directory 0700; no contents/path published",
     "local_rehearsal": "PASS on isolated Wrangler local D1 imported from private backup; 0015 applied locally; aggregates unchanged; 11-column revision table/two ownership triggers; zero local pending migrations",
-    "guard_tests": "72/72 PASS (47 focused); exact hash and trigger/DML/destructive/unapproved negatives; remote reads require canonical target/provenance, extra pending migrations fail closed, workflow passes SHA auth into each gate.",
+    "guard_tests": "74/74 PASS (49 focused); exact hash and trigger/DML/destructive/unapproved negatives; remote reads require canonical target/provenance, only sole 0015 may be pending, workflow passes SHA auth into each gate.",
     "guard_pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
     "status": "PREPARED_UNMERGED_AWAITING_EXACT_HEAD_REVIEWS",
     "remote_migration_applied": false,
     "worker_published": false,
     "next_action": "Complete exact-head CI and all three requested read-only reviews. If PASS, await separate protected-merge authorization; remote migration remains a later Human Gate.",
-    "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required for the sole pending 0015, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance; any unscoped extra migration fails closed."
+    "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required when 0015 is the sole pending migration, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance. Any other pending migration fails regardless of allowlist/auth entries."
   }
 }

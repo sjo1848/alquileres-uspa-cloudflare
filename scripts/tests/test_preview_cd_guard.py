@@ -568,8 +568,8 @@ class PreviewCdGuardTests(unittest.TestCase):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
         approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
         cases = (
-            (["0013_owner_auth_local.sql", "0015_listing_change_revisions.sql"], "must be the sole pending"),
-            (["0013_owner_auth_local.sql"], "no separate remote-authorization policy"),
+            (["0013_owner_auth_local.sql", "0015_listing_change_revisions.sql"], "only migration 0015 may be pending"),
+            (["0013_owner_auth_local.sql"], "only migration 0015 may be pending"),
         )
         for pending, expected_error in cases:
             for command in ("authorize", "backup", "apply"):
@@ -594,6 +594,42 @@ class PreviewCdGuardTests(unittest.TestCase):
                     if command == "backup":
                         self.assertFalse((Path(directory) / "private").exists())
                         self.assertFalse((Path(directory) / "persist").exists())
+
+    def test_remote_paths_reject_other_migration_even_with_its_own_sha_authorization(self):
+        current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
+        environment = {
+            "GITHUB_SHA": current_main,
+            "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA": current_main,
+            "CF_PREVIEW_MIGRATION_0016_AUTHORIZED_SHA": current_main,
+        }
+        for command in ("authorize", "backup", "apply"):
+            with self.subTest(command=command), tempfile.TemporaryDirectory() as directory, \
+                 mock.patch.object(guard, "verify_target"), \
+                 mock.patch.object(guard, "verify_provenance"), \
+                 mock.patch.object(guard, "verify_migrations", return_value=["0016_alternative.sql"]), \
+                 mock.patch.object(guard, "verify_latest_main") as latest_main, \
+                 mock.patch.object(guard, "run_captured") as run, \
+                 mock.patch.dict(os.environ, environment, clear=False):
+                if command == "authorize":
+                    operation = lambda: guard.authorize_remote("wrangler.preview-migrations-ci.jsonc")
+                elif command == "backup":
+                    root = Path(directory)
+                    operation = lambda: guard.backup_and_rehearse("wrangler.preview-migrations-ci.jsonc", root / "private" / "backup.sql", root / "persist")
+                else:
+                    operation = lambda: guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
+                with self.assertRaisesRegex(guard.PolicyError, "only migration 0015 may be pending"):
+                    operation()
+                latest_main.assert_not_called()
+                run.assert_not_called()
+                if command == "backup":
+                    self.assertFalse((Path(directory) / "private").exists())
+                    self.assertFalse((Path(directory) / "persist").exists())
+
+    def test_remote_authorization_succeeds_when_no_migration_is_pending(self):
+        with mock.patch.object(guard, "verify_target"), \
+             mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_migrations", return_value=[]):
+            guard.authorize_remote("wrangler.preview-migrations-ci.jsonc")
 
     def test_remote_apply_fails_closed_if_0015_authorization_policy_is_removed(self):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
