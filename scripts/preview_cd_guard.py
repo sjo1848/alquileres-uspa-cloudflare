@@ -598,6 +598,8 @@ def backup_and_rehearse(config: str, backup: Path, persist_to: Path) -> None:
 
 
 def apply_remote(config: str) -> None:
+    _verify_remote_migration_target(config)
+    verify_provenance(config)
     pending = verify_migrations(config, MIGRATIONS, local=False)
     if not pending:
         print("PASS: no remote migration pending")
@@ -613,9 +615,19 @@ def apply_remote(config: str) -> None:
 
 
 def authorize_remote(config: str) -> None:
+    _verify_remote_migration_target(config)
+    verify_provenance(config)
     pending = verify_migrations(config, MIGRATIONS, local=False)
     _require_remote_migration_authorization(pending)
     print("PASS: pending remote migrations have explicit authorization")
+
+
+def _verify_remote_migration_target(config: str) -> None:
+    expected_migrations_config = (WORKER / "wrangler.preview-migrations-ci.jsonc").resolve()
+    provided_config = (WORKER / config).resolve()
+    if provided_config != expected_migrations_config:
+        raise PolicyError("remote migrations require the canonical existing Preview migration config")
+    verify_target(WORKER / "wrangler.preview-ci.jsonc", expected_migrations_config)
 
 
 def _require_remote_migration_authorization(pending: list[str]) -> None:

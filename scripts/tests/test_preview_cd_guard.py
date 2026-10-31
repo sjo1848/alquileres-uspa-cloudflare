@@ -442,15 +442,29 @@ class PreviewCdGuardTests(unittest.TestCase):
                 guard.validate_pending_migrations([path.name], {path.name: fixture_policy}, {path.name: path})
 
     def test_remote_apply_blocks_unapproved_migration_before_wrangler_side_effect(self):
-        with mock.patch.object(guard, "verify_migrations", side_effect=guard.PolicyError("pending migration 0016 is not approved")), \
+        with mock.patch.object(guard, "verify_provenance"), \
+             mock.patch.object(guard, "verify_migrations", side_effect=guard.PolicyError("pending migration 0016 is not approved")), \
              mock.patch.object(guard, "run_captured") as run:
             with self.assertRaisesRegex(guard.PolicyError, "not approved"):
                 guard.apply_remote("wrangler.preview-migrations-ci.jsonc")
         run.assert_not_called()
 
+    def test_remote_commands_reject_noncanonical_target_before_any_remote_read_or_write(self):
+        for remote_command in (guard.apply_remote, guard.authorize_remote):
+            with self.subTest(remote_command=remote_command.__name__), \
+                 mock.patch.object(guard, "verify_provenance") as provenance, \
+                 mock.patch.object(guard, "verify_migrations") as migrations, \
+                 mock.patch.object(guard, "run_captured") as run:
+                with self.assertRaisesRegex(guard.PolicyError, "canonical existing Preview migration config"):
+                    remote_command("wrangler.production.jsonc")
+            provenance.assert_not_called()
+            migrations.assert_not_called()
+            run.assert_not_called()
+
     def test_remote_authorization_preflight_fails_before_backup_when_0015_is_unapproved(self):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
         with mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
+             mock.patch.object(guard, "verify_provenance"), \
              mock.patch.object(guard, "verify_latest_main") as latest_main, \
              mock.patch.dict(os.environ, {"GITHUB_SHA": current_main}, clear=False):
             os.environ.pop("CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA", None)
@@ -466,6 +480,7 @@ class PreviewCdGuardTests(unittest.TestCase):
         for authorization, workflow_sha in cases:
             with self.subTest(authorization=authorization, workflow_sha=workflow_sha), \
                  mock.patch.object(guard, "verify_migrations", return_value=pending), \
+                 mock.patch.object(guard, "verify_provenance"), \
                  mock.patch.object(guard, "run_captured") as run, \
                  mock.patch.dict(os.environ, {"GITHUB_SHA": workflow_sha}, clear=False):
                 os.environ.pop(approval_env, None)
@@ -480,6 +495,7 @@ class PreviewCdGuardTests(unittest.TestCase):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
         approval_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
         with mock.patch.object(guard, "verify_migrations", side_effect=[pending, []]), \
+             mock.patch.object(guard, "verify_provenance") as provenance, \
              mock.patch.object(guard, "verify_latest_main") as latest_main, \
              mock.patch.object(guard, "run_captured") as run, \
              mock.patch.object(guard, "verify_provenance") as provenance, \
@@ -488,7 +504,8 @@ class PreviewCdGuardTests(unittest.TestCase):
         latest_main.assert_called_once_with(current_main)
         run.assert_called_once()
         self.assertIn("--remote", run.call_args.args[0])
-        provenance.assert_called_once_with("wrangler.preview-migrations-ci.jsonc")
+        self.assertEqual(provenance.call_count, 2)
+        self.assertEqual(provenance.call_args_list[0].args, ("wrangler.preview-migrations-ci.jsonc",))
 
     def test_remote_apply_fails_closed_if_0015_authorization_policy_is_removed(self):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"
@@ -497,7 +514,10 @@ class PreviewCdGuardTests(unittest.TestCase):
         entry = next(x for x in policy["migrations"] if x["name"] == "0015_listing_change_revisions.sql")
         entry.pop("remote_authorization_env")
         with mock.patch.object(guard, "_load_json", return_value=policy), \
+             mock.patch.object(guard, "verify_target"), \
+             mock.patch.object(guard, "verify_provenance"), \
              mock.patch.object(guard, "verify_migrations", return_value=["0015_listing_change_revisions.sql"]), \
+             mock.patch.object(guard, "verify_provenance"), \
              mock.patch.object(guard, "run_captured") as run, \
              mock.patch.dict(os.environ, {"GITHUB_SHA": current_main, approval_env: current_main}, clear=False):
             with self.assertRaisesRegex(guard.PolicyError, "requires its separate SHA-bound authorization policy"):
