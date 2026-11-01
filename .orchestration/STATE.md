@@ -2226,3 +2226,10 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Local tests on the in-progress candidate: preview auth 9/9; local owner auth 5/5; OWNER lifecycle 6/6; ADMIN moderation 12/12; listing management 23/23; MONTH/WEEK rental terms 5/5; contact workflow 6/6; public catalog 7/7; Worker typecheck PASS; integrated local D1 OWNER→ADMIN Playwright 1/1; Web typecheck/build:preview PASS. Exact final CI/reviews are pending.
 - The prior M2.1 PR #63, remote migration and deployment state is retained as history. No merge, Preview deployment, Access change, service-token creation, D1/CD/production modification, or M3 work occurred for #64.
 - **Next action:** complete consistency/diff preflight, publish the authorized functional draft PR, then resolve its exact-head CI and read-only reviews. Leave it unmerged and undeployed; remote Access/service-token activation requires a separate authorization.
+
+
+## Event 277 — Functional draft PR #65 published
+
+- PR #65 is OPEN/DRAFT at candidate `6184e451ef0a614a83308ed063d7b5075b59eaba`, based on `main@944d4bb7591deb0fd889731c9922b5b571893527`. It contains the Issue #64 implementation, regression tests, exact Access diagnosis/config proposal, and state reconciliation.
+- Exact-head GitHub Quick Checks run `41268136510` were in progress at checkpoint time (`worker` running, `web` queued). Automated review and final read-only Controller review are pending. Local focused tests and type/build checks are recorded in Event 276 and the PR body.
+- **Next action:** process final exact-head CI/review findings, then perform one read-only technical review of the final SHA. Keep PR #65 draft/open. No merge, Preview deployment, Access policy/session change, Service Token creation/activation, Worker secret/variable change, remote D1, CD, production or M3.

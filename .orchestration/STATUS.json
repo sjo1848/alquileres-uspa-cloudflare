@@ -6,13 +6,13 @@
   "resume_authorized": true,
   "active_task": "Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation",
   "last_completed_task": "Read-only Cloudflare Access diagnostics; implemented bounded silent internal-session renewal, signed exact-client Service Auth support disabled by default, negative tests and local OWNER→ADMIN coverage. Remote Access/token configuration remains unauthorized.",
-  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527",
+  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; draft PR candidate 6184e451ef0a614a83308ed063d7b5075b59eaba",
   "work_branch": "work/i64-preview-silent-renew-service-auth",
-  "next_action": "Finish final local consistency/preflight, publish the consolidated functional draft PR for Issue #64, then process exact-head CI and read-only reviews; do not merge, deploy, create/activate tokens, change Access, touch D1/CD/production, or start M3.",
+  "next_action": "Wait for exact-head Quick Checks on PR #65 and process any automated review findings; then run independent read-only technical review on the final exact SHA. Keep PR draft/open; do not merge, deploy, modify Access, create/activate a service token, touch D1/CD/production, or begin M3.",
   "stop_reason": "No blocker to authorized local implementation. Remote Access duration changes and Service Auth activation are separate human-authorized boundaries and remain untouched.",
   "event": {
-    "seq": 276,
-    "summary": "Issue #64 local implementation and read-only Access diagnostics; remote activation intentionally not authorized"
+    "seq": 277,
+    "summary": "Functional draft PR #65 published on exact base for Issue #64; CI and reviews in progress"
   },
   "external_review": null,
   "human_gate": {
@@ -20,7 +20,17 @@
     "scope": "A separate authorization is required before changing global/application/policy Access durations, creating/activating a dedicated Service Auth token/policy, publishing PREVIEW_QA_SERVICE_CLIENT_ID, merging, or deploying. Local work and a functional draft PR are authorized."
   },
   "blocker": null,
-  "pull_request": null,
+  "pull_request": {
+    "number": 65,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/65",
+    "branch": "work/i64-preview-silent-renew-service-auth",
+    "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
+    "head_sha": "6184e451ef0a614a83308ed063d7b5075b59eaba",
+    "state": "OPEN",
+    "is_draft": true,
+    "status": "Draft PR published; exact-head Worker/Web checks and automated review are in progress. No merge or remote activation.",
+    "merge_commit": null
+  },
   "issue_4": "CLOSED",
   "review_authority": null,
   "human_acceptance": {
@@ -77,7 +87,8 @@
     "access_observation": "App 1h; Operator only policy null/inherits; global duration omitted by API (documented 24h default is not measured); WARP disabled/no client duration returned; IdP session value unavailable through queried read-only API; service-token strict mode false.",
     "local_results": "Worker preview-auth 9/9; owner-auth 5/5; owner-lifecycle 6/6; admin-moderation 12/12; listing-management 23/23; rental-terms 5/5; contact-workflow 6/6; public-listings 7/7; Worker typecheck PASS; local M2.1 Playwright OWNER→ADMIN journey 1/1; web typecheck/build:preview PASS.",
     "remote": "No remote E2E credentials/policy configured or used; no Access writes, service-token creation, Preview deployment, D1/CD/production change.",
-    "pending": "Finish consistent state and diff validation, create functional draft PR, wait for exact-head CI and reviews. Remote E2E, Access settings and dedicated Service Auth activation require separate authorization."
+    "pending": "PR #65 exact-head CI and automated review; then final read-only Controller review on exact SHA. Keep draft/open. No remote activation, merge, deployment, D1/CD/production action.",
+    "candidate_sha": "6184e451ef0a614a83308ed063d7b5075b59eaba"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
