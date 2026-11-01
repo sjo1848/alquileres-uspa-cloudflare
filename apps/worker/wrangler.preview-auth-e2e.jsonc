@@ -1,0 +1,34 @@
+{
+  "name": "cf-au-i64-preview-auth-e2e-local",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-12",
+  "vars": {
+    "AUTH_STRATEGY": "ACCESS_PREVIEW",
+    "ACCESS_AUD": "6666666666666666666666666666666666666666666666666666666666666666",
+    "PREVIEW_QA_SERVICE_CLIENT_ID": "local-playwright-test-client-12345",
+    "PREVIEW_AUTH_LOCAL_TEST": "true",
+    "PREVIEW_AUTH_TEST_ISSUER": "https://access-test.invalid",
+    "PREVIEW_AUTH_TEST_JWK": "{\"kty\":\"RSA\",\"n\":\"qr9pO7aLb9i_3QAXFRSu_z8KwgsISRI8IGPBFlZmNZSHiMkmCEGmejo1CHgCAnXs-iGwdjjKvGVbRoOYWjKzMWTgY3bawJn6nCXQcfKgTq7zTDqWey0vM6-eH5Ij0dOfKWC5l8dfAuiK9hctlOO_2Sx4C-xe9KO9Xt6KV4Dg9rzZz93o8nHW5kPSNwBAA0y6boitj87Vg_KDybPlai9qwFnxuTa0lO2xWF1s3BXyfWqx3F53fBY8a4obIiDgMnXGGCD40HaAL4en0md8Plx89tY9SvVqDQ1tQYdMINX8oHTeDLChMbTutUY_07N-u2HkejH-sDn6G8RNRZGifXdUnw\",\"e\":\"AQAB\",\"kid\":\"preview-auth-e2e\",\"alg\":\"RS256\",\"use\":\"sig\"}",
+    "JWT_SECRET": "local-only-synthetic-preview-auth-secret-0123456789",
+    "JWT_EXPIRES_IN": "5s",
+    "COOKIE_SECURE": "false",
+    "COOKIE_SAME_SITE": "lax",
+    "MEDIA_STRATEGY": "STATIC_ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cf-au-i64-preview-auth-e2e-local",
+      "database_id": "00000000-0000-0000-0000-000000000064",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "assets": {
+    "directory": "../web/dist/client",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*", "/public/*", "/auth/*", "/owner/*", "/admin/*", "/health",
+      "/listings", "/listings/*/availability", "/listings/*/reconfirm", "/listings/*/images", "/listings/*/images/*"
+    ]
+  }
+}

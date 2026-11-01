@@ -1,13 +1,13 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { localCompletePasswordReset, localMockMailbox, localOwnerAuthEnabled, localRateAllowed, localRegister, localRequestPasswordReset, localVerifyEmail, type LocalOwnerAuthEnv } from './local-owner-auth';
-import { previewAuthConfigured, verifyPreviewOperator, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole } from './preview-auth';
+import { previewAuthConfigured, verifyPreviewIdentity, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole, type PreviewIdentity } from './preview-auth';
 import { cleanImageName, d1BlobBytes, D1_IMAGE_MAX_BYTES, D1_IMAGE_MAX_COUNT, D1_MEDIA_QUOTA_BYTES, readBoundedBody, validateImageBytes } from './d1-blob-media';
 
 type Env = PreviewAuthEnv & LocalOwnerAuthEnv & { MEDIA_STRATEGY?:string; IMAGES: R2Bucket; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
 type User = { id: string; email: string; role: 'OWNER'|'ADMIN'; session_version?: number };
 type ImageRow = { id:string; listing_id:string; object_key:string; original_name:string; mime_type:string; byte_size:number; position:number; created_at:string; blob_data?:unknown };
-const app = new Hono<{ Bindings: Env; Variables: { user: User } }>();
+const app = new Hono<{ Bindings: Env; Variables: { user: User; previewIdentity: PreviewIdentity } }>();
 const te = new TextEncoder();
 const json = (body: unknown, status=200, headers?: HeadersInit) => Response.json(body,{status,headers});
 const now = () => new Date().toISOString();
@@ -34,13 +34,65 @@ function listingDto(id:string,owner:string,x:any,t:string){return {id,ownerId:ow
 function b64(bytes: Uint8Array) { let s=''; for (const b of bytes) s+=String.fromCharCode(b); return btoa(s).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_'); }
 function unb64(s:string) { if(!/^[A-Za-z0-9_-]+$/.test(s)) throw Error('bad token'); const x=s.replace(/-/g,'+').replace(/_/g,'/'); return Uint8Array.from(atob(x+'='.repeat((4-x.length%4)%4)),c=>c.charCodeAt(0)); }
 async function boundedJson(request:Request,maxBytes:number){const reader=request.body?.getReader();if(!reader)return null;const chunks:Uint8Array[]=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>maxBytes){await reader.cancel();return null;}chunks.push(value);}}finally{reader.releaseLock();}const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}try{return JSON.parse(new TextDecoder().decode(bytes));}catch{return null;}}
+async function hasRequestBody(request:Request){const reader=request.body?.getReader();if(!reader)return false;try{for(;;){const{done,value}=await reader.read();if(done)return false;if(value?.byteLength){await reader.cancel();return true;}}}finally{reader.releaseLock();}}
 function lifetime(env:Env) { const m=/^(\d+)(s|m|h|d)$/.exec(env.JWT_EXPIRES_IN??'15m'); if(!m) throw Error('bad jwt expiry'); return Number(m[1])*({s:1,m:60,h:3600,d:86400}[m[2]]!); }
 function jwtSecretBytes(env:Env) { if(typeof env.JWT_SECRET!=='string')throw Error('jwt secret unavailable');const secret=te.encode(env.JWT_SECRET);if(secret.length<32)throw Error('jwt secret too short');return secret; }
 function jwtSecretConfigured(env:Env) { try{jwtSecretBytes(env);return true;}catch{return false;} }
-async function sign(u:User,env:Env,expiresAt=Infinity) { const n=Math.floor(Date.now()/1000), a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify({id:u.id,email:u.email,role:u.role,sv:u.session_version??0,iat:n,exp:Math.min(n+lifetime(env),expiresAt)}))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return `${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`; }
-async function verify(token:string,env:Env) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||c.exp<=Date.now()/1000) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return {...c,sessionVersion:c.sv} as {id:string;email:string;sessionVersion:number}; }
-function cookie(raw:string|null) { return raw?.split(';').map(x=>x.trim()).find(x=>x.startsWith('alquileres_session='))?.slice('alquileres_session='.length); }
-function setCookie(token:string,env:Env,clear=false) { const same=['strict','none'].includes(env.COOKIE_SAME_SITE??'')?env.COOKIE_SAME_SITE:'lax'; const secure=env.COOKIE_SECURE==='true'||env.NODE_ENV==='production'||same==='none'; return `alquileres_session=${clear?'':encodeURIComponent(token)}; Path=/; ${clear?'Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT':'Max-Age=900'}; HttpOnly; SameSite=${same![0].toUpperCase()+same!.slice(1)}${secure?'; Secure':''}`; }
+const PREVIEW_SESSION_MAX_AGE=7*24*60*60;
+type SessionClaims = { id:string; email:string; role:'OWNER'|'ADMIN'; sessionVersion:number; iat:number; exp:number; sessionId?:string; previewSource?:PreviewIdentity['source']; previewServiceClientId?:string; previewBinding?:string };
+type SignedSession={token:string;expiresAt:number};
+async function sign(u:User,env:Env,expiresAt=Infinity,previewIdentity?:PreviewIdentity,sessionId?:string):Promise<SignedSession> { const n=Math.floor(Date.now()/1000), exp=Math.min(n+lifetime(env),expiresAt), claims={id:u.id,email:u.email,role:u.role,sv:u.session_version??0,iat:n,exp,...(sessionId?{sid:sessionId}:{}),...(previewIdentity?{previewSource:previewIdentity.source,previewBinding:previewIdentity.binding,...(previewIdentity.serviceClientId?{previewServiceClientId:previewIdentity.serviceClientId}:{})}:{})}, a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify(claims))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return {token:`${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`,expiresAt:exp}; }
+async function verify(token:string,env:Env,allowExpired=false) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))), n=Math.floor(Date.now()/1000); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||!Number.isSafeInteger(c.iat)||c.iat>n+30||c.exp<=c.iat||c.exp-c.iat>lifetime(env)+2||(!allowExpired&&c.exp<=n)||!['OWNER','ADMIN'].includes(c.role)||typeof c.id!=='string'||typeof c.email!=='string'||!Number.isSafeInteger(c.sv)) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return {...c,sessionVersion:c.sv,sessionId:typeof c.sid==='string'?c.sid:undefined} as SessionClaims; }
+function cookieNamed(raw:string|null,name:string) { return raw?.split(';').map(x=>x.trim()).find(x=>x.startsWith(`${name}=`))?.slice(name.length+1); }
+function cookie(raw:string|null) { return cookieNamed(raw,'alquileres_session'); }
+function refreshCookie(raw:string|null) { return cookieNamed(raw,'alquileres_refresh'); }
+function setCookie(name:string,value:string,env:Env,options:{path:string;maxAge:number;clear?:boolean}) { const same=['strict','none'].includes(env.COOKIE_SAME_SITE??'')?env.COOKIE_SAME_SITE:'lax'; const secure=env.COOKIE_SECURE==='true'||env.NODE_ENV==='production'||same==='none'; const clear=options.clear===true; return `${name}=${clear?'':encodeURIComponent(value)}; Path=${options.path}; ${clear?'Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT':`Max-Age=${Math.max(0,Math.floor(options.maxAge))}`}; HttpOnly; SameSite=${same![0].toUpperCase()+same!.slice(1)}${secure?'; Secure':''}`; }
+function setPreviewCookies(c:any,signed:SignedSession,refreshToken:string,refreshMaxAge:number){c.header('Set-Cookie',setCookie('alquileres_session',signed.token,c.env,{path:'/',maxAge:Math.max(0,signed.expiresAt-Math.floor(Date.now()/1000))}));c.header('Set-Cookie',setCookie('alquileres_refresh',refreshToken,c.env,{path:'/api/auth',maxAge:refreshMaxAge}),{append:true});}
+function clearPreviewCookies(c:any){c.header('Set-Cookie',setCookie('alquileres_session','',c.env,{path:'/',maxAge:0,clear:true}));c.header('Set-Cookie',setCookie('alquileres_refresh','',c.env,{path:'/api/auth',maxAge:0,clear:true}),{append:true});}
+function previewAccessCookieMaxAge(identity:PreviewIdentity,env:Env){return Math.min(900,identity.expiresAt-Math.floor(Date.now()/1000),lifetime(env));}
+function refreshExpiry(now:number){return now+PREVIEW_SESSION_MAX_AGE;}
+function randomSecret(){return b64(crypto.getRandomValues(new Uint8Array(32)));}
+async function refreshSecretHash(secret:string){return b64(new Uint8Array(await crypto.subtle.digest('SHA-256',te.encode(secret))));}
+function parseRefreshCookie(value:string|undefined){if(!value)return null;const [id,secret,...rest]=value.split('.');if(rest.length||!id||!secret||!/^[0-9a-f-]{36}$/i.test(id)||!/^[A-Za-z0-9_-]{43}$/.test(secret))return null;return {id,secret};}
+async function createPreviewSession(db:D1Database,user:User,identity:PreviewIdentity){
+  const createdAt=Math.floor(Date.now()/1000),expiresAt=refreshExpiry(createdAt),sessionId=crypto.randomUUID(),secret=randomSecret(),hash=await refreshSecretHash(secret);
+  await db.prepare('DELETE FROM preview_auth_sessions WHERE expires_at<=? OR revoked_at IS NOT NULL').bind(createdAt).run();
+  await db.prepare('INSERT INTO preview_auth_sessions(id,user_id,role,identity_source,identity_binding,service_client_id,session_version,refresh_token_hash,created_at,expires_at,last_seen_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')
+    .bind(sessionId,user.id,user.role,identity.source,identity.binding,identity.serviceClientId??null,user.session_version??0,hash,createdAt,expiresAt,createdAt).run();
+  return {sessionId,refreshToken:`${sessionId}.${secret}`,expiresAt};
+}
+async function previewSessionUser(db:D1Database,claims:SessionClaims,identity:PreviewIdentity){
+  if(!claims.sessionId||claims.previewSource!==identity.source||claims.previewBinding!==identity.binding||
+    (identity.source==='playwright-service'&&claims.previewServiceClientId!==identity.serviceClientId))return null;
+  return db.prepare(`SELECT u.id,u.email,u.role,u.session_version FROM preview_auth_sessions s JOIN users u ON u.id=s.user_id
+    WHERE s.id=? AND s.user_id=? AND s.role=? AND s.identity_source=? AND s.identity_binding=? AND s.session_version=?
+      AND s.revoked_at IS NULL AND s.expires_at>unixepoch() AND u.id=? AND u.email=? AND u.role=? AND u.session_version=s.session_version`)
+    .bind(claims.sessionId,claims.id,claims.role,identity.source,identity.binding,claims.sessionVersion,claims.id,claims.email,claims.role).first<User>();
+}
+async function refreshSession(db:D1Database,refreshValue:string|undefined,identity:PreviewIdentity){
+  const parsed=parseRefreshCookie(refreshValue);if(!parsed)return null;
+  const hash=await refreshSecretHash(parsed.secret);
+  return db.prepare(`SELECT s.id AS sessionId,s.user_id AS userId,s.role,s.identity_source AS identitySource,
+    s.identity_binding AS identityBinding,s.service_client_id AS serviceClientId,s.session_version AS sessionVersion,
+    s.expires_at AS expiresAt,s.refresh_token_hash AS refreshTokenHash,
+    u.id,u.email,u.role AS userRole,u.session_version AS userSessionVersion
+    FROM preview_auth_sessions s JOIN users u ON u.id=s.user_id
+    WHERE s.id=? AND s.refresh_token_hash=? AND s.revoked_at IS NULL AND s.expires_at>unixepoch()
+      AND u.session_version=s.session_version AND s.identity_source=? AND s.identity_binding=?
+      AND ((?='operator' AND s.service_client_id IS NULL) OR (?='playwright-service' AND s.service_client_id=?))`)
+    .bind(parsed.id,hash,identity.source,identity.binding,identity.source,identity.source,identity.serviceClientId??'').first<any>();
+}
+async function authenticatedUser(c:any,claims:SessionClaims){
+  const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first() as User|null;
+  if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return null;
+  if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'){
+    const identity=c.get('previewIdentity') as PreviewIdentity|undefined;
+    if(!identity)return null;
+    return previewSessionUser(c.env.DB,claims,identity);
+  }
+  return user;
+}
+function sameOriginPost(c:any){const origin=new URL(c.req.url).origin;return c.req.header('Origin')===origin&&(!c.req.header('Sec-Fetch-Site')||c.req.header('Sec-Fetch-Site')==='same-origin');}
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
 app.use('*',async(c,next)=>{
   const strategy=c.env.AUTH_STRATEGY;
@@ -49,6 +101,12 @@ app.use('*',async(c,next)=>{
   const localMode=localOwnerAuthEnabled(c.req.raw,c.env);
   const previewMode=strategy==='ACCESS_PREVIEW'&&previewAuthConfigured(c.env,origin);
   if(protectedPath&&!localMode&&!previewMode)return c.json({error:'Authentication configuration unavailable'},503);
+  if(protectedPath&&previewMode){
+    let identity:PreviewIdentity;
+    try{identity=await verifyPreviewIdentity(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,origin);}
+    catch{return c.json({error:'Current Access identity required'},401);}
+    c.set('previewIdentity',identity);
+  }
   await next();
 });
 app.get('/auth/config',c=>{
@@ -65,16 +123,39 @@ app.post('/auth/password-reset/complete',c=>localCompletePasswordReset(c.req.raw
 app.get('/__local/mailbox',c=>localMockMailbox(c.req.raw,c.env));
 app.post('/auth/preview-session',async c=>{
   if(!previewAuthConfigured(c.env,new URL(c.req.url).origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview authentication unavailable'},503);
-  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
-  let identity:{expiresAt:number};
-  try{identity=await verifyPreviewOperator(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,new URL(c.req.url).origin);}
-  catch{return c.json({error:'Authorized Access identity required'},401);}
+  if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  const identity=c.get('previewIdentity') as PreviewIdentity;
   const request=await c.req.json().catch(()=>null) as {role?:unknown}|null;
   if(!request||Object.keys(request).some(key=>key!=='role')||!['OWNER','ADMIN'].includes(String(request.role)))return c.json({error:'Choose a demo identity'},400);
   const role=request.role as PreviewDemoRole, expected=PREVIEW_DEMO_USERS[role];
   const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=? AND email=? AND role=?').bind(expected.id,expected.email,role).first<User>();
   if(!user)return c.json({error:'Synthetic demo identity unavailable'},503);
-  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt),c.env)});
+  const accessMaxAge=previewAccessCookieMaxAge(identity,c.env);
+  if(accessMaxAge<=0)return c.json({error:'Access session expired'},401);
+  const session=await createPreviewSession(c.env.DB,user,identity);
+  const signed=await sign(user,c.env,identity.expiresAt,identity,session.sessionId);
+  setPreviewCookies(c,signed,session.refreshToken,session.expiresAt-Math.floor(Date.now()/1000));
+  return c.json({user:{id:user.id,email:user.email,role:user.role},sessionExpiresAt:signed.expiresAt,refreshExpiresAt:session.expiresAt});
+});
+app.post('/auth/refresh',async c=>{
+  const origin=new URL(c.req.url).origin;
+  if(c.env.AUTH_STRATEGY!=='ACCESS_PREVIEW'||!previewAuthConfigured(c.env,origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview session renewal unavailable'},503);
+  if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  if(await hasRequestBody(c.req.raw))return c.json({error:'Preview renewal accepts no request body'},400);
+  const identity=c.get('previewIdentity') as PreviewIdentity;
+  const session=await refreshSession(c.env.DB,refreshCookie(c.req.header('Cookie')??null),identity);
+  if(!session)return c.json({error:'Preview refresh session expired or revoked'},401);
+  const expected=PREVIEW_DEMO_USERS[session.role as PreviewDemoRole];
+  if(!expected||session.id!==expected.id||session.email!==expected.email||session.userRole!==session.role||
+    session.userSessionVersion!==session.sessionVersion||session.expiresAt<=Math.floor(Date.now()/1000))return c.json({error:'Synthetic Preview session unavailable'},401);
+  const touch=await c.env.DB.prepare('UPDATE preview_auth_sessions SET last_seen_at=? WHERE id=? AND refresh_token_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()')
+    .bind(Math.floor(Date.now()/1000),session.sessionId,session.refreshTokenHash).run();
+  if(touch.meta.changes!==1)return c.json({error:'Preview refresh session expired or revoked'},401);
+  const user:User={id:session.id,email:session.email,role:session.role,session_version:session.sessionVersion};
+  const signed=await sign(user,c.env,identity.expiresAt,identity,session.sessionId);
+  const remaining=session.expiresAt-Math.floor(Date.now()/1000);
+  setPreviewCookies(c,signed,refreshCookie(c.req.header('Cookie')??null)!,remaining);
+  return c.json({user:{id:user.id,email:user.email,role:user.role},sessionExpiresAt:signed.expiresAt,refreshExpiresAt:session.expiresAt});
 });
 app.get('/health',c=>c.json({ok:true}));
 app.all('/__fixture/*',c=>c.json({error:'not found'},404));
@@ -93,19 +174,49 @@ app.post('/auth/login',async c=>{
   const matches=account?await bcrypt.compare(input.password,account.password_hash):await bcrypt.compare(input.password,dummyHash);
   if(!account||!matches||!account.email_verified_at)return c.json({error:'Invalid credentials'},401);
   const user:User={id:account.id,email:account.email,role:account.role,session_version:account.session_version};
-  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie(await sign(user,c.env),c.env)});
+  const signed=await sign(user,c.env);
+  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie('alquileres_session',signed.token,c.env,{path:'/',maxAge:900})});
 });
 app.get('/auth/me',async c=>{
   if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
   const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
   if(!raw)return c.json({error:'Invalid or expired token'},401);
-  let claims:{id:string;email:string;sessionVersion:number};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
-  const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();
-  if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);
-  return c.json({id:user.id,email:user.email,role:user.role});
+  let claims:SessionClaims;try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  const user=await authenticatedUser(c,claims);
+  if(!user)return c.json({error:'Invalid or expired token'},401);
+  return c.json({id:user.id,email:user.email,role:user.role,...(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'?{sessionExpiresAt:claims.exp}:{})});
 });
 app.post('/auth/logout',async c=>{
-  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'){
+    if(!jwtSecretConfigured(c.env))return c.json({error:'Preview logout unavailable'},503);
+    const identity=c.get('previewIdentity') as PreviewIdentity,raw=cookie(c.req.header('Cookie')??null),refresh=parseRefreshCookie(refreshCookie(c.req.header('Cookie')??null));
+    let claims:SessionClaims|undefined;
+    if(raw){try{claims=await verify(decodeURIComponent(raw),c.env,true);}catch{}}
+    if(claims?.sessionId&&claims.previewSource===identity.source&&claims.previewBinding===identity.binding&&
+      (identity.source!=='playwright-service'||claims.previewServiceClientId===identity.serviceClientId)){
+      const expected=PREVIEW_DEMO_USERS[claims.role];
+      if(expected&&claims.id===expected.id&&claims.email===expected.email){
+        try{await c.env.DB.prepare(`UPDATE preview_auth_sessions SET revoked_at=COALESCE(revoked_at,?)
+          WHERE id=? AND user_id=? AND role=? AND identity_source=? AND identity_binding=? AND session_version=?`)
+          .bind(Math.floor(Date.now()/1000),claims.sessionId,claims.id,claims.role,identity.source,identity.binding,claims.sessionVersion).run();}
+        catch{return c.json({error:'Preview logout unavailable'},503);}
+      }
+    }else if(refresh){
+      try{
+        const session=await refreshSession(c.env.DB,refreshCookie(c.req.header('Cookie')??null),identity);
+        if(session){
+          const expected=PREVIEW_DEMO_USERS[session.role as PreviewDemoRole];
+          if(expected&&session.id===expected.id&&session.email===expected.email&&session.userRole===session.role&&session.sessionVersion===session.userSessionVersion)
+            await c.env.DB.prepare(`UPDATE preview_auth_sessions SET revoked_at=COALESCE(revoked_at,?)
+              WHERE id=? AND refresh_token_hash=? AND identity_source=? AND identity_binding=? AND revoked_at IS NULL`)
+              .bind(Math.floor(Date.now()/1000),session.sessionId,session.refreshTokenHash,identity.source,identity.binding).run();
+        }
+      }catch{return c.json({error:'Preview logout unavailable'},503);}
+    }
+    clearPreviewCookies(c);
+    return c.json({ok:true});
+  }
   if(localOwnerAuthEnabled(c.req.raw,c.env)){
     const authorization=c.req.header('Authorization')??'';
     const bearer=authorization.startsWith('Bearer ')?authorization.slice(7):null;
@@ -119,19 +230,19 @@ app.post('/auth/logout',async c=>{
       }catch{return c.json({error:'Session revocation unavailable'},503);}
     }
   }
-  return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});
+  return c.json({ok:true},200,{'Set-Cookie':setCookie('alquileres_session','',c.env,{path:'/',maxAge:0,clear:true})});
 });
-app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string;sessionVersion:number};try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();if(!u||u.email!==claims.email||u.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
-app.use('/owner/*',async(c,next)=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);if(!raw)return c.json({error:'Invalid or expired token'},401);if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:{id:string;email:string;sessionVersion:number};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);if(user.role!=='OWNER')return c.json({error:'Insufficient role'},403);c.set('user',user);await next();});
+app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:SessionClaims;try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await authenticatedUser(c,claims);if(!u)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
+app.use('/owner/*',async(c,next)=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);if(!raw)return c.json({error:'Invalid or expired token'},401);if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:SessionClaims;try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}const user=await authenticatedUser(c,claims);if(!user)return c.json({error:'Invalid or expired token'},401);if(user.role!=='OWNER')return c.json({error:'Insufficient role'},403);c.set('user',user);await next();});
 app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&['POST','PATCH','PUT','DELETE'].includes(c.req.method)&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image changes are not available for repository-managed media'},503);await next();});
 app.use('/admin/*',async(c,next)=>{
   if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
   const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
   if(!raw)return c.json({error:'Invalid or expired token'},401);
   if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)&&c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
-  let claims:{id:string;email:string;sessionVersion:number};try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
-  const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=?').bind(claims.id).first<User>();
-  if(!user||user.email!==claims.email||user.session_version!==claims.sessionVersion)return c.json({error:'Invalid or expired token'},401);
+  let claims:SessionClaims;try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  const user=await authenticatedUser(c,claims);
+  if(!user)return c.json({error:'Invalid or expired token'},401);
   if(user.role!=='ADMIN')return c.json({error:'Invalid or expired token'},401);
   c.set('user',user);await next();
 });

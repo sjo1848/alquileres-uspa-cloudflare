@@ -6,13 +6,16 @@
     "dev": "vite --host 127.0.0.1",
     "test:e2e:public": "playwright test --config=playwright.public.config.ts",
     "test:e2e:owner": "playwright test --config=playwright.owner.config.ts",
+    "test:e2e:preview-auth:local": "playwright test --config=playwright.preview-auth.local.config.ts",
+    "seed:preview-auth-e2e": "wrangler d1 migrations apply DB --local --config ../worker/wrangler.preview-auth-e2e.jsonc --persist-to .wrangler/state && wrangler d1 execute DB --local --config ../worker/wrangler.preview-auth-e2e.jsonc --persist-to .wrangler/state --file ../worker/tests/seed-owner-e2e.sql && wrangler d1 execute DB --local --config ../worker/wrangler.preview-auth-e2e.jsonc --persist-to .wrangler/state --file ../worker/tests/seed-preview-auth-e2e.sql",
     "seed:local": "wrangler d1 migrations apply DB --local --config ../worker/wrangler.jsonc --persist-to .wrangler/state && wrangler d1 execute DB --local --config ../worker/wrangler.jsonc --persist-to .wrangler/state --file ../worker/tests/seed-catalog.sql",
     "seed:owner-e2e": "wrangler d1 migrations apply DB --local --config ../worker/wrangler.owner-e2e.runtime.jsonc --persist-to .wrangler/state && wrangler d1 execute DB --local --config ../worker/wrangler.owner-e2e.runtime.jsonc --persist-to .wrangler/state --file ../worker/tests/seed-owner-e2e.sql",
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit",
     "build:preview": "CF_PREVIEW_CONFIG=../worker/wrangler.preview-ci.jsonc vite build",
     "test:e2e:foundations": "playwright test --config=playwright.foundations.config.ts",
-    "test:e2e:admin": "playwright test --config=playwright.admin.config.ts"
+    "test:e2e:admin": "playwright test --config=playwright.admin.config.ts",
+    "test:e2e:preview-auth:remote-mutating": "playwright test --config=playwright.preview-auth.config.ts"
   },
   "dependencies": {
     "vue": "^3.5.18",

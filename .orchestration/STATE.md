@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `TECHNICAL_REVIEW_IN_PROGRESS`
-Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
-Active task: `M2.1 — Issue #61 / preflight D1 migration 0015`
+State: `READY_FOR_MERGE_AUTHORIZATION`
+Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
+Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2215,3 +2215,97 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The corrected active candidate/contract pointers are consistent: PR #63 and Issue #61 / 0015 are active; PR #62 and Issue #58 / 0014 are historical. The reviewed code remains the executable candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75` / tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`, with 74/74 local scripts tests, 49 focused guard tests, canonical validator and diff check passing. The tracking-only delta adds no executable/test/workflow changes.
 - PR #63 is OPEN and ready for **separate protected-merge authorization**. **0015 is still unapplied remotely**; no merge, migration, Worker publication, Access/CD/production change, or M3 action occurred.
 - **Next action:** await authorization for the protected merge only. Any remote 0015 application requires a separate later authorization and fresh preflight.
+
+
+## Event 276 — Issue #64 local implementation and read-only Access diagnostics
+
+- Canonical base reconfirmed as `main@944d4bb7591deb0fd889731c9922b5b571893527`. Issue #61 records the already-published synthetic Preview deployment `c5182b7f-f523-4cf3-9237-fc7da591aca6` at that SHA, migration 0015 applied, and pre-change anonymous Access denials. Those historical checks are not represented as post-change checks because no deployment was authorized.
+- Cloudflare Access was queried read-only: the existing private Preview application duration is `1h`; `Operator only` is Allow with null policy duration (inherits the app); organization `session_duration` was omitted by the successful API response; WARP is disabled and no client duration was returned; queried IdP lifetime is unavailable. Service-token strict mode remains false. No policy/token/account settings were written.
+- Local implementation adds short-lived internal Preview session renewal only with same-origin POST, the existing signed session, a current signed Access assertion, fixed D1 synthetic identity/role/session version, and caps renewal at Access `exp`. Logout revokes via the D1 session version. Access JWT validation accepts assertion age up to the documented 30-day ceiling but still enforces signature, issuer, audience, claims and token `exp`; it does not extend assertion expiry.
+- Dedicated Playwright Service Auth support is fail-closed until the exact Preview-only client ID is configured. The remote Playwright config targets only the stable private Preview and limits service headers to that exact origin; it is prepared, not run. No token, policy, Worker variable, or remote configuration was created.
+- Local tests on the in-progress candidate: preview auth 9/9; local owner auth 5/5; OWNER lifecycle 6/6; ADMIN moderation 12/12; listing management 23/23; MONTH/WEEK rental terms 5/5; contact workflow 6/6; public catalog 7/7; Worker typecheck PASS; integrated local D1 OWNER→ADMIN Playwright 1/1; Web typecheck/build:preview PASS. Exact final CI/reviews are pending.
+- The prior M2.1 PR #63, remote migration and deployment state is retained as history. No merge, Preview deployment, Access change, service-token creation, D1/CD/production modification, or M3 work occurred for #64.
+- **Next action:** complete consistency/diff preflight, publish the authorized functional draft PR, then resolve its exact-head CI and read-only reviews. Leave it unmerged and undeployed; remote Access/service-token activation requires a separate authorization.
+
+
+## Event 277 — Functional draft PR #65 published
+
+- PR #65 is OPEN/DRAFT at candidate `6184e451ef0a614a83308ed063d7b5075b59eaba`, based on `main@944d4bb7591deb0fd889731c9922b5b571893527`. It contains the Issue #64 implementation, regression tests, exact Access diagnosis/config proposal, and state reconciliation.
+- Exact-head GitHub Quick Checks run `41268136510` were in progress at checkpoint time (`worker` running, `web` queued). Automated review and final read-only Controller review are pending. Local focused tests and type/build checks are recorded in Event 276 and the PR body.
+- **Next action:** process final exact-head CI/review findings, then perform one read-only technical review of the final SHA. Keep PR #65 draft/open. No merge, Preview deployment, Access policy/session change, Service Token creation/activation, Worker secret/variable change, remote D1, CD, production or M3.
+
+
+## Event 278 — PR #65 Quick Checks passed
+
+- The current observed PR tracking HEAD `afa2621b3df527a6f6f6e0fba57e644892ad9bf6` passed GitHub Quick Checks run `41268158940`: Worker PASS, Web PASS, `staging-private` SKIPPED because this was a pull request. No remote publishing job ran.
+- This event reconciles the result in `STATUS.json`; the resulting status-only commit triggers one final exact-head CI run. PR #65 remains OPEN/DRAFT.
+- **Next action:** verify that exact final CI, then run one delegated GPT-6 Luna High read-only technical review on the live PR HEAD; publish results in #64/#65. No merge, deploy, Access changes, token creation/activation, D1/CD/production action, or M3.
+
+
+## Event 279 — Controller runtime remains blocked
+
+- Exact final candidate at review time: `ad793442a6d0bf54af86b36ccce2da1bb5b52edf`; base `main@944d4bb7591deb0fd889731c9922b5b571893527`. Exact Quick Checks run `41268298720`: Worker PASS, Web PASS, `staging-private` SKIPPED.
+- Two separate Codex CLI attempts requested GPT-6 Luna / High / read-only (second with ephemeral mode and user config disabled) failed during app-server startup: `Read-only file system`. The configured native Controller also could not verify enforced read-only/model runtime. Record `.orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md` captures provenance. **No Controller PASS is claimed.** Preliminary static inspection reported no demonstrated P0/P1, but the reviewer did not run tests and this is not an approval.
+- PR #65 remains OPEN/DRAFT. The implementation, local tests and GitHub CI are complete; only the mandatory verified Controller gate remains.
+- **Next action:** resume with a verifiably read-only GPT-6 Luna High Controller runtime on the current exact PR HEAD. No merge, Access setting change, Service Token creation/activation, Preview deployment, D1/CD/production action, or M3.
+
+
+## Event 280 — PR #65 renewal and per-session revocation rework
+
+- PR #65 was first rechecked at exact remote HEAD `ac7b048c141c01deb3feb7b02530533f1c745c5c`: OPEN/DRAFT, merge state CLEAN, Worker/Web checks PASS, staging-private SKIPPED. The local rework is executable candidate commit `a7ec8a5` on top of that head; it has not yet been published at this checkpoint.
+- P1 rework: the browser renews before the internal short cookie expires, on return/focus/pageshow, and after restore via a persistent opaque `HttpOnly` refresh cookie. That credential is fixed to a seven-day absolute session, stored in D1 only as a hash and never exposed to JS. Every renewal requires a currently valid RS256 Cloudflare Access assertion with exact issuer/audience and actual `exp`; the internal cookie never outlives Access. Role comes from the persisted synthetic session, not client input. No local/session storage tokens, unbounded retry, or implicit role change.
+- Regression fixes found by real local Chromium: refresh cookie scope is `/api/auth` (the public browser route) rather than Hono's rewritten internal `/auth`; an empty POST stream with JSON Content-Type is accepted while any non-empty body is rejected. Logout UI reports success only after the Worker confirms individual SID revocation. If Access is expired, Access middleware blocks logout and the UI keeps the session/error state instead of claiming revocation; operator can retry after Access is valid.
+- P2 rework: additive local-only migration `0016_preview_auth_sessions.sql` persists each session independently; logout revokes one SID and leaves shared `users.session_version` unchanged. No remote D1 change or migration application occurred. Integration/deployment requires a separately authorized migration preflight/application.
+- Local candidate evidence: Worker preview-auth 11/11; real Chromium cookie-expiry/reopen + OWNER→ADMIN + explicit publish + concurrent OWNER/ADMIN + logout/regain-Access local E2E 1/1; Worker typecheck PASS; Web typecheck, production build, Preview-config build PASS; canonical state validator and diff check PASS. This local test uses synthetic keys/loopback only and does not claim Cloudflare remote Access/Service Auth behavior.
+- Access diagnosis/effect/config proposal and Service Auth preparation: `.orchestration/evidence/CF-AU-I64-SESSION-RENEWAL-SERVICE-AUTH.md`. No Access setting, Service Token, Preview, D1, CD, production, billing, or source repository action occurred.
+- Previous Controller result on the old candidate remains BLOCKED_MODEL_CONFIG, not PASS. New exact-head CI, Independent Critic, Integration Review and Controller are pending after publication. PR #65 must remain OPEN/DRAFT; no merge/deploy/M3.
+- **Next action:** run canonical preflight, push the rework to PR #65, then complete exact-head CI and independent reviews. Retry the configured read-only Controller and documented separate GPT-6 Luna High/read-only process; if the runtime cannot verify/start, retain BLOCKED_MODEL_CONFIG and no PASS. Keep all remote activation actions unauthorized.
+
+
+## Event 281 — Issue #64 rework reviewed; Controller runtime remains blocked
+
+- Final executable/auth-and-safety code candidate: `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`, based on unchanged `main@944d4bb7591deb0fd889731c9922b5b571893527`. PR #65 remains OPEN/DRAFT.
+- GitHub Quick Checks `41309543269` on that exact candidate: Worker PASS, Web PASS, `staging-private` SKIPPED. Worker covered typecheck, catalog/media, OWNER, rental terms, local auth, ADMIN, Preview Auth, contact, management and orchestration-state validation; Web covered typecheck and regular/Preview builds.
+- Local focused evidence on the same executable behavior: Preview Auth 11/11; OWNER lifecycle 6/6; Chromium local integrated OWNER→ADMIN, preventive refresh, actual five-second browser cookie expiry, persistent-profile reopen and per-browser logout 1/1; Worker typecheck, Web typecheck/build/Preview-build and remote-test fail-closed check PASS. Remote Preview E2E was not run.
+- **Independent Critic PASS** and **Integration Review PASS** on exact `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`. Initial review comments about a remote listing mutation were checked against the exact file and corrected: the existing role smoke does not create/publish listings, but login does create a synthetic session row. The suite is now explicitly `remote-mutating`, gated before credential use by `PREVIEW_QA_ALLOW_REMOTE_D1_WRITES=true`, and remains unexecuted. Stale docs about shared `session_version` and GET-only behavior were corrected. Reports: `.orchestration/evidence/CF-AU-I64-FINAL-REVIEWS.md`.
+- P1: proactive refresh, focus/pageshow recovery, opaque hashed refresh credential with fixed seven-day absolute expiry, current signed Access assertion on every refresh, internal cookie capped by Access `exp`, no roles from client, no local/session storage secrets, no retry loop, and fail-closed logout UI. P2: additive 0016 per-SID table and selective revocation; shared user `session_version` is not incremented. No remote schema change/migration.
+- A prior exact-head CI run `41308983679` caught the generic PASSWORD `/auth/me` response gaining `sessionExpiresAt`; this was corrected so only `ACCESS_PREVIEW` adds it. Owner lifecycle then passed 6/6 and the later exact CI above passed. Run `41309463435` was cancelled when the final documentation checkpoint superseded it.
+- Native configured `project_controller` attempted exact SHA `f5591332b4fb9a2600fce0868a6b076ee3cb54cb` with requested GPT-6 Luna/High/read-only role, but returned **BLOCKED_MODEL_CONFIG**: actual model identity and effective read-only enforcement are unverifiable in the unrestricted runtime. The separate `codex exec` attempt requested `--model gpt-6-luna`, High and `--sandbox read-only` on predecessor `7d26b8bfb0a389cabcaa0951a7844e00b91a6a00`; it returned BLOCKED because the required reviewer runtime could not initialize. It noted no demonstrated P0/P1, but this is not a Controller PASS and does not apply to the final SHA as an accepted verdict. Exact provenance is in `.orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md`.
+- No Access policy/session setting, Service Token, Preview, remote D1, CD, production, billing or source-repository change occurred. Migration 0016 is local code only and requires its own remote migration authorization before a future deployment.
+- **Next action:** keep PR #65 OPEN/DRAFT and retry only the required Controller when the GPT-6 Luna High read-only runtime can be verified. Do not merge/deploy or activate Access/Service Auth under this task.
+
+
+## Event 282 — one isolated Controller runtime retry
+
+- PR #65 HEAD was reverified as `1e1e8bb3167a8c7991732b78c1f09ac3b227855a`, OPEN/DRAFT, with Worker/Web PASS on Quick Checks `41309775169` and staging-private SKIPPED. Executable code remains `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`; current head only adds state/contract/evidence.
+- Investigated filesystem, temp directory, user config and earlier nested reviewer startup. Used Codex CLI v0.166.0 with `--ignore-user-config` and dedicated `/tmp/alquileres-i64-controller-runtime-20261101` mode `0700`. Invocation explicitly requested `--model gpt-6-luna`, `model_reasoning_effort="high"`, `--sandbox read-only`, `--ephemeral`; session `01a197e5-6c5a-7793-8901-647008495265` started/completed with exit 0. No model fallback warning appeared.
+- Read-only enforcement was tested by attempting a write only in that disposable review directory; the command was refused with `Read-only file system`, and no probe file was created. No repository files, tests, network/Cloudflare services, or remote resources were written/accessed by the Controller.
+- The separate reviewer inspected exact PR HEAD and reported no demonstrated P0/P1/P2 issue, but returned **BLOCKED_MODEL_CONFIG** because its own report could not certify CLI model/effort acceptance (`unknown`) and runtime backend model identity (`unverified`). The actual provider backend identity remains unverified. Under operational verification v2, backend attestation alone is not a blocker; nevertheless, the reviewer did not emit PASS, so Codex does not promote it to PASS.
+- Full captured review command/result is in local `/tmp/alquileres-i64-controller-runtime-20261101/`; concise evidence is `.orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md` and `.orchestration/evidence/CF-AU-I64-FINAL-REVIEWS.md`. The repo/issue state records the same result.
+- **Next action:** keep PR #65 OPEN/DRAFT. Fix the Controller launcher/session telemetry so the exact requested model/effort configuration acceptance is visible to the read-only reviewer; then, and only then, run one fresh exact-HEAD Controller review. A separate human/security review can supplement but cannot automatically substitute for Controller PASS. No merge, Preview/Access/Service Auth change, D1 migration, CD, production, or M3 action occurred.
+
+
+## Event 283 — runtime metadata probe and Controller P2 reconciliation
+
+- Reconciled P2-A: active contract/status/evidence now explicitly state that remote Preview role selection creates synthetic auth-session rows in D1. The test remains `remote-mutating`, blocked before credential use unless `PREVIEW_QA_ALLOW_REMOTE_D1_WRITES=true`; it was not run and D1 was not touched.
+- Reconciled P2-B by removing the rolling PR HEAD from active STATE/STATUS. Stable functional candidate remains `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`; query GitHub PR #65 immediately before the final review, fetch and verify that exact HEAD, and record the reviewed SHA only in the GitHub comment. Historical SHAs remain labeled as historical.
+- Added `scripts/controller_runtime.py`, using Codex CLI 0.166.0 app-server JSON-RPC `ThreadStartResponse` for accepted runtime model, reasoning effort, sandbox, approval policy, CLI version and ephemeral session/thread correlation. It keeps a filtered evidence record only, disables telemetry export, uses a temporary CODEX_HOME with local auth symlink, and does not persist tokens, raw session IDs or prompts.
+- Isolated probe PASS at 2026-11-01T17:24:45Z: requested and runtime-accepted `gpt-6-luna` / `high`, `readOnly` with network disabled, `approvalPolicy=never`, CLI `0.166.0`; correlation SHA-256 is in `.orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json`. This proves runtime-accepted configuration, not backend attestation; backend remains UNVERIFIED.
+- The prior Controller verdict on historical HEAD `59ac3895f36ca052305a07a96c94c1e1643ed1f3` was REWORK P2 and is recorded in PR #65 comment `6560949541`. Its two tracking findings are corrected here. No application code changed.
+- **Next action:** run syntax/consistency preflight, commit/push this functional launcher plus tracking correction, verify required checks, then fetch the live PR HEAD and run exactly one Controller review through the launcher. Record the exact reviewed SHA in the GitHub comment only. Keep PR #65 OPEN/DRAFT; no merge, deployment, migration 0016, Access or Service Token changes, remote D1, CD, production or M3.
+
+
+## Event 284 — Controller REWORK on launcher enforcement
+
+- The single exact-head Controller review on PR HEAD `9f05c41ab242d5db0e633129f227fb46dfb98f1d` returned **REWORK P2**. It confirmed the remote-smoke and stable-SHA corrections, but found that the launcher did not fail closed when accepted app-server metadata reported network access enabled and that the functional-delta guard used an incomplete directory filter.
+- Repaired both issues in `scripts/controller_runtime.py`: accepted configuration now requires `sandbox.networkAccess == false`; the stable-candidate delta is restricted to an exact allowlist of Issue #64 state/evidence files, this launcher, and its regression test. Added positive/negative regression coverage for both controls. No authentication/application code changed.
+- Local validation: focused launcher tests 3/3 PASS; complete `scripts/tests` suite 77/77 PASS; Python parse, `git diff --check`, and canonical-state validator PASS.
+- **Next action:** refresh the isolated app-server acceptance probe using the corrected launcher, publish one consolidated rework commit to PR #65, wait for exact-head Worker/Web CI, then make a single exact-live-HEAD Controller review because these are material fixes to the review boundary. Preserve the REWORK verdict on `9f05c41…`; do not promote it. Keep PR #65 OPEN/DRAFT and perform no remote operation.
+
+
+## Event 285 — final Controller PASS and merge-authorization boundary
+
+- The corrected launcher was reviewed by the delegated read-only Controller using the accepted app-server configuration, with no provider/backend attestation claimed. Final verdict: **PASS**, no actionable findings. The exact reviewed SHA and configuration evidence are in PR comment [6561444134](https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/65#issuecomment-6561444134); the Issue #64 result is in comment [6561446034](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/64#issuecomment-6561446034).
+- Quick Checks `41331871407` passed Worker and Web; `staging-private` was skipped. Controller performed read-only inspection and did not run tests. Independent Critic and Integration Review PASS remain applicable to the unchanged functional candidate `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`.
+- P2-A and P2-B are corrected. The two subsequent Controller P2s on launcher network and delta enforcement were fixed with regression tests; the prior REWORK record is preserved in Event 284 and GitHub history. No auth application code changed after the stable functional candidate.
+- PR #65 remains OPEN/DRAFT. **Next action:** wait for explicit authorization for protected merge; do not merge, deploy, apply 0016, change Access, create Service Tokens, write remote D1, enable CD or start M3. A final tracking-only checkpoint may require its own normal CI, but no further Controller cycle is needed absent executable changes.
