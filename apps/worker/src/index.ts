@@ -184,7 +184,7 @@ app.get('/auth/me',async c=>{
   let claims:SessionClaims;try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
   const user=await authenticatedUser(c,claims);
   if(!user)return c.json({error:'Invalid or expired token'},401);
-  return c.json({id:user.id,email:user.email,role:user.role,sessionExpiresAt:claims.exp});
+  return c.json({id:user.id,email:user.email,role:user.role,...(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'?{sessionExpiresAt:claims.exp}:{})});
 });
 app.post('/auth/logout',async c=>{
   if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
