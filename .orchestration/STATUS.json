@@ -5,14 +5,14 @@
   "runtime_status": "TECHNICAL_REVIEW_BLOCKED_MODEL_CONFIG",
   "resume_authorized": true,
   "active_task": "Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation",
-  "last_completed_task": "Issue #64 P1/P2 rework and final documentation complete on code candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb; local QA, exact-head GitHub CI, Independent Critic and Integration Review pass. Controller remains BLOCKED_MODEL_CONFIG; PR stays open/draft.",
-  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; PR #65 code candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb",
+  "last_completed_task": "Issue #64 final Controller retry completed on exact tracking HEAD 1e1e8bb3167a8c7991732b78c1f09ac3b227855a; read-only probe verified, but report remains BLOCKED_MODEL_CONFIG because model/effort CLI acceptance is reported unknown. PR remains open/draft.",
+  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; PR #65 tracking HEAD 1e1e8bb3167a8c7991732b78c1f09ac3b227855a; executable candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb",
   "work_branch": "work/i64-preview-silent-renew-service-auth",
-  "next_action": "Keep PR #65 OPEN/DRAFT. Continue only when a GPT-6 Luna High Controller runtime can verify effective read-only enforcement and inspect the exact candidate; do not claim PASS from the current BLOCKED_MODEL_CONFIG result. No merge, Access/session writes, Service Token creation/activation, Preview deployment, D1/CD/production action, or M3.",
-  "stop_reason": "Exact code-candidate CI, Independent Critic, Integration Review and local QA pass. The required Controller gate remains BLOCKED_MODEL_CONFIG because selected model/runtime and effective read-only enforcement cannot be verified in the available native or separate-process environment. No Controller PASS is claimed.",
+  "next_action": "Keep PR #65 OPEN/DRAFT. Correct the Controller launcher/session telemetry so the delegated reviewer receives inspectable proof that GPT-6 Luna and High were accepted; preserve the now-verified read-only sandbox. Then run one fresh exact-SHA Controller review. Do not merge or activate remote resources under this task.",
+  "stop_reason": "Exact PR CI, Independent Critic, Integration Review and local QA pass. The final separate Controller process initialized and completed, and its disposable write probe verified read-only. The process still returned BLOCKED_MODEL_CONFIG because it could not establish CLI model/effort acceptance; actual backend model identity is unverified. No Controller PASS is claimed.",
   "event": {
-    "seq": 281,
-    "summary": "Issue #64 P1/P2 rework and reviews complete; Controller remains BLOCKED_MODEL_CONFIG"
+    "seq": 282,
+    "summary": "Issue #64 single Controller retry verified read-only but remains BLOCKED_MODEL_CONFIG"
   },
   "external_review": null,
   "human_gate": {
@@ -25,11 +25,11 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/65",
     "branch": "work/i64-preview-silent-renew-service-auth",
     "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
-  "last_observed_head": "f5591332b4fb9a2600fce0868a6b076ee3cb54cb",
+  "last_observed_head": "1e1e8bb3167a8c7991732b78c1f09ac3b227855a",
     "live_head_source": "GitHub PR #65; fetch before review/report",
     "state": "OPEN",
     "is_draft": true,
-  "status": "Code candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb is OPEN/DRAFT; run 41309543269 Worker/Web PASS, staging-private SKIPPED; Independent Critic PASS, Integration Review PASS; Controller BLOCKED_MODEL_CONFIG, no PASS.",
+  "status": "PR tracking HEAD 1e1e8bb3167a8c7991732b78c1f09ac3b227855a OPEN/DRAFT; run 41309775169 Worker/Web PASS, staging-private SKIPPED. Executable code candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb has Independent Critic PASS and Integration Review PASS. Controller attempted exact tracking HEAD; read-only verified, report BLOCKED_MODEL_CONFIG, no PASS.",
     "merge_commit": null
   },
   "issue_4": "CLOSED",
@@ -88,10 +88,20 @@
     "access_observation": "App 1h; Operator only policy null/inherits; global duration omitted by API (documented 24h default is not measured); WARP disabled/no client duration returned; IdP session value unavailable through queried read-only API; service-token strict mode false.",
     "local_results": "Rework-focused latest: Worker preview-auth 11/11; real-cookie-expiry Playwright local OWNER→ADMIN/reopen/per-session logout 1/1; Worker typecheck PASS; Web typecheck/build/build:preview PASS; git diff --check and canonical state validator PASS. Earlier unchanged suites remain historical evidence, not rerun for this rework.",
     "remote": "No remote E2E credentials/policy configured or used; no Access writes, service-token creation, Preview deployment, D1/CD/production change.",
-    "pending": "Await a verifiably read-only GPT-6 Luna High Controller runtime for exact candidate. Remote E2E and Access/Service Auth activation require separate authorization.",
+    "pending": "Repair controller launcher/session telemetry to expose accepted model/effort parameters to the read-only reviewer; only then make a fresh exact-HEAD attempt. Remote E2E and Access/Service Auth activation require separate authorization.",
     "candidate_sha": "f5591332b4fb9a2600fce0868a6b076ee3cb54cb",
     "previous_ci_before_rework": "Run 41268298720 on ad793442a6d0bf54af86b36ccce2da1bb5b52edf: Worker/Web PASS; staging-private SKIPPED.",
-    "latest_ci": "Run 41309543269 on exact code candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb: Worker PASS, Web PASS, staging-private SKIPPED."
+    "latest_ci": "Run 41309775169 on exact PR tracking HEAD 1e1e8bb3167a8c7991732b78c1f09ac3b227855a: Worker PASS, Web PASS, staging-private SKIPPED.",
+    "controller_attempt": {
+      "reviewed_sha": "1e1e8bb3167a8c7991732b78c1f09ac3b227855a",
+      "session_id": "01a197e5-6c5a-7793-8901-647008495265",
+      "requested_model": "gpt-6-luna",
+      "requested_effort": "high",
+      "read_only_probe": "DENIED: Read-only file system",
+      "verdict": "BLOCKED_MODEL_CONFIG",
+      "configuration_acceptance": "UNKNOWN per reviewer output",
+      "backend_model_identity": "UNVERIFIED"
+    }
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
