@@ -28,3 +28,10 @@
 ## Explicit stop boundary
 
 Leave the PR open/draft. Do not change Cloudflare, create tokens, deploy, merge, migrate D1, change CD, touch production, or begin M3. Human authorization is required before separately activating 168h Access durations, a dedicated Service Auth policy/token, or deploying the Worker variable.
+
+## Rework against PR #65 review `pullrequestreview-5726242007`
+
+- **P1 addressed locally:** short cookie is renewed preventively and a durable opaque refresh cookie supports a browser restart after the short cookie expires. The real browser uses `/api/auth/*`; the refresh-cookie path and clearing path are therefore `/api/auth`, not the Worker-internal stripped `/auth` path. Refresh accepts an empty POST stream even when the browser sends `Content-Type: application/json`; any non-empty body is rejected. Logout reports success only after the Worker confirms revocation, so an expired/rejected Access assertion cannot silently appear as a successful logout.
+- **P2 addressed locally:** migration `0016_preview_auth_sessions.sql` adds per-SID persistence; refresh secrets are stored as hashes and logout revokes only that SID. The shared user `session_version` is unchanged. The migration is local code only and has not been applied remotely.
+- **Required final evidence:** `apps/worker/tests/preview-auth.test.ts`, `apps/web/e2e/preview-auth-local.spec.ts`, `apps/web/wrangler.preview-auth-e2e.jsonc`, and `.orchestration/evidence/CF-AU-I64-SESSION-RENEWAL-SERVICE-AUTH.md`. The local browser uses a 5-second internal JWT to prove actual browser cookie expiry and profile reopen; it does not emulate/claim real Cloudflare Access or remote Service Auth provider behavior.
+- The previous Controller record is `BLOCKED_MODEL_CONFIG`, not PASS. Re-run it on the exact pushed candidate in a verifiably read-only runtime; if configuration remains unverifiable, preserve that blocker and keep PR #65 OPEN/DRAFT.
