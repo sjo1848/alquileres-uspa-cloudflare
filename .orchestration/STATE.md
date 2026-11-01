@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `TECHNICAL_REVIEW_BLOCKED_MODEL_CONFIG`
+State: `TECHNICAL_REVIEW_PENDING`
 Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
 Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
 
@@ -2248,3 +2248,15 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Two separate Codex CLI attempts requested GPT-6 Luna / High / read-only (second with ephemeral mode and user config disabled) failed during app-server startup: `Read-only file system`. The configured native Controller also could not verify enforced read-only/model runtime. Record `.orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md` captures provenance. **No Controller PASS is claimed.** Preliminary static inspection reported no demonstrated P0/P1, but the reviewer did not run tests and this is not an approval.
 - PR #65 remains OPEN/DRAFT. The implementation, local tests and GitHub CI are complete; only the mandatory verified Controller gate remains.
 - **Next action:** resume with a verifiably read-only GPT-6 Luna High Controller runtime on the current exact PR HEAD. No merge, Access setting change, Service Token creation/activation, Preview deployment, D1/CD/production action, or M3.
+
+
+## Event 280 — PR #65 renewal and per-session revocation rework
+
+- PR #65 was first rechecked at exact remote HEAD `ac7b048c141c01deb3feb7b02530533f1c745c5c`: OPEN/DRAFT, merge state CLEAN, Worker/Web checks PASS, staging-private SKIPPED. The local rework is executable candidate commit `a7ec8a5` on top of that head; it has not yet been published at this checkpoint.
+- P1 rework: the browser renews before the internal short cookie expires, on return/focus/pageshow, and after restore via a persistent opaque `HttpOnly` refresh cookie. That credential is fixed to a seven-day absolute session, stored in D1 only as a hash and never exposed to JS. Every renewal requires a currently valid RS256 Cloudflare Access assertion with exact issuer/audience and actual `exp`; the internal cookie never outlives Access. Role comes from the persisted synthetic session, not client input. No local/session storage tokens, unbounded retry, or implicit role change.
+- Regression fixes found by real local Chromium: refresh cookie scope is `/api/auth` (the public browser route) rather than Hono's rewritten internal `/auth`; an empty POST stream with JSON Content-Type is accepted while any non-empty body is rejected. Logout UI reports success only after the Worker confirms individual SID revocation. If Access is expired, Access middleware blocks logout and the UI keeps the session/error state instead of claiming revocation; operator can retry after Access is valid.
+- P2 rework: additive local-only migration `0016_preview_auth_sessions.sql` persists each session independently; logout revokes one SID and leaves shared `users.session_version` unchanged. No remote D1 change or migration application occurred. Integration/deployment requires a separately authorized migration preflight/application.
+- Local candidate evidence: Worker preview-auth 11/11; real Chromium cookie-expiry/reopen + OWNER→ADMIN + explicit publish + concurrent OWNER/ADMIN + logout/regain-Access local E2E 1/1; Worker typecheck PASS; Web typecheck, production build, Preview-config build PASS; canonical state validator and diff check PASS. This local test uses synthetic keys/loopback only and does not claim Cloudflare remote Access/Service Auth behavior.
+- Access diagnosis/effect/config proposal and Service Auth preparation: `.orchestration/evidence/CF-AU-I64-SESSION-RENEWAL-SERVICE-AUTH.md`. No Access setting, Service Token, Preview, D1, CD, production, billing, or source repository action occurred.
+- Previous Controller result on the old candidate remains BLOCKED_MODEL_CONFIG, not PASS. New exact-head CI, Independent Critic, Integration Review and Controller are pending after publication. PR #65 must remain OPEN/DRAFT; no merge/deploy/M3.
+- **Next action:** run canonical preflight, push the rework to PR #65, then complete exact-head CI and independent reviews. Retry the configured read-only Controller and documented separate GPT-6 Luna High/read-only process; if the runtime cannot verify/start, retain BLOCKED_MODEL_CONFIG and no PASS. Keep all remote activation actions unauthorized.
