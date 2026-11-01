@@ -37,6 +37,12 @@
 - Reproducible isolated command: `python3 -B scripts/controller_runtime.py --probe-only --cwd /tmp --evidence <private-output.json>`. It uses a mode-0700 temporary `CODEX_HOME`, references the local auth file by symlink without printing/copying it, and deletes the temporary home on exit.
 - The review mode requires a clean checkout whose SHA equals the GitHub-observed SHA and a specified base ancestor. It persists only filtered runtime metadata plus hashed correlations and keeps the full reviewer output in a caller-selected private file.
 
+## Controller rework on runtime-verified exact HEAD
+
+- Controller reviewed `9f05c41ab242d5db0e633129f227fb46dfb98f1d` through the app-server launcher after its isolated metadata probe. Accepted runtime configuration was GPT-6 Luna / High / readOnly / network disabled; provider backend identity remains UNVERIFIED.
+- Verdict: **REWORK P2**, not PASS. Concrete findings: launcher did not enforce `sandbox.networkAccess == false`, and its candidate-delta filter did not reject all executable changes outside the watched directories. It confirmed P2-A and P2-B tracking corrections and found no new functional authentication defect.
+- Both launcher findings were corrected with regression tests. Re-review is pending the new exact-head CI because the read-only boundary itself changed materially. The prior REWORK remains historical and is not promoted.
+
 ## CI and test evidence
 
 - The earlier candidate `8a73efdd…` had a Worker failure because local PASSWORD `/auth/me` also received `sessionExpiresAt`. Fixed by returning that field only for ACCESS_PREVIEW; local OWNER lifecycle then passed 6/6 and Preview Auth passed 11/11.
@@ -48,4 +54,4 @@
 
 ## Boundary
 
-Keep PR #65 OPEN/DRAFT. The active runtime capture is implemented in `scripts/controller_runtime.py`; its isolated probe evidence is `.orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json`. A fresh exact-head Controller review is pending after the probe, documentation reconciliation, push and required checks. No Access durations/policies or Service Token were changed/created, and migration 0016 was not applied to remote D1. Remote test execution and later integration/deployment require the separately authorized boundaries already recorded in the contract.
+Keep PR #65 OPEN/DRAFT. The active runtime capture is implemented in `scripts/controller_runtime.py`; its isolated probe evidence is `.orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json`. After the Controller REWORK, its two launcher-boundary findings have been fixed with focused regressions; the updated exact-head CI and one material-fix re-review are pending. No Access durations/policies or Service Token were changed/created, and migration 0016 was not applied to remote D1. Remote test execution and later integration/deployment require the separately authorized boundaries already recorded in the contract.

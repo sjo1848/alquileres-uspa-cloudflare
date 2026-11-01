@@ -1,5 +1,5 @@
 {
-  "captured_at_utc": "2026-11-01T17:24:45.570798+00:00",
+  "captured_at_utc": "2026-11-01T17:30:42.174498+00:00",
   "evidence_source": "Codex app-server JSON-RPC ThreadStartResponse",
   "evidence_format": "filtered JSON; fields copied from response.result",
   "cli_version": "0.166.0",
@@ -19,8 +19,8 @@
     "ephemeral": true,
     "cli_version": "0.166.0"
   },
-  "session_correlation_sha256": "f79fb52a7107ab0b75f18bd154ac1fb5dff830ca51c68c3e2e3469e1b4dd4813",
-  "thread_correlation_sha256": "f79fb52a7107ab0b75f18bd154ac1fb5dff830ca51c68c3e2e3469e1b4dd4813",
+  "session_correlation_sha256": "6296008fbcb53f26e2257890c6490eb9908aae45578140c431e3f024e925f8ea",
+  "thread_correlation_sha256": "6296008fbcb53f26e2257890c6490eb9908aae45578140c431e3f024e925f8ea",
   "backend_model_identity": "UNVERIFIED; app-server metadata is runtime configuration, not provider attestation",
   "telemetry": "disabled; no OTLP exporter configured",
   "probe_only": true

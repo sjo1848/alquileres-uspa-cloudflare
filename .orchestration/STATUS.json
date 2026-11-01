@@ -4,15 +4,15 @@
   "phase": "DEV_QA_PREVIEW_AUTH_RENEWAL",
   "runtime_status": "TECHNICAL_REVIEW_PENDING",
   "resume_authorized": true,
-  "active_task": "Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation",
-  "last_completed_task": "Issue #64 P2 tracking corrections completed; isolated Codex app-server probe confirms runtime-accepted GPT-6 Luna/high/read-only metadata on CLI 0.166.0. One exact live-HEAD Controller review remains pending.",
-  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; stable functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb; PR HEAD is queried dynamically from GitHub before review and recorded in its comment.",
+  "active_task": "Issue #64 \u2014 secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation",
+  "last_completed_task": "Controller reviewed 9f05c41 and returned REWORK P2: require accepted networkAccess=false and close executable-delta allowlist. Both corrections and regression tests are implemented; final CI and exact-head review pending.",
+  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; stable functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb; dynamic PR HEAD queried before review and recorded in GitHub comment.",
   "work_branch": "work/i64-preview-silent-renew-service-auth",
-  "next_action": "Publish this launcher/evidence/tracking update to PR #65, verify its required checks, query/fetch the live PR HEAD from GitHub immediately before the single Controller review, verify exact local HEAD and code-tree correspondence to the stable candidate, then use scripts/controller_runtime.py and record the observed review SHA in GitHub comments. Keep OPEN/DRAFT; no merge/deploy/remote activation.",
-  "stop_reason": "The runtime capture probe now verifies accepted model, effort and read-only sandbox through app-server ThreadStartResponse; provider backend identity remains unverified. The two prior P2 tracking findings are corrected. One exact-live-HEAD Controller review is pending.",
+  "next_action": "Refresh isolated app-server probe with corrected launcher, publish consolidated fixes, verify exact-head Worker/Web CI, query/fetch live PR HEAD, then make one exact-head read-only Controller review. Keep OPEN/DRAFT; no remote activation.",
+  "stop_reason": "Controller REWORK P2 on launcher: missing enforcement of runtime networkAccess=false and incomplete executable-delta guard. Both repaired with regression tests; final CI/review pending. Backend identity remains UNVERIFIED.",
   "event": {
-    "seq": 283,
-    "summary": "Issue #64 remote-smoke and dynamic-HEAD P2 corrections plus verified local runtime metadata probe"
+    "seq": 284,
+    "summary": "Controller P2 launcher enforcement rework repaired; final exact-head review pending"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "live_head_source": "Query GitHub PR #65 and fetch exact HEAD immediately before each review; do not persist a rolling HEAD in state. Record each observed SHA in the GitHub review comment.",
     "state": "OPEN",
     "is_draft": true,
-    "status": "PR #65 OPEN/DRAFT. Stable functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb has Worker/Web CI PASS, Independent Critic PASS and Integration Review PASS. Prior Controller on historical HEAD 59ac389 returned REWORK P2, now reconciled. New exact-head Controller review pending after runtime probe.",
+    "status": "PR #65 OPEN/DRAFT. Functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb. Prior Controller on 9f05c41 returned REWORK P2 for incomplete offline/delta enforcement; fixes and regressions are now implemented. Final exact-head checks/review pending.",
     "merge_commit": null
   },
   "issue_4": "CLOSED",
@@ -67,7 +67,7 @@
     "strategy": "ACCESS_PREVIEW",
     "media_strategy": "D1_BLOB",
     "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
-    "migrations_applied": "0001–0015, as reported in Issue #61 comment 6552301668; no pending migration per that deployment record.",
+    "migrations_applied": "0001\u20130015, as reported in Issue #61 comment 6552301668; no pending migration per that deployment record.",
     "operator_policy": "Operator only; latest measured application duration 1h; policy duration null/inherited. No policy write during Issue #64.",
     "anonymous_access": "12/12 routes denied on stable and immutable URLs before Issue #64 code changes, as recorded in Issue #61 comment 6552301668; no post-change deployment or recheck because deployment is not authorized.",
     "remote_authenticated_e2e": "BLOCKED_AUTH before Issue #64; Service Auth credentials/policy not activated and no remote E2E run.",
@@ -80,17 +80,17 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/64",
     "linked_issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "contract": ".orchestration/contracts/CF-AU-I64-PREVIEW-AUTH-RENEWAL.md",
-    "status": "LOCAL_IMPLEMENTATION_AND_INDEPENDENT_REVIEWS_PASS; prior CONTROLLER_REWORK_P2 reconciled; exact-live-head Controller review pending; PR #65 OPEN/DRAFT; no merge/deploy/remote activation.",
+    "status": "LOCAL_IMPLEMENTATION_AND_INDEPENDENT_REVIEWS_PASS; CONTROLLER_REWORK_P2_ON_LAUNCHER_REPAIRED; EXACT_HEAD_CI_AND_REVIEW_PENDING; PR #65 OPEN/DRAFT; no remote activation.",
     "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
     "branch": "work/i64-preview-silent-renew-service-auth",
-    "scope": "Read-only Access diagnosis; secure silent renewal of fixed synthetic Preview OWNER/ADMIN internal sessions; exact-client Access Service Auth prepared but inactive; remote Playwright smoke creates synthetic auth-session rows in D1 and is fail-closed behind PREVIEW_QA_ALLOW_REMOTE_D1_WRITES=true; local negative tests and OWNER→ADMIN E2E; no remote Access/token/Preview/D1/CD/production change.",
+    "scope": "Read-only Access diagnosis; secure silent renewal of fixed synthetic Preview OWNER/ADMIN internal sessions; exact-client Access Service Auth prepared but inactive; remote Playwright smoke creates synthetic auth-session rows in D1 and is fail-closed behind PREVIEW_QA_ALLOW_REMOTE_D1_WRITES=true; local negative tests and OWNER\u2192ADMIN E2E; no remote Access/token/Preview/D1/CD/production change.",
     "access_observation": "App 1h; Operator only policy null/inherits; global duration omitted by API (documented 24h default is not measured); WARP disabled/no client duration returned; IdP session value unavailable through queried read-only API; service-token strict mode false.",
-    "local_results": "Rework-focused latest: Worker preview-auth 11/11; real-cookie-expiry Playwright local OWNER→ADMIN/reopen/per-session logout 1/1; Worker typecheck PASS; Web typecheck/build/build:preview PASS; git diff --check and canonical state validator PASS. Earlier unchanged suites remain historical evidence, not rerun for this rework.",
+    "local_results": "Rework-focused latest: Worker preview-auth 11/11; real-cookie-expiry Playwright local OWNER\u2192ADMIN/reopen/per-session logout 1/1; Worker typecheck PASS; Web typecheck/build/build:preview PASS; git diff --check and canonical state validator PASS. Earlier unchanged suites remain historical evidence, not rerun for this rework.",
     "remote": "No remote E2E credentials/policy configured or used; no Access writes, service-token creation, Preview deployment, D1/CD/production change.",
-    "pending": "Push the launcher and P2 tracking correction, verify required CI, then fetch/query GitHub PR HEAD dynamically and run one Controller using scripts/controller_runtime.py. Do not store a rolling HEAD in repo state; record the reviewed SHA in the GitHub comment. Remote E2E/Access activation remain separately gated.",
+    "pending": "Publish consolidated launcher fix, verify new exact-head CI, then query/fetch live PR HEAD and make one read-only Controller review. Record SHA and result in GitHub comment. Remote writes/Access activation remain unauthorized.",
     "candidate_sha": "f5591332b4fb9a2600fce0868a6b076ee3cb54cb",
     "previous_ci_before_rework": "Run 41268298720 on ad793442a6d0bf54af86b36ccce2da1bb5b52edf: Worker/Web PASS; staging-private SKIPPED.",
-    "latest_ci": "Historical exact checks run 41325745376 on prior tracking HEAD 59ac389: Worker/Web PASS; staging-private SKIPPED. New launcher/tracking HEAD checks pending.",
+    "latest_ci": "Run 41331427217 on 9f05c41 passed Worker/Web with staging-private skipped; this was the Controller REWORK head. The consolidated launcher fixes require a new CI run.",
     "previous_controller_attempt": {
       "reviewed_sha": "1e1e8bb3167a8c7991732b78c1f09ac3b227855a",
       "session_id": "01a197e5-6c5a-7793-8901-647008495265",
@@ -102,7 +102,7 @@
       "backend_model_identity": "UNVERIFIED"
     },
     "runtime_probe": {
-      "result": "PASS_ISOLATED_PROBE",
+      "result": "PASS_ISOLATED_PROBE on corrected launcher",
       "cli_version": "0.166.0",
       "evidence_source": "Codex app-server JSON-RPC ThreadStartResponse",
       "accepted_model": "gpt-6-luna",
@@ -110,7 +110,21 @@
       "accepted_sandbox": "readOnly; networkAccess=false",
       "session_correlation": "SHA-256 only; raw session ID not published",
       "backend_model_identity": "UNVERIFIED",
-      "evidence_file": ".orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json"
+      "evidence_file": ".orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json",
+      "captured_at_utc": "2026-11-01T17:30:42.174498+00:00",
+      "evidence_sha256": "1be69544765b10cda4d0c62b574ae29587fbc13da2473875cf7887e56caf91b8"
+    },
+    "latest_controller_attempt": {
+      "reviewed_sha": "9f05c41ab242d5db0e633129f227fb46dfb98f1d",
+      "runtime_accepted_model": "gpt-6-luna",
+      "runtime_accepted_effort": "high",
+      "runtime_accepted_sandbox": "readOnly; networkAccess=false",
+      "backend_model_identity": "UNVERIFIED",
+      "verdict": "REWORK P2",
+      "findings": [
+        "accepted networkAccess=false was not enforced by launcher",
+        "functional delta allowlist omitted executable paths"
+      ]
     }
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
@@ -148,7 +162,7 @@
     "preview_stable_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev/admin",
     "preview_immutable_deployment_url": "https://f5c694bb-alquileres-uspa-lab.sjo1848.workers.dev",
     "synthetic_d1": "migrations 0008-0010 applied; ADMIN fixture seeded idempotently; no pending migrations",
-    "remote_mutation_scope": "Only the existing synthetic D1 received migrations 0008–0010 and the fixed ADMIN demo seed; only the existing private Preview was updated via wrangler preview. No new resources, Access-policy changes, R2, billing, production, real data or source-repository writes."
+    "remote_mutation_scope": "Only the existing synthetic D1 received migrations 0008\u20130010 and the fixed ADMIN demo seed; only the existing private Preview was updated via wrangler preview. No new resources, Access-policy changes, R2, billing, production, real data or source-repository writes."
   },
   "historical_status": {
     "pr15_completed": {
@@ -276,7 +290,7 @@
       }
     },
     "cf_au_i03_completed": {
-      "active_task": "Issue #7 — deterministic quality preflight before new workflows",
+      "active_task": "Issue #7 \u2014 deterministic quality preflight before new workflows",
       "pull_request": {
         "number": 19,
         "state": "MERGED",
@@ -292,7 +306,7 @@
         "artifact_tag": "CF-AU-I03-Artifact-A2",
         "artifact_sha": "76fbdfd2b711f4f765be122ba9f539f0ca101963",
         "controller_report": ".orchestration/evidence/critics/CF-AU-I03-ARTIFACT-A2-CONTROLLER-PASS.md",
-        "note": "Artifact A2 conserva su PASS delegado exacto; PR #19 protegido se integró. El test remoto Access autenticado no se afirma como PASS."
+        "note": "Artifact A2 conserva su PASS delegado exacto; PR #19 protegido se integr\u00f3. El test remoto Access autenticado no se afirma como PASS."
       },
       "review_authority": {
         "scope": "CF-AU-I03 Artifact A2 exact immutable tag; repaired assisted-create atomicity and configured media parity",
@@ -463,14 +477,14 @@
       "branch": "work/i06-d31-owner",
       "scope": "D3.1 OWNER dashboard/editor only: listing inventory, info/photos/availability, inbox and safe workflows; preserve current auth/API/backend contracts. No ADMIN #33, Product Acceptance #34, Preview, production, paid services, real data or source repo writes.",
       "direction": "D3.1 approved in Issue #41, immutable reference 77c99fa445171a58548e6e06497050bf2d923305.",
-      "code_status": "D3.1 OWNER workspace/editor implemented in Vue; no Worker/API/auth changes. Actions reflect API/media contracts: DRAFT/REJECTED editing, submitted review state, approved photo read-only, Static Assets versus D1 BLOB, real availability updates/reconfirmation and READ/UNREAD inbox. Pending photos stay visible as an unsaved state across section changes. Mobile uses list→detail and editor tabs support arrow/Home/End keyboard navigation.",
+      "code_status": "D3.1 OWNER workspace/editor implemented in Vue; no Worker/API/auth changes. Actions reflect API/media contracts: DRAFT/REJECTED editing, submitted review state, approved photo read-only, Static Assets versus D1 BLOB, real availability updates/reconfirmation and READ/UNREAD inbox. Pending photos stay visible as an unsaved state across section changes. Mobile uses list\u2192detail and editor tabs support arrow/Home/End keyboard navigation.",
       "next_action": "I06.6-P3 completed; continue only with current active Issue #49 CI/CD.",
       "baseline": "Playwright OWNER suite on exact main base ec58cd9: 3/3 PASS in 3.8m using Vue/Vite, Worker/Hono Workerd, isolated local D1 and synthetic OWNER identities/MOCK email. Prior screenshots in output/playwright/i06.5; frozen comparison copies in output/playwright/i06.6-p3/before.",
       "local_checks": {
         "baseline_owner_e2e": "PASS 3/3 in 3.8m on exact main base ec58cd9: registration/MOCK verification/reset/login/logout; load retry; D1 BLOB/static images; owner permissions; availability/inbox; edit/upload/reorder/delete/review; session expiry and dirty-state protection.",
         "baseline_capture": "Real Playwright baseline 1440/390/320 frozen in output/playwright/i06.6-p3/before/.",
-        "owner_e2e_final": "PASS 4/4 in 3.2m on consolidated D3.1 app: auth/MOCK; error retry; keyboard and responsive list→detail; D1 BLOB/static media; save/review, upload/retry/reorder/delete, availability/reconfirm while SUBMITTED, inbox READ/UNREAD, admin denial, real local D1 session revocation and expired-session redirect.",
-        "owner_e2e_visual_capture_followup": "PASS focused OWNER D3.1 1/1 on final capture spec; includes dashboard 320×844 and photographs 390×844; output/playwright/i06.6-p3/after/.",
+        "owner_e2e_final": "PASS 4/4 in 3.2m on consolidated D3.1 app: auth/MOCK; error retry; keyboard and responsive list\u2192detail; D1 BLOB/static media; save/review, upload/retry/reorder/delete, availability/reconfirm while SUBMITTED, inbox READ/UNREAD, admin denial, real local D1 session revocation and expired-session redirect.",
+        "owner_e2e_visual_capture_followup": "PASS focused OWNER D3.1 1/1 on final capture spec; includes dashboard 320\u00d7844 and photographs 390\u00d7844; output/playwright/i06.6-p3/after/.",
         "public_e2e_final": "PASS 4/4 in 1.7m with Worker/Hono+D1 local: filters/pagination, recoverable errors/fallbacks, detail/contact D1 and stable idempotent retry, mobile #35 regression.",
         "web_typecheck_build": "PASS npm run typecheck && npm run build; local builds only, no deployment.",
         "evidence_report": "output/playwright/i06.6-p3/QA.md",
@@ -707,7 +721,7 @@
     "note": "A5 GitHub review found P2 4310358340. A6 fail-closed repair is locally tested; exact-head GitHub review/checks and fresh read-only Controller remain required. A4 PASS is historical only."
   },
   "historical_functional_increment_a5": {
-    "scope": "CF-AU-I04 OWNER/ADMIN lifecycle — consolidated A5 including stale assisted-edit version guard",
+    "scope": "CF-AU-I04 OWNER/ADMIN lifecycle \u2014 consolidated A5 including stale assisted-edit version guard",
     "authority": "Issue #7 comment 6257931179; explicit Human approval 2026-10-19",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
     "status": "A5_PRECRITIC_PASS_AWAITING_EXACT_HEAD_GITHUB_AND_CONTROLLER",
@@ -718,7 +732,7 @@
     "web_build": "PASS after stale-version UI change",
     "web_preview_build": "PASS after stale-version UI change",
     "python_regression_tests": "PASS: 25/25 on A3; only scoped Worker/UI/E2E and evidence changed afterward; final state validator pending",
-    "playwright": "PASS: 21 named checks local Workerd + synthetic D1, including OWNER save → stale ADMIN 409 → explicit reload → current-version edit",
+    "playwright": "PASS: 21 named checks local Workerd + synthetic D1, including OWNER save \u2192 stale ADMIN 409 \u2192 explicit reload \u2192 current-version edit",
     "screenshots": [
       "output/playwright/owner-admin-lifecycle-desktop.png",
       "output/playwright/owner-admin-lifecycle-mobile.png"
@@ -756,7 +770,7 @@
     "note": "Exact A6 Controller returned bounded P2 REWORK on regression assertion coverage; the requested corrections are in A7. Full runtime evidence is preserved in critics/CF-AU-I04-ARTIFACT-A6-CONTROLLER-REWORK.md."
   },
   "historical_candidate_review_cf_au_i04_a6": {
-    "scope": "CF-AU-I04 OWNER/ADMIN lifecycle A6 — fail-closed external-media deletion",
+    "scope": "CF-AU-I04 OWNER/ADMIN lifecycle A6 \u2014 fail-closed external-media deletion",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
     "executable_commit": "549baf37952129d1cacfc46565e8ee1fb5581887",
     "executable_tree": "3887b1056b08d139367e94119c476bc05fcaf9c5",
@@ -793,7 +807,7 @@
     "note": "Deterministic preflight passed. A5 GitHub P2 4310358340 is repaired in A6. Exact-head GitHub review/checks and fresh read-only Controller remain required; A4 PASS is historical only."
   },
   "historical_functional_increment_a6": {
-    "scope": "CF-AU-I04 OWNER/ADMIN lifecycle — consolidated A6 external-media deletion fail-closed rework",
+    "scope": "CF-AU-I04 OWNER/ADMIN lifecycle \u2014 consolidated A6 external-media deletion fail-closed rework",
     "authority": "Issue #7 comment 6257931179; explicit Human approval 2026-10-19",
     "base_sha": "774d0c747e8ecbbdb97776641becbd9e49875875",
     "status": "A6_PRECRITIC_PASS_AWAITING_EXACT_HEAD_GITHUB_AND_CONTROLLER",
@@ -951,23 +965,23 @@
     "scope": "I06.5 local synthetic OWNER and I05 mock authentication experience, integrated Vue/Worker/Hono/D1. Reconcile I06.4 post-merge state in this functional PR. No I06.6/#33, Preview/Access remote change, production, paid services, external email, R2, real data or source repository write.",
     "code_status": "Candidate executable 308c478; OWNER collections/photo error-vs-empty and stale-load regressions are included; no functional code changes after this SHA.",
     "local_checks": {
-      "web_typecheck": "PASS sobre árbol ejecutable 7170e54 de 308c478",
-      "web_build": "PASS sobre árbol ejecutable 7170e54 de 308c478",
+      "web_typecheck": "PASS sobre \u00e1rbol ejecutable 7170e54 de 308c478",
+      "web_build": "PASS sobre \u00e1rbol ejecutable 7170e54 de 308c478",
       "worker_owner_auth": "PASS: 5/5 local D1 tests",
       "worker_owner_lifecycle": "PASS: 5/5 local D1 tests, including expired-session no-mutation",
-      "worker_media": "PASS local owner-d1-blob-media.test.ts 13/13 después de corregir expected independiente para UUID generados. CI previo en afe6143 falló sólo esta expectativa determinista; nuevo CI aún pendiente.",
+      "worker_media": "PASS local owner-d1-blob-media.test.ts 13/13 despu\u00e9s de corregir expected independiente para UUID generados. CI previo en afe6143 fall\u00f3 s\u00f3lo esta expectativa determinista; nuevo CI a\u00fan pendiente.",
       "worker_contact": "PASS: 6/6 local D1 tests",
       "worker_typecheck": "PASS: apps/worker npm run typecheck",
-      "playwright_owner": "PASS: 2/2 en --grep OWNER: (2.2 min) sobre Vue + Worker/Hono + Workerd + D1 re-seeded; incluye recuperación de colecciones, 503 de fotos, carga pendiente de galería, CRUD, fotos, disponibilidad, inbox y permisos.",
-      "screenshots": "PASS: capturas reales sintéticas actualizadas por la ejecución focal bajo output/playwright/i06.5/ (desktop y mobile).",
+      "playwright_owner": "PASS: 2/2 en --grep OWNER: (2.2 min) sobre Vue + Worker/Hono + Workerd + D1 re-seeded; incluye recuperaci\u00f3n de colecciones, 503 de fotos, carga pendiente de galer\u00eda, CRUD, fotos, disponibilidad, inbox y permisos.",
+      "screenshots": "PASS: capturas reales sint\u00e9ticas actualizadas por la ejecuci\u00f3n focal bajo output/playwright/i06.5/ (desktop y mobile).",
       "accessibility": "PASS: keyboard skip-link and 320 px overflow; core text token contrast >=4.68:1 against canvas",
       "state_preflight": "PASS on checkpoint ec57ef5; validator against origin/main passed.",
-      "owner_config_retry_e2e": "PASS: prueba focalizada integrada 1/1; /auth/config falla transitoriamente y la acción de fotos se recupera en reintento explícito",
-      "owner_mixed_static_upload_e2e": "PASS: Playwright OWNER recorrido focalizado 1/1 (59.9 s) con D1 local re-seed y borrador sintético con Static Asset; selector no disponible y mensaje claro",
+      "owner_config_retry_e2e": "PASS: prueba focalizada integrada 1/1; /auth/config falla transitoriamente y la acci\u00f3n de fotos se recupera en reintento expl\u00edcito",
+      "owner_mixed_static_upload_e2e": "PASS: Playwright OWNER recorrido focalizado 1/1 (59.9 s) con D1 local re-seed y borrador sint\u00e9tico con Static Asset; selector no disponible y mensaje claro",
       "git_diff_check": "PASS on checkpoint ec57ef5.",
-      "owner_integrated_playwright": "PASS 1/1 focalizado (51.3s); Vue + Worker/Hono + Workerd + D1 local re-seeded, incluyendo GET imágenes 503, bloquea selector, retry carga Static Asset y conserva bloqueo; config retry seguido de carga D1 BLOB real; focus modal, mixed reorder y 401 auth.",
+      "owner_integrated_playwright": "PASS 1/1 focalizado (51.3s); Vue + Worker/Hono + Workerd + D1 local re-seeded, incluyendo GET im\u00e1genes 503, bloquea selector, retry carga Static Asset y conserva bloqueo; config retry seguido de carga D1 BLOB real; focus modal, mixed reorder y 401 auth.",
       "github_checks": "PASS worker/web exact checkpoint ec57ef52f65a2ae4e2f755da77eb6c86805f716d; run 39883656818.",
-      "owner_collections_retry_e2e": "PASS: suite OWNER focal 2/2 (2.2 min); 503 sintético para GET publicaciones e inbox, se evita falso estado vacío y retry recupera desde Worker/Hono + D1 local real. El test largo de OWNER también pasa."
+      "owner_collections_retry_e2e": "PASS: suite OWNER focal 2/2 (2.2 min); 503 sint\u00e9tico para GET publicaciones e inbox, se evita falso estado vac\u00edo y retry recupera desde Worker/Hono + D1 local real. El test largo de OWNER tambi\u00e9n pasa."
     },
     "controller": {
       "verdict": "PASS",
@@ -987,7 +1001,7 @@
     "github_review": "Automatic review triggered by checkpoint ec57ef5; inline comments were attached to ec57ef52f65a2ae4e2f755da77eb6c86805f716d. Two P2 comments (media config retry, expired-session edit guard) were checked against existing code/E2E and answered/resolved; six older outdated threads answered/resolved. The summary metadata reports commit_sha=null and has_unresolved_findings=true from before replies; current thread query shows zero unresolved.",
     "precritic": "PENDING on final evidence/state-only checkpoint until worker/web and automatic review complete. Controller PASS and all functional tests remain valid for unchanged executable 308c478; branch protections were observed and must be rechecked at merge.",
     "scope_limits": "Local synthetic Worker+D1 only. No Preview/Access remote change, deployment, production, real data, paid service, external email, R2, source repo write, I06.6/#33.",
-    "next_action": "Publicar el checkpoint canónico de cierre (solo estado/evidencia), comprobar que CI y auto-review del nuevo HEAD concluyen sin defectos nuevos; ejecutar Pre-Critic final y verificar protecciones/mergeabilidad. Integrar PR #40 protegido; cerrar #32/#36, actualizar épica #25 y detener antes de #33/I06.6.",
+    "next_action": "Publicar el checkpoint can\u00f3nico de cierre (solo estado/evidencia), comprobar que CI y auto-review del nuevo HEAD concluyen sin defectos nuevos; ejecutar Pre-Critic final y verificar protecciones/mergeabilidad. Integrar PR #40 protegido; cerrar #32/#36, actualizar \u00e9pica #25 y detener antes de #33/I06.6.",
     "candidate_executable_sha": "308c478b016985f47f5f6e33be67afa952d8247e",
     "candidate_tree_sha": "7170e54dc3d72d06dcb36fc247e468d92f57a25f",
     "github_checks": "PENDING for candidate 308c478; prior state checkpoint 8176e62 worker/web PASS but predates this functional delta.",
@@ -1091,7 +1105,7 @@
     "actual_backend_model_identity": "UNVERIFIED",
     "session_id": "01a16b88-6a2f-77b1-b8a8-e41d4db1c71f",
     "completed": "CLI exit 0; separate process; read-only; 737140 input tokens, 634240 cached, 5038 output tokens.",
-    "finding_resolution": "Reconciliado por Event 212 y verificación PR; no implicó código. El nuevo Controller final inspeccionará delta acotado y fix de CTA."
+    "finding_resolution": "Reconciliado por Event 212 y verificaci\u00f3n PR; no implic\u00f3 c\u00f3digo. El nuevo Controller final inspeccionar\u00e1 delta acotado y fix de CTA."
   },
   "controller_history_i06_6_p2": [
     {
@@ -1153,7 +1167,7 @@
     "base_sha": "0eff7358006a7e6e207387380ecc7bdd27615fb5",
     "branch": "work/i06-d31-admin",
     "scope": "D3.1 ADMIN moderation and assisted owner/listing management in local synthetic Vue + Worker/Hono + D1; fix #35 ADMIN mobile form overlap and #37 unambiguous time. No Preview/CD/remote D1/Access changes, #34 or I07.",
-    "visual_reference": "Issue #41 D3.1 approved; commit 77c99fa445171a58548e6e06497050bf2d923305. The implemented structure is desktop queue+contextual detail and mobile list→detail; assisted sections align with one D3.1 system.",
+    "visual_reference": "Issue #41 D3.1 approved; commit 77c99fa445171a58548e6e06497050bf2d923305. The implemented structure is desktop queue+contextual detail and mobile list\u2192detail; assisted sections align with one D3.1 system.",
     "prior_scope_reconciliation": "PR #51 merged 0eff735; PR #50/#51 CI and Preview publication facts preserved under historical_status_issue49_postmerge. Main still runs D3.1 from e1f319b; no update in this issue.",
     "cd_guard_note": "Remain disabled. Mutable D1 provenance guard observation is Issue #49 comment 6418504412 and out of scope; do not weaken or activate CD.",
     "next_action": "Commit this Controller evidence and canonical closeout checkpoint in PR #52, then derive its new GitHub HEAD and verify worker/web, review/conversations, mergeability and main protection. If exact controls remain green and Pre-Critic passes, merge protected, close #33/#35/#37 only as evidenced, update #25, and stop before #34/I07.",
@@ -1284,7 +1298,7 @@
     "strategy": "ACCESS_PREVIEW",
     "media_strategy": "D1_BLOB",
     "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
-    "migrations_applied": "0001–0013; no migrations pending after 2026-10-26 Preview publication",
+    "migrations_applied": "0001\u20130013; no migrations pending after 2026-10-26 Preview publication",
     "anonymous_denials": "PASS 12/12 anonymous routes blocked by Cloudflare Access across stable and immutable deployment URLs",
     "operator_policy": "No Access mutation; existing Access gate remains enabled and operator-only.",
     "remote_authenticated_e2e": "BLOCKED_AUTH; no authenticated Access browser session in executor",
@@ -1388,7 +1402,7 @@
     "d1_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
     "access": "existing named self-hosted app and Operator only policy; 12/12 anonymous route denials; selector values not read",
     "d1_provenance": "PASS using approved identity/audit anchors and aggregate counts only; no listing/contact/media content selected",
-    "remote_migration_ledger": "0001–0014 applied; 0015_listing_change_revisions.sql sole pending migration",
+    "remote_migration_ledger": "0001\u20130014 applied; 0015_listing_change_revisions.sql sole pending migration",
     "migration_sha256": "4932baa752f60f6d25813663dcdafa6454eff2e0cd97a9da16270731d030a22e",
     "private_backup": "SQL export stored outside repository; 65021 bytes; file 0600 under directory 0700; no contents/path published",
     "local_rehearsal": "PASS on isolated Wrangler local D1 imported from private backup; 0015 applied locally; aggregates unchanged; 11-column revision table/two ownership triggers; zero local pending migrations",

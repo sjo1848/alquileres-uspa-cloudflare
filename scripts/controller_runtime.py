@@ -21,6 +21,37 @@ import tempfile
 import threading
 from datetime import datetime, timezone
 
+ALLOWED_POST_CANDIDATE_PATHS = {
+    ".orchestration/STATE.md",
+    ".orchestration/STATUS.json",
+    ".orchestration/contracts/CF-AU-I64-PREVIEW-AUTH-RENEWAL.md",
+    ".orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md",
+    ".orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json",
+    ".orchestration/evidence/CF-AU-I64-FINAL-REVIEWS.md",
+    "scripts/controller_runtime.py",
+    "scripts/tests/test_controller_runtime.py",
+}
+
+
+def accepted_configuration_errors(accepted: dict) -> list[str]:
+    expected = {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "high",
+        "sandbox_type": "readOnly",
+        "sandbox_network_access": False,
+        "approval_policy": "never",
+    }
+    return [
+        f"{key}={accepted.get(key)!r}, expected {value!r}"
+        for key, value in expected.items()
+        if accepted.get(key) != value
+    ]
+
+
+def disallowed_functional_delta(paths: list[str]) -> list[str]:
+    """Only Issue 64 orchestration/evidence and its launcher may differ from f559."""
+    return sorted(set(paths) - ALLOWED_POST_CANDIDATE_PATHS)
+
 
 def jsonl_reader(stream, target: queue.Queue):
     for line in iter(stream.readline, ""):
@@ -155,13 +186,7 @@ class AppServer:
             "ephemeral": thread.get("ephemeral"),
             "cli_version": thread.get("cliVersion"),
         }
-        expected = {
-            "model": "gpt-6-luna",
-            "reasoning_effort": "high",
-            "sandbox_type": "readOnly",
-            "approval_policy": "never",
-        }
-        mismatch = {key: (accepted.get(key), value) for key, value in expected.items() if accepted.get(key) != value}
+        mismatch = accepted_configuration_errors(accepted)
         if mismatch or not accepted["session_id"] or not accepted["thread_id"]:
             raise RuntimeError(f"app-server accepted configuration mismatch: {mismatch or 'missing session metadata'}")
         return result, accepted
@@ -292,13 +317,9 @@ def main() -> int:
             text=True,
             check=True,
         ).stdout.splitlines()
-        executable_paths = [
-            path for path in delta
-            if path.startswith(("apps/", "migrations/", "packages/"))
-            or Path(path).name.startswith(("package", "wrangler."))
-        ]
-        if executable_paths:
-            parser.error("functional tree changed after the stable candidate: " + ", ".join(executable_paths))
+        disallowed_paths = disallowed_functional_delta(delta)
+        if disallowed_paths:
+            parser.error("unapproved files changed after the stable functional candidate: " + ", ".join(disallowed_paths))
     controller = None
     try:
         controller = AppServer(cwd)
