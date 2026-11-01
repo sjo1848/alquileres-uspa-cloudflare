@@ -2,17 +2,17 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "DEV_QA_PREVIEW_AUTH_RENEWAL",
-  "runtime_status": "TECHNICAL_REVIEW_IN_PROGRESS",
+  "runtime_status": "TECHNICAL_REVIEW_BLOCKED_MODEL_CONFIG",
   "resume_authorized": true,
   "active_task": "Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation",
   "last_completed_task": "Read-only Cloudflare Access diagnostics; implemented bounded silent internal-session renewal, signed exact-client Service Auth support disabled by default, negative tests and local OWNER→ADMIN coverage. Remote Access/token configuration remains unauthorized.",
   "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; draft PR candidate 6184e451ef0a614a83308ed063d7b5075b59eaba",
   "work_branch": "work/i64-preview-silent-renew-service-auth",
-  "next_action": "Finish final checkpoint checks, run one delegated read-only technical Controller review on the exact live PR #65 HEAD, then report and leave PR open/draft. No merge, Access change, token creation/activation, Preview deployment, D1/CD/production action, or M3.",
-  "stop_reason": "No blocker to authorized local implementation. Remote Access duration changes and Service Auth activation are separate human-authorized boundaries and remain untouched.",
+  "next_action": "Resume when the configured project_controller can run with verifiable read-only enforcement and model/effort; review the current exact PR #65 HEAD. Until then keep PR open/draft; no merge, Access/session changes, Service Token creation/activation, Preview deployment, D1/CD/production action, or M3.",
+  "stop_reason": "Controller gate remains BLOCKED_MODEL_CONFIG: separate GPT-6 Luna/High read-only CLI attempts failed during app-server initialization, and native runtime could not verify enforced read-only/model identity. Preliminary static inspection found no demonstrated P0/P1, but it is not a PASS. Local implementation and CI passed; remote Access/token activation remains separately unauthorized.",
   "event": {
-    "seq": 278,
-    "summary": "PR #65 exact tracking checkpoint passed Worker/Web CI; staging-private skipped on PR"
+    "seq": 279,
+    "summary": "Issue #64 technical review blocked because read-only Controller runtime cannot initialize; no PASS claimed"
   },
   "external_review": null,
   "human_gate": {
@@ -25,11 +25,11 @@
     "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/65",
     "branch": "work/i64-preview-silent-renew-service-auth",
     "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
-    "last_observed_head": "afa2621b3df527a6f6f6e0fba57e644892ad9bf6",
+    "last_observed_head": "ad793442a6d0bf54af86b36ccce2da1bb5b52edf",
     "live_head_source": "GitHub PR #65; fetch before review/report",
     "state": "OPEN",
     "is_draft": true,
-    "status": "Worker/Web PASS on run 41268158940 at head afa2621; staging-private SKIPPED as expected on pull_request. This state-only reconciliation triggers exact-head CI again. Controller review pending; PR remains draft/open.",
+    "status": "Worker/Web PASS on exact head ad793442a6d0bf54af86b36ccce2da1bb5b52edf, run 41268298720; staging-private SKIPPED. Controller BLOCKED_MODEL_CONFIG with no PASS. PR stays OPEN/DRAFT.",
     "merge_commit": null
   },
   "issue_4": "CLOSED",
@@ -81,16 +81,16 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/64",
     "linked_issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "contract": ".orchestration/contracts/CF-AU-I64-PREVIEW-AUTH-RENEWAL.md",
-    "status": "LOCAL_IMPLEMENTATION_AND_TESTS_IN_PROGRESS; functional draft PR authorized; no remote activation authorized.",
+    "status": "LOCAL_IMPLEMENTATION_AND_CI_PASS; Controller review BLOCKED_MODEL_CONFIG; no technical PASS claimed; PR #65 OPEN/DRAFT.",
     "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
     "branch": "work/i64-preview-silent-renew-service-auth",
     "scope": "Read-only Access diagnosis; secure silent renewal of fixed synthetic Preview OWNER/ADMIN internal sessions; exact-client Access Service Auth code and GET-only remote Playwright prepared but disabled; local negative tests and OWNER→ADMIN E2E; exact configuration proposal. No Access/token/Preview/D1/CD/production change.",
     "access_observation": "App 1h; Operator only policy null/inherits; global duration omitted by API (documented 24h default is not measured); WARP disabled/no client duration returned; IdP session value unavailable through queried read-only API; service-token strict mode false.",
     "local_results": "Worker preview-auth 9/9; owner-auth 5/5; owner-lifecycle 6/6; admin-moderation 12/12; listing-management 23/23; rental-terms 5/5; contact-workflow 6/6; public-listings 7/7; Worker typecheck PASS; local M2.1 Playwright OWNER→ADMIN journey 1/1; web typecheck/build:preview PASS.",
     "remote": "No remote E2E credentials/policy configured or used; no Access writes, service-token creation, Preview deployment, D1/CD/production change.",
-    "pending": "One final quick-check run for this state-only checkpoint, then delegated read-only technical Controller on live PR HEAD. Remote Access/token activation remains unauthorized.",
+    "pending": "Retry delegated Controller on exact live PR HEAD when read-only/model runtime can initialize and be verified. Remote E2E and Access/Service Auth activation require separate authorization.",
     "candidate_sha": "6184e451ef0a614a83308ed063d7b5075b59eaba",
-    "latest_ci": "Run 41268158940: Worker PASS, Web PASS, staging-private SKIPPED (PR event); exact SHA afa2621b3df527a6f6f6e0fba57e644892ad9bf6."
+    "latest_ci": "Run 41268298720 on ad793442a6d0bf54af86b36ccce2da1bb5b52edf: Worker/Web PASS; staging-private SKIPPED."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
@@ -1405,5 +1405,19 @@
     "reviewed_head_sha": "76eb52a281108a80cc6d8464fa053c787e53e97e",
     "reviewed_head_tree": "2bff2cea84cf2f3372a7470406f1a6114cc9151b"
   },
-  "candidate_review": null
+  "candidate_review": null,
+  "controller_history_issue64": {
+    "reviewer_kind": "delegated_codex_separate_process_and_native_project_controller_attempt",
+    "verdict": "BLOCKED_MODEL_CONFIG",
+    "artifact_sha": "ad793442a6d0bf54af86b36ccce2da1bb5b52edf",
+    "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
+    "model_requested": "gpt-6-luna",
+    "reasoning_effort_requested": "high",
+    "sandbox_requested": "read-only",
+    "sandbox_acceptance": "unverified; codex exec failed before reviewer startup with read-only filesystem app-server initialization error; native reviewer could not verify enforcement",
+    "actual_runtime_model_evidence": "UNVERIFIED",
+    "evidence": ".orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md",
+    "p0_p1": "No P0/P1 demonstrated by preliminary static inspection; no PASS; reviewers did not execute suites.",
+    "remote_e2e": "NOT_RUN; requires separate Access Service Auth configuration/token authorization."
+  }
 }

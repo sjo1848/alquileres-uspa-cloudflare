@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `TECHNICAL_REVIEW_IN_PROGRESS`
+State: `TECHNICAL_REVIEW_BLOCKED_MODEL_CONFIG`
 Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
 Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
 
@@ -2240,3 +2240,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The current observed PR tracking HEAD `afa2621b3df527a6f6f6e0fba57e644892ad9bf6` passed GitHub Quick Checks run `41268158940`: Worker PASS, Web PASS, `staging-private` SKIPPED because this was a pull request. No remote publishing job ran.
 - This event reconciles the result in `STATUS.json`; the resulting status-only commit triggers one final exact-head CI run. PR #65 remains OPEN/DRAFT.
 - **Next action:** verify that exact final CI, then run one delegated GPT-6 Luna High read-only technical review on the live PR HEAD; publish results in #64/#65. No merge, deploy, Access changes, token creation/activation, D1/CD/production action, or M3.
+
+
+## Event 279 — Controller runtime remains blocked
+
+- Exact final candidate at review time: `ad793442a6d0bf54af86b36ccce2da1bb5b52edf`; base `main@944d4bb7591deb0fd889731c9922b5b571893527`. Exact Quick Checks run `41268298720`: Worker PASS, Web PASS, `staging-private` SKIPPED.
+- Two separate Codex CLI attempts requested GPT-6 Luna / High / read-only (second with ephemeral mode and user config disabled) failed during app-server startup: `Read-only file system`. The configured native Controller also could not verify enforced read-only/model runtime. Record `.orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md` captures provenance. **No Controller PASS is claimed.** Preliminary static inspection reported no demonstrated P0/P1, but the reviewer did not run tests and this is not an approval.
+- PR #65 remains OPEN/DRAFT. The implementation, local tests and GitHub CI are complete; only the mandatory verified Controller gate remains.
+- **Next action:** resume with a verifiably read-only GPT-6 Luna High Controller runtime on the current exact PR HEAD. No merge, Access setting change, Service Token creation/activation, Preview deployment, D1/CD/production action, or M3.
