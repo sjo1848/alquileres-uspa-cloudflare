@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `TECHNICAL_REVIEW_BLOCKED_MODEL_CONFIG`
+State: `TECHNICAL_REVIEW_PENDING`
 Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
 Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
 
@@ -2283,3 +2283,13 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The separate reviewer inspected exact PR HEAD and reported no demonstrated P0/P1/P2 issue, but returned **BLOCKED_MODEL_CONFIG** because its own report could not certify CLI model/effort acceptance (`unknown`) and runtime backend model identity (`unverified`). The actual provider backend identity remains unverified. Under operational verification v2, backend attestation alone is not a blocker; nevertheless, the reviewer did not emit PASS, so Codex does not promote it to PASS.
 - Full captured review command/result is in local `/tmp/alquileres-i64-controller-runtime-20261101/`; concise evidence is `.orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md` and `.orchestration/evidence/CF-AU-I64-FINAL-REVIEWS.md`. The repo/issue state records the same result.
 - **Next action:** keep PR #65 OPEN/DRAFT. Fix the Controller launcher/session telemetry so the exact requested model/effort configuration acceptance is visible to the read-only reviewer; then, and only then, run one fresh exact-HEAD Controller review. A separate human/security review can supplement but cannot automatically substitute for Controller PASS. No merge, Preview/Access/Service Auth change, D1 migration, CD, production, or M3 action occurred.
+
+
+## Event 283 — runtime metadata probe and Controller P2 reconciliation
+
+- Reconciled P2-A: active contract/status/evidence now explicitly state that remote Preview role selection creates synthetic auth-session rows in D1. The test remains `remote-mutating`, blocked before credential use unless `PREVIEW_QA_ALLOW_REMOTE_D1_WRITES=true`; it was not run and D1 was not touched.
+- Reconciled P2-B by removing the rolling PR HEAD from active STATE/STATUS. Stable functional candidate remains `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`; query GitHub PR #65 immediately before the final review, fetch and verify that exact HEAD, and record the reviewed SHA only in the GitHub comment. Historical SHAs remain labeled as historical.
+- Added `scripts/controller_runtime.py`, using Codex CLI 0.166.0 app-server JSON-RPC `ThreadStartResponse` for accepted runtime model, reasoning effort, sandbox, approval policy, CLI version and ephemeral session/thread correlation. It keeps a filtered evidence record only, disables telemetry export, uses a temporary CODEX_HOME with local auth symlink, and does not persist tokens, raw session IDs or prompts.
+- Isolated probe PASS at 2026-11-01T17:24:45Z: requested and runtime-accepted `gpt-6-luna` / `high`, `readOnly` with network disabled, `approvalPolicy=never`, CLI `0.166.0`; correlation SHA-256 is in `.orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json`. This proves runtime-accepted configuration, not backend attestation; backend remains UNVERIFIED.
+- The prior Controller verdict on historical HEAD `59ac3895f36ca052305a07a96c94c1e1643ed1f3` was REWORK P2 and is recorded in PR #65 comment `6560949541`. Its two tracking findings are corrected here. No application code changed.
+- **Next action:** run syntax/consistency preflight, commit/push this functional launcher plus tracking correction, verify required checks, then fetch the live PR HEAD and run exactly one Controller review through the launcher. Record the exact reviewed SHA in the GitHub comment only. Keep PR #65 OPEN/DRAFT; no merge, deployment, migration 0016, Access or Service Token changes, remote D1, CD, production or M3.
