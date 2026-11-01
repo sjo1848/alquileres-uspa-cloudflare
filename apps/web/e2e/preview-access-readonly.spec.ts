@@ -31,7 +31,7 @@ async function statusFor(page:Page,path:string){
   },`/api${path}`);
 }
 
-test('dedicated Access Service Auth maps only to fixed synthetic OWNER/ADMIN and keeps role boundaries',async({browser})=>{
+test('remote Preview Service Auth: fixed synthetic OWNER/ADMIN role boundaries (creates session rows in D1)',async({browser})=>{
   const ownerContext=await browser.newContext();
   await attachServiceAuth(ownerContext);
   const ownerPage=await ownerContext.newPage();
