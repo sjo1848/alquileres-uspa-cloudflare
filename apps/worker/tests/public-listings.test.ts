@@ -64,7 +64,8 @@ describe('public catalog and property details', () => {
   it('keeps legacy OWNER media mutations disabled without an R2 binding', async () => {
     const secret='synthetic-static-media-test-secret-32-bytes';
     const encode=(s:string)=>btoa(s).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-    const input=encode(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+encode(JSON.stringify({id:'synthetic-owner',email:'owner@example.test',sv:0,exp:Math.floor(Date.now()/1000)+60}));
+    const issuedAt=Math.floor(Date.now()/1000);
+    const input=encode(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+encode(JSON.stringify({id:'synthetic-owner',email:'owner@example.test',role:'OWNER',sv:0,iat:issuedAt,exp:issuedAt+60}));
     const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
     const signature=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(input)));
     const token=input+'.'+encode(String.fromCharCode(...signature));

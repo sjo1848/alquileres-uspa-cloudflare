@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { localCompletePasswordReset, localMockMailbox, localOwnerAuthEnabled, localRateAllowed, localRegister, localRequestPasswordReset, localVerifyEmail, type LocalOwnerAuthEnv } from './local-owner-auth';
-import { previewAuthConfigured, verifyPreviewOperator, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole } from './preview-auth';
+import { previewAuthConfigured, verifyPreviewIdentity, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole, type PreviewIdentity } from './preview-auth';
 import { cleanImageName, d1BlobBytes, D1_IMAGE_MAX_BYTES, D1_IMAGE_MAX_COUNT, D1_MEDIA_QUOTA_BYTES, readBoundedBody, validateImageBytes } from './d1-blob-media';
 
 type Env = PreviewAuthEnv & LocalOwnerAuthEnv & { MEDIA_STRATEGY?:string; IMAGES: R2Bucket; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
@@ -37,10 +37,13 @@ async function boundedJson(request:Request,maxBytes:number){const reader=request
 function lifetime(env:Env) { const m=/^(\d+)(s|m|h|d)$/.exec(env.JWT_EXPIRES_IN??'15m'); if(!m) throw Error('bad jwt expiry'); return Number(m[1])*({s:1,m:60,h:3600,d:86400}[m[2]]!); }
 function jwtSecretBytes(env:Env) { if(typeof env.JWT_SECRET!=='string')throw Error('jwt secret unavailable');const secret=te.encode(env.JWT_SECRET);if(secret.length<32)throw Error('jwt secret too short');return secret; }
 function jwtSecretConfigured(env:Env) { try{jwtSecretBytes(env);return true;}catch{return false;} }
-async function sign(u:User,env:Env,expiresAt=Infinity) { const n=Math.floor(Date.now()/1000), a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify({id:u.id,email:u.email,role:u.role,sv:u.session_version??0,iat:n,exp:Math.min(n+lifetime(env),expiresAt)}))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return `${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`; }
-async function verify(token:string,env:Env) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||c.exp<=Date.now()/1000) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return {...c,sessionVersion:c.sv} as {id:string;email:string;sessionVersion:number}; }
+type SessionClaims = { id:string; email:string; role:'OWNER'|'ADMIN'; sessionVersion:number; iat:number; exp:number; previewSource?:PreviewIdentity['source']; previewServiceClientId?:string };
+async function sign(u:User,env:Env,expiresAt=Infinity,previewIdentity?:PreviewIdentity) { const n=Math.floor(Date.now()/1000), exp=Math.min(n+lifetime(env),expiresAt), claims={id:u.id,email:u.email,role:u.role,sv:u.session_version??0,iat:n,exp,...(previewIdentity?{previewSource:previewIdentity.source,...(previewIdentity.serviceClientId?{previewServiceClientId:previewIdentity.serviceClientId}:{})}:{})}, a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify(claims))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return `${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`; }
+async function verify(token:string,env:Env,allowExpired=false) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))), n=Math.floor(Date.now()/1000); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||!Number.isSafeInteger(c.iat)||c.iat>n+30||c.exp<=c.iat||c.exp-c.iat>lifetime(env)+2||(!allowExpired&&c.exp<=n)||!['OWNER','ADMIN'].includes(c.role)||typeof c.id!=='string'||typeof c.email!=='string'||!Number.isSafeInteger(c.sv)) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return {...c,sessionVersion:c.sv} as SessionClaims; }
 function cookie(raw:string|null) { return raw?.split(';').map(x=>x.trim()).find(x=>x.startsWith('alquileres_session='))?.slice('alquileres_session='.length); }
-function setCookie(token:string,env:Env,clear=false) { const same=['strict','none'].includes(env.COOKIE_SAME_SITE??'')?env.COOKIE_SAME_SITE:'lax'; const secure=env.COOKIE_SECURE==='true'||env.NODE_ENV==='production'||same==='none'; return `alquileres_session=${clear?'':encodeURIComponent(token)}; Path=/; ${clear?'Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT':'Max-Age=900'}; HttpOnly; SameSite=${same![0].toUpperCase()+same!.slice(1)}${secure?'; Secure':''}`; }
+function setCookie(token:string,env:Env,clear=false,maxAge=900) { const same=['strict','none'].includes(env.COOKIE_SAME_SITE??'')?env.COOKIE_SAME_SITE:'lax'; const secure=env.COOKIE_SECURE==='true'||env.NODE_ENV==='production'||same==='none'; return `alquileres_session=${clear?'':encodeURIComponent(token)}; Path=/; ${clear?'Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT':`Max-Age=${Math.max(0,Math.min(900,Math.floor(maxAge)))}`}; HttpOnly; SameSite=${same![0].toUpperCase()+same!.slice(1)}${secure?'; Secure':''}`; }
+function previewCookieMaxAge(identity:PreviewIdentity,env:Env){return Math.min(900,identity.expiresAt-Math.floor(Date.now()/1000),lifetime(env));}
+function sameOriginPost(c:any){const origin=new URL(c.req.url).origin;return c.req.header('Origin')===origin&&(!c.req.header('Sec-Fetch-Site')||c.req.header('Sec-Fetch-Site')==='same-origin');}
 app.use('*',async(c,next)=>{ c.header('Cache-Control','no-store'); c.header('X-Content-Type-Options','nosniff'); await next(); });
 app.use('*',async(c,next)=>{
   const strategy=c.env.AUTH_STRATEGY;
@@ -65,16 +68,43 @@ app.post('/auth/password-reset/complete',c=>localCompletePasswordReset(c.req.raw
 app.get('/__local/mailbox',c=>localMockMailbox(c.req.raw,c.env));
 app.post('/auth/preview-session',async c=>{
   if(!previewAuthConfigured(c.env,new URL(c.req.url).origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview authentication unavailable'},503);
-  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
-  let identity:{expiresAt:number};
-  try{identity=await verifyPreviewOperator(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,new URL(c.req.url).origin);}
+  if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  let identity:PreviewIdentity;
+  try{identity=await verifyPreviewIdentity(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,new URL(c.req.url).origin);}
   catch{return c.json({error:'Authorized Access identity required'},401);}
   const request=await c.req.json().catch(()=>null) as {role?:unknown}|null;
   if(!request||Object.keys(request).some(key=>key!=='role')||!['OWNER','ADMIN'].includes(String(request.role)))return c.json({error:'Choose a demo identity'},400);
   const role=request.role as PreviewDemoRole, expected=PREVIEW_DEMO_USERS[role];
   const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=? AND email=? AND role=?').bind(expected.id,expected.email,role).first<User>();
   if(!user)return c.json({error:'Synthetic demo identity unavailable'},503);
-  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt),c.env)});
+  const maxAge=previewCookieMaxAge(identity,c.env);
+  if(maxAge<=0)return c.json({error:'Access session expired'},401);
+  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt,identity),c.env,false,maxAge)});
+});
+app.post('/auth/refresh',async c=>{
+  const origin=new URL(c.req.url).origin;
+  if(c.env.AUTH_STRATEGY!=='ACCESS_PREVIEW'||!previewAuthConfigured(c.env,origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview session renewal unavailable'},503);
+  if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  if(c.req.raw.body){await c.req.raw.body.cancel().catch(()=>{});return c.json({error:'Preview renewal accepts no request body'},400);}
+  let identity:PreviewIdentity;
+  try{identity=await verifyPreviewIdentity(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,origin);}
+  catch{return c.json({error:'Current Access identity required'},401);}
+  const raw=cookie(c.req.header('Cookie')??null);
+  if(!raw)return c.json({error:'Existing Preview session required'},401);
+  let claims:SessionClaims;
+  try{claims=await verify(decodeURIComponent(raw),c.env,true);}catch{return c.json({error:'Invalid Preview session'},401);}
+  const legacyOperatorSession=claims.previewSource===undefined&&identity.source==='operator';
+  const samePrincipal=legacyOperatorSession||(
+    claims.previewSource===identity.source&&
+    (identity.source!=='playwright-service'||claims.previewServiceClientId===identity.serviceClientId)
+  );
+  const expected=PREVIEW_DEMO_USERS[claims.role];
+  if(!samePrincipal||!expected||claims.id!==expected.id||claims.email!==expected.email)return c.json({error:'Preview session identity changed'},401);
+  const user=await c.env.DB.prepare('SELECT id,email,role,session_version FROM users WHERE id=? AND email=? AND role=? AND session_version=?').bind(claims.id,claims.email,claims.role,claims.sessionVersion).first<User>();
+  if(!user)return c.json({error:'Preview session revoked'},401);
+  const maxAge=previewCookieMaxAge(identity,c.env);
+  if(maxAge<=0)return c.json({error:'Access session expired'},401);
+  return c.json({user:{id:user.id,email:user.email,role:user.role}},200,{'Set-Cookie':setCookie(await sign(user,c.env,identity.expiresAt,identity),c.env,false,maxAge)});
 });
 app.get('/health',c=>c.json({ok:true}));
 app.all('/__fixture/*',c=>c.json({error:'not found'},404));
@@ -105,7 +135,27 @@ app.get('/auth/me',async c=>{
   return c.json({id:user.id,email:user.email,role:user.role});
 });
 app.post('/auth/logout',async c=>{
-  if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
+  if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'){
+    const origin=new URL(c.req.url).origin;
+    if(!previewAuthConfigured(c.env,origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview logout unavailable'},503);
+    let identity:PreviewIdentity;
+    try{identity=await verifyPreviewIdentity(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,origin);}catch{return c.json({error:'Current Access identity required'},401);}
+    const raw=cookie(c.req.header('Cookie')??null);
+    if(raw){
+      let claims:SessionClaims;
+      try{claims=await verify(decodeURIComponent(raw),c.env,true);}catch{return c.json({error:'Invalid Preview session'},401);}
+      const expected=PREVIEW_DEMO_USERS[claims.role];
+      const legacyOperatorSession=claims.previewSource===undefined&&identity.source==='operator';
+      const samePrincipal=legacyOperatorSession||(claims.previewSource===identity.source&&(identity.source!=='playwright-service'||claims.previewServiceClientId===identity.serviceClientId));
+      if(!samePrincipal||!expected||claims.id!==expected.id||claims.email!==expected.email)return c.json({error:'Preview session identity changed'},401);
+      try{
+        const result=await c.env.DB.prepare('UPDATE users SET session_version=session_version+1,updated_at=? WHERE id=? AND email=? AND role=? AND session_version=?').bind(now(),claims.id,claims.email,claims.role,claims.sessionVersion).run();
+        if(result.meta.changes!==1)return c.json({error:'Preview session already revoked'},401);
+      }catch{return c.json({error:'Preview logout unavailable'},503);}
+    }
+    return c.json({ok:true},200,{'Set-Cookie':setCookie('',c.env,true)});
+  }
   if(localOwnerAuthEnabled(c.req.raw,c.env)){
     const authorization=c.req.header('Authorization')??'';
     const bearer=authorization.startsWith('Bearer ')?authorization.slice(7):null;

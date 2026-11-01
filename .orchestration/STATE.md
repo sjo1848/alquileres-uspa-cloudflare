@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `TECHNICAL_REVIEW_IN_PROGRESS`
-Phase: `MVP_M2_1_OWNER_PUBLISHED_REVISIONS`
-Active task: `M2.1 — Issue #61 / preflight D1 migration 0015`
+Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
+Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2215,3 +2215,14 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The corrected active candidate/contract pointers are consistent: PR #63 and Issue #61 / 0015 are active; PR #62 and Issue #58 / 0014 are historical. The reviewed code remains the executable candidate `e7c544b839b9017ddaa7ce3f3a13929f2fb55f75` / tree `7bb6efff5b5b06f2b198f84f8b4236216c595ec9`, with 74/74 local scripts tests, 49 focused guard tests, canonical validator and diff check passing. The tracking-only delta adds no executable/test/workflow changes.
 - PR #63 is OPEN and ready for **separate protected-merge authorization**. **0015 is still unapplied remotely**; no merge, migration, Worker publication, Access/CD/production change, or M3 action occurred.
 - **Next action:** await authorization for the protected merge only. Any remote 0015 application requires a separate later authorization and fresh preflight.
+
+
+## Event 276 — Issue #64 local implementation and read-only Access diagnostics
+
+- Canonical base reconfirmed as `main@944d4bb7591deb0fd889731c9922b5b571893527`. Issue #61 records the already-published synthetic Preview deployment `c5182b7f-f523-4cf3-9237-fc7da591aca6` at that SHA, migration 0015 applied, and pre-change anonymous Access denials. Those historical checks are not represented as post-change checks because no deployment was authorized.
+- Cloudflare Access was queried read-only: the existing private Preview application duration is `1h`; `Operator only` is Allow with null policy duration (inherits the app); organization `session_duration` was omitted by the successful API response; WARP is disabled and no client duration was returned; queried IdP lifetime is unavailable. Service-token strict mode remains false. No policy/token/account settings were written.
+- Local implementation adds short-lived internal Preview session renewal only with same-origin POST, the existing signed session, a current signed Access assertion, fixed D1 synthetic identity/role/session version, and caps renewal at Access `exp`. Logout revokes via the D1 session version. Access JWT validation accepts assertion age up to the documented 30-day ceiling but still enforces signature, issuer, audience, claims and token `exp`; it does not extend assertion expiry.
+- Dedicated Playwright Service Auth support is fail-closed until the exact Preview-only client ID is configured. The remote Playwright config targets only the stable private Preview and limits service headers to that exact origin; it is prepared, not run. No token, policy, Worker variable, or remote configuration was created.
+- Local tests on the in-progress candidate: preview auth 9/9; local owner auth 5/5; OWNER lifecycle 6/6; ADMIN moderation 12/12; listing management 23/23; MONTH/WEEK rental terms 5/5; contact workflow 6/6; public catalog 7/7; Worker typecheck PASS; integrated local D1 OWNER→ADMIN Playwright 1/1; Web typecheck/build:preview PASS. Exact final CI/reviews are pending.
+- The prior M2.1 PR #63, remote migration and deployment state is retained as history. No merge, Preview deployment, Access change, service-token creation, D1/CD/production modification, or M3 work occurred for #64.
+- **Next action:** complete consistency/diff preflight, publish the authorized functional draft PR, then resolve its exact-head CI and read-only reviews. Leave it unmerged and undeployed; remote Access/service-token activation requires a separate authorization.

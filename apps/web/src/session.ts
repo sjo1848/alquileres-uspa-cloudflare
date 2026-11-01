@@ -10,6 +10,7 @@ const user = ref<User | null>(null);
 const authStrategy = ref<AuthStrategy>('UNKNOWN');
 const mediaStrategy = ref<MediaStrategy>('UNKNOWN');
 let restorePromise: Promise<void> | undefined;
+let previewRefreshPromise: Promise<User> | undefined;
 let authConfigPromise: Promise<Exclude<AuthStrategy, 'UNKNOWN'>> | undefined;
 let onSessionExpired: (() => void) | undefined;
 
@@ -60,6 +61,25 @@ export function useSession() {
     try{return await pending;}finally{if(authConfigPromise===pending)authConfigPromise=undefined;}
   }
 
+  async function renewPreviewSession() {
+    if(authStrategy.value!=='ACCESS_PREVIEW')throw new ApiError(401,'Preview session renewal is unavailable');
+    if(!previewRefreshPromise){
+      previewRefreshPromise=request<{user?:User}>('/auth/refresh',{method:'POST'}).then(result=>{
+        if(!result.user||!['OWNER','ADMIN'].includes(result.user.role)||!result.user.id||!result.user.email)
+          throw new ApiError(401,'Preview session renewal was rejected');
+        user.value=result.user;
+        status.value='authenticated';
+        return result.user;
+      }).finally(()=>{previewRefreshPromise=undefined;});
+    }
+    return previewRefreshPromise;
+  }
+
+  function replayable(options:RequestInit){
+    const body=options.body;
+    return body===undefined||typeof body==='string'||body instanceof FormData||body instanceof Blob||body instanceof URLSearchParams||body instanceof ArrayBuffer||ArrayBuffer.isView(body);
+  }
+
   async function authenticatePreview(role: Extract<Role,'OWNER'|'ADMIN'>) {
     if(authStrategy.value!=='ACCESS_PREVIEW')throw Error('Preview identity selection is unavailable');
     const result = await request<{ user: User }>('/auth/preview-session', { method: 'POST', body:JSON.stringify({role}) });
@@ -75,12 +95,20 @@ export function useSession() {
         user.value = restored;
         status.value = 'authenticated';
       })
-      .catch((error) => {
-        user.value = null;
-        if (error instanceof ApiError && error.status === 401) {
-          status.value = 'anonymous';
-          return;
+      .catch(async (error) => {
+        if(error instanceof ApiError&&error.status===401){
+          try{
+            if(await loadAuthStrategy()==='ACCESS_PREVIEW'){
+              await renewPreviewSession();
+              const restored=await request<User>('/auth/me');
+              user.value=restored;status.value='authenticated';return;
+            }
+          }catch(refreshError){
+            if(!(refreshError instanceof ApiError)||![401,403].includes(refreshError.status)){status.value='error';throw refreshError;}
+          }
+          user.value=null;status.value='anonymous';return;
         }
+        user.value = null;
         status.value = 'error';
         throw error;
       })
@@ -95,8 +123,19 @@ export function useSession() {
       return await request<T>(path, options);
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
-        anonymous();
-        onSessionExpired?.();
+        if(status.value==='authenticated'&&replayable(options)){
+          let renewed=false;
+          try{
+            if(await loadAuthStrategy()==='ACCESS_PREVIEW'){
+              await renewPreviewSession();
+              renewed=true;
+            }
+          }catch(refreshError){
+            if(!(refreshError instanceof ApiError)||![401,403].includes(refreshError.status))throw refreshError;
+          }
+          if(renewed)return request<T>(path,options);
+        }
+        anonymous();onSessionExpired?.();
       }
       throw error;
     }

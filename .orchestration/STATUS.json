@@ -1,35 +1,26 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "MVP_M2_1_OWNER_PUBLISHED_REVISIONS",
+  "phase": "DEV_QA_PREVIEW_AUTH_RENEWAL",
   "runtime_status": "TECHNICAL_REVIEW_IN_PROGRESS",
-  "resume_authorized": false,
-  "active_task": "M2.1 — Issue #61 / preflight D1 migration 0015",
-  "last_completed_task": "Read-only Preview/Access/D1 preflight; exact-hash guard and separate SHA-bound 0015 authorization gate prepared, private SQL backup rehearsed locally, no remote migration or Worker publication.",
-  "last_completed_head": "main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
-  "work_branch": "work/m2-1-0015-migration-preflight",
-  "next_action": "Await separate Human authorization for the protected merge of PR #63. After any later merge, run a fresh preflight and require a distinct authorization before applying 0015; no migration or deployment is currently authorized.",
-  "stop_reason": "All technical reviews and exact-head checks on the candidate passed. PR #63 is ready for separate protected-merge authorization; no merge, remote D1 action, deployment, or production change is authorized.",
+  "resume_authorized": true,
+  "active_task": "Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation",
+  "last_completed_task": "Read-only Cloudflare Access diagnostics; implemented bounded silent internal-session renewal, signed exact-client Service Auth support disabled by default, negative tests and local OWNER→ADMIN coverage. Remote Access/token configuration remains unauthorized.",
+  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527",
+  "work_branch": "work/i64-preview-silent-renew-service-auth",
+  "next_action": "Finish final local consistency/preflight, publish the consolidated functional draft PR for Issue #64, then process exact-head CI and read-only reviews; do not merge, deploy, create/activate tokens, change Access, touch D1/CD/production, or start M3.",
+  "stop_reason": "No blocker to authorized local implementation. Remote Access duration changes and Service Auth activation are separate human-authorized boundaries and remain untouched.",
   "event": {
-    "seq": 275,
-    "summary": "PR #63 exact candidate passed Critic, Integration, Controller and Quick checks; ready for separate protected-merge authorization"
+    "seq": 276,
+    "summary": "Issue #64 local implementation and read-only Access diagnostics; remote activation intentionally not authorized"
   },
   "external_review": null,
   "human_gate": {
-    "status": "AWAITING_PROTECTED_MERGE_AUTHORIZATION",
-    "scope": "Authorize protected merge of PR #63 only. This does not authorize remote migration 0015, Worker publication, Access/CD/production changes, billing, resources, or M3."
+    "status": "REMOTE_ACCESS_ACTIVATION_NOT_AUTHORIZED",
+    "scope": "A separate authorization is required before changing global/application/policy Access durations, creating/activating a dedicated Service Auth token/policy, publishing PREVIEW_QA_SERVICE_CLIENT_ID, merging, or deploying. Local work and a functional draft PR are authorized."
   },
   "blocker": null,
-  "pull_request": {
-    "number": 63,
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
-    "branch": "work/m2-1-0015-migration-preflight",
-    "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
-    "state": "OPEN",
-    "is_draft": false,
-    "status": "OPEN/READY; all technical controls passed on the executable candidate and current tracking checkpoint; awaiting separate protected-merge authorization. No merge or remote migration.",
-    "live_head_source": "GitHub PR #63; derive current head after publication."
-  },
+  "pull_request": null,
   "issue_4": "CLOSED",
   "review_authority": null,
   "human_acceptance": {
@@ -56,40 +47,37 @@
   },
   "auth_decision": ".orchestration/decisions/ACCESS_PREVIEW_OWNER_AUTH.md",
   "preview_delivery": {
-    "application_sha": "de412467e10b386b74120c035de453ca165e1637",
-    "executable_artifact_sha": "de412467e10b386b74120c035de453ca165e1637",
-    "deployment_id": "f9b74d2e-c503-43b4-b15c-bc4b45e3f8f1",
+    "application_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
+    "executable_artifact_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
+    "deployment_id": "c5182b7f-f523-4cf3-9237-fc7da591aca6",
     "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
-    "deployment_url": "https://f9b74d2e-alquileres-uspa-lab.sjo1848.workers.dev",
+    "deployment_url": "https://c5182b7f-alquileres-uspa-lab.sjo1848.workers.dev",
     "preview_name": "private",
     "worker": "alquileres-uspa-lab",
     "strategy": "ACCESS_PREVIEW",
     "media_strategy": "D1_BLOB",
     "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
-    "migrations_applied": "0001–0013 as verified and recorded in Issue #56 comment 6444475547; 0014 is M2.1 local-only and has NOT been applied remotely.",
-    "anonymous_denials": "PASS 12/12 stable and immutable M1 Preview URLs before/after publication, Issue #56 comment 6444475547.",
-    "operator_policy": "Existing Cloudflare Access operator-only policy; not changed by M2.1.",
-    "remote_authenticated_e2e": "BLOCKED_AUTH for prior M1 publication; no remote authenticated claim for M2.1.",
+    "migrations_applied": "0001–0015, as reported in Issue #61 comment 6552301668; no pending migration per that deployment record.",
+    "operator_policy": "Operator only; latest measured application duration 1h; policy duration null/inherited. No policy write during Issue #64.",
+    "anonymous_access": "12/12 routes denied on stable and immutable URLs before Issue #64 code changes, as recorded in Issue #61 comment 6552301668; no post-change deployment or recheck because deployment is not authorized.",
+    "remote_authenticated_e2e": "BLOCKED_AUTH before Issue #64; Service Auth credentials/policy not activated and no remote E2E run.",
     "production": "not deployed",
-    "evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/56#issuecomment-6444475547",
-    "last_verified_at": "2026-10-27",
-    "m1_status": "PUBLISHED; Product Owner accepted M1 in Issue #56 comment 6445661066; no M2.1 deployment."
+    "source_evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61#issuecomment-6552301668",
+    "last_verified_at": "2026-11-01"
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
-    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
-    "roadmap": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55",
-    "contract": ".orchestration/contracts/MVP-M2.1-OWNER-PUBLISHED-REVISIONS.md",
-    "status": "M2.1 functional PR #62 integrated; preflight for its migration 0015 complete on main@2a7562aa4301211ab3e1bab7a85017f7d18e6ba4.",
-    "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
-    "branch": "main",
-    "scope": "OWNER privately edits an existing approved/published listing; ADMIN reviews, approves/rejects and separately publishes. Approved/unpublished listings retain first-publication workflow. Preserve availability, public data, photos, contact events, permissions, audit and MONTH/WEEK behavior. No M3.",
-    "executable_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
-    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
-    "local_results": "D1-local listing-management 22/22; Worker typecheck PASS; Web typecheck/build/build:preview PASS; canonical validator and diff check PASS. Exact run 40804803035 worker/web PASS on previous SHA 6e12dc4; staging-private SKIPPED.",
-    "remaining": "Review/merge PR #63 only after further authorization if needed; separately authorize remote 0015 application; later authorize Preview publication; maintain #61 open until acceptance.",
-    "remote": "D1 preflight read-only passed; sole pending migration is 0015. Private SQL backup exists and local rehearsal passed. No remote migration, Worker publication, Access/CD/production change, real data, paid resource, or M3.",
-    "artifact_sha": null
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/64",
+    "linked_issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
+    "contract": ".orchestration/contracts/CF-AU-I64-PREVIEW-AUTH-RENEWAL.md",
+    "status": "LOCAL_IMPLEMENTATION_AND_TESTS_IN_PROGRESS; functional draft PR authorized; no remote activation authorized.",
+    "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
+    "branch": "work/i64-preview-silent-renew-service-auth",
+    "scope": "Read-only Access diagnosis; secure silent renewal of fixed synthetic Preview OWNER/ADMIN internal sessions; exact-client Access Service Auth code and GET-only remote Playwright prepared but disabled; local negative tests and OWNER→ADMIN E2E; exact configuration proposal. No Access/token/Preview/D1/CD/production change.",
+    "access_observation": "App 1h; Operator only policy null/inherits; global duration omitted by API (documented 24h default is not measured); WARP disabled/no client duration returned; IdP session value unavailable through queried read-only API; service-token strict mode false.",
+    "local_results": "Worker preview-auth 9/9; owner-auth 5/5; owner-lifecycle 6/6; admin-moderation 12/12; listing-management 23/23; rental-terms 5/5; contact-workflow 6/6; public-listings 7/7; Worker typecheck PASS; local M2.1 Playwright OWNER→ADMIN journey 1/1; web typecheck/build:preview PASS.",
+    "remote": "No remote E2E credentials/policy configured or used; no Access writes, service-token creation, Preview deployment, D1/CD/production change.",
+    "pending": "Finish consistent state and diff validation, create functional draft PR, wait for exact-head CI and reviews. Remote E2E, Access settings and dedicated Service Auth activation require separate authorization."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
@@ -1342,7 +1330,20 @@
     "remote": "Read-only preflight, D1 SQL export, and local rehearsal only. Remote 0014 remains pending; M1 is still deployed; no remote schema mutation or Worker publication.",
     "artifact_sha": "f26df3033591fd40e8dac559cded50637f889c95"
   },
-  "migration_0015_preflight": {
+  "historical_candidate_review_mvp_m2_1_pr62": {
+    "status": "PASS_READY_FOR_PRODUCT_OWNER_REVIEW",
+    "artifact_sha": "f9e60136527574ac266efd8451dee9a142327b97",
+    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
+    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
+    "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
+    "controller_reviewed_sha": "f9e60136527574ac266efd8451dee9a142327b97",
+    "controller_evidence": ".orchestration/evidence/critics/MVP-M2.1-PR62-REVIEW-PASS.md",
+    "controller_verdict": "PASS: delegated separate codex exec, gpt-6-luna/high requested, --sandbox read-only accepted; backend identity UNVERIFIED. Native project_controller attempt was BLOCKED_MODEL_CONFIG and is not counted.",
+    "github_checks": "Run 40806351648 on f9e6013 and run 40806767272 on tracking-only fe97301 both SUCCESS: worker/web SUCCESS; staging-private SKIPPED.",
+    "github_review": "Critic PASS and Integration Review PASS on exact executable/test artifact f9e6013; both verified no executable/test changes in tracking-only fe97301.",
+    "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
+  },
+  "historical_migration_0015_preflight": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "base_sha": "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4",
     "merged_pr_62": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/62",
@@ -1365,28 +1366,15 @@
     "independent_critic": "PASS on exact 76eb52a281108a80cc6d8464fa053c787e53e97e / tree 2bff2cea84cf2f3372a7470406f1a6114cc9151b; no findings.",
     "integration_review": "PASS on exact 76eb52a281108a80cc6d8464fa053c787e53e97e / tree 2bff2cea84cf2f3372a7470406f1a6114cc9151b; active state/contract pointers aligned.",
     "controller": "PASS via delegated_codex_separate_process on exact 76eb52a281108a80cc6d8464fa053c787e53e97e / tree 2bff2cea84cf2f3372a7470406f1a6114cc9151b; gpt-6-luna/high/read-only requested and accepted; backend identity UNVERIFIED. No tests or remote operations run.",
-    "status": "PREPARED_UNMERGED_AWAITING_PROTECTED_MERGE_AUTHORIZATION",
+    "status": "COMPLETED; migration 0015 applied and verified on synthetic Preview D1; no pending migration (per Issue #61 record).",
     "remote_migration_applied": false,
     "worker_published": false,
     "next_action": "Await separate authorization for protected merge only. After merge, repeat preflight and request independent authorization to apply exactly 0015. No Worker publication or M3.",
     "remote_authorization_gate": "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA is required when 0015 is the sole pending migration, must equal GITHUB_SHA and current origin/main; all remote D1 read/export/apply paths enforce canonical Preview D1 config, and migrations/provenance verify synthetic provenance. Any other pending migration fails regardless of allowlist/auth entries.",
     "contract": ".orchestration/contracts/MVP-M2.1-0015-MIGRATION-PREFLIGHT.md"
   },
-  "historical_candidate_review_mvp_m2_1_pr62": {
-    "status": "PASS_READY_FOR_PRODUCT_OWNER_REVIEW",
-    "artifact_sha": "f9e60136527574ac266efd8451dee9a142327b97",
-    "executable_sha": "8dec013f7daff09fc82837d190a7845599178f68",
-    "executable_tree": "c4fc1358f15598c529dea8b6a36f13730629d8c2",
-    "base_sha": "5feecd42634a50b192fb1aa66a1a8c08ec3806e1",
-    "controller_reviewed_sha": "f9e60136527574ac266efd8451dee9a142327b97",
-    "controller_evidence": ".orchestration/evidence/critics/MVP-M2.1-PR62-REVIEW-PASS.md",
-    "controller_verdict": "PASS: delegated separate codex exec, gpt-6-luna/high requested, --sandbox read-only accepted; backend identity UNVERIFIED. Native project_controller attempt was BLOCKED_MODEL_CONFIG and is not counted.",
-    "github_checks": "Run 40806351648 on f9e6013 and run 40806767272 on tracking-only fe97301 both SUCCESS: worker/web SUCCESS; staging-private SKIPPED.",
-    "github_review": "Critic PASS and Integration Review PASS on exact executable/test artifact f9e6013; both verified no executable/test changes in tracking-only fe97301.",
-    "remote_authenticated_e2e": "NOT IN SCOPE; no remote migration, Preview publication or authenticated remote test authorized."
-  },
-  "candidate_review": {
-    "status": "PASS_READY_FOR_PROTECTED_MERGE_AUTHORIZATION",
+  "historical_candidate_review_mvp_m2_1_pr63": {
+    "status": "HISTORICAL; PR #63 merged before Issue #64 work; do not treat as current candidate.",
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "pr": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/63",
     "reviewed_executable_sha": "e7c544b839b9017ddaa7ce3f3a13929f2fb55f75",
@@ -1403,5 +1391,6 @@
     "next_action": "Await Human authorization for protected merge. Remote migration 0015 requires a separate authorization after merge and fresh preflight.",
     "reviewed_head_sha": "76eb52a281108a80cc6d8464fa053c787e53e97e",
     "reviewed_head_tree": "2bff2cea84cf2f3372a7470406f1a6114cc9151b"
-  }
+  },
+  "candidate_review": null
 }
