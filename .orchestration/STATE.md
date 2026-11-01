@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `TECHNICAL_REVIEW_PENDING`
+State: `TECHNICAL_REVIEW_BLOCKED_MODEL_CONFIG`
 Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
 Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
 
@@ -2260,3 +2260,16 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Access diagnosis/effect/config proposal and Service Auth preparation: `.orchestration/evidence/CF-AU-I64-SESSION-RENEWAL-SERVICE-AUTH.md`. No Access setting, Service Token, Preview, D1, CD, production, billing, or source repository action occurred.
 - Previous Controller result on the old candidate remains BLOCKED_MODEL_CONFIG, not PASS. New exact-head CI, Independent Critic, Integration Review and Controller are pending after publication. PR #65 must remain OPEN/DRAFT; no merge/deploy/M3.
 - **Next action:** run canonical preflight, push the rework to PR #65, then complete exact-head CI and independent reviews. Retry the configured read-only Controller and documented separate GPT-6 Luna High/read-only process; if the runtime cannot verify/start, retain BLOCKED_MODEL_CONFIG and no PASS. Keep all remote activation actions unauthorized.
+
+
+## Event 281 — Issue #64 rework reviewed; Controller runtime remains blocked
+
+- Final executable/auth-and-safety code candidate: `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`, based on unchanged `main@944d4bb7591deb0fd889731c9922b5b571893527`. PR #65 remains OPEN/DRAFT.
+- GitHub Quick Checks `41309543269` on that exact candidate: Worker PASS, Web PASS, `staging-private` SKIPPED. Worker covered typecheck, catalog/media, OWNER, rental terms, local auth, ADMIN, Preview Auth, contact, management and orchestration-state validation; Web covered typecheck and regular/Preview builds.
+- Local focused evidence on the same executable behavior: Preview Auth 11/11; OWNER lifecycle 6/6; Chromium local integrated OWNER→ADMIN, preventive refresh, actual five-second browser cookie expiry, persistent-profile reopen and per-browser logout 1/1; Worker typecheck, Web typecheck/build/Preview-build and remote-test fail-closed check PASS. Remote Preview E2E was not run.
+- **Independent Critic PASS** and **Integration Review PASS** on exact `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`. Initial review comments about a remote listing mutation were checked against the exact file and corrected: the existing role smoke does not create/publish listings, but login does create a synthetic session row. The suite is now explicitly `remote-mutating`, gated before credential use by `PREVIEW_QA_ALLOW_REMOTE_D1_WRITES=true`, and remains unexecuted. Stale docs about shared `session_version` and GET-only behavior were corrected. Reports: `.orchestration/evidence/CF-AU-I64-FINAL-REVIEWS.md`.
+- P1: proactive refresh, focus/pageshow recovery, opaque hashed refresh credential with fixed seven-day absolute expiry, current signed Access assertion on every refresh, internal cookie capped by Access `exp`, no roles from client, no local/session storage secrets, no retry loop, and fail-closed logout UI. P2: additive 0016 per-SID table and selective revocation; shared user `session_version` is not incremented. No remote schema change/migration.
+- A prior exact-head CI run `41308983679` caught the generic PASSWORD `/auth/me` response gaining `sessionExpiresAt`; this was corrected so only `ACCESS_PREVIEW` adds it. Owner lifecycle then passed 6/6 and the later exact CI above passed. Run `41309463435` was cancelled when the final documentation checkpoint superseded it.
+- Native configured `project_controller` attempted exact SHA `f5591332b4fb9a2600fce0868a6b076ee3cb54cb` with requested GPT-6 Luna/High/read-only role, but returned **BLOCKED_MODEL_CONFIG**: actual model identity and effective read-only enforcement are unverifiable in the unrestricted runtime. The separate `codex exec` attempt requested `--model gpt-6-luna`, High and `--sandbox read-only` on predecessor `7d26b8bfb0a389cabcaa0951a7844e00b91a6a00`; it returned BLOCKED because the required reviewer runtime could not initialize. It noted no demonstrated P0/P1, but this is not a Controller PASS and does not apply to the final SHA as an accepted verdict. Exact provenance is in `.orchestration/evidence/CF-AU-I64-CONTROLLER-BLOCKED.md`.
+- No Access policy/session setting, Service Token, Preview, remote D1, CD, production, billing or source-repository change occurred. Migration 0016 is local code only and requires its own remote migration authorization before a future deployment.
+- **Next action:** keep PR #65 OPEN/DRAFT and retry only the required Controller when the GPT-6 Luna High read-only runtime can be verified. Do not merge/deploy or activate Access/Service Auth under this task.
