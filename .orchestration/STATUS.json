@@ -2,17 +2,17 @@
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
   "phase": "DEV_QA_PREVIEW_AUTH_RENEWAL",
-  "runtime_status": "TECHNICAL_REVIEW_PENDING",
-  "resume_authorized": true,
+  "runtime_status": "READY_FOR_MERGE_AUTHORIZATION",
+  "resume_authorized": false,
   "active_task": "Issue #64 \u2014 secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation",
-  "last_completed_task": "Controller reviewed 9f05c41 and returned REWORK P2: require accepted networkAccess=false and close executable-delta allowlist. Both corrections and regression tests are implemented; final CI and exact-head review pending.",
-  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; stable functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb; dynamic PR HEAD queried before review and recorded in GitHub comment.",
+  "last_completed_task": "Issue #64 technical gates complete: P2-A/P2-B and Controller launcher P2s corrected; final delegated Controller PASS recorded in PR #65 comment 6561444134 and Issue #64 comment 6561446034. PR remains OPEN/DRAFT; merge is not authorized.",
+  "last_completed_head": "main@944d4bb7591deb0fd889731c9922b5b571893527; stable functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb. Per-review exact SHA is in the GitHub review comment; query live HEAD before any future review.",
   "work_branch": "work/i64-preview-silent-renew-service-auth",
-  "next_action": "Refresh isolated app-server probe with corrected launcher, publish consolidated fixes, verify exact-head Worker/Web CI, query/fetch live PR HEAD, then make one exact-head read-only Controller review. Keep OPEN/DRAFT; no remote activation.",
-  "stop_reason": "Controller REWORK P2 on launcher: missing enforcement of runtime networkAccess=false and incomplete executable-delta guard. Both repaired with regression tests; final CI/review pending. Backend identity remains UNVERIFIED.",
+  "next_action": "Await explicit authorization for protected merge of PR #65. Do not merge, deploy, migrate, modify Access, create Service Tokens, write remote D1, enable CD, or start M3.",
+  "stop_reason": "Technical review PASS. Human authorization is required for merge under the current boundary; no more routine technical work remains.",
   "event": {
-    "seq": 284,
-    "summary": "Controller P2 launcher enforcement rework repaired; final exact-head review pending"
+    "seq": 285,
+    "summary": "Issue #64 Controller PASS; PR ready for separate merge authorization"
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "live_head_source": "Query GitHub PR #65 and fetch exact HEAD immediately before each review; do not persist a rolling HEAD in state. Record each observed SHA in the GitHub review comment.",
     "state": "OPEN",
     "is_draft": true,
-    "status": "PR #65 OPEN/DRAFT. Functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb. Prior Controller on 9f05c41 returned REWORK P2 for incomplete offline/delta enforcement; fixes and regressions are now implemented. Final exact-head checks/review pending.",
+    "status": "PR #65 OPEN/DRAFT. Worker/Web CI and Controller technical gates PASS; exact review SHA is recorded in the per-review GitHub comment. Stable functional candidate f5591332b4fb9a2600fce0868a6b076ee3cb54cb; no executable changes after it. Protected merge awaits separate Human authorization.",
     "merge_commit": null
   },
   "issue_4": "CLOSED",
@@ -80,17 +80,17 @@
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/64",
     "linked_issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
     "contract": ".orchestration/contracts/CF-AU-I64-PREVIEW-AUTH-RENEWAL.md",
-    "status": "LOCAL_IMPLEMENTATION_AND_INDEPENDENT_REVIEWS_PASS; CONTROLLER_REWORK_P2_ON_LAUNCHER_REPAIRED; EXACT_HEAD_CI_AND_REVIEW_PENDING; PR #65 OPEN/DRAFT; no remote activation.",
+    "status": "TECHNICAL_GATES_PASS; CONTROLLER_PASS; PR #65 OPEN/DRAFT; AWAITING_SEPARATE_MERGE_AUTHORIZATION; no remote activation.",
     "base_sha": "944d4bb7591deb0fd889731c9922b5b571893527",
     "branch": "work/i64-preview-silent-renew-service-auth",
     "scope": "Read-only Access diagnosis; secure silent renewal of fixed synthetic Preview OWNER/ADMIN internal sessions; exact-client Access Service Auth prepared but inactive; remote Playwright smoke creates synthetic auth-session rows in D1 and is fail-closed behind PREVIEW_QA_ALLOW_REMOTE_D1_WRITES=true; local negative tests and OWNER\u2192ADMIN E2E; no remote Access/token/Preview/D1/CD/production change.",
     "access_observation": "App 1h; Operator only policy null/inherits; global duration omitted by API (documented 24h default is not measured); WARP disabled/no client duration returned; IdP session value unavailable through queried read-only API; service-token strict mode false.",
     "local_results": "Rework-focused latest: Worker preview-auth 11/11; real-cookie-expiry Playwright local OWNER\u2192ADMIN/reopen/per-session logout 1/1; Worker typecheck PASS; Web typecheck/build/build:preview PASS; git diff --check and canonical state validator PASS. Earlier unchanged suites remain historical evidence, not rerun for this rework.",
     "remote": "No remote E2E credentials/policy configured or used; no Access writes, service-token creation, Preview deployment, D1/CD/production change.",
-    "pending": "Publish consolidated launcher fix, verify new exact-head CI, then query/fetch live PR HEAD and make one read-only Controller review. Record SHA and result in GitHub comment. Remote writes/Access activation remain unauthorized.",
+    "pending": "Await explicit authorization for protected merge. No further review or functional work is required absent a material executable change. Remote writes/Access activation remain unauthorized.",
     "candidate_sha": "f5591332b4fb9a2600fce0868a6b076ee3cb54cb",
     "previous_ci_before_rework": "Run 41268298720 on ad793442a6d0bf54af86b36ccce2da1bb5b52edf: Worker/Web PASS; staging-private SKIPPED.",
-    "latest_ci": "Run 41331427217 on 9f05c41 passed Worker/Web with staging-private skipped; this was the Controller REWORK head. The consolidated launcher fixes require a new CI run.",
+    "latest_ci": "Run 41331871407 on the Controller-reviewed candidate passed Worker and Web; staging-private SKIPPED. The terminal state checkpoint records the verdict and is non-executable; check its normal CI status before any merge.",
     "previous_controller_attempt": {
       "reviewed_sha": "1e1e8bb3167a8c7991732b78c1f09ac3b227855a",
       "session_id": "01a197e5-6c5a-7793-8901-647008495265",
@@ -115,17 +115,17 @@
       "evidence_sha256": "1be69544765b10cda4d0c62b574ae29587fbc13da2473875cf7887e56caf91b8"
     },
     "latest_controller_attempt": {
-      "reviewed_sha": "9f05c41ab242d5db0e633129f227fb46dfb98f1d",
+      "reviewer_kind": "delegated_codex_separate_process_via_app_server",
+      "verdict": "PASS",
+      "artifact_sha_record": "Per-review SHA is recorded in PR comment https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/65#issuecomment-6561444134",
       "runtime_accepted_model": "gpt-6-luna",
       "runtime_accepted_effort": "high",
-      "runtime_accepted_sandbox": "readOnly; networkAccess=false",
+      "runtime_accepted_sandbox": "readOnly; networkAccess=false; approvalPolicy=never",
       "backend_model_identity": "UNVERIFIED",
-      "verdict": "REWORK P2",
-      "findings": [
-        "accepted networkAccess=false was not enforced by launcher",
-        "functional delta allowlist omitted executable paths"
-      ]
-    }
+      "p0_p1_p2": "No actionable findings; prior launcher P2s fixed before this review",
+      "evidence": "/tmp/alquileres-i64-controller-final-7d97646/controller-report.md (private local report); concise record in PR/Issue comments"
+    },
+    "pending_review_sha": "Do not store rolling HEAD here; see PR #65 per-review comment."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

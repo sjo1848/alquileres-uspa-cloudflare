@@ -54,4 +54,12 @@
 
 ## Boundary
 
-Keep PR #65 OPEN/DRAFT. The active runtime capture is implemented in `scripts/controller_runtime.py`; its isolated probe evidence is `.orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json`. After the Controller REWORK, its two launcher-boundary findings have been fixed with focused regressions; the updated exact-head CI and one material-fix re-review are pending. No Access durations/policies or Service Token were changed/created, and migration 0016 was not applied to remote D1. Remote test execution and later integration/deployment require the separately authorized boundaries already recorded in the contract.
+Keep PR #65 OPEN/DRAFT. The active runtime capture is implemented in `scripts/controller_runtime.py`; its isolated probe evidence is `.orchestration/evidence/CF-AU-I64-CONTROLLER-RUNTIME-PROBE.json`. After the Controller REWORK, both launcher-boundary findings were fixed with focused regressions. The corrected candidate passed the final exact-head Controller review; see PR comment 6561444134 for verdict and observed SHA. No Access durations/policies or Service Token were changed/created, and migration 0016 was not applied to remote D1. Remote test execution and later integration/deployment require the separately authorized boundaries already recorded in the contract.
+
+
+## Final Controller review
+
+- **PASS**; exact reviewed SHA, runtime configuration evidence, and concise report are linked in PR comment [6561444134](https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/65#issuecomment-6561444134). The matching Issue #64 summary is [comment 6561446034](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/64#issuecomment-6561446034).
+- It confirmed P2-A/P2-B and both launcher-boundary fixes, with no actionable findings. No auth functional code changed after the stable candidate. Controller did not run tests; Worker/Web CI run `41331871407` passed, with staging-private skipped.
+- Runtime model/effort/sandbox are operationally reported as accepted by app-server `ThreadStartResponse`; backend identity remains **UNVERIFIED**. This is not provider attestation.
+- The prior REWORK on the earlier launcher SHA remains preserved above and in GitHub history. PR remains OPEN/DRAFT until separate merge authorization.

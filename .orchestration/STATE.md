@@ -1,6 +1,6 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `TECHNICAL_REVIEW_PENDING`
+State: `READY_FOR_MERGE_AUTHORIZATION`
 Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
 Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
 
@@ -2301,3 +2301,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Repaired both issues in `scripts/controller_runtime.py`: accepted configuration now requires `sandbox.networkAccess == false`; the stable-candidate delta is restricted to an exact allowlist of Issue #64 state/evidence files, this launcher, and its regression test. Added positive/negative regression coverage for both controls. No authentication/application code changed.
 - Local validation: focused launcher tests 3/3 PASS; complete `scripts/tests` suite 77/77 PASS; Python parse, `git diff --check`, and canonical-state validator PASS.
 - **Next action:** refresh the isolated app-server acceptance probe using the corrected launcher, publish one consolidated rework commit to PR #65, wait for exact-head Worker/Web CI, then make a single exact-live-HEAD Controller review because these are material fixes to the review boundary. Preserve the REWORK verdict on `9f05c41…`; do not promote it. Keep PR #65 OPEN/DRAFT and perform no remote operation.
+
+
+## Event 285 — final Controller PASS and merge-authorization boundary
+
+- The corrected launcher was reviewed by the delegated read-only Controller using the accepted app-server configuration, with no provider/backend attestation claimed. Final verdict: **PASS**, no actionable findings. The exact reviewed SHA and configuration evidence are in PR comment [6561444134](https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/65#issuecomment-6561444134); the Issue #64 result is in comment [6561446034](https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/64#issuecomment-6561446034).
+- Quick Checks `41331871407` passed Worker and Web; `staging-private` was skipped. Controller performed read-only inspection and did not run tests. Independent Critic and Integration Review PASS remain applicable to the unchanged functional candidate `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`.
+- P2-A and P2-B are corrected. The two subsequent Controller P2s on launcher network and delta enforcement were fixed with regression tests; the prior REWORK record is preserved in Event 284 and GitHub history. No auth application code changed after the stable functional candidate.
+- PR #65 remains OPEN/DRAFT. **Next action:** wait for explicit authorization for protected merge; do not merge, deploy, apply 0016, change Access, create Service Tokens, write remote D1, enable CD or start M3. A final tracking-only checkpoint may require its own normal CI, but no further Controller cycle is needed absent executable changes.
