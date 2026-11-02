@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_FOR_MERGE_AUTHORIZATION`
-Phase: `DEV_QA_PREVIEW_AUTH_RENEWAL`
-Active task: `Issue #64 — secure Preview session renewal and prepare dedicated Playwright Service Auth; no remote activation`
+State: `READY_FOR_HUMAN_ACCEPTANCE`
+Phase: `M2_1_HUMAN_ACCEPTANCE`
+Active task: `Product Owner acceptance of M2.1; Issue #67 local Playwright E2E automation delivered with CI coverage`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2309,3 +2309,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Quick Checks `41331871407` passed Worker and Web; `staging-private` was skipped. Controller performed read-only inspection and did not run tests. Independent Critic and Integration Review PASS remain applicable to the unchanged functional candidate `f5591332b4fb9a2600fce0868a6b076ee3cb54cb`.
 - P2-A and P2-B are corrected. The two subsequent Controller P2s on launcher network and delta enforcement were fixed with regression tests; the prior REWORK record is preserved in Event 284 and GitHub history. No auth application code changed after the stable functional candidate.
 - PR #65 remains OPEN/DRAFT. **Next action:** wait for explicit authorization for protected merge; do not merge, deploy, apply 0016, change Access, create Service Tokens, write remote D1, enable CD or start M3. A final tracking-only checkpoint may require its own normal CI, but no further Controller cycle is needed absent executable changes.
+
+
+## Event 286 — Issue #67 local E2E CI and M2.1 acceptance boundary
+
+- Product Owner narrowed Issue #67 from remote scheduled Playwright to local-only E2E in PR CI. The Issue body explicitly excludes remote scheduled execution, new Service Auth/rotation, Preview or D1 remote writes, CD, and M3.
+- Existing loopback-only test authentication, synthetic signing key, dedicated Preview-auth Worker config, and OWNER→ADMIN test were reused. The local command is `cd apps/web && npm run test:e2e:preview-auth:local`; it now creates a fresh per-run D1 directory, applies current migrations/seeds, runs bundled Chromium, and removes D1, profile and Playwright outputs in `finally`.
+- Vite’s Cloudflare plugin is configured with that same per-run persistence path for this harness only; without it, the seed and Vite Worker used different D1 stores and the login failed. Local run after correction: 1/1 E2E PASS in 46.7s. Web typecheck/build/build:preview PASS; Worker typecheck and Preview-auth tests 12/12 PASS; orchestration unit suite 79/79 PASS. Exact-head GitHub CI and final review are recorded in the linked functional PR and Issue #67.
+- Preview remains on the approved app SHA `f0422e99b38943078b42a9def4edc5e893b84645`; the local test tooling did not touch remote resources. M2.1 remains **PENDING HUMAN ACCEPTANCE**. Keep the Preview private and do not start M3 until explicit acceptance.
+- **Next action:** Product Owner checks monthly/weekly search and terms plus OWNER revision → ADMIN moderation → explicit publication in the private Preview.
