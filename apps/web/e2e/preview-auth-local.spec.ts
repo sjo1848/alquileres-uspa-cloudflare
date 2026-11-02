@@ -199,10 +199,13 @@ test('local Preview auth: preventive renewal, expired-cookie reopen, OWNER→ADM
     expect(finalPublic.listing.images).toEqual(initialPublic.listing.images);
     const ownerContacts=await restoredPage.evaluate(async()=>{
       const response=await fetch('/api/owner/contact-events');
-      return {status:response.status,body:await response.json() as {items:Array<{id:string;listing:{id:string}}>}};
+      return {status:response.status,body:await response.json() as {items:Array<{id:string;state:string;visitorName:string;visitorEmail:string;message:string;listing:{id:string}}>}};
     });
     expect(ownerContacts.status).toBe(200);
-    expect(ownerContacts.body.items).toContainEqual(expect.objectContaining({id:contactId,listing:expect.objectContaining({id:createdListing!.id})}));
+    expect(ownerContacts.body.items).toContainEqual(expect.objectContaining({
+      id:contactId,state:'UNREAD',visitorName:'Visita sintética',visitorEmail:'visita@example.test',
+      message:'Consulta sintética previa a proponer cambios.',listing:expect.objectContaining({id:createdListing!.id}),
+    }));
 
     expireNextLogout=true;
     await restoredPage.getByRole('button',{name:'Cerrar sesión'}).click();

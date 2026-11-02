@@ -14,7 +14,7 @@
 3. OWNER changes availability, edits the already-published listing and saves/submits a private revision.
 4. The public API continues returning the original title and price after save and after ADMIN approval.
 5. ADMIN explicitly publishes the approved revision; the public API now returns the changed fields under the same listing ID.
-6. Image metadata, contact ID, availability and last-confirmed timestamp remain unchanged across the revision lifecycle.
+6. Image metadata, contact ID/content/state, availability and last-confirmed timestamp remain unchanged across the revision lifecycle.
 7. Existing auth renewal, independent OWNER/ADMIN sessions and per-session logout assertions still pass.
 8. The one-command local E2E, relevant Worker regressions, Web typecheck/build, GitHub CI and exact-head code review pass before protected merge.
 
