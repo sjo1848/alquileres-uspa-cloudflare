@@ -548,6 +548,9 @@ def _combined_preview_object_from_output(path: Path) -> dict:
         except json.JSONDecodeError:
             continue
         if isinstance(value, dict) and set(value) == {"preview", "deployment"}:
+            prefix_lines = text[:index].splitlines()
+            if any(line.lstrip().startswith(("{", "[")) for line in prefix_lines):
+                raise PolicyError("Wrangler combined Preview output has an unexpected structured record before the envelope")
             if text[end:].strip():
                 raise PolicyError("Wrangler combined Preview output has trailing data")
             candidates.append(value)

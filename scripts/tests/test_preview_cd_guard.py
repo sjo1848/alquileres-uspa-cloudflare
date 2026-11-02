@@ -771,6 +771,11 @@ class PreviewCdGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(guard.PolicyError, "trailing data"):
                 guard.parse_deploy_output(path)
 
+            for record in ({"type": "unexpected"}, {"type": "preview"}):
+                path.write_text(json.dumps(record) + "\n" + json.dumps(envelope, indent=2) + "\n")
+                with self.assertRaisesRegex(guard.PolicyError, "structured record"):
+                    guard.parse_deploy_output(path)
+
     def test_deployment_output_rejects_unexpected_worker_or_url(self):
         payload = {"type": "preview", "worker_name": "other-worker", "preview_name": "private"}
         with tempfile.TemporaryDirectory() as directory:
