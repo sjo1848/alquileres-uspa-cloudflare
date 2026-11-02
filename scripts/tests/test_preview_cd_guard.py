@@ -733,6 +733,44 @@ class PreviewCdGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(guard.PolicyError, "optionally preceded"):
                 guard.parse_deploy_output(path)
 
+    def test_wrangler_combined_preview_json_output_with_human_preamble(self):
+        deployment_id = "34b8467b-1234-1234-1234-1234567890ab"
+        envelope = {
+            "preview": {
+                "id": guard.TARGET["preview_id"],
+                "name": "private",
+                "urls": [guard.TARGET["stable_url"]],
+            },
+            "deployment": {
+                "id": deployment_id,
+                "source": "wrangler",
+                "urls": [f"https://{deployment_id[:8]}-alquileres-uspa-lab.sjo1848.workers.dev"],
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "wrangler-output.json"
+            path.write_text("Publishing Preview...\n" + json.dumps(envelope, indent=2) + "\n")
+            stable, immutable, returned_id = guard.parse_deploy_output(path)
+            self.assertEqual(stable, guard.TARGET["stable_url"])
+            self.assertEqual(immutable, envelope["deployment"]["urls"][0])
+            self.assertEqual(returned_id, deployment_id)
+
+            bad = json.loads(json.dumps(envelope))
+            bad["preview"]["id"] = "wrong-preview"
+            path.write_text(json.dumps(bad))
+            with self.assertRaisesRegex(guard.PolicyError, "existing private Preview"):
+                guard.parse_deploy_output(path)
+
+            bad = json.loads(json.dumps(envelope))
+            bad["deployment"]["urls"] = ["https://attacker.example"]
+            path.write_text(json.dumps(bad))
+            with self.assertRaisesRegex(guard.PolicyError, "immutable URL"):
+                guard.parse_deploy_output(path)
+
+            path.write_text(json.dumps(envelope) + "\n{}")
+            with self.assertRaisesRegex(guard.PolicyError, "trailing data"):
+                guard.parse_deploy_output(path)
+
     def test_deployment_output_rejects_unexpected_worker_or_url(self):
         payload = {"type": "preview", "worker_name": "other-worker", "preview_name": "private"}
         with tempfile.TemporaryDirectory() as directory:

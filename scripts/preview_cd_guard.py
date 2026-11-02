@@ -530,8 +530,67 @@ def _preview_object_from_output(path: Path) -> dict:
     return records[-1]
 
 
+def _combined_preview_object_from_output(path: Path) -> dict:
+    """Normalize Wrangler's pretty-printed Preview/deployment result object.
+
+    Some Wrangler versions emit human-readable progress followed by one JSON
+    envelope instead of JSONL records. Accept only a single envelope with the
+    exact Preview resource and an immutable URL derived from its deployment ID.
+    """
+    text = path.read_text(encoding="utf-8")
+    decoder = json.JSONDecoder()
+    candidates = []
+    for index, char in enumerate(text):
+        if char != "{":
+            continue
+        try:
+            value, end = decoder.raw_decode(text, index)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict) and set(value) == {"preview", "deployment"}:
+            if text[end:].strip():
+                raise PolicyError("Wrangler combined Preview output has trailing data")
+            candidates.append(value)
+    if len(candidates) != 1:
+        raise PolicyError("Wrangler output must contain one combined Preview/deployment object")
+    preview = candidates[0]["preview"]
+    deployment = candidates[0]["deployment"]
+    if not isinstance(preview, dict) or not isinstance(deployment, dict):
+        raise PolicyError("Wrangler combined Preview output is malformed")
+    if (
+        preview.get("id") != TARGET["preview_id"]
+        or preview.get("name") != TARGET["preview_name"]
+        or preview.get("urls") != [TARGET["stable_url"]]
+    ):
+        raise PolicyError("Wrangler combined output does not identify the existing private Preview")
+    deployment_id = deployment.get("id")
+    if (
+        deployment.get("source") != "wrangler"
+        or not isinstance(deployment_id, str)
+        or not CANONICAL_UUID.fullmatch(deployment_id)
+    ):
+        raise PolicyError("Wrangler combined output has no valid Wrangler deployment identifier")
+    immutable = f"https://{deployment_id[:8]}-{TARGET['worker_name']}.sjo1848.workers.dev"
+    if deployment.get("urls") != [immutable]:
+        raise PolicyError("Wrangler combined immutable URL does not match the deployment identifier")
+    return {
+        "type": "preview",
+        "worker_name": TARGET["worker_name"],
+        "preview_name": preview["name"],
+        "preview_urls": preview["urls"],
+        "deployment_id": deployment_id,
+        "deployment_urls": deployment["urls"],
+    }
+
+
 def parse_deploy_output(path: Path) -> tuple[str, str, str]:
-    payload = _preview_object_from_output(path)
+    try:
+        payload = _preview_object_from_output(path)
+    except PolicyError:
+        text = path.read_text(encoding="utf-8")
+        if '"preview"' not in text or '"deployment"' not in text:
+            raise
+        payload = _combined_preview_object_from_output(path)
     if payload.get("type") != "preview" or payload.get("worker_name") != TARGET["worker_name"] or payload.get("preview_name") != TARGET["preview_name"]:
         raise PolicyError("Wrangler output does not identify the existing private Preview")
     stable_urls = payload.get("preview_urls", [])
