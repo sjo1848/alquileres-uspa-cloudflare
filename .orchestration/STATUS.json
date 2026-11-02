@@ -4,15 +4,15 @@
   "phase": "M2_1_HUMAN_ACCEPTANCE",
   "runtime_status": "READY_FOR_HUMAN_ACCEPTANCE",
   "resume_authorized": false,
-  "active_task": "Product Owner acceptance of M2.1; Issue #67 local Playwright E2E automation delivered with CI coverage",
-  "last_completed_task": "Issue #67 scope narrowed to local-only E2E; isolated Chromium OWNER→ADMIN→publication command and PR CI integration completed. M2.1 remains pending human acceptance.",
-  "last_completed_head": "Preview application is deployed from f0422e99b38943078b42a9def4edc5e893b84645; local E2E changes are in the Issue #67 functional PR (resolve its live merge SHA from GitHub).",
+  "active_task": "Product Owner acceptance of M2.1 after Issue #61 published-revision E2E coverage",
+  "last_completed_task": "Issue #61 local Chromium E2E now covers post-publication OWNER edits, ADMIN approval and explicit publication while asserting identity, images, contacts and availability are preserved. M2.1 remains pending human acceptance.",
+  "last_completed_head": "Base main@4e4af22535594a9c4f3c8a419e47408661575140; current PR and HEAD are resolved from GitHub rather than pinned in state.",
   "work_branch": "main",
-  "next_action": "Product Owner reviews M2.1 on the protected Preview. Do not start M3 until explicit human acceptance.",
-  "stop_reason": "Product Acceptance is the remaining Human Gate; local E2E tooling is delivered.",
+  "next_action": "Product Owner completes functional acceptance of M2.1 on the private Preview. Do not start M3 or new infrastructure work.",
+  "stop_reason": "Only Product Owner functional acceptance remains for M2.1; technical work for this bounded increment is complete.",
   "event": {
-    "seq": 286,
-    "summary": "Issue #67 changed to local-only E2E CI; isolated Chromium OWNER→ADMIN harness delivered; M2.1 acceptance remains pending"
+    "seq": 287,
+    "summary": "Issue #61 local E2E expanded for published revision continuity; M2.1 acceptance remains pending"
   },
   "external_review": null,
   "human_gate": {
@@ -70,16 +70,16 @@
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
-    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/67",
-    "contract": ".orchestration/contracts/DEV-QA-ISSUE-67-LOCAL-PLAYWRIGHT-CI.md",
-    "status": "Local-only Chromium OWNER→ADMIN E2E command and PR CI integration delivered; M2.1 human acceptance remains pending.",
-    "base_sha": "c73d1e43d93541de89fc134952acfa0cf1d70774",
-    "scope": "Fresh temporary local D1 with synthetic seeds; loopback-only test auth; OWNER creates/submits, ADMIN approves, explicit publication appears in public catalog; no remote E2E schedule, credentials, Preview/Access/D1/CD/production changes, or M3.",
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61",
+    "contract": ".orchestration/contracts/MVP-M2.1-ISSUE-61-PUBLISHED-REVISION-E2E.md",
+    "status": "Coverage-only local E2E expansion for published OWNER revision lifecycle; M2.1 human acceptance remains pending.",
+    "base_sha": "4e4af22535594a9c4f3c8a419e47408661575140",
+    "scope": "OWNER create/submit; ADMIN approve/explicit initial publish; synthetic consultation, repository-managed image metadata and availability; OWNER edit/save/submit; public baseline remains unchanged through ADMIN approval; explicit revision publication changes fields while preserving listing ID, image metadata, consultation ID, availability and confirmation timestamp. No product behavior, Preview, remote D1, Access, CD, production or M3 changes.",
     "command": "cd apps/web && npm run test:e2e:preview-auth:local",
-    "browser": "Bundled Playwright Chromium; install with npx playwright install chromium.",
-    "cleanup": "Temporary D1 state, persistent browser profile, and Playwright result directory removed in finally on success/failure.",
-    "local_results": "Playwright local Chromium OWNER→ADMIN lifecycle 1/1 PASS (46.7s); Worker preview-auth 12/12 PASS; Worker typecheck PASS; Web typecheck/build/build:preview PASS; scripts/tests 79/79 PASS; orchestration validator PASS.",
-    "pr_tracking": "The Issue #67 functional PR is linked in GitHub; resolve its live number/head from the Issue rather than pinning a self-referential head here."
+    "browser": "Bundled Playwright Chromium; test harness only.",
+    "cleanup": "Fresh local synthetic D1, browser profile and Playwright output removed in finally on success/failure.",
+    "local_results": "Playwright local Chromium 1/1 PASS; Worker listing management 23/23 PASS; Worker preview-auth 12/12 PASS; Worker typecheck, Web typecheck/build PASS. GitHub checks and review are recorded on the linked functional PR.",
+    "pr_tracking": "Resolve PR number, current HEAD and reviews dynamically from Issue #61/GitHub; do not pin a changing HEAD in tracked files."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

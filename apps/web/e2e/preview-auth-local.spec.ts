@@ -2,6 +2,7 @@ import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { createSign, createPrivateKey } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { mkdtemp, rm } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
@@ -104,6 +105,20 @@ test('local Preview auth: preventive renewal, expired-cookie reopen, OWNER→ADM
     await restoredPage.getByLabel('Capacidad máxima').fill('2');
     await restoredPage.getByRole('button',{name:'Guardar borrador'}).click();
     await expect(restoredPage.locator('.owner-feedback[role="status"]')).toContainText('Borrador creado');
+    const createdListing=await restoredPage.evaluate(async(title)=>{
+      const response=await fetch('/api/listings');
+      const listings=await response.json() as Array<{id:string;title:string}>;
+      return listings.find(listing=>listing.title===title)??null;
+    },title);
+    expect(createdListing).not.toBeNull();
+    execFileSync('node',['scripts/seed-preview-auth-e2e-listing-image.mjs',createdListing!.id],{stdio:'inherit',env:process.env});
+    await restoredPage.reload();
+    await restoredPage.getByRole('button',{name:new RegExp(title)}).click();
+    await restoredPage.getByRole('tab',{name:/Fotografías/}).click();
+    const retainedPhoto=restoredPage.getByRole('img',{name:`Foto 1 de ${title}`});
+    await expect(retainedPhoto).toBeVisible();
+    await expect.poll(()=>retainedPhoto.evaluate(image=>(image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    await restoredPage.getByRole('tab',{name:'Información'}).click();
     await restoredPage.getByRole('button',{name:'Enviar a revisión'}).click();
     await expect(restoredPage.locator('.owner-feedback[role="status"]')).toContainText('enviada a revisión');
 
@@ -115,10 +130,79 @@ test('local Preview auth: preventive renewal, expired-cookie reopen, OWNER→ADM
     await expect(adminPage.getByText('La publicación ya está visible en el catálogo.')).toBeVisible();
     const publicResults=await adminPage.evaluate(async()=>{
       const response=await fetch('/api/public/listings');
-      return {status:response.status,body:await response.json() as {items:Array<{title:string}>}};
+      return {status:response.status,body:await response.json() as {items:Array<{id:string;title:string}>}};
     });
     expect(publicResults.status).toBe(200);
-    expect(publicResults.body.items.some(item=>item.title===title)).toBe(true);
+    expect(publicResults.body.items.some(item=>item.id===createdListing!.id&&item.title===title)).toBe(true);
+    const initialPublic=await adminPage.evaluate(async(id)=>{
+      const response=await fetch(`/api/public/listings/${id}`);
+      return {status:response.status,listing:await response.json() as {id:string;title:string;priceAmount:number;availabilityStatus:string;lastConfirmedAt:string|null;images:Array<{id:string;url?:string;position:number}>}};
+    },createdListing!.id);
+    expect(initialPublic).toMatchObject({status:200,listing:{id:createdListing!.id,title,priceAmount:42000,availabilityStatus:'AVAILABLE'}});
+    expect(initialPublic.listing.images).toHaveLength(1);
+    expect(initialPublic.listing.images[0].url).toBe('/media/catalog/cabana-cerro.svg');
+
+    await adminPage.goto(`/listings/${createdListing!.id}`);
+    await adminPage.getByLabel('Tu nombre').fill('Visita sintética');
+    await adminPage.getByLabel('Tu correo').fill('visita@example.test');
+    await adminPage.getByLabel('Mensaje').fill('Consulta sintética previa a proponer cambios.');
+    const contactResponse=adminPage.waitForResponse(response=>response.url().includes('/contact')&&response.request().method()==='POST');
+    await adminPage.getByRole('button',{name:/Enviar consulta/}).click();
+    const acceptedContact=await contactResponse;
+    expect(acceptedContact.status()).toBe(201);
+    const contactId=(await acceptedContact.json() as {id:string}).id;
+
+    await restoredPage.goto('/owner');
+    await restoredPage.getByRole('button',{name:new RegExp(title)}).click();
+    await restoredPage.getByRole('tab',{name:'Disponibilidad'}).click();
+    await restoredPage.getByRole('button',{name:'Marcar no disponible'}).click();
+    await expect(restoredPage.getByRole('heading',{name:'No disponible'})).toBeVisible();
+    await expect(restoredPage.locator('.owner-feedback[role="status"]')).toContainText('Disponibilidad actualizada');
+    await restoredPage.getByRole('tab',{name:'Información'}).click();
+
+    const editedTitle=`${title} — edición aprobada`;
+    await restoredPage.getByLabel('Nombre del alojamiento').fill(editedTitle);
+    await restoredPage.getByLabel('Precio de referencia').fill('46000');
+    await restoredPage.getByRole('button',{name:'Guardar cambios',exact:true}).click();
+    await expect(restoredPage.locator('.owner-feedback[role="status"]')).toContainText('Borrador de cambios guardado');
+    await expect(restoredPage.locator('.owner-feedback[role="status"]')).toContainText('publicación original sigue visible');
+    let stillOriginal=await adminPage.evaluate(async(id)=>{
+      const response=await fetch(`/api/public/listings/${id}`);
+      return {status:response.status,listing:await response.json() as {id:string;title:string;priceAmount:number;availabilityStatus:string;lastConfirmedAt:string|null;images:Array<{id:string;position:number}>}};
+    },createdListing!.id);
+    expect(stillOriginal).toMatchObject({status:200,listing:{id:createdListing!.id,title,priceAmount:42000,availabilityStatus:'UNAVAILABLE'}});
+    const priorConfirmation=stillOriginal.listing.lastConfirmedAt;
+    expect(priorConfirmation).toBeTruthy();
+    expect(stillOriginal.listing.images).toEqual(initialPublic.listing.images);
+
+    await restoredPage.getByRole('button',{name:'Enviar a revisión'}).click();
+    await expect(restoredPage.locator('.owner-feedback[role="status"]')).toContainText('Cambios enviados a revisión');
+    await adminPage.goto('/admin');
+    await adminPage.getByRole('button',{name:'Actualizar revisiones'}).click();
+    await expect(adminPage.getByRole('heading',{name:editedTitle})).toBeVisible();
+    await adminPage.getByRole('button',{name:'Aprobar cambios'}).click();
+    await expect(adminPage.locator('.admin-audit-panel .admin-feedback[role="status"]')).toContainText('Revisión aprobada; aún no se publicó');
+    await expect(adminPage.getByRole('button',{name:'Publicar cambios aprobados'})).toBeVisible();
+    stillOriginal=await adminPage.evaluate(async(id)=>{
+      const response=await fetch(`/api/public/listings/${id}`);
+      return {status:response.status,listing:await response.json() as {id:string;title:string;priceAmount:number;availabilityStatus:string;lastConfirmedAt:string|null;images:Array<{id:string;position:number}>}};
+    },createdListing!.id);
+    expect(stillOriginal).toMatchObject({status:200,listing:{id:createdListing!.id,title,priceAmount:42000,availabilityStatus:'UNAVAILABLE',lastConfirmedAt:priorConfirmation}});
+    expect(stillOriginal.listing.images).toEqual(initialPublic.listing.images);
+    await adminPage.getByRole('button',{name:'Publicar cambios aprobados'}).click();
+    await expect(adminPage.locator('.admin-audit-panel .admin-feedback[role="status"]')).toContainText('Cambios publicados sobre el mismo alojamiento');
+    const finalPublic=await adminPage.evaluate(async(id)=>{
+      const response=await fetch(`/api/public/listings/${id}`);
+      return {status:response.status,listing:await response.json() as {id:string;title:string;priceAmount:number;availabilityStatus:string;lastConfirmedAt:string|null;images:Array<{id:string;position:number}>}};
+    },createdListing!.id);
+    expect(finalPublic).toMatchObject({status:200,listing:{id:createdListing!.id,title:editedTitle,priceAmount:46000,availabilityStatus:'UNAVAILABLE',lastConfirmedAt:priorConfirmation}});
+    expect(finalPublic.listing.images).toEqual(initialPublic.listing.images);
+    const ownerContacts=await restoredPage.evaluate(async()=>{
+      const response=await fetch('/api/owner/contact-events');
+      return {status:response.status,body:await response.json() as {items:Array<{id:string;listing:{id:string}}>}};
+    });
+    expect(ownerContacts.status).toBe(200);
+    expect(ownerContacts.body.items).toContainEqual(expect.objectContaining({id:contactId,listing:expect.objectContaining({id:createdListing!.id})}));
 
     expireNextLogout=true;
     await restoredPage.getByRole('button',{name:'Cerrar sesión'}).click();
