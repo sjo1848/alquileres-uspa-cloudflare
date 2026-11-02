@@ -73,6 +73,18 @@ class PreviewCdGuardTests(unittest.TestCase):
             ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc",
         )
 
+    def test_local_preview_auth_simulation_is_absent_from_deployable_config(self):
+        local = json.loads((ROOT / "apps/worker/wrangler.preview-auth-e2e.jsonc").read_text())
+        deployable = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+        local_vars = local.get("vars", {})
+        self.assertEqual(local_vars.get("PREVIEW_AUTH_LOCAL_TEST"), "true")
+        self.assertEqual(local_vars.get("PREVIEW_AUTH_TEST_ISSUER"), "https://access-test.invalid")
+        self.assertTrue(local_vars.get("PREVIEW_AUTH_TEST_JWK"))
+        serialized = json.dumps(deployable)
+        for key in ("PREVIEW_AUTH_LOCAL_TEST", "PREVIEW_AUTH_TEST_ISSUER", "PREVIEW_AUTH_TEST_JWK"):
+            self.assertNotIn(key, serialized)
+        self.assertNotIn("access-test.invalid", serialized)
+
     def test_placeholder_or_wrong_d1_target_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             preview = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())

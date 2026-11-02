@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
   testMatch: 'preview-auth-local.spec.ts',
-  outputDir: '/tmp/cf-au-i64-preview-auth-playwright-results',
+  outputDir: process.env.PREVIEW_AUTH_E2E_OUTPUT_DIR ?? '/tmp/cf-au-i64-preview-auth-playwright-results',
   fullyParallel: false,
   workers: 1,
   retries: 0,
@@ -13,7 +13,6 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:5177',
     browserName: 'chromium',
-    launchOptions: { channel: 'chrome' },
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
@@ -22,6 +21,9 @@ export default defineConfig({
     url: 'http://127.0.0.1:5177/api/health',
     reuseExistingServer: false,
     timeout: 180_000,
-    env: { CF_PREVIEW_CONFIG: '../worker/wrangler.preview-auth-e2e.jsonc' },
+    env: {
+      CF_PREVIEW_CONFIG: '../worker/wrangler.preview-auth-e2e.jsonc',
+      PREVIEW_AUTH_E2E_STATE_DIR: process.env.PREVIEW_AUTH_E2E_STATE_DIR ?? '',
+    },
   },
 });

@@ -3,11 +3,12 @@ import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 import { generateKeyPair, exportJWK, SignJWT, decodeJwt } from 'jose';
 import bcrypt from 'bcryptjs';
 import { app } from '../src/index';
-import { PREVIEW_ORIGIN, PREVIEW_ISSUER, PREVIEW_OPERATOR, PREVIEW_OWNER_ID, PREVIEW_OWNER_EMAIL, PREVIEW_ADMIN_ID, PREVIEW_ADMIN_EMAIL } from '../src/preview-auth';
+import { PREVIEW_ORIGIN, PREVIEW_ISSUER, PREVIEW_OPERATOR, PREVIEW_OWNER_ID, PREVIEW_OWNER_EMAIL, PREVIEW_ADMIN_ID, PREVIEW_ADMIN_EMAIL, previewAuthConfigured } from '../src/preview-auth';
 
 const audience='a'.repeat(64);
 const bindings={...env,DB:env.DB,JWT_SECRET:'synthetic-preview-session-secret-at-least-32-bytes',AUTH_STRATEGY:'ACCESS_PREVIEW',ACCESS_AUD:audience,COOKIE_SECURE:'true',MEDIA_STRATEGY:'STATIC_ASSETS'};
 let privateKey: CryptoKey, wrongKey: CryptoKey;
+let testPublicJwk: Record<string, unknown>;
 const passwordCompare=vi.spyOn(bcrypt,'compare');
 async function ticket(overrides:Record<string,unknown>={},key?:CryptoKey,omit?:string) {
   const n=Math.floor(Date.now()/1000);
@@ -43,6 +44,7 @@ beforeAll(async()=>{
   const pair=await generateKeyPair('RS256');privateKey=pair.privateKey;
   wrongKey=(await generateKeyPair('RS256')).privateKey;
   const jwk={...await exportJWK(pair.publicKey),kid:'preview-test-key',alg:'RS256',use:'sig'};
+  testPublicJwk=jwk;
   vi.spyOn(globalThis,'fetch').mockImplementation(async(input)=>{
     expect(String(input)).toBe(PREVIEW_ISSUER+'/cdn-cgi/access/certs');
     return Response.json({keys:[jwk]});
@@ -185,6 +187,18 @@ describe('Access identity → fixed synthetic role session, Preview only',()=>{
     expect(wrongD1Email.status).toBe(503);
     expect(wrongD1Email.headers.has('Set-Cookie')).toBe(false);
     await env.DB.prepare('UPDATE users SET email=? WHERE id=?').bind(PREVIEW_ADMIN_EMAIL,PREVIEW_ADMIN_ID).run();
+  });
+  it('limits the local signed-identity harness to loopback and rejects its assertion on Preview origins',async()=>{
+    const localEnv={...bindings,PREVIEW_AUTH_LOCAL_TEST:'true',PREVIEW_AUTH_TEST_ISSUER:'https://access-test.invalid',PREVIEW_AUTH_TEST_JWK:JSON.stringify(testPublicJwk)};
+    expect(previewAuthConfigured(localEnv,'http://127.0.0.1:5177')).toBe(true);
+    expect(previewAuthConfigured(localEnv,'http://example.test:5177')).toBe(false);
+    expect(previewAuthConfigured(localEnv,'https://local-test-alias-alquileres-uspa-lab.sjo1848.workers.dev')).toBe(false);
+    const n=Math.floor(Date.now()/1000);
+    const assertion=await new SignJWT({iss:'https://access-test.invalid',aud:[audience],sub:'',common_name:'local-playwright-test-client-12345',service_token_id:'local-playwright-test-client-12345',service_token_status:true,type:'app',iat:n,nbf:n,exp:n+120})
+      .setProtectedHeader({alg:'RS256',kid:'preview-test-key'}).sign(privateKey);
+    const response=await exchange(assertion,{body:{role:'OWNER'},env:localEnv});
+    expect(response.status).toBe(401);
+    expect(response.headers.has('Set-Cookie')).toBe(false);
   });
   it('rejects bad signatures, claims, expiration and unconfigured/mismatched service identities without issuing a session',async()=>{
     const n=Math.floor(Date.now()/1000);
