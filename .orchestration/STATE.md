@@ -2,7 +2,7 @@
 
 State: `READY_FOR_HUMAN_ACCEPTANCE`
 Phase: `M2_1_HUMAN_ACCEPTANCE`
-Active task: `Product Owner acceptance of M2.1; Issue #67 local Playwright E2E automation delivered with CI coverage`
+Active task: `Product Owner acceptance of M2.1 after Issue #61 published-revision E2E coverage`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2318,3 +2318,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Vite’s Cloudflare plugin is configured with that same per-run persistence path for this harness only; without it, the seed and Vite Worker used different D1 stores and the login failed. Local run after correction: 1/1 E2E PASS in 46.7s. Web typecheck/build/build:preview PASS; Worker typecheck and Preview-auth tests 12/12 PASS; orchestration unit suite 79/79 PASS. Exact-head GitHub CI and final review are recorded in the linked functional PR and Issue #67.
 - Preview remains on the approved app SHA `f0422e99b38943078b42a9def4edc5e893b84645`; the local test tooling did not touch remote resources. M2.1 remains **PENDING HUMAN ACCEPTANCE**. Keep the Preview private and do not start M3 until explicit acceptance.
 - **Next action:** Product Owner checks monthly/weekly search and terms plus OWNER revision → ADMIN moderation → explicit publication in the private Preview.
+
+
+## Event 287 — Issue #61 published revision continuity E2E
+
+- Extended the existing one-command loopback-only Chromium test on base `main@4e4af22535594a9c4f3c8a419e47408661575140`; no product implementation changed.
+- The test creates/submits an OWNER listing, attaches a repository-managed synthetic SVG row only in its disposable local D1, approves and explicitly publishes it, submits a synthetic public contact, updates availability, and proposes an OWNER revision.
+- Assertions verify the public title/price remain unchanged after OWNER save and ADMIN approval; only ADMIN's explicit publish changes them. The listing ID, image metadata, contact ID, availability state and last-confirmed timestamp remain stable. Existing auth/session/logout checks remain in the same run.
+- Local Chromium E2E 1/1 PASS; Worker management tests 23/23 PASS; Worker Preview-auth 12/12 PASS; Worker typecheck, Web typecheck/build PASS. Exact-head GitHub CI/review and protected merge are tracked in Issue #61. No remote resource or data was touched.
+- M2.1 remains **PENDING HUMAN ACCEPTANCE**. After this bounded PR is integrated, the next action is only Product Owner acceptance; do not start M3 or new infrastructure work.
