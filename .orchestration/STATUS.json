@@ -8,11 +8,11 @@
   "last_completed_task": "M2.1 explicitly accepted by the Product Owner and recorded in Issues #58/#61; DEV-QA Issue #64 closed with limitations documented.",
   "last_completed_head": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
   "work_branch": "feat/m3-my-selection",
-  "next_action": "Query PR #71 live HEAD from GitHub; complete exact-head Worker/Web CI and delegated read-only technical review, resolve defects autonomously, then merge only via protected main if controls pass. Do not publish Preview or start M4.",
+  "next_action": "Query PR #71 live HEAD from GitHub; complete exact-head Worker/Web CI, automatic code review, and delegated read-only technical review after the storage-failure correction. Resolve substantive defects autonomously, then merge only via protected main if all controls pass. Do not publish Preview or start M4.",
   "stop_reason": null,
   "event": {
-    "seq": 289,
-    "summary": "M3 functional PR #71 opened after local QA; exact CI and independent review pending"
+    "seq": 290,
+    "summary": "M3 browser-storage failure feedback corrected with regressions; exact GitHub gates pending"
   },
   "external_review": null,
   "human_gate": {
@@ -28,10 +28,10 @@
     "base_sha": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
     "state": "OPEN",
     "is_draft": false,
-    "stable_executable_sha": "c21bdeeca4efbff5c5331bd44ff4a517af8b21b9",
+    "stable_executable_sha": "a1653235d9c7426837de64f2da1fb3491e02f2c4",
     "head_source": "Resolve live HEAD from GitHub PR #71 immediately before final checks/review; do not persist moving HEAD in tracked state.",
-    "checks": "Pending exact-head Worker/Web CI.",
-    "independent_review": "Pending delegated read-only technical Controller on exact live PR HEAD.",
+    "checks": "Pending exact live-head Worker/Web CI; earlier head checks do not apply to the current candidate.",
+    "independent_review": "Initial delegated review found one P2, fixed in stable executable SHA a1653235d9c7426837de64f2da1fb3491e02f2c4; fresh exact-live-head review pending.",
     "merge": "Not merged; protected merge only after all required checks/review pass."
   },
   "issue_4": "CLOSED",

@@ -2347,3 +2347,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Stable executable candidate: `c21bdeeca4efbff5c5331bd44ff4a517af8b21b9`; live PR HEAD must be queried from GitHub for final checks/review.
 - Local validation: unit 4/4, M3 Chromium 3/3, public regression 6/6, Web typecheck/build/build:preview, canonical validator and diff check PASS. Visual evidence is committed in `output/playwright/m3/QA.md`.
 - Next action: await exact-head Worker/Web CI, perform one delegated read-only technical review, repair any material finding, then use protected merge if all required controls pass. Do not publish Preview; do not begin M4.
+
+
+## Event 290 — M3 storage-failure feedback rework
+
+- The delegated technical review of the initial M3 candidate identified that save/remove could report success even when browser storage rejected the write. Fixed the shared selection hook to expose persistence success and leave IDs unchanged on failure; catalog and detail now announce the error, while Mi selección retains the item and its existing accessible storage error.
+- Added Chromium regressions for denied/quota-exhausted `localStorage` on catalog save, detail save, and selection removal. Updated the M3 acceptance contract and QA record. No API, Worker, data model, remote resources, or existing listing behavior changed.
+- Stable executable fix commit: `a1653235d9c7426837de64f2da1fb3491e02f2c4`; PR #71 live HEAD must be resolved from GitHub before final checks/review.
+- Local results: selection unit tests 4/4; M3 Playwright 5/5; Web typecheck, build and build:preview PASS; canonical state consistency and `git diff --check` PASS. Existing public E2E remained 6/6 from the unchanged functional candidate; exact PR CI reruns all required checks.
+- **Next action:** resolve live PR #71 HEAD, verify exact-head Worker/Web checks, automatic review and one read-only technical Controller review; integrate only through protected main if clean. Do not deploy Preview, alter remote resources, or start M4.
