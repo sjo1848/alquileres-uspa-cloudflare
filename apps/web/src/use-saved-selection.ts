@@ -38,8 +38,8 @@ export function useSavedSelection() {
 
   function toggle(id: string) {
     const result = toggleSelection(ids.value, id);
-    if (!result.limitReached && result.ids !== ids.value) persist(result.ids);
-    return result;
+    const persisted = result.limitReached || result.ids === ids.value || persist(result.ids);
+    return { ...result, persisted };
   }
 
   function remove(id: string) {

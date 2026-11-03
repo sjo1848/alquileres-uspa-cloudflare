@@ -115,3 +115,42 @@ test('Mi selección: error de API puede reintentarse sin reemplazar datos por sn
   await expect(page.getByRole('heading', { name: 'Cabaña del Valle Alto' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBe('["synthetic-catalog-03"]');
 });
+
+test('Mi selección: informa si el navegador bloquea el guardado desde catálogo y ficha', async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key: string, value: string) {
+      if (key === 'uspa-monthly-selection-v1') throw new DOMException('Storage is unavailable', 'QuotaExceededError');
+      return original.call(this, key, value);
+    };
+  });
+  await page.goto('/?pricePeriod=MONTH');
+  const card = page.locator('.listing-card').filter({ has: page.getByRole('heading', { name: 'Cabaña del Valle Alto' }) });
+  await card.getByRole('button', { name: 'Guardar para comparar' }).click();
+  await expect(page.getByRole('alert')).toContainText('No se pudo guardar en este dispositivo');
+  await expect(card.getByRole('button', { name: 'Guardar para comparar' })).toHaveAttribute('aria-pressed', 'false');
+  expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBeNull();
+
+  await card.getByRole('link', { name: 'Conocer el alojamiento' }).click();
+  await page.getByRole('button', { name: 'Guardar para comparar' }).click();
+  await expect(page.getByRole('alert')).toContainText('No se pudo guardar en este dispositivo');
+  await expect(page.getByRole('button', { name: 'Guardar para comparar' })).toHaveAttribute('aria-pressed', 'false');
+  expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBeNull();
+});
+
+test('Mi selección: no oculta un anuncio si el navegador bloquea quitarlo', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('uspa-monthly-selection-v1', JSON.stringify(['synthetic-catalog-03']));
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key: string, value: string) {
+      if (key === 'uspa-monthly-selection-v1') throw new DOMException('Storage is unavailable', 'QuotaExceededError');
+      return original.call(this, key, value);
+    };
+  });
+  await page.goto('/selection');
+  await expect(page.getByRole('heading', { name: 'Cabaña del Valle Alto' })).toBeVisible();
+  await page.getByRole('button', { name: 'Quitar Cabaña del Valle Alto de mi selección' }).click();
+  await expect(page.getByRole('alert')).toContainText('No pudimos guardar esta selección en el dispositivo');
+  await expect(page.getByRole('heading', { name: 'Cabaña del Valle Alto' })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBe('["synthetic-catalog-03"]');
+});

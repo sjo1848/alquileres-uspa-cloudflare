@@ -193,6 +193,7 @@ function toggleSaved(listing: Listing) {
   const result = savedSelection.toggle(listing.id);
   selectionNotice.value = result.limitReached
     ? `Podés guardar hasta ${savedSelection.max} alquileres mensuales. Quitá uno para agregar otro.`
+    : !result.persisted ? 'No se pudo guardar en este dispositivo. Revisá el almacenamiento del navegador e intentá otra vez.'
     : result.saved ? 'Alquiler guardado en Mi selección.' : 'Alquiler quitado de Mi selección.';
 }
 
@@ -248,7 +249,7 @@ watch(() => route.query, () => {
     </section>
 
     <section class="catalog-results" aria-labelledby="results-title" :aria-busy="loading">
-      <p v-if="selectionNotice" class="selection-inline-notice" role="status" aria-live="polite">{{ selectionNotice }} <RouterLink to="/selection">Abrir Mi selección</RouterLink></p>
+      <p v-if="selectionNotice" class="selection-inline-notice" :role="savedSelection.storageError.value ? 'alert' : 'status'" aria-live="polite">{{ selectionNotice }} <RouterLink to="/selection">Abrir Mi selección</RouterLink></p>
       <div class="results-heading">
         <div><p class="eyebrow">El valle te espera</p><h2 id="results-title">{{ resultsTitle }}</h2></div>
         <p v-if="page" class="result-count" aria-live="polite">{{ page.totalItems }} {{ page.totalItems === 1 ? 'alojamiento' : 'alojamientos' }}</p>

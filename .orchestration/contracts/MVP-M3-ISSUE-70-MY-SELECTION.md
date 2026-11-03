@@ -25,6 +25,7 @@ A visitor saves up to four monthly listing IDs in browser local storage, restore
 
 - Unit coverage: normalization, malformed storage, duplicate IDs, ordered persistence, max four, removal.
 - Chromium local E2E: save/remove from catalog and detail; reload persistence; current API rehydration (storage contains IDs only); compare 2–4; known and unknown terms; stale/404; unavailable; API error/retry; detail/contact navigation; viewport overflow at 320/390/1440.
+- If browser storage is blocked or quota-exhausted, keep the selection unchanged and announce the failed save/removal; never report a successful change that was not persisted.
 - Web typecheck/build/build:preview and required Worker/Web CI pass.
 - No backend, migration, account, sync, remote D1/Preview/Access/CD/production change, M4 or external cost.
 

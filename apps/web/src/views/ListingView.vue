@@ -107,6 +107,7 @@ function toggleSaved() {
   const result = savedSelection.toggle(current.id);
   selectionNotice.value = result.limitReached
     ? `Podés guardar hasta ${savedSelection.max} alquileres mensuales. Quitá uno para agregar otro.`
+    : !result.persisted ? 'No se pudo guardar en este dispositivo. Revisá el almacenamiento del navegador e intentá otra vez.'
     : result.saved ? 'Alojamiento guardado en Mi selección.' : 'Alojamiento quitado de Mi selección.';
 }
 
@@ -194,7 +195,7 @@ watch(() => route.params.id, id => void load(String(id)), { immediate: true });
               <button class="selection-toggle selection-toggle-detail" type="button" :aria-pressed="savedSelection.isSaved(listing.id)" @click="toggleSaved"><span aria-hidden="true">{{ savedSelection.isSaved(listing.id) ? '★' : '☆' }}</span>{{ savedSelection.isSaved(listing.id) ? 'Guardado en Mi selección' : 'Guardar para comparar' }}</button>
               <RouterLink v-if="savedSelection.count.value" class="detail-selection-link" to="/selection">Ver mi selección ({{ savedSelection.count.value }})</RouterLink>
             </div>
-            <p v-if="selectionNotice" class="selection-inline-notice" role="status">{{ selectionNotice }} <RouterLink to="/selection">Abrir Mi selección</RouterLink></p>
+            <p v-if="selectionNotice" class="selection-inline-notice" :role="savedSelection.storageError.value ? 'alert' : 'status'" aria-live="polite">{{ selectionNotice }} <RouterLink to="/selection">Abrir Mi selección</RouterLink></p>
             <a class="detail-contact-cta" href="#contact-form">Consultar este alojamiento <span aria-hidden="true">→</span></a>
           </header>
 
