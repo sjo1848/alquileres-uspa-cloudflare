@@ -183,6 +183,14 @@ class PreviewCdGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(guard.PolicyError, "exports are not approved"):
             guard._assert_generated_config_schema(generated)
 
+    def test_generated_preview_rejects_every_unapproved_worker_binding(self):
+        for key in sorted(guard.RESOURCE_BINDINGS):
+            with self.subTest(binding=key):
+                generated = self._generated_preview_config()
+                generated[key] = [{"binding": "UNAPPROVED", "id": "synthetic-test-binding"}]
+                with self.assertRaisesRegex(guard.PolicyError, "unexpected resource binding"):
+                    guard._assert_preview_bindings(generated)
+
     def test_generated_preview_rejects_unreviewed_entrypoint_or_runtime(self):
         with tempfile.TemporaryDirectory() as directory:
             generated = self._generated_preview_config()

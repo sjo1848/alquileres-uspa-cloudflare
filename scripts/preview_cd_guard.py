@@ -25,7 +25,7 @@ PROVENANCE = ROOT / ".orchestration/evidence/CF-AU-PREVIEW-D1-PROVENANCE.json"
 MIGRATIONS = ROOT / ".orchestration/evidence/preview-migration-allowlist.json"
 SCHEMA_PATH_PREFIXES = ("apps/worker/migrations/",)
 RESOURCE_BINDINGS = {
-    "ai", "ai_search", "ai_search_namespaces", "analytics_engine_datasets", "artifacts", "browser",
+    "agent_memory", "ai", "ai_search", "ai_search_namespaces", "analytics_engine_datasets", "artifacts", "browser",
     "cloudchamber", "connect", "dispatch_namespaces", "durable_objects", "flagship", "hyperdrive",
     "images", "kv_namespaces", "logfwdr", "mtls_certificates", "pipelines",
     "queue_consumers", "queue_producers", "queues", "ratelimits", "r2_buckets", "secrets_store_secrets",
