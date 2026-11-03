@@ -1,10 +1,19 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `M3_IMPLEMENTATION`
-Active task: `Issue #70 — implement saved monthly rental selection and responsive comparison`
+Phase: `CD_PREVIEW_HARDENING`
+Active task: `Issue #49 — prepare safe opt-in Preview CD; activation remains disabled pending separate Product Owner authorization`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
+
+## Current checkpoint — Safe Preview CD preparation (2026-11-03)
+
+- Product Owner authorized a functional PR on Issue #49 to harden `staging-private`, add sensitive-path CODEOWNERS, and prepare automatic publication after protected-main Worker/Web checks. CD must remain disabled; no secret, variable, remote GitHub protection, Cloudflare Access, D1, production, or infrastructure change is authorized here.
+- Base/main: `3c6837723d2d48a1710c692185aa9c1484b513db`; PR #71 is integrated. M3 is deployed to the existing private Preview at deployment `f3d02d69-8aa5-4ccf-8046-815510c3f2b9`, exact source SHA above. Issue #70 remains open for Product Owner acceptance; its remote browser smoke was `BLOCKED_AUTH` because the test browser had no Access session.
+- GitHub currently has no repository Actions variables or secrets usable by `staging-private`; its gate remains `SAFE SKIP`. `main` requires strict `worker` and `web` checks and admin enforcement, but currently requires zero approving reviews and does not require CODEOWNERS reviews.
+- This increment removes all remote migration work from the automatic publication path, requires zero pending migrations and no migration-file delta since the latest verified Preview SHA, validates the existing target/config/bindings and exact deployed SHA, and retains Access-denial checks. It prepares CODEOWNERS without changing remote branch protection.
+- Binding contract: `.orchestration/contracts/CF-AU-CD-SAFE-PREVIEW.md`. Exact active PR HEAD is resolved dynamically from GitHub; do not persist a self-referential HEAD here.
+- Next action: complete focused guard regressions, Worker/Web CI, automatic/technical review; merge through existing protected `main` only if controls pass. Keep `CF_PREVIEW_CD_ENABLED` unset and stop before credential/variable or branch-protection activation.
 
 ## Source baseline
 
@@ -2364,3 +2373,23 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - The previous delegated Controller PASS covered the preceding code boundary only. It is superseded for final delivery by this new executable change and requires a fresh exact-HEAD review.
 - Final local focused run: M3 Chromium 6/6 and Web typecheck PASS. Screenshots and local evidence remain in `output/playwright/m3/QA.md`; no remote E2E or Preview activity occurred.
 - **Next action:** query live PR #71 HEAD, wait for exact-head Worker/Web CI and one fresh GitHub automated review, then run one limited read-only technical review on the new delta and candidate. Merge only by protected main when controls pass. No Preview deployment or M4.
+
+## Issue #49 — Safe Preview CD implementation in progress
+
+- Canonical Issue #49 was reopened on Product Owner instruction; current scope is the updated contract `.orchestration/contracts/CF-AU-CD-SAFE-PREVIEW.md`. The existing CD enable variable and GitHub Cloudflare secret are absent; merge of this PR must remain a safe skip.
+- The code must have no path that backs up, rehearses, authorizes, or applies D1 migrations in `staging-private`. Publication requires zero pending migrations and no `apps/worker/migrations/` change between the last verified Preview source SHA and current main.
+- CODEOWNERS is prepared for the pipeline guard, deployment config, migrations and auth paths, including CODEOWNERS itself. Remote main protection is intentionally unchanged; it currently requires Worker/Web checks, but zero approvals and no code-owner reviews.
+- Current Preview evidence: M3 SHA `3c6837723d2d48a1710c692185aa9c1484b513db`, deployment `f3d02d69-8aa5-4ccf-8046-815510c3f2b9`, Access denial 12/12, D1 synthetic and zero migrations pending. Issue #70 remains open; remote M3 Playwright is `BLOCKED_AUTH` because no authorized Access session was available.
+- Next: finish guard and negative regression tests, run Worker/Web CI, obtain exact-head technical review, and merge only under currently enforced protections. Do not set `CF_PREVIEW_CD_ENABLED`, create credentials, or change GitHub protections.
+
+## Event 292 — Safe private Preview CD scope authorized, activation withheld
+
+- Product Owner authorized implementation of fail-closed automatic Preview publication after protected-main Worker/Web PASS, while explicitly withholding activation and all credential/variable/remote-protection changes.
+- `staging-private` is being reduced to a read-only D1/Access preflight plus the existing Worker Preview publication command. Remote migration backup/rehearsal/apply steps are removed from the job.
+- Issue #49 is open for this bounded implementation. Main base is `3c6837723d2d48a1710c692185aa9c1484b513db`; active PR HEAD must be read dynamically from GitHub after it is opened.
+
+## Event 293 — Functional PR #72 opened
+
+- PR #72: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/72, branch `feat/cd-preview-no-migrations`, base `main@3c6837723d2d48a1710c692185aa9c1484b513db`.
+- Exact PR HEAD is resolved dynamically from GitHub. Worker/Web CI, automatic review, and read-only technical review are pending on that HEAD. The `staging-private` job must remain `SAFE SKIP` because no activation variable or Actions credential is configured.
+- Merge only after the required checks and review pass through existing protected-main settings. Do not alter remote branch protections or activate CD.

@@ -23,6 +23,15 @@ MIGRATION_0015_NAME = "0015_listing_change_revisions.sql"
 MIGRATION_0015_AUTHORIZATION_ENV = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA"
 PROVENANCE = ROOT / ".orchestration/evidence/CF-AU-PREVIEW-D1-PROVENANCE.json"
 MIGRATIONS = ROOT / ".orchestration/evidence/preview-migration-allowlist.json"
+SCHEMA_PATH_PREFIXES = ("apps/worker/migrations/",)
+RESOURCE_BINDINGS = {
+    "agent_memory", "ai", "ai_search", "ai_search_namespaces", "analytics_engine_datasets", "artifacts", "browser",
+    "cloudchamber", "connect", "dispatch_namespaces", "durable_objects", "flagship", "hyperdrive",
+    "images", "k2", "kv_namespaces", "logfwdr", "mtls_certificates", "pipelines",
+    "queue_consumers", "queue_producers", "queues", "ratelimits", "r2_buckets", "secrets_store_secrets",
+    "send_email", "services", "unsafe", "unsafe_hello_world", "vectorize", "vpc_networks", "vpc_services", "worker_loaders",
+    "workflows",
+}
 TARGET = {
     "account_id": "30e8fad45f7bc1cd5bddad87e18b1aec",
     "worker_name": "alquileres-uspa-lab",
@@ -34,6 +43,37 @@ TARGET = {
     "stable_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
     "access_host": "sebastian-ojeda-pages.cloudflareaccess.com",
 }
+EXPECTED_PREVIEW_VARS = {
+    "AUTH_STRATEGY": "ACCESS_PREVIEW",
+    "MEDIA_STRATEGY": "D1_BLOB",
+    "COOKIE_SECURE": "true",
+    "COOKIE_SAME_SITE": "lax",
+    "JWT_EXPIRES_IN": "15m",
+    "ACCESS_AUD": TARGET["access_aud"],
+}
+EXPECTED_ASSETS = {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+        "/api/*", "/public/*", "/auth/*", "/owner/*", "/admin/*", "/health", "/listings",
+        "/listings/*/availability", "/listings/*/reconfirm", "/listings/*/images", "/listings/*/images/*",
+    ],
+}
+EXPECTED_D1_BINDING = {
+    "binding": "DB",
+    "database_name": TARGET["database_name"],
+    "database_id": TARGET["database_id"],
+    "migrations_dir": "migrations",
+}
+GENERATED_CONFIG_KEYS = frozenset(
+    """
+    account_id agent_memory ai_search ai_search_namespaces analytics_engine_datasets artifacts assets
+    cloudchamber compatibility_date compatibility_flags configPath connect d1_databases definedEnvironments
+    dev dispatch_namespaces durable_objects exports flagship hyperdrive jsx_factory jsx_fragment k2 kv_namespaces
+    logfwdr main migrations mtls_certificates name no_bundle pipelines preview_urls previews python_modules queues
+    ratelimits r2_buckets rules secrets_store_secrets send_email services topLevelName triggers unsafe_hello_world
+    upload_source_maps userConfigPath vars vectorize vpc_networks vpc_services worker_loaders workers_dev workflows
+    """.split()
+)
 
 
 class PolicyError(RuntimeError):
@@ -56,8 +96,8 @@ def decision(
     access_status: str,
     token_present: bool,
 ) -> tuple[bool, str]:
-    if event != "push" or ref != "refs/heads/main":
-        raise PolicyError("remote Preview publishing is only allowed from a push to protected main")
+    if event not in {"push", "workflow_dispatch"} or ref != "refs/heads/main":
+        raise PolicyError("remote Preview publishing is only allowed from a main push or main-only manual dispatch")
     if enabled.lower() != "true":
         return False, "CF_PREVIEW_CD_ENABLED is not true"
     if provenance != "verified":
@@ -76,47 +116,134 @@ def _assert_no_r2(config: dict) -> None:
         raise PolicyError("R2 binding is forbidden in the private Preview target")
 
 
+def _has_binding(value: object) -> bool:
+    if isinstance(value, dict):
+        return any(_has_binding(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return bool(value)
+    return bool(value)
+
+
+def _assert_preview_bindings(config: dict) -> None:
+    if config.get("routes") or config.get("route") or config.get("d1_databases"):
+        raise PolicyError("production routes or non-Preview D1 bindings are forbidden")
+    for key in RESOURCE_BINDINGS:
+        if _has_binding(config.get(key)):
+            raise PolicyError(f"unexpected resource binding is forbidden: {key}")
+    preview = config.get("previews", {})
+    if not isinstance(preview, dict):
+        raise PolicyError("Preview configuration is malformed")
+    for key in RESOURCE_BINDINGS | {"routes", "route"}:
+        if _has_binding(preview.get(key)):
+            raise PolicyError(f"unexpected Preview binding is forbidden: {key}")
+
+
+def _assert_generated_config_schema(config: dict) -> None:
+    if set(config) != GENERATED_CONFIG_KEYS:
+        unexpected = sorted(set(config) - GENERATED_CONFIG_KEYS)
+        missing = sorted(GENERATED_CONFIG_KEYS - set(config))
+        raise PolicyError(f"Vite generated Worker config keys differ from the reviewed allowlist (unexpected={unexpected}, missing={missing})")
+    if config.get("compatibility_flags") != []:
+        raise PolicyError("Vite generated Worker compatibility flags are not approved")
+    if config.get("exports") != {}:
+        raise PolicyError("Vite generated Worker exports are not approved")
+    if config.get("rules") != [{"type": "ESModule", "globs": ["**/*.js", "**/*.mjs"]}]:
+        raise PolicyError("Vite generated Worker module rules are not approved")
+    if config.get("jsx_factory") != "React.createElement" or config.get("jsx_fragment") != "React.Fragment":
+        raise PolicyError("Vite generated Worker JSX configuration is not approved")
+    if config.get("topLevelName") != TARGET["worker_name"]:
+        raise PolicyError("Vite generated Worker top-level name mismatch")
+    if config.get("definedEnvironments") != [] or config.get("no_bundle") is not True:
+        raise PolicyError("Vite generated Worker build configuration is not approved")
+    if config.get("python_modules") != {"exclude": ["**/*.pyc"]}:
+        raise PolicyError("Vite generated Worker Python module configuration is not approved")
+    if config.get("upload_source_maps") is not True:
+        raise PolicyError("Vite generated Worker source-map upload setting is not approved")
+    if config.get("dev") != {
+        "ip": "localhost",
+        "local_protocol": "http",
+        "upstream_protocol": "http",
+        "enable_containers": True,
+        "generate_types": False,
+    }:
+        raise PolicyError("Vite generated Worker local development configuration is not approved")
+
+
 def verify_target(preview_path: Path, migration_path: Path, generated_path: Path | None = None) -> None:
     preview = _load_json(preview_path)
     migrations = _load_json(migration_path)
     _assert_no_r2(preview)
+    _assert_preview_bindings(preview)
+    if set(preview) != {"name", "main", "account_id", "compatibility_date", "workers_dev", "preview_urls", "assets", "previews"}:
+        raise PolicyError("Preview Worker configuration contains an unreviewed setting")
     if preview.get("name") != TARGET["worker_name"]:
         raise PolicyError("Preview Worker name mismatch")
+    if preview.get("main") != "src/index.ts" or preview.get("compatibility_date") != "2026-10-12":
+        raise PolicyError("Preview Worker entrypoint or compatibility configuration mismatch")
     if preview.get("account_id") != TARGET["account_id"]:
         raise PolicyError("Preview account mismatch")
     if preview.get("workers_dev") is not False or preview.get("preview_urls") is not True:
         raise PolicyError("Preview must target the existing workers.dev Preview without a production route")
-    vars_ = preview.get("previews", {}).get("vars", {})
-    expected_vars = {
-        "AUTH_STRATEGY": "ACCESS_PREVIEW",
-        "MEDIA_STRATEGY": "D1_BLOB",
-        "COOKIE_SECURE": "true",
-        "ACCESS_AUD": TARGET["access_aud"],
-    }
-    if any(vars_.get(key) != value for key, value in expected_vars.items()):
+    if preview.get("assets") != EXPECTED_ASSETS:
+        raise PolicyError("static asset and Worker-first route configuration mismatch")
+    preview_env = preview["previews"]
+    vars_ = preview_env.get("vars", {})
+    if vars_ != EXPECTED_PREVIEW_VARS:
         raise PolicyError("Preview auth/media/cookie configuration mismatch")
-    d1 = preview.get("previews", {}).get("d1_databases", [])
-    if len(d1) != 1 or d1[0].get("binding") != "DB":
+    if set(preview_env) != {"vars", "d1_databases"}:
+        raise PolicyError("Preview environment contains an unreviewed setting")
+    d1 = preview_env.get("d1_databases", [])
+    if not isinstance(d1, list) or len(d1) != 1 or not isinstance(d1[0], dict) or d1[0].get("binding") != "DB":
         raise PolicyError("Preview must have exactly one D1 binding")
     if d1[0].get("database_name") != TARGET["database_name"] or d1[0].get("database_id") != TARGET["database_id"]:
         raise PolicyError("Preview D1 target mismatch or placeholder ID")
+    if d1[0] != EXPECTED_D1_BINDING:
+        raise PolicyError("Preview D1 binding configuration mismatch")
+    if set(migrations) != {"name", "account_id", "d1_databases"}:
+        raise PolicyError("migration-only config contains an unreviewed setting")
     if migrations.get("name") != "alquileres-uspa-preview-migrations":
         raise PolicyError("migration-only config name mismatch")
+    if migrations.get("account_id") != TARGET["account_id"]:
+        raise PolicyError("migration config account mismatch")
     md1 = migrations.get("d1_databases", [])
-    if len(md1) != 1 or md1[0].get("database_name") != TARGET["database_name"] or md1[0].get("database_id") != TARGET["database_id"]:
+    if not isinstance(md1, list) or len(md1) != 1 or not isinstance(md1[0], dict) or md1[0].get("binding") != "DB":
+        raise PolicyError("migration config must identify one D1 binding")
+    if md1[0].get("database_name") != TARGET["database_name"] or md1[0].get("database_id") != TARGET["database_id"]:
         raise PolicyError("migration config D1 target mismatch or placeholder ID")
+    if md1[0] != EXPECTED_D1_BINDING:
+        raise PolicyError("migration D1 binding configuration mismatch")
     if generated_path is not None:
         generated = _load_json(generated_path)
+        _assert_generated_config_schema(generated)
         _assert_no_r2(generated)
+        _assert_preview_bindings(generated)
         if generated.get("name") != TARGET["worker_name"] or generated.get("account_id") != TARGET["account_id"]:
             raise PolicyError("Vite generated Worker target mismatch")
-        generated_vars = generated.get("previews", {}).get("vars", {})
-        if any(generated_vars.get(key) != value for key, value in expected_vars.items()):
+        if generated.get("main") != "index.js" or generated.get("compatibility_date") != "2026-10-12":
+            raise PolicyError("Vite generated Worker entrypoint or compatibility configuration mismatch")
+        if generated.get("workers_dev") is not False or generated.get("preview_urls") is not True:
+            raise PolicyError("Vite generated Worker has an unexpected deployment target")
+        if generated.get("vars", {}) != {} or generated.get("triggers", {}) != {} or generated.get("migrations", []) != []:
+            raise PolicyError("Vite generated Worker contains unreviewed variables, triggers, or migrations")
+        if "env" in generated:
+            raise PolicyError("Vite generated Worker contains an unreviewed environment")
+        generated_assets = generated.get("assets", {})
+        if generated_assets != {**EXPECTED_ASSETS, "directory": "../client"}:
+            raise PolicyError("Vite generated static asset routing mismatch")
+        generated_env = generated.get("previews", {})
+        if set(generated_env) != {"vars", "d1_databases"}:
+            raise PolicyError("Vite generated Preview contains an unreviewed setting")
+        generated_vars = generated_env.get("vars", {})
+        if generated_vars != EXPECTED_PREVIEW_VARS:
             raise PolicyError("Vite generated Preview auth/media/cookie configuration mismatch")
-        generated_d1 = generated.get("previews", {}).get("d1_databases", [])
-        if len(generated_d1) != 1 or generated_d1[0].get("database_name") != TARGET["database_name"] or generated_d1[0].get("database_id") != TARGET["database_id"]:
+        generated_d1 = generated_env.get("d1_databases", [])
+        if not isinstance(generated_d1, list) or len(generated_d1) != 1 or not isinstance(generated_d1[0], dict) or generated_d1[0].get("binding") != "DB":
+            raise PolicyError("Vite generated Preview must bind exactly one D1 database")
+        if generated_d1[0].get("database_name") != TARGET["database_name"] or generated_d1[0].get("database_id") != TARGET["database_id"]:
             raise PolicyError("Vite generated Preview D1 target mismatch or placeholder ID")
-        assets_directory = generated.get("assets", {}).get("directory")
+        if generated_d1[0] != EXPECTED_D1_BINDING:
+            raise PolicyError("Vite generated Preview D1 binding configuration mismatch")
+        assets_directory = generated_assets.get("directory")
         if not assets_directory or not (generated_path.parent / assets_directory).resolve().is_dir():
             raise PolicyError("Vite generated static asset directory is missing")
     print("PASS: exact existing private Worker/D1 target; Access Preview, D1 BLOB, secure cookies; no R2")
@@ -342,7 +469,13 @@ def validate_synthetic_provenance(observed: dict, manifest: dict) -> None:
         raise PolicyError("D1 contains a user with a non-synthetic email domain")
 
 
-def verify_migrations(config: str, allowlist_path: Path, local: bool = False, persist_to: str | None = None) -> list[str]:
+def verify_migrations(
+    config: str,
+    allowlist_path: Path,
+    local: bool = False,
+    persist_to: str | None = None,
+    require_none: bool = False,
+) -> list[str]:
     if not local:
         _verify_remote_migration_target(config)
     allowlist = _load_json(allowlist_path)
@@ -354,8 +487,44 @@ def verify_migrations(config: str, allowlist_path: Path, local: bool = False, pe
         raise PolicyError("remote D1 contains an unrecognized applied migration")
     pending = sorted(sql_files.keys() - applied)
     validate_pending_migrations(pending, allowed, sql_files)
+    if require_none:
+        require_no_pending_migrations(pending)
     print(f"PASS: applied migration history recognized; {len(pending)} pending migration(s) explicitly allowlisted")
     return pending
+
+
+def require_no_pending_migrations(pending: list[str]) -> None:
+    if pending:
+        raise PolicyError("Preview publication requires zero pending migrations")
+
+
+def verify_no_schema_changes(base_sha: str, head_sha: str) -> None:
+    if not CANONICAL_SHA.fullmatch(base_sha) or not CANONICAL_SHA.fullmatch(head_sha):
+        raise PolicyError("schema comparison requires canonical source SHAs")
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", base_sha, head_sha],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    if ancestor.returncode:
+        raise PolicyError("previous Preview source is not an ancestor of the candidate SHA")
+    diff = subprocess.run(
+        ["git", "diff", "--name-only", base_sha, head_sha, "--", *SCHEMA_PATH_PREFIXES],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    if diff.returncode:
+        raise PolicyError("could not compare schema changes between Preview releases")
+    changed = [path for path in diff.stdout.splitlines() if path]
+    if changed:
+        raise PolicyError("Preview publication blocked because D1 migration/schema files changed")
+    print("PASS: no D1 migration/schema file changed since the latest verified Preview source")
 
 
 def validate_pending_migrations(pending: list[str], allowed: dict, sql_files: dict[str, Path]) -> None:
@@ -478,7 +647,7 @@ def _cloudflare_get(path: str) -> dict:
     return payload["result"]
 
 
-def current_preview() -> tuple[str, str, str]:
+def current_preview(expected_sha: str | None = None, expected_deployment_id: str | None = None) -> tuple[str, str, str, str]:
     base = f"/accounts/{TARGET['account_id']}/workers/workers/{TARGET['worker_name']}/previews/{TARGET['preview_name']}"
     preview = _cloudflare_get(base)
     if preview.get("id") != TARGET["preview_id"] or preview.get("name") != TARGET["preview_name"]:
@@ -495,12 +664,19 @@ def current_preview() -> tuple[str, str, str]:
     expected_immutable = f"https://{deployment_id[:8]}-{TARGET['worker_name']}.sjo1848.workers.dev"
     if deployment_urls != [expected_immutable]:
         raise PolicyError("latest immutable Preview URL does not match its deployment ID")
+    source_sha = deployment.get("annotations", {}).get("workers/commit_sha", "")
+    if not isinstance(source_sha, str) or not CANONICAL_SHA.fullmatch(source_sha):
+        raise PolicyError("latest Preview deployment has no canonical source SHA annotation")
+    if expected_sha is not None and source_sha != expected_sha:
+        raise PolicyError("latest Preview deployment does not match the requested source SHA")
+    if expected_deployment_id is not None and deployment_id != expected_deployment_id:
+        raise PolicyError("latest Preview deployment does not match Wrangler's deployment ID")
     output = os.environ.get("GITHUB_OUTPUT")
     if output:
         with open(output, "a", encoding="utf-8") as stream:
-            stream.write(f"stable_url={expected_stable}\nimmutable_url={expected_immutable}\ndeployment_id={deployment_id}\n")
-    print(f"PASS: existing Preview {TARGET['preview_name']} verified; latest immutable deployment {deployment_id}")
-    return expected_stable, expected_immutable, deployment_id
+            stream.write(f"stable_url={expected_stable}\nimmutable_url={expected_immutable}\ndeployment_id={deployment_id}\nsource_sha={source_sha}\n")
+    print(f"PASS: existing Preview {TARGET['preview_name']} verified; deployment {deployment_id}; source SHA {source_sha}")
+    return expected_stable, expected_immutable, deployment_id, source_sha
 
 
 def _preview_object_from_output(path: Path) -> dict:
@@ -751,6 +927,10 @@ def main() -> int:
     migration.add_argument("--config", default="wrangler.preview-migrations-ci.jsonc")
     migration.add_argument("--local", action="store_true")
     migration.add_argument("--persist-to")
+    migration.add_argument("--require-none", action="store_true")
+    schema = subs.add_parser("schema-diff")
+    schema.add_argument("--base-sha", required=True)
+    schema.add_argument("--head-sha", required=True)
     smoke = subs.add_parser("smoke")
     smoke.add_argument("urls", nargs="+")
     backup = subs.add_parser("rehearse")
@@ -763,7 +943,9 @@ def main() -> int:
     authorize.add_argument("--config", default="wrangler.preview-migrations-ci.jsonc")
     latest = subs.add_parser("latest-main")
     latest.add_argument("--sha", required=True)
-    subs.add_parser("current-preview")
+    current = subs.add_parser("current-preview")
+    current.add_argument("--sha")
+    current.add_argument("--deployment-id")
     deploy_output = subs.add_parser("deploy-output")
     deploy_output.add_argument("--file", type=Path, required=True)
     preview_secret = subs.add_parser("preview-secret")
@@ -789,7 +971,9 @@ def main() -> int:
         elif args.command == "migrations":
             if not args.local:
                 verify_provenance(args.config)
-            verify_migrations(args.config, MIGRATIONS, args.local, args.persist_to)
+            verify_migrations(args.config, MIGRATIONS, args.local, args.persist_to, args.require_none)
+        elif args.command == "schema-diff":
+            verify_no_schema_changes(args.base_sha, args.head_sha)
         elif args.command == "smoke":
             verify_anonymous(args.urls)
         elif args.command == "rehearse":
@@ -801,7 +985,7 @@ def main() -> int:
         elif args.command == "latest-main":
             verify_latest_main(args.sha)
         elif args.command == "current-preview":
-            current_preview()
+            current_preview(args.sha, args.deployment_id)
         elif args.command == "deploy-output":
             parse_deploy_output(args.file)
         elif args.command == "preview-secret":
