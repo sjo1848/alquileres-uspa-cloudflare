@@ -145,6 +145,8 @@ def _assert_generated_config_schema(config: dict) -> None:
         raise PolicyError(f"Vite generated Worker config keys differ from the reviewed allowlist (unexpected={unexpected}, missing={missing})")
     if config.get("compatibility_flags") != []:
         raise PolicyError("Vite generated Worker compatibility flags are not approved")
+    if config.get("exports") != {}:
+        raise PolicyError("Vite generated Worker exports are not approved")
     if config.get("rules") != [{"type": "ESModule", "globs": ["**/*.js", "**/*.mjs"]}]:
         raise PolicyError("Vite generated Worker module rules are not approved")
     if config.get("jsx_factory") != "React.createElement" or config.get("jsx_fragment") != "React.Fragment":

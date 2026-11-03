@@ -90,6 +90,7 @@ class PreviewCdGuardTests(unittest.TestCase):
                 "compatibility_flags": [],
                 "definedEnvironments": [],
                 "d1_databases": [],
+                "exports": {},
                 "jsx_factory": "React.createElement",
                 "jsx_fragment": "React.Fragment",
                 "main": "index.js",
@@ -175,6 +176,11 @@ class PreviewCdGuardTests(unittest.TestCase):
         generated = self._generated_preview_config()
         generated["runtime_extension"] = "unreviewed"
         with self.assertRaisesRegex(guard.PolicyError, "keys differ from the reviewed allowlist"):
+            guard._assert_generated_config_schema(generated)
+
+        generated = self._generated_preview_config()
+        generated["exports"] = {"UnapprovedObject": {"type": "durable-object", "storage": "sqlite"}}
+        with self.assertRaisesRegex(guard.PolicyError, "exports are not approved"):
             guard._assert_generated_config_schema(generated)
 
     def test_generated_preview_rejects_unreviewed_entrypoint_or_runtime(self):
