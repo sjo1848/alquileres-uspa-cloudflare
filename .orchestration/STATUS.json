@@ -8,11 +8,11 @@
   "last_completed_task": "M2.1 explicitly accepted by the Product Owner and recorded in Issues #58/#61; DEV-QA Issue #64 closed with limitations documented.",
   "last_completed_head": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
   "work_branch": "feat/m3-my-selection",
-  "next_action": "Create and publish the Issue #70 functional PR; require exact-head Worker/Web CI, automatic GitHub review and delegated read-only technical review; resolve defects and merge only through protected main. Do not publish Preview or start M4.",
+  "next_action": "Query PR #71 live HEAD from GitHub; complete exact-head Worker/Web CI and delegated read-only technical review, resolve defects autonomously, then merge only via protected main if controls pass. Do not publish Preview or start M4.",
   "stop_reason": null,
   "event": {
-    "seq": 288,
-    "summary": "M2.1 accepted; M3 Issue #70 authorized and implementation active"
+    "seq": 289,
+    "summary": "M3 functional PR #71 opened after local QA; exact CI and independent review pending"
   },
   "external_review": null,
   "human_gate": {
@@ -20,7 +20,20 @@
     "scope": "M3 Issue #70 only; no automatic Preview publication, remote infrastructure changes, production, or M4."
   },
   "blocker": null,
-  "pull_request": null,
+  "pull_request": {
+    "number": 71,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/71",
+    "branch": "feat/m3-my-selection",
+    "base_branch": "main",
+    "base_sha": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
+    "state": "OPEN",
+    "is_draft": false,
+    "stable_executable_sha": "c21bdeeca4efbff5c5331bd44ff4a517af8b21b9",
+    "head_source": "Resolve live HEAD from GitHub PR #71 immediately before final checks/review; do not persist moving HEAD in tracked state.",
+    "checks": "Pending exact-head Worker/Web CI.",
+    "independent_review": "Pending delegated read-only technical Controller on exact live PR HEAD.",
+    "merge": "Not merged; protected merge only after all required checks/review pass."
+  },
   "issue_4": "CLOSED",
   "review_authority": null,
   "human_acceptance": {
@@ -75,15 +88,15 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/70",
     "contract": ".orchestration/contracts/MVP-M3-ISSUE-70-MY-SELECTION.md",
-    "status": "Implementation complete; local tests PASS; PR CI and independent reviews pending; no Preview publication authorized.",
+    "status": "Functional PR #71 open; exact-head Worker/Web CI and independent review pending.",
     "base_sha": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
     "scope": "Save/remove up to four monthly rental IDs in browser localStorage, ordered by selection; public API rehydration on opening/refresh/visibility return; comparison of current price/currency, capacity, location, deposit, services, pets, move-in date and declared availability/freshness; unknown values explicit; stale/unpublished/non-MONTH handling; existing detail/contact navigation. No backend/migrations/accounts/sync/reservations/payments/AI/analytics, remote D1/Preview/Access/CD/production or M4.",
     "command_unit": "cd apps/web && npm run test:selection",
     "command_e2e": "cd apps/web && npm run test:e2e:m3",
     "browser": "Local Playwright Chromium against the existing local Worker/Hono and synthetic D1 harness; no remote data.",
-    "pr_tracking": "Issue #70 is canonical; the functional PR and live HEAD will be resolved from GitHub. Do not pin a moving HEAD in active state.",
+    "pr_tracking": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/71; stable executable candidate c21bdee; derive live tracking HEAD from GitHub immediately before review.",
     "visual_evidence": "output/playwright/m3/QA.md and desktop/mobile screenshots at 1440, 390 and 320 px.",
-    "local_results": "Unit storage tests 4/4 PASS; M3 Playwright Chromium 3/3 PASS against local Worker/Hono and synthetic D1; public regression Playwright 6/6 PASS; Web typecheck/build/build:preview PASS. Screenshots and summary: output/playwright/m3/QA.md."
+    "local_results": "Unit 4/4 PASS; local M3 Playwright Chromium 3/3 PASS; public regression Playwright 6/6 PASS; Web typecheck/build/build:preview PASS; canonical-state validator/diff PASS."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

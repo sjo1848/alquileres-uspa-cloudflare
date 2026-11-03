@@ -2339,3 +2339,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Work branch: `feat/m3-my-selection`.
 - Local implementation and QA consolidated: unit 4/4, M3 Chromium 3/3, public regression 6/6, web typecheck/build/build:preview PASS; M3 screenshots are in `output/playwright/m3/QA.md`.
 - Next action: publish the functional PR, pass exact-head Worker/Web CI and independent technical review, then merge only through protected main. Keep Preview unpublished pending separate authorization.
+
+
+## Event 289 — M3 functional PR opened
+
+- PR #71 is open from `feat/m3-my-selection`, based on `main@a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0`.
+- Stable executable candidate: `c21bdeeca4efbff5c5331bd44ff4a517af8b21b9`; live PR HEAD must be queried from GitHub for final checks/review.
+- Local validation: unit 4/4, M3 Chromium 3/3, public regression 6/6, Web typecheck/build/build:preview, canonical validator and diff check PASS. Visual evidence is committed in `output/playwright/m3/QA.md`.
+- Next action: await exact-head Worker/Web CI, perform one delegated read-only technical review, repair any material finding, then use protected merge if all required controls pass. Do not publish Preview; do not begin M4.
