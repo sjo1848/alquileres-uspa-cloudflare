@@ -1,6 +1,7 @@
 name: Quick checks
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -91,7 +92,7 @@ jobs:
 
   staging-private:
     name: staging-private
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: [worker, web]
     runs-on: ubuntu-latest
     timeout-minutes: 25

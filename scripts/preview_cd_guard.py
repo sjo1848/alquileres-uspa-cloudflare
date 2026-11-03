@@ -96,8 +96,8 @@ def decision(
     access_status: str,
     token_present: bool,
 ) -> tuple[bool, str]:
-    if event != "push" or ref != "refs/heads/main":
-        raise PolicyError("remote Preview publishing is only allowed from a push to protected main")
+    if event not in {"push", "workflow_dispatch"} or ref != "refs/heads/main":
+        raise PolicyError("remote Preview publishing is only allowed from a main push or main-only manual dispatch")
     if enabled.lower() != "true":
         return False, "CF_PREVIEW_CD_ENABLED is not true"
     if provenance != "verified":

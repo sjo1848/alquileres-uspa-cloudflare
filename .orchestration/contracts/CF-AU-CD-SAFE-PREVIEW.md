@@ -10,7 +10,7 @@ Prepare an opt-in GitHub Actions path that publishes a successful protected `mai
 
 ## Release conditions
 
-- Trigger only on `push` to `refs/heads/main`, after `worker` and `web` both pass; PR jobs never receive the Cloudflare credential.
+- Publish on `push` to `refs/heads/main`, after `worker` and `web` both pass. A main-only `workflow_dispatch` provides the single controlled first deployment after activation (and is subject to the same checks); PR jobs never receive the Cloudflare credential.
 - Confirm the candidate SHA is still the protected `main` HEAD immediately before deployment.
 - Confirm the existing account, Worker, Preview resource ID/name, stable URL, secure Preview vars, static asset routing, and the sole D1 binding match the pinned target. Reject production routes and every unapproved binding.
 - Validate the Wrangler-generated deployment JSON as well as the source config: exact normalized top-level key allowlist, pinned runtime/entrypoint/build settings, exact Preview environment keys, and no unreviewed variables, triggers, migrations, routes, environments, or bindings. Run this check on every PR after `build:preview` and again before publication.

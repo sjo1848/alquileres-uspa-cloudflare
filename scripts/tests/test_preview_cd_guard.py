@@ -24,6 +24,12 @@ class PreviewCdGuardTests(unittest.TestCase):
         with self.assertRaises(guard.PolicyError):
             guard.decision("pull_request", "refs/pull/10/merge", "true", "verified", "free", "operator-only", True)
 
+    def test_main_only_manual_dispatch_is_available_for_first_controlled_release(self):
+        ok, _ = guard.decision("workflow_dispatch", "refs/heads/main", "true", "verified", "free", "operator-only", True)
+        self.assertTrue(ok)
+        with self.assertRaisesRegex(guard.PolicyError, "main push or main-only manual dispatch"):
+            guard.decision("workflow_dispatch", "refs/heads/feature/not-main", "true", "verified", "free", "operator-only", True)
+
     def test_default_disabled_gate_skips_without_mutation(self):
         ok, reason = guard.decision("push", "refs/heads/main", "", "verified", "free", "operator-only", True)
         self.assertFalse(ok)
@@ -44,7 +50,7 @@ class PreviewCdGuardTests(unittest.TestCase):
     def test_workflow_remote_mutations_are_main_only_and_fail_closed(self):
         workflow = (ROOT / ".github/workflows/quick-checks.yml").read_text(encoding="utf-8")
         staging = workflow.split("  staging-private:\n", 1)[1]
-        self.assertIn("if: github.event_name == 'push' && github.ref == 'refs/heads/main'", staging)
+        self.assertIn("if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'", staging)
         self.assertIn("needs: [worker, web]", staging)
         self.assertIn("cancel-in-progress: false", staging)
         self.assertIn("if: steps.gate.outputs.deploy == 'true'", staging)
