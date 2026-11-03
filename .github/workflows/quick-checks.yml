@@ -143,7 +143,7 @@ jobs:
         env:
           CF_PREVIEW_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
         run: python3 scripts/preview_cd_guard.py current-preview
-      - name: Verify anonymous Access denial before migration
+      - name: Verify anonymous Access denial before publication
         if: steps.gate.outputs.deploy == 'true'
         run: python3 scripts/preview_cd_guard.py smoke "${{ steps.before.outputs.stable_url }}" "${{ steps.before.outputs.immutable_url }}"
       - name: Verify the current Preview JWT secret exists without reading its value
@@ -155,47 +155,19 @@ jobs:
       - name: Verify the source is current protected main
         if: steps.gate.outputs.deploy == 'true'
         run: python3 scripts/preview_cd_guard.py latest-main --sha "$GITHUB_SHA"
+      - name: Reject D1 migration/schema changes since the last verified Preview
+        if: steps.gate.outputs.deploy == 'true'
+        run: python3 scripts/preview_cd_guard.py schema-diff --base-sha "${{ steps.before.outputs.source_sha }}" --head-sha "$GITHUB_SHA"
       - name: Verify the synthetic D1 provenance baseline
         if: steps.gate.outputs.deploy == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
         run: python3 scripts/preview_cd_guard.py provenance
-      - name: Verify only reviewed migrations are pending
+      - name: Require zero pending migrations (read-only)
         if: steps.gate.outputs.deploy == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
-        run: python3 scripts/preview_cd_guard.py migrations
-      - name: Require separate SHA-bound authorization before backup or migration
-        if: steps.gate.outputs.deploy == 'true'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
-          CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}
-        run: python3 scripts/preview_cd_guard.py authorize-remote
-      - name: Backup the D1 and rehearse pending migrations locally
-        if: steps.gate.outputs.deploy == 'true'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
-          CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}
-        run: |
-          python3 scripts/preview_cd_guard.py rehearse \
-            --backup "$RUNNER_TEMP/alquileres-uspa-preview-pre-migration.sql" \
-            --persist-to "$RUNNER_TEMP/alquileres-uspa-preview-local-d1"
-      - name: Recheck main before remote migration
-        if: steps.gate.outputs.deploy == 'true'
-        run: python3 scripts/preview_cd_guard.py latest-main --sha "$GITHUB_SHA"
-      - name: Apply only the reviewed migration allowlist to the existing Preview D1
-        if: steps.gate.outputs.deploy == 'true'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
-          CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}
-        run: python3 scripts/preview_cd_guard.py apply-remote
-      - name: Verify remote D1 after migration
-        if: steps.gate.outputs.deploy == 'true'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
-        run: |
-          python3 scripts/preview_cd_guard.py provenance
-          python3 scripts/preview_cd_guard.py migrations
+        run: python3 scripts/preview_cd_guard.py migrations --require-none
       - name: Recheck main before Preview publication
         if: steps.gate.outputs.deploy == 'true'
         run: python3 scripts/preview_cd_guard.py latest-main --sha "$GITHUB_SHA"
@@ -220,20 +192,26 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
         working-directory: apps/web
         run: python3 ../../scripts/preview_cd_guard.py preview-secret
+      - name: Verify latest Preview deployment SHA and ID
+        id: published
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          CF_PREVIEW_API_TOKEN: ${{ secrets.CF_PREVIEW_API_TOKEN }}
+        run: python3 scripts/preview_cd_guard.py current-preview --sha "$GITHUB_SHA" --deployment-id "${{ steps.deploy.outputs.deployment_id }}"
       - name: Verify Access still blocks the stable and immutable URLs
         id: smoke
         if: steps.gate.outputs.deploy == 'true'
-        run: python3 scripts/preview_cd_guard.py smoke https://private-alquileres-uspa-lab.sjo1848.workers.dev "${{ steps.deploy.outputs.immutable_url }}"
+        run: python3 scripts/preview_cd_guard.py smoke "${{ steps.published.outputs.stable_url }}" "${{ steps.published.outputs.immutable_url }}"
       - name: Record verified Preview release
         if: steps.gate.outputs.deploy == 'true' && steps.smoke.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ github.sha }}
-          STABLE_URL: ${{ steps.deploy.outputs.stable_url }}
-          IMMUTABLE_URL: ${{ steps.deploy.outputs.immutable_url }}
-          DEPLOYMENT_ID: ${{ steps.deploy.outputs.deployment_id }}
+          STABLE_URL: ${{ steps.published.outputs.stable_url }}
+          IMMUTABLE_URL: ${{ steps.published.outputs.immutable_url }}
+          DEPLOYMENT_ID: ${{ steps.published.outputs.deployment_id }}
         run: |
           set -euo pipefail
-          body=$(printf 'Automated private Preview release\n\n- Source SHA: `%s`\n- Deployment ID: `%s`\n- Stable URL: %s\n- Immutable URL: %s\n- Anonymous Access checks: 12/12 denied before application access.\n- Remote authenticated browser journeys: BLOCKED_AUTH (no Access session in CI).\n- D1: existing synthetic Preview database; reviewed migration allowlist only.\n- No production, Access policy changes, R2, resource creation, seed, or external data.' "$SOURCE_SHA" "$DEPLOYMENT_ID" "$STABLE_URL" "$IMMUTABLE_URL")
-          gh issue comment 48 --repo "$GITHUB_REPOSITORY" --body "$body"
+          body=$(printf 'Automated private Preview release\n\n- Source SHA: `%s`\n- Deployment ID: `%s`\n- Stable URL: %s\n- Immutable URL: %s\n- Anonymous Access checks: 12/12 denied before application access.\n- D1: existing synthetic Preview; provenance verified; zero migrations pending; no schema files changed since the previous verified deployment.\n- No production, Access policy changes, migration writes, R2, resource creation, seed, or external data.\n- Remote authenticated browser journeys: BLOCKED_AUTH unless an approved Access session is available; local Playwright remains the functional CI gate.' "$SOURCE_SHA" "$DEPLOYMENT_ID" "$STABLE_URL" "$IMMUTABLE_URL")
+          gh issue comment 49 --repo "$GITHUB_REPOSITORY" --body "$body"
           gh issue comment 25 --repo "$GITHUB_REPOSITORY" --body "$body"

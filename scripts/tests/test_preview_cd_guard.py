@@ -2,6 +2,8 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -49,29 +51,133 @@ class PreviewCdGuardTests(unittest.TestCase):
         self.assertIn("--name private --worker-name alquileres-uspa-lab", staging)
         self.assertIn("wrangler preview", staging)
         self.assertNotIn("wrangler deploy", staging)
-        self.assertIn("apply-remote", staging)
+        self.assertNotIn("apply-remote", staging)
+        self.assertNotIn("authorize-remote", staging)
+        self.assertNotIn("rehearse", staging)
+        self.assertNotIn("wrangler d1 migrations apply", staging)
+        self.assertIn("migrations --require-none", staging)
+        self.assertIn("schema-diff --base-sha", staging)
+        self.assertIn("current-preview --sha \"$GITHUB_SHA\"", staging)
         self.assertNotIn("wrangler d1 migrations apply", staging)
         self.assertIn("WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/preview-result.json", staging)
         self.assertIn("deploy-output", staging)
         self.assertIn('--file "$RUNNER_TEMP/preview-result.json"', staging)
         self.assertNotIn('>> "$GITHUB_OUTPUT"', staging)
-        authorization_env = "CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA: ${{ vars.CF_PREVIEW_MIGRATION_0015_AUTHORIZED_SHA }}"
-        authorization_preflight_step = staging.split("- name: Require separate SHA-bound authorization before backup or migration", 1)[1].split("\n      - name:", 1)[0]
-        backup_step = staging.split("- name: Backup the D1 and rehearse pending migrations locally", 1)[1].split("\n      - name:", 1)[0]
-        apply_step = staging.split("- name: Apply only the reviewed migration allowlist to the existing Preview D1", 1)[1].split("\n      - name:", 1)[0]
-        self.assertIn(authorization_env, authorization_preflight_step)
-        self.assertIn(authorization_env, backup_step)
-        self.assertIn(authorization_env, apply_step)
-        self.assertLess(
-            staging.index("Require separate SHA-bound authorization before backup or migration"),
-            staging.index("Backup the D1 and rehearse pending migrations locally"),
-        )
+        for step_name in ("Install web and Worker dependencies", "Build D3.1 against the pinned Preview runtime"):
+            step = staging.split(f"- name: {step_name}", 1)[1].split("\n      - name:", 1)[0]
+            self.assertNotIn("secrets.CF_PREVIEW_API_TOKEN", step)
+        web_job = workflow.split("  web:\n", 1)[1].split("  staging-private:\n", 1)[0]
+        worker_job = workflow.split("  worker:\n", 1)[1].split("  web:\n", 1)[0]
+        self.assertNotIn("secrets.CF_PREVIEW_API_TOKEN", web_job)
+        self.assertNotIn("secrets.CF_PREVIEW_API_TOKEN", worker_job)
+        self.assertIn("issues: write", staging)
+        self.assertIn("CF_PREVIEW_CD_ENABLED", staging)
 
     def test_exact_target_configs_pass(self):
         guard.verify_target(
             ROOT / "apps/worker/wrangler.preview-ci.jsonc",
             ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc",
         )
+
+    def test_target_rejects_unexpected_binding_or_preview_configuration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            preview = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+            preview["previews"]["services"] = [{"binding": "OTHER", "service": "unapproved"}]
+            path = Path(directory) / "preview.json"
+            path.write_text(json.dumps(preview))
+            with self.assertRaisesRegex(guard.PolicyError, "unexpected Preview binding"):
+                guard.verify_target(path, ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc")
+
+            preview["previews"].pop("services")
+            preview["previews"]["vars"]["ACCESS_AUD"] = "wrong-audience"
+            path.write_text(json.dumps(preview))
+            with self.assertRaisesRegex(guard.PolicyError, "configuration mismatch"):
+                guard.verify_target(path, ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc")
+
+            preview = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+            preview["routes"] = ["example.com/*"]
+            path.write_text(json.dumps(preview))
+            with self.assertRaisesRegex(guard.PolicyError, "production routes"):
+                guard.verify_target(path, ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc")
+
+    def test_publication_requires_zero_pending_migrations(self):
+        guard.require_no_pending_migrations([])
+        with self.assertRaisesRegex(guard.PolicyError, "zero pending migrations"):
+            guard.require_no_pending_migrations(["0017_unreviewed.sql"])
+
+    def test_latest_main_rejects_a_sha_that_is_not_current_protected_main(self):
+        not_current = "a" * 40
+        remote_main = "b" * 40
+        result = subprocess.CompletedProcess(args=[], returncode=0, stdout=f"{remote_main}\trefs/heads/main\n", stderr="")
+        with mock.patch.object(guard.subprocess, "run", return_value=result):
+            with self.assertRaisesRegex(guard.PolicyError, "not the current protected main HEAD"):
+                guard.verify_latest_main(not_current)
+        with mock.patch.object(guard.subprocess, "run", return_value=subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="")):
+            with self.assertRaisesRegex(guard.PolicyError, "could not verify latest protected main"):
+                guard.verify_latest_main(remote_main)
+
+    def test_schema_diff_fails_for_any_migration_change_since_last_release(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "apps/worker/migrations").mkdir(parents=True)
+            (root / "apps/worker/src").mkdir(parents=True)
+            (root / "apps/worker/migrations/0001_core.sql").write_text("CREATE TABLE x (id TEXT);\n")
+            (root / "apps/worker/src/index.ts").write_text("export const version = 1;\n")
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.test"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-qm", "base"], check=True)
+            base = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+            (root / "apps/worker/src/index.ts").write_text("export const version = 2;\n")
+            subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-qm", "app change"], check=True)
+            app_head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+            with mock.patch.object(guard, "ROOT", root):
+                guard.verify_no_schema_changes(base, app_head)
+                (root / "apps/worker/migrations/0001_core.sql").write_text("CREATE TABLE x (id TEXT, changed TEXT);\n")
+                subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+                subprocess.run(["git", "-C", str(root), "commit", "-qm", "schema change"], check=True)
+                schema_head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+                with self.assertRaisesRegex(guard.PolicyError, "migration/schema files changed"):
+                    guard.verify_no_schema_changes(base, schema_head)
+
+    def test_current_preview_requires_exact_published_sha_and_deployment_id(self):
+        deployment_id = "f3d02d69-8aa5-4ccf-8046-815510c3f2b9"
+        source_sha = "3c6837723d2d48a1710c692185aa9c1484b513db"
+        preview = {"id": guard.TARGET["preview_id"], "name": "private", "urls": [guard.TARGET["stable_url"]]}
+        deployment = {
+            "id": deployment_id,
+            "urls": [f"https://{deployment_id[:8]}-{guard.TARGET['worker_name']}.sjo1848.workers.dev"],
+            "annotations": {"workers/commit_sha": source_sha},
+        }
+        with mock.patch.object(guard, "_cloudflare_get", side_effect=[preview, deployment]):
+            stable, immutable, returned_id, returned_sha = guard.current_preview(source_sha, deployment_id)
+        self.assertEqual(stable, guard.TARGET["stable_url"])
+        self.assertEqual(immutable, deployment["urls"][0])
+        self.assertEqual(returned_id, deployment_id)
+        self.assertEqual(returned_sha, source_sha)
+        with mock.patch.object(guard, "_cloudflare_get", side_effect=[preview, deployment]):
+            with self.assertRaisesRegex(guard.PolicyError, "requested source SHA"):
+                guard.current_preview("a" * 40)
+        with mock.patch.object(guard, "_cloudflare_get", side_effect=[preview, deployment]):
+            with self.assertRaisesRegex(guard.PolicyError, "deployment ID"):
+                guard.current_preview(source_sha, "12345678-1234-1234-1234-1234567890ab")
+
+    def test_codeowners_cover_deploy_and_auth_files_including_codeowners_itself(self):
+        codeowners = (ROOT / ".github/CODEOWNERS").read_text(encoding="utf-8")
+        for path in (
+            "/.github/CODEOWNERS",
+            "/.github/workflows/**",
+            "/scripts/preview_cd_guard.py",
+            "/apps/worker/wrangler*.jsonc",
+            "/apps/worker/migrations/**",
+            "/apps/worker/src/preview-auth.ts",
+            "/apps/worker/src/local-owner-auth.ts",
+            "/apps/web/src/session.ts",
+            "/apps/web/src/views/AuthView.vue",
+        ):
+            self.assertRegex(codeowners, rf"(?m)^{re.escape(path)}\s+@sjo1848$")
 
     def test_local_preview_auth_simulation_is_absent_from_deployable_config(self):
         local = json.loads((ROOT / "apps/worker/wrangler.preview-auth-e2e.jsonc").read_text())
@@ -92,6 +198,12 @@ class PreviewCdGuardTests(unittest.TestCase):
             preview_path = Path(directory) / "preview.json"
             preview_path.write_text(json.dumps(preview))
             with self.assertRaisesRegex(guard.PolicyError, "placeholder"):
+                guard.verify_target(preview_path, ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc")
+
+            preview["previews"]["d1_databases"][0]["database_id"] = guard.TARGET["database_id"]
+            preview["name"] = "other-worker"
+            preview_path.write_text(json.dumps(preview))
+            with self.assertRaisesRegex(guard.PolicyError, "Worker name mismatch"):
                 guard.verify_target(preview_path, ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc")
 
     def test_provenance_manifest_contains_only_approved_minimal_metadata(self):
@@ -529,7 +641,7 @@ class PreviewCdGuardTests(unittest.TestCase):
              mock.patch.object(guard, "verify_migrations", return_value=[]) as migrations:
             self.assertEqual(guard.main(), 0)
         provenance.assert_called_once_with("wrangler.preview-migrations-ci.jsonc")
-        migrations.assert_called_once_with("wrangler.preview-migrations-ci.jsonc", guard.MIGRATIONS, False, None)
+        migrations.assert_called_once_with("wrangler.preview-migrations-ci.jsonc", guard.MIGRATIONS, False, None, False)
 
     def test_remote_authorization_preflight_fails_before_backup_when_0015_is_unapproved(self):
         current_main = "2a7562aa4301211ab3e1bab7a85017f7d18e6ba4"

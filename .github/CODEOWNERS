@@ -1,0 +1,13 @@
+# GitHub must enable required code-owner reviews for these protected paths.
+# The default rules intentionally do not require human approval for ordinary product changes.
+/.github/CODEOWNERS @sjo1848
+/.github/workflows/** @sjo1848
+/.orchestration/contracts/CF-AU-CD-SAFE-PREVIEW.md @sjo1848
+/scripts/preview_cd_guard.py @sjo1848
+/scripts/tests/test_preview_cd_guard.py @sjo1848
+/apps/worker/wrangler*.jsonc @sjo1848
+/apps/worker/migrations/** @sjo1848
+/apps/worker/src/preview-auth.ts @sjo1848
+/apps/worker/src/local-owner-auth.ts @sjo1848
+/apps/web/src/session.ts @sjo1848
+/apps/web/src/views/AuthView.vue @sjo1848

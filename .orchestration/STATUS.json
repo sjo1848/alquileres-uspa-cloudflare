@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "M3_IMPLEMENTATION",
+  "phase": "CD_PREVIEW_HARDENING",
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
-  "active_task": "Issue #70 — implement saved monthly rental selection and responsive comparison",
-  "last_completed_task": "M2.1 explicitly accepted by the Product Owner and recorded in Issues #58/#61; DEV-QA Issue #64 closed with limitations documented.",
-  "last_completed_head": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
-  "work_branch": "feat/m3-my-selection",
-  "next_action": "Query PR #71 live HEAD from GitHub; complete exact-head Worker/Web CI and a fresh automatic review after the API-error removal correction, then perform one limited read-only technical review on the exact candidate. Resolve substantive defects autonomously and use protected main only if controls pass. Do not publish Preview or start M4.",
+  "active_task": "Issue #49 — prepare safe opt-in Preview CD; activation remains disabled pending separate Product Owner authorization",
+  "last_completed_task": "M3 PR #71 integrated and published to the existing private Preview; remote functional smoke is BLOCKED_AUTH and Issue #70 remains open for Product Owner acceptance.",
+  "last_completed_head": "3c6837723d2d48a1710c692185aa9c1484b513db",
+  "work_branch": "feat/cd-preview-no-migrations",
+  "next_action": "Complete focused guard regressions, create the functional PR, run exact-head Worker/Web CI and read-only technical review, then use protected main only if controls pass. Keep CD disabled and do not change credentials, variables, Access, D1, production, or remote branch protections.",
   "stop_reason": null,
   "event": {
-    "seq": 291,
-    "summary": "M3 API-error removal trap fixed; final exact-head checks and review pending"
+    "seq": 292,
+    "summary": "Safe private Preview CD scope authorized; remote migration path removed; CD activation withheld."
   },
   "external_review": null,
   "human_gate": {
@@ -21,17 +21,17 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": 71,
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/71",
-    "branch": "feat/m3-my-selection",
+    "number": null,
+    "url": null,
+    "branch": "feat/cd-preview-no-migrations",
     "base_branch": "main",
-    "base_sha": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
-    "state": "OPEN",
-    "is_draft": false,
-    "head_source": "Resolve live HEAD from GitHub PR #71 immediately before final checks/review; do not persist moving HEAD in tracked state.",
-    "checks": "Pending exact live-head Worker/Web CI after API-error removal fix; earlier head checks do not apply.",
-    "independent_review": "A prior delegated PASS covered the preceding code boundary only and is superseded by a subsequent automated P2. Browser-storage P2 is fixed; a fresh exact-live-head technical review is pending.",
-    "merge": "Not merged; protected merge only after all required checks/review pass."
+    "base_sha": "3c6837723d2d48a1710c692185aa9c1484b513db",
+    "state": "IMPLEMENTING",
+    "is_draft": true,
+    "head_source": "Will be resolved from GitHub after publishing the functional branch; no moving HEAD is embedded in tracked state.",
+    "checks": "Pending exact-head worker/web CI.",
+    "independent_review": "Pending exact-head read-only technical review.",
+    "merge": "Only through existing protected main controls; CD activation remains separately unauthorized."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -48,7 +48,7 @@
     "deployment_id": "34b8467b-d8bb-4208-8156-0f7b6f44837f",
     "stable_url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
     "immutable_url": "https://34b8467b-alquileres-uspa-lab.sjo1848.workers.dev",
-    "next_product_increment": "M3 authorized under Issue #70; not yet published or human-accepted."
+    "next_product_increment": "M3 is published to the private Preview; Issue #70 remains open for human acceptance. M4 not started."
   },
   "temporary_access_probe_authority": {
     "human_authorized": true,
@@ -62,26 +62,26 @@
   },
   "auth_decision": ".orchestration/decisions/ACCESS_PREVIEW_OWNER_AUTH.md",
   "preview_delivery": {
-    "application_sha": "f0422e99b38943078b42a9def4edc5e893b84645",
-    "deployment_id": "34b8467b-d8bb-4208-8156-0f7b6f44837f",
+    "application_sha": "3c6837723d2d48a1710c692185aa9c1484b513db",
+    "deployment_id": "f3d02d69-8aa5-4ccf-8046-815510c3f2b9",
     "url": "https://private-alquileres-uspa-lab.sjo1848.workers.dev",
-    "deployment_url": "https://34b8467b-alquileres-uspa-lab.sjo1848.workers.dev",
+    "deployment_url": "https://f3d02d69-alquileres-uspa-lab.sjo1848.workers.dev",
     "preview_name": "private",
     "worker": "alquileres-uspa-lab",
     "strategy": "ACCESS_PREVIEW",
     "media_strategy": "D1_BLOB",
     "database_id": "74a00c52-a63b-45a3-8213-6648378ed5b1",
-    "migrations_applied": "0001–0016; zero pending at final verification",
+    "migrations_applied": "0001–0016; zero pending verified before and after M3 Preview publication",
     "migration_0016_sha256": "52feaf7b87c3a2625dc7d5c8cdaa2a7d1d106fe6af957b18a4284bf8db16edda",
     "operator_policy": "Preview application and Operator only policy set to 168h; global organization duration was not exposed by the read API and was not changed.",
     "service_auth": "Dedicated app-scoped non_identity policy for the temporary Playwright token; 168h max; secret remains local mode 0600; expires 2026-11-09T01:21:03Z.",
-    "anonymous_access": "12/12 requests across stable and immutable URLs denied before application access.",
-    "remote_authenticated_e2e": "PASS on synthetic-only fixtures; fixture and exact test sessions cleaned. No existing records mutated.",
+    "anonymous_access": "12/12 requests across stable and immutable M3 URLs denied before application access.",
+    "remote_authenticated_e2e": "M2.1 authenticated E2E remains PASS in historical acceptance evidence; M3 remote Playwright smoke BLOCKED_AUTH because this browser had no Access session. No M3 remote writes.",
     "final_d1_counts": "users=2, listings=4, images=2, contacts=1, revisions=0, audits=4, idempotency=4, image operations=0, reorder operations=0, preview auth sessions=0.",
     "remote_integrity_check": "Unavailable: Cloudflare denies remote PRAGMA integrity_check with SQLITE_AUTH; isolated local backup copy integrity_check=ok and FK check passed.",
-    "cd_automatic": "Disabled; merge workflow mutation steps skipped; no automatic deployment from the Issue #67 tooling PR.",
+    "cd_automatic": "Disabled. GitHub repository Actions has no deploy secret or variables; staging-private remains SAFE SKIP.",
     "production": "not deployed",
-    "human_acceptance": "ACCEPTED_M2_1; M3 not yet published or accepted"
+    "human_acceptance": "M2.1 accepted; M3 published, awaiting Product Owner acceptance."
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
@@ -1470,5 +1470,13 @@
     "production": "not deployed",
     "source_evidence": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/61#issuecomment-6552301668",
     "last_verified_at": "2026-11-01"
+  },
+  "issue_49": {
+    "state": "OPEN",
+    "active_scope": "Safe opt-in private Preview CD; never apply remote migrations; CD disabled until separate authorization."
+  },
+  "issue_70": {
+    "state": "OPEN",
+    "status": "M3 published to private Preview; Product Owner acceptance pending; remote E2E BLOCKED_AUTH."
   }
 }
