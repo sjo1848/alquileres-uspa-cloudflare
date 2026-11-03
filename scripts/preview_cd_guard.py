@@ -27,9 +27,9 @@ SCHEMA_PATH_PREFIXES = ("apps/worker/migrations/",)
 RESOURCE_BINDINGS = {
     "agent_memory", "ai", "ai_search", "ai_search_namespaces", "analytics_engine_datasets", "artifacts", "browser",
     "cloudchamber", "connect", "dispatch_namespaces", "durable_objects", "flagship", "hyperdrive",
-    "images", "kv_namespaces", "logfwdr", "mtls_certificates", "pipelines",
+    "images", "k2", "kv_namespaces", "logfwdr", "mtls_certificates", "pipelines",
     "queue_consumers", "queue_producers", "queues", "ratelimits", "r2_buckets", "secrets_store_secrets",
-    "send_email", "services", "unsafe", "vectorize", "vpc_networks", "vpc_services", "worker_loaders",
+    "send_email", "services", "unsafe", "unsafe_hello_world", "vectorize", "vpc_networks", "vpc_services", "worker_loaders",
     "workflows",
 }
 TARGET = {

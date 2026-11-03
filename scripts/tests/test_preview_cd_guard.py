@@ -184,10 +184,14 @@ class PreviewCdGuardTests(unittest.TestCase):
             guard._assert_generated_config_schema(generated)
 
     def test_generated_preview_rejects_every_unapproved_worker_binding(self):
+        examples = {
+            "k2": [{"binding": "UNAPPROVED_K2", "stream": "stream-123"}],
+            "unsafe_hello_world": [{"binding": "UNAPPROVED_TIMER", "enable_timer": True}],
+        }
         for key in sorted(guard.RESOURCE_BINDINGS):
             with self.subTest(binding=key):
                 generated = self._generated_preview_config()
-                generated[key] = [{"binding": "UNAPPROVED", "id": "synthetic-test-binding"}]
+                generated[key] = examples.get(key, [{"binding": "UNAPPROVED", "id": "synthetic-test-binding"}])
                 with self.assertRaisesRegex(guard.PolicyError, "unexpected resource binding"):
                     guard._assert_preview_bindings(generated)
 
@@ -301,11 +305,16 @@ class PreviewCdGuardTests(unittest.TestCase):
             "/.github/workflows/**",
             "/scripts/preview_cd_guard.py",
             "/apps/worker/wrangler*.jsonc",
+            "/apps/worker/package.json",
+            "/apps/worker/package-lock.json",
             "/apps/worker/migrations/**",
             "/apps/worker/src/preview-auth.ts",
             "/apps/worker/src/local-owner-auth.ts",
+            "/apps/web/package.json",
+            "/apps/web/package-lock.json",
             "/apps/web/src/session.ts",
             "/apps/web/src/views/AuthView.vue",
+            "/apps/web/src/views/auth-helpers.ts",
         ):
             self.assertRegex(codeowners, rf"(?m)^{re.escape(path)}\s+@sjo1848$")
 
