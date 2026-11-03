@@ -308,3 +308,5 @@ watch(() => route.query, () => {
     </section>
   </div>
 </template>
+
+<!-- Temporary unowned-path CODEOWNERS probe; do not merge. -->
