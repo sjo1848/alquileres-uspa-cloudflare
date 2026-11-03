@@ -76,6 +76,8 @@ jobs:
         working-directory: apps/web
       - run: npm run build:preview
         working-directory: apps/web
+      - name: Validate generated private Preview configuration
+        run: python3 scripts/preview_cd_guard.py target --generated apps/web/dist/alquileres_uspa_lab/wrangler.json
       - uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright

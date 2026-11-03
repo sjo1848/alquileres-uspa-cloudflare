@@ -79,6 +79,34 @@ class PreviewCdGuardTests(unittest.TestCase):
             ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc",
         )
 
+    def _generated_preview_config(self):
+        preview = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+        generated = dict.fromkeys(guard.GENERATED_CONFIG_KEYS)
+        generated.update(
+            {
+                "account_id": guard.TARGET["account_id"],
+                "assets": {**guard.EXPECTED_ASSETS, "directory": "../client"},
+                "compatibility_date": "2026-10-12",
+                "compatibility_flags": [],
+                "definedEnvironments": [],
+                "d1_databases": [],
+                "jsx_factory": "React.createElement",
+                "jsx_fragment": "React.Fragment",
+                "main": "index.js",
+                "migrations": [],
+                "name": guard.TARGET["worker_name"],
+                "no_bundle": True,
+                "previews": preview["previews"],
+                "preview_urls": True,
+                "rules": [{"type": "ESModule", "globs": ["**/*.js", "**/*.mjs"]}],
+                "topLevelName": guard.TARGET["worker_name"],
+                "triggers": {},
+                "vars": {},
+                "workers_dev": False,
+            }
+        )
+        return generated
+
     def test_target_rejects_unexpected_binding_or_preview_configuration(self):
         with tempfile.TemporaryDirectory() as directory:
             preview = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
@@ -126,9 +154,7 @@ class PreviewCdGuardTests(unittest.TestCase):
 
     def test_generated_preview_rejects_unreviewed_environment_keys(self):
         with tempfile.TemporaryDirectory() as directory:
-            generated = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
-            generated["main"] = "index.js"
-            generated["assets"]["directory"] = "../client"
+            generated = self._generated_preview_config()
             generated["previews"]["services"] = []
             generated_path = Path(directory) / "generated.json"
             (Path(directory).parent / "client").mkdir(exist_ok=True)
@@ -140,11 +166,20 @@ class PreviewCdGuardTests(unittest.TestCase):
                     generated_path,
                 )
 
+    def test_generated_preview_rejects_unallowlisted_top_level_configuration(self):
+        generated = self._generated_preview_config()
+        generated["compatibility_flags"] = ["nodejs_compat"]
+        with self.assertRaisesRegex(guard.PolicyError, "compatibility flags are not approved"):
+            guard._assert_generated_config_schema(generated)
+
+        generated = self._generated_preview_config()
+        generated["runtime_extension"] = "unreviewed"
+        with self.assertRaisesRegex(guard.PolicyError, "keys differ from the reviewed allowlist"):
+            guard._assert_generated_config_schema(generated)
+
     def test_generated_preview_rejects_unreviewed_entrypoint_or_runtime(self):
         with tempfile.TemporaryDirectory() as directory:
-            generated = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
-            generated["main"] = "index.js"
-            generated["assets"]["directory"] = "../client"
+            generated = self._generated_preview_config()
             generated_path = Path(directory) / "generated.json"
             (Path(directory).parent / "client").mkdir(exist_ok=True)
             for key, value in (("main", "other.js"), ("compatibility_date", "2026-10-13")):
@@ -161,9 +196,7 @@ class PreviewCdGuardTests(unittest.TestCase):
 
     def test_generated_preview_rejects_unreviewed_worker_vars_triggers_migrations_or_env(self):
         with tempfile.TemporaryDirectory() as directory:
-            generated = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
-            generated["main"] = "index.js"
-            generated["assets"]["directory"] = "../client"
+            generated = self._generated_preview_config()
             generated_path = Path(directory) / "generated.json"
             cases = (
                 ("vars", {"UNREVIEWED": "value"}),
@@ -176,7 +209,7 @@ class PreviewCdGuardTests(unittest.TestCase):
                     candidate = dict(generated)
                     candidate[key] = value
                     generated_path.write_text(json.dumps(candidate))
-                    with self.assertRaisesRegex(guard.PolicyError, "unreviewed variables, triggers, or migrations|unreviewed environment"):
+                    with self.assertRaisesRegex(guard.PolicyError, "unreviewed variables, triggers, or migrations|unreviewed environment|keys differ from the reviewed allowlist"):
                         guard.verify_target(
                             ROOT / "apps/worker/wrangler.preview-ci.jsonc",
                             ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc",

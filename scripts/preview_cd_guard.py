@@ -64,6 +64,16 @@ EXPECTED_D1_BINDING = {
     "database_id": TARGET["database_id"],
     "migrations_dir": "migrations",
 }
+GENERATED_CONFIG_KEYS = frozenset(
+    """
+    account_id agent_memory ai_search ai_search_namespaces analytics_engine_datasets artifacts assets
+    cloudchamber compatibility_date compatibility_flags configPath connect d1_databases definedEnvironments
+    dev dispatch_namespaces durable_objects exports flagship hyperdrive jsx_factory jsx_fragment k2 kv_namespaces
+    logfwdr main migrations mtls_certificates name no_bundle pipelines preview_urls previews python_modules queues
+    ratelimits r2_buckets rules secrets_store_secrets send_email services topLevelName triggers unsafe_hello_world
+    upload_source_maps userConfigPath vars vectorize vpc_networks vpc_services worker_loaders workers_dev workflows
+    """.split()
+)
 
 
 class PolicyError(RuntimeError):
@@ -128,6 +138,23 @@ def _assert_preview_bindings(config: dict) -> None:
             raise PolicyError(f"unexpected Preview binding is forbidden: {key}")
 
 
+def _assert_generated_config_schema(config: dict) -> None:
+    if set(config) != GENERATED_CONFIG_KEYS:
+        unexpected = sorted(set(config) - GENERATED_CONFIG_KEYS)
+        missing = sorted(GENERATED_CONFIG_KEYS - set(config))
+        raise PolicyError(f"Vite generated Worker config keys differ from the reviewed allowlist (unexpected={unexpected}, missing={missing})")
+    if config.get("compatibility_flags") != []:
+        raise PolicyError("Vite generated Worker compatibility flags are not approved")
+    if config.get("rules") != [{"type": "ESModule", "globs": ["**/*.js", "**/*.mjs"]}]:
+        raise PolicyError("Vite generated Worker module rules are not approved")
+    if config.get("jsx_factory") != "React.createElement" or config.get("jsx_fragment") != "React.Fragment":
+        raise PolicyError("Vite generated Worker JSX configuration is not approved")
+    if config.get("topLevelName") != TARGET["worker_name"]:
+        raise PolicyError("Vite generated Worker top-level name mismatch")
+    if config.get("definedEnvironments") != [] or config.get("no_bundle") is not True:
+        raise PolicyError("Vite generated Worker build configuration is not approved")
+
+
 def verify_target(preview_path: Path, migration_path: Path, generated_path: Path | None = None) -> None:
     preview = _load_json(preview_path)
     migrations = _load_json(migration_path)
@@ -173,6 +200,7 @@ def verify_target(preview_path: Path, migration_path: Path, generated_path: Path
         raise PolicyError("migration D1 binding configuration mismatch")
     if generated_path is not None:
         generated = _load_json(generated_path)
+        _assert_generated_config_schema(generated)
         _assert_no_r2(generated)
         _assert_preview_bindings(generated)
         if generated.get("name") != TARGET["worker_name"] or generated.get("account_id") != TARGET["account_id"]:
