@@ -9,10 +9,12 @@
 /apps/worker/package.json @sjo1848
 /apps/worker/package-lock.json @sjo1848
 /apps/worker/migrations/** @sjo1848
+/apps/worker/src/index.ts @sjo1848
 /apps/worker/src/preview-auth.ts @sjo1848
 /apps/worker/src/local-owner-auth.ts @sjo1848
 /apps/web/package.json @sjo1848
 /apps/web/package-lock.json @sjo1848
+/apps/web/src/router.ts @sjo1848
 /apps/web/src/session.ts @sjo1848
 /apps/web/src/views/AuthView.vue @sjo1848
 /apps/web/src/views/auth-helpers.ts @sjo1848

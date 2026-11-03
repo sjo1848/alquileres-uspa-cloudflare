@@ -326,22 +326,38 @@ class PreviewCdGuardTests(unittest.TestCase):
 
     def test_codeowners_cover_deploy_and_auth_files_including_codeowners_itself(self):
         codeowners = (ROOT / ".github/CODEOWNERS").read_text(encoding="utf-8")
-        for path in (
+        expected = {
             "/.github/CODEOWNERS",
             "/.github/workflows/**",
             "/scripts/preview_cd_guard.py",
+            "/scripts/tests/test_preview_cd_guard.py",
+            "/.orchestration/contracts/CF-AU-CD-SAFE-PREVIEW.md",
             "/apps/worker/wrangler*.jsonc",
             "/apps/worker/package.json",
             "/apps/worker/package-lock.json",
             "/apps/worker/migrations/**",
+            "/apps/worker/src/index.ts",
             "/apps/worker/src/preview-auth.ts",
             "/apps/worker/src/local-owner-auth.ts",
             "/apps/web/package.json",
             "/apps/web/package-lock.json",
+            "/apps/web/src/router.ts",
             "/apps/web/src/session.ts",
             "/apps/web/src/views/AuthView.vue",
             "/apps/web/src/views/auth-helpers.ts",
-        ):
+        }
+        entries = [line.split()[0] for line in codeowners.splitlines()
+                   if line.strip() and not line.lstrip().startswith("#")]
+        self.assertEqual(set(entries), expected, "Keep sensitive-path ownership selective; do not add catch-all rules")
+        self.assertEqual(len(entries), len(expected), "Duplicate CODEOWNERS patterns can hide an unintended override")
+        ordinary_controls = {
+            "/apps/web/src/views/HomeView.vue",
+            "/apps/web/src/views/ListingView.vue",
+            "/apps/web/src/views/SelectionView.vue",
+            "/apps/worker/src/d1-blob-media.ts",
+        }
+        self.assertTrue(ordinary_controls.isdisjoint(entries), "Ordinary product paths must not acquire mandatory ownership review")
+        for path in expected:
             self.assertRegex(codeowners, rf"(?m)^{re.escape(path)}\s+@sjo1848$")
 
     def test_local_preview_auth_simulation_is_absent_from_deployable_config(self):
