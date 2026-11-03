@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { apiUrl, ApiError, publicListingPath, request } from '../api';
 import { useRoute } from 'vue-router';
+import { useSavedSelection } from '../use-saved-selection';
 import {
   availabilityLabel,
   formatConfirmationDate,
@@ -20,6 +21,8 @@ import {
 } from './rental-domain';
 
 const route = useRoute();
+const savedSelection = useSavedSelection();
+const selectionNotice = ref('');
 type Listing = {
   id: string;
   title: string;
@@ -78,7 +81,14 @@ async function load(id: string) {
   loadController = controller;
   try {
     const nextListing = await request<Listing>(publicListingPath(id), { signal: controller.signal });
-    if (!controller.signal.aborted && route.params.id === id) listing.value = nextListing;
+    if (!controller.signal.aborted && route.params.id === id) {
+      listing.value = nextListing;
+      loading.value = false;
+      if (route.hash === '#contact-form') {
+        await nextTick();
+        if (!controller.signal.aborted && route.params.id === id) document.getElementById('contact-form')?.scrollIntoView({ block: 'start' });
+      }
+    }
   } catch (cause) {
     if (controller.signal.aborted || route.params.id !== id) return;
     error.value = cause instanceof ApiError ? cause.message : 'No pudimos cargar la ficha.';
@@ -89,6 +99,16 @@ async function load(id: string) {
 
 function retry() {
   void load(String(route.params.id));
+}
+
+function toggleSaved() {
+  const current = listing.value;
+  if (!current || current.pricePeriod !== 'MONTH') return;
+  const result = savedSelection.toggle(current.id);
+  selectionNotice.value = result.limitReached
+    ? `Podés guardar hasta ${savedSelection.max} alquileres mensuales. Quitá uno para agregar otro.`
+    : !result.persisted ? 'No se pudo actualizar Mi selección en este dispositivo. Revisá el almacenamiento del navegador e intentá otra vez.'
+    : result.saved ? 'Alojamiento guardado en Mi selección.' : 'Alojamiento quitado de Mi selección.';
 }
 
 function imageFailed(imageId: string) {
@@ -171,6 +191,11 @@ watch(() => route.params.id, id => void load(String(id)), { immediate: true });
           <header class="detail-heading">
             <p class="eyebrow">{{ listing.location }}</p><h1>{{ listing.title }}</h1>
             <p class="detail-lede">{{ rentalContext }}</p>
+            <div v-if="listing.pricePeriod==='MONTH'" class="detail-actions-row">
+              <button class="selection-toggle selection-toggle-detail" type="button" :aria-pressed="savedSelection.isSaved(listing.id)" @click="toggleSaved"><span aria-hidden="true">{{ savedSelection.isSaved(listing.id) ? '★' : '☆' }}</span>{{ savedSelection.isSaved(listing.id) ? 'Guardado en Mi selección' : 'Guardar para comparar' }}</button>
+              <RouterLink v-if="savedSelection.count.value" class="detail-selection-link" to="/selection">Ver mi selección ({{ savedSelection.count.value }})</RouterLink>
+            </div>
+            <p v-if="selectionNotice" class="selection-inline-notice" :role="savedSelection.storageError.value ? 'alert' : 'status'" aria-live="polite">{{ selectionNotice }} <RouterLink to="/selection">Abrir Mi selección</RouterLink></p>
             <a class="detail-contact-cta" href="#contact-form">Consultar este alojamiento <span aria-hidden="true">→</span></a>
           </header>
 
