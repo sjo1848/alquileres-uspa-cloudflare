@@ -90,6 +90,13 @@ class PreviewCdGuardTests(unittest.TestCase):
                 "compatibility_flags": [],
                 "definedEnvironments": [],
                 "d1_databases": [],
+                "dev": {
+                    "ip": "localhost",
+                    "local_protocol": "http",
+                    "upstream_protocol": "http",
+                    "enable_containers": True,
+                    "generate_types": False,
+                },
                 "exports": {},
                 "jsx_factory": "React.createElement",
                 "jsx_fragment": "React.Fragment",
@@ -97,11 +104,13 @@ class PreviewCdGuardTests(unittest.TestCase):
                 "migrations": [],
                 "name": guard.TARGET["worker_name"],
                 "no_bundle": True,
+                "python_modules": {"exclude": ["**/*.pyc"]},
                 "previews": preview["previews"],
                 "preview_urls": True,
                 "rules": [{"type": "ESModule", "globs": ["**/*.js", "**/*.mjs"]}],
                 "topLevelName": guard.TARGET["worker_name"],
                 "triggers": {},
+                "upload_source_maps": True,
                 "vars": {},
                 "workers_dev": False,
             }
@@ -182,6 +191,17 @@ class PreviewCdGuardTests(unittest.TestCase):
         generated["exports"] = {"UnapprovedObject": {"type": "durable-object", "storage": "sqlite"}}
         with self.assertRaisesRegex(guard.PolicyError, "exports are not approved"):
             guard._assert_generated_config_schema(generated)
+
+        for key, value, expected in (
+            ("python_modules", {"include": ["**/*.py"]}, "Python module configuration"),
+            ("upload_source_maps", False, "source-map upload setting"),
+            ("dev", {"enable_containers": False}, "local development configuration"),
+        ):
+            with self.subTest(key=key):
+                generated = self._generated_preview_config()
+                generated[key] = value
+                with self.assertRaisesRegex(guard.PolicyError, expected):
+                    guard._assert_generated_config_schema(generated)
 
     def test_generated_preview_rejects_every_unapproved_worker_binding(self):
         examples = {

@@ -26,11 +26,19 @@ Before publication, retain the verified previous deployment ID, immutable URL, a
 
 ## CODEOWNERS and current GitHub protection
 
-CODEOWNERS covers this workflow, this guard and its tests, Preview Wrangler configs, migrations, authentication components, and the CODEOWNERS file itself. The current main protection enforces `worker`/`web` checks and admin enforcement but has zero required approving reviews and does not require code-owner reviews. This PR does not change remote branch settings. Before activation, the Product Owner must separately enable required CODEOWNER reviews; ordinary application changes outside these paths remain mergeable with existing CI and automated review.
+CODEOWNERS covers this workflow, this guard and its tests, Preview Wrangler configs, migration files, application/package lockfiles used by the deployment toolchain, authentication components, and the CODEOWNERS file itself. The current main protection enforces `worker`/`web` checks and admin enforcement but has zero required approving reviews and does not require code-owner reviews. This PR does not change remote branch settings. Before activation, enable required CODEOWNER reviews for these paths while preserving zero globally required approvals, so ordinary application changes remain mergeable with existing CI and automated review.
 
 ## Activation boundary
 
 Until a separate Product Owner authorization, `CF_PREVIEW_CD_ENABLED` remains unset/false, and no credential or variable is written. The current repository has no usable Actions Cloudflare secret or Preview variables. Activation requires a dedicated GitHub Actions secret `CF_PREVIEW_API_TOKEN`, the explicit enable variable, and the existing gate's free-plan/provenance/Access attestations. The token must be an account-owned API token with Workers Editor scoped only to the existing Worker, plus D1 Read scoped only to the synthetic D1 if required by read-only provenance/ledger queries; no D1 Edit, Access Edit, R2, billing, routes, or account administration. The Preview remains protected by its existing Access policy.
+
+## Residual risk without per-release human approval
+
+- A defect or malicious change merged to protected `main` can be published automatically. CI, automated review and code-owner enforcement on sensitive paths reduce this risk but cannot prove every product change safe.
+- The Worker Editor token can update/deploy the one scoped Worker. Even though the token has no D1 Write permission, deployed Worker code runs with its existing D1 binding and can mutate the synthetic database through application code. A redeployment rollback restores code only; it cannot reverse application writes. The zero-schema-change gate prevents migration DDL, not ordinary data writes.
+- A compromised or malicious deployment workflow/toolchain could access the deployment credential in its narrowly scoped steps. Workflow, guard, configs, migration and package-lock changes therefore need enforced code-owner review before CD is activated.
+- Access is not read through the deployment token. The release gate requires the operator-only attestation and verifies anonymous denial on the stable and immutable URLs before and after publication; this proves effective anonymous blocking, not the complete live Access policy configuration.
+- These risks are confined to the existing private Preview and its synthetic D1; no production resources or real data are in scope.
 
 ## Acceptance
 

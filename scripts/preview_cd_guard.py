@@ -155,6 +155,18 @@ def _assert_generated_config_schema(config: dict) -> None:
         raise PolicyError("Vite generated Worker top-level name mismatch")
     if config.get("definedEnvironments") != [] or config.get("no_bundle") is not True:
         raise PolicyError("Vite generated Worker build configuration is not approved")
+    if config.get("python_modules") != {"exclude": ["**/*.pyc"]}:
+        raise PolicyError("Vite generated Worker Python module configuration is not approved")
+    if config.get("upload_source_maps") is not True:
+        raise PolicyError("Vite generated Worker source-map upload setting is not approved")
+    if config.get("dev") != {
+        "ip": "localhost",
+        "local_protocol": "http",
+        "upstream_protocol": "http",
+        "enable_containers": True,
+        "generate_types": False,
+    }:
+        raise PolicyError("Vite generated Worker local development configuration is not approved")
 
 
 def verify_target(preview_path: Path, migration_path: Path, generated_path: Path | None = None) -> None:
