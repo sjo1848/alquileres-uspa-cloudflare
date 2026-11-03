@@ -2356,3 +2356,11 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Stable executable fix commit: `a1653235d9c7426837de64f2da1fb3491e02f2c4`; PR #71 live HEAD must be resolved from GitHub before final checks/review.
 - Local results: selection unit tests 4/4; M3 Playwright 5/5; Web typecheck, build and build:preview PASS; canonical state consistency and `git diff --check` PASS. Existing public E2E remained 6/6 from the unchanged functional candidate; exact PR CI reruns all required checks.
 - **Next action:** resolve live PR #71 HEAD, verify exact-head Worker/Web checks, automatic review and one read-only technical Controller review; integrate only through protected main if clean. Do not deploy Preview, alter remote resources, or start M4.
+
+
+## Event 291 — M3 removal available during API errors
+
+- GitHub automated review on the tracking HEAD found a second P2: a saved listing could not be removed while its current public API request was failing. Added a remove action in that error card and a regression proving the stored ID can be cleared; existing retry behavior remains covered separately. Catalog/detail storage failure messages now accurately cover both save and remove.
+- The previous delegated Controller PASS covered the preceding code boundary only. It is superseded for final delivery by this new executable change and requires a fresh exact-HEAD review.
+- Final local focused run: M3 Chromium 6/6 and Web typecheck PASS. Screenshots and local evidence remain in `output/playwright/m3/QA.md`; no remote E2E or Preview activity occurred.
+- **Next action:** query live PR #71 HEAD, wait for exact-head Worker/Web CI and one fresh GitHub automated review, then run one limited read-only technical review on the new delta and candidate. Merge only by protected main when controls pass. No Preview deployment or M4.

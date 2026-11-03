@@ -193,7 +193,7 @@ function toggleSaved(listing: Listing) {
   const result = savedSelection.toggle(listing.id);
   selectionNotice.value = result.limitReached
     ? `Podés guardar hasta ${savedSelection.max} alquileres mensuales. Quitá uno para agregar otro.`
-    : !result.persisted ? 'No se pudo guardar en este dispositivo. Revisá el almacenamiento del navegador e intentá otra vez.'
+    : !result.persisted ? 'No se pudo actualizar Mi selección en este dispositivo. Revisá el almacenamiento del navegador e intentá otra vez.'
     : result.saved ? 'Alquiler guardado en Mi selección.' : 'Alquiler quitado de Mi selección.';
 }
 

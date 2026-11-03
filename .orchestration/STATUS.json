@@ -8,11 +8,11 @@
   "last_completed_task": "M2.1 explicitly accepted by the Product Owner and recorded in Issues #58/#61; DEV-QA Issue #64 closed with limitations documented.",
   "last_completed_head": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
   "work_branch": "feat/m3-my-selection",
-  "next_action": "Query PR #71 live HEAD from GitHub; complete exact-head Worker/Web CI, automatic code review, and delegated read-only technical review after the storage-failure correction. Resolve substantive defects autonomously, then merge only via protected main if all controls pass. Do not publish Preview or start M4.",
+  "next_action": "Query PR #71 live HEAD from GitHub; complete exact-head Worker/Web CI and a fresh automatic review after the API-error removal correction, then perform one limited read-only technical review on the exact candidate. Resolve substantive defects autonomously and use protected main only if controls pass. Do not publish Preview or start M4.",
   "stop_reason": null,
   "event": {
-    "seq": 290,
-    "summary": "M3 browser-storage failure feedback corrected with regressions; exact GitHub gates pending"
+    "seq": 291,
+    "summary": "M3 API-error removal trap fixed; final exact-head checks and review pending"
   },
   "external_review": null,
   "human_gate": {
@@ -28,10 +28,9 @@
     "base_sha": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
     "state": "OPEN",
     "is_draft": false,
-    "stable_executable_sha": "a1653235d9c7426837de64f2da1fb3491e02f2c4",
     "head_source": "Resolve live HEAD from GitHub PR #71 immediately before final checks/review; do not persist moving HEAD in tracked state.",
-    "checks": "Pending exact live-head Worker/Web CI; earlier head checks do not apply to the current candidate.",
-    "independent_review": "Initial delegated review found one P2, fixed in stable executable SHA a1653235d9c7426837de64f2da1fb3491e02f2c4; fresh exact-live-head review pending.",
+    "checks": "Pending exact live-head Worker/Web CI after API-error removal fix; earlier head checks do not apply.",
+    "independent_review": "A prior delegated PASS covered the preceding code boundary only and is superseded by a subsequent automated P2. Browser-storage P2 is fixed; a fresh exact-live-head technical review is pending.",
     "merge": "Not merged; protected merge only after all required checks/review pass."
   },
   "issue_4": "CLOSED",

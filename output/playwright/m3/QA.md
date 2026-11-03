@@ -8,8 +8,8 @@ Base: `main@a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0`. Solo alojamientos sintét
 
 Resultados finales locales (candidato original más regresión por hallazgo de revisión):
 - Unitarias de persistencia/normalización/límite: **4/4 PASS**.
-- Playwright Chromium M3: **5/5 PASS** — guardar/quitar en catálogo y ficha, orden/recarga, solo IDs en `localStorage`, rehidratación de datos API actuales, comparación de 4, condiciones conocidas y faltantes, estado no disponible, ID retirado/404, error/reintento, teclado/foco, ficha/contacto y 320/390/1440 px; regresiones adicionales para almacenamiento bloqueado/cuota agotada que comprueban que guardar desde catálogo/ficha y quitar desde Mi selección no cambia la selección y anuncia el error de forma accesible.
+- Playwright Chromium M3: **6/6 PASS** — guardar/quitar en catálogo y ficha, orden/recarga, solo IDs en `localStorage`, rehidratación de datos API actuales, comparación de 4, condiciones conocidas y faltantes, estado no disponible, ID retirado/404, error/reintento, teclado/foco, ficha/contacto y 320/390/1440 px; regresiones para almacenamiento bloqueado/cuota agotada y para quitar cuando falla la API: la selección no cambia si el navegador rechaza persistir, un ítem con error de consulta sigue siendo removible y los avisos son accesibles.
 - Regresión pública Playwright: **6/6 PASS** (incluye catálogo, filtros MONTH/WEEK, ficha/contacto e idempotencia).
 - Web typecheck, build y build:preview: **PASS**.
 
-Una primera ejecución completa encontró un timeout transitorio al consultar la API local; el caso pasó en aislamiento y la repetición completa finalizó 4/4 antes de agregar la regresión de quitar. Nada de esto es QA remoto. No se modificaron Preview, Access, D1 remota, CD ni producción.
+Una primera ejecución completa encontró un timeout transitorio al consultar la API local; el caso pasó en aislamiento y la repetición completa pasó antes de agregar las regresiones. Nada de esto es QA remoto. No se modificaron Preview, Access, D1 remota, CD ni producción.

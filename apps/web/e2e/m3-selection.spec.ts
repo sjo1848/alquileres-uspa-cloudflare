@@ -111,9 +111,20 @@ test('Mi selección: error de API puede reintentarse sin reemplazar datos por sn
   });
   await page.goto('/selection');
   await expect(page.getByRole('heading', { name: 'Este alojamiento' })).toBeVisible();
+  await expect(page.getByLabel('Alojamientos guardados').getByRole('button', { name: 'Quitar de mi selección' })).toBeVisible();
   await page.getByLabel('Alojamientos guardados').getByRole('button', { name: 'Reintentar' }).click();
   await expect(page.getByRole('heading', { name: 'Cabaña del Valle Alto' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBe('["synthetic-catalog-03"]');
+});
+
+test('Mi selección: permite quitar un anuncio cuando su ficha API falla', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('uspa-monthly-selection-v1', JSON.stringify(['synthetic-catalog-03'])));
+  await page.route('**/api/public/listings/synthetic-catalog-03', route => route.abort('failed'));
+  await page.goto('/selection');
+  await expect(page.getByRole('heading', { name: 'Este alojamiento' })).toBeVisible();
+  await page.getByLabel('Alojamientos guardados').getByRole('button', { name: 'Quitar de mi selección' }).click();
+  await expect(page.getByRole('heading', { name: 'Tu próxima comparación empieza acá.' })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBe('[]');
 });
 
 test('Mi selección: informa si el navegador bloquea el guardado desde catálogo y ficha', async ({ page }) => {
@@ -127,13 +138,13 @@ test('Mi selección: informa si el navegador bloquea el guardado desde catálogo
   await page.goto('/?pricePeriod=MONTH');
   const card = page.locator('.listing-card').filter({ has: page.getByRole('heading', { name: 'Cabaña del Valle Alto' }) });
   await card.getByRole('button', { name: 'Guardar para comparar' }).click();
-  await expect(page.getByRole('alert')).toContainText('No se pudo guardar en este dispositivo');
+  await expect(page.getByRole('alert')).toContainText('No se pudo actualizar Mi selección en este dispositivo');
   await expect(card.getByRole('button', { name: 'Guardar para comparar' })).toHaveAttribute('aria-pressed', 'false');
   expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBeNull();
 
   await card.getByRole('link', { name: 'Conocer el alojamiento' }).click();
   await page.getByRole('button', { name: 'Guardar para comparar' }).click();
-  await expect(page.getByRole('alert')).toContainText('No se pudo guardar en este dispositivo');
+  await expect(page.getByRole('alert')).toContainText('No se pudo actualizar Mi selección en este dispositivo');
   await expect(page.getByRole('button', { name: 'Guardar para comparar' })).toHaveAttribute('aria-pressed', 'false');
   expect(await page.evaluate(() => localStorage.getItem('uspa-monthly-selection-v1'))).toBeNull();
 });
