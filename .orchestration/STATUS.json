@@ -8,11 +8,11 @@
   "last_completed_task": "M3 PR #71 integrated and published to the existing private Preview; remote functional smoke is BLOCKED_AUTH and Issue #70 remains open for Product Owner acceptance.",
   "last_completed_head": "3c6837723d2d48a1710c692185aa9c1484b513db",
   "work_branch": "feat/cd-preview-no-migrations",
-  "next_action": "Complete focused guard regressions, create the functional PR, run exact-head Worker/Web CI and read-only technical review, then use protected main only if controls pass. Keep CD disabled and do not change credentials, variables, Access, D1, production, or remote branch protections.",
+  "next_action": "Resolve live HEAD of PR #72 from GitHub; complete exact-head Worker/Web CI, automated review, controller read-only technical review, and state validator. Integrate only via current protected main controls; never enable CD or change credentials, variables, Access, D1, production, or remote branch protections.",
   "stop_reason": null,
   "event": {
-    "seq": 292,
-    "summary": "Safe private Preview CD scope authorized; remote migration path removed; CD activation withheld."
+    "seq": 293,
+    "summary": "Functional PR #72 opened from base 3c683772; CD remains disabled."
   },
   "external_review": null,
   "human_gate": {
@@ -21,17 +21,17 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "url": null,
+    "number": 72,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/72",
     "branch": "feat/cd-preview-no-migrations",
     "base_branch": "main",
     "base_sha": "3c6837723d2d48a1710c692185aa9c1484b513db",
-    "state": "IMPLEMENTING",
-    "is_draft": true,
-    "head_source": "Will be resolved from GitHub after publishing the functional branch; no moving HEAD is embedded in tracked state.",
-    "checks": "Pending exact-head worker/web CI.",
+    "state": "OPEN",
+    "is_draft": false,
+    "head_source": "Resolve live HEAD from GitHub PR #72 immediately before exact-head checks/review; do not persist moving HEAD in tracked state.",
+    "checks": "Worker/Web CI pending on live PR HEAD; staging-private must SAFE SKIP because activation settings/credential are absent.",
     "independent_review": "Pending exact-head read-only technical review.",
-    "merge": "Only through existing protected main controls; CD activation remains separately unauthorized."
+    "merge": "Protected merge only after CI and technical review pass; merge must leave CD disabled."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -1473,7 +1473,8 @@
   },
   "issue_49": {
     "state": "OPEN",
-    "active_scope": "Safe opt-in private Preview CD; never apply remote migrations; CD disabled until separate authorization."
+    "active_scope": "Safe opt-in private Preview CD; no remote migrations; CD disabled.",
+    "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/72"
   },
   "issue_70": {
     "state": "OPEN",

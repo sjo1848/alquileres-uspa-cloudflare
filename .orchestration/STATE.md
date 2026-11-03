@@ -2387,3 +2387,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Product Owner authorized implementation of fail-closed automatic Preview publication after protected-main Worker/Web PASS, while explicitly withholding activation and all credential/variable/remote-protection changes.
 - `staging-private` is being reduced to a read-only D1/Access preflight plus the existing Worker Preview publication command. Remote migration backup/rehearsal/apply steps are removed from the job.
 - Issue #49 is open for this bounded implementation. Main base is `3c6837723d2d48a1710c692185aa9c1484b513db`; active PR HEAD must be read dynamically from GitHub after it is opened.
+
+## Event 293 — Functional PR #72 opened
+
+- PR #72: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/72, branch `feat/cd-preview-no-migrations`, base `main@3c6837723d2d48a1710c692185aa9c1484b513db`.
+- Exact PR HEAD is resolved dynamically from GitHub. Worker/Web CI, automatic review, and read-only technical review are pending on that HEAD. The `staging-private` job must remain `SAFE SKIP` because no activation variable or Actions credential is configured.
+- Merge only after the required checks and review pass through existing protected-main settings. Do not alter remote branch protections or activate CD.
