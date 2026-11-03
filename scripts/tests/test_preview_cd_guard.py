@@ -100,6 +100,89 @@ class PreviewCdGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(guard.PolicyError, "production routes"):
                 guard.verify_target(path, ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc")
 
+    def test_target_rejects_unreviewed_entrypoint_runtime_and_migration_account(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            preview = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+            migration = json.loads((ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc").read_text())
+            preview_path = root / "preview.json"
+            migration_path = root / "migrations.json"
+
+            cases = [
+                (preview, "main", "src/other.ts", "entrypoint or compatibility"),
+                (preview, "compatibility_date", "2026-10-13", "entrypoint or compatibility"),
+                (migration, "account_id", "00000000000000000000000000000000", "migration config account"),
+            ]
+            for original, key, value, expected in cases:
+                with self.subTest(key=key):
+                    candidate_preview = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+                    candidate_migration = json.loads((ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc").read_text())
+                    target = candidate_preview if original is preview else candidate_migration
+                    target[key] = value
+                    preview_path.write_text(json.dumps(candidate_preview))
+                    migration_path.write_text(json.dumps(candidate_migration))
+                    with self.assertRaisesRegex(guard.PolicyError, expected):
+                        guard.verify_target(preview_path, migration_path)
+
+    def test_generated_preview_rejects_unreviewed_environment_keys(self):
+        with tempfile.TemporaryDirectory() as directory:
+            generated = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+            generated["main"] = "index.js"
+            generated["assets"]["directory"] = "../client"
+            generated["previews"]["services"] = []
+            generated_path = Path(directory) / "generated.json"
+            (Path(directory).parent / "client").mkdir(exist_ok=True)
+            generated_path.write_text(json.dumps(generated))
+            with self.assertRaisesRegex(guard.PolicyError, "generated Preview contains an unreviewed setting"):
+                guard.verify_target(
+                    ROOT / "apps/worker/wrangler.preview-ci.jsonc",
+                    ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc",
+                    generated_path,
+                )
+
+    def test_generated_preview_rejects_unreviewed_entrypoint_or_runtime(self):
+        with tempfile.TemporaryDirectory() as directory:
+            generated = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+            generated["main"] = "index.js"
+            generated["assets"]["directory"] = "../client"
+            generated_path = Path(directory) / "generated.json"
+            (Path(directory).parent / "client").mkdir(exist_ok=True)
+            for key, value in (("main", "other.js"), ("compatibility_date", "2026-10-13")):
+                with self.subTest(key=key):
+                    candidate = dict(generated)
+                    candidate[key] = value
+                    generated_path.write_text(json.dumps(candidate))
+                    with self.assertRaisesRegex(guard.PolicyError, "generated Worker entrypoint or compatibility"):
+                        guard.verify_target(
+                            ROOT / "apps/worker/wrangler.preview-ci.jsonc",
+                            ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc",
+                            generated_path,
+                        )
+
+    def test_generated_preview_rejects_unreviewed_worker_vars_triggers_migrations_or_env(self):
+        with tempfile.TemporaryDirectory() as directory:
+            generated = json.loads((ROOT / "apps/worker/wrangler.preview-ci.jsonc").read_text())
+            generated["main"] = "index.js"
+            generated["assets"]["directory"] = "../client"
+            generated_path = Path(directory) / "generated.json"
+            cases = (
+                ("vars", {"UNREVIEWED": "value"}),
+                ("triggers", {"crons": ["0 * * * *"]}),
+                ("migrations", [{"tag": "UNREVIEWED", "new_classes": ["Unexpected"]}]),
+                ("env", {"production": {"name": "unreviewed"}}),
+            )
+            for key, value in cases:
+                with self.subTest(key=key):
+                    candidate = dict(generated)
+                    candidate[key] = value
+                    generated_path.write_text(json.dumps(candidate))
+                    with self.assertRaisesRegex(guard.PolicyError, "unreviewed variables, triggers, or migrations|unreviewed environment"):
+                        guard.verify_target(
+                            ROOT / "apps/worker/wrangler.preview-ci.jsonc",
+                            ROOT / "apps/worker/wrangler.preview-migrations-ci.jsonc",
+                            generated_path,
+                        )
+
     def test_publication_requires_zero_pending_migrations(self):
         guard.require_no_pending_migrations([])
         with self.assertRaisesRegex(guard.PolicyError, "zero pending migrations"):

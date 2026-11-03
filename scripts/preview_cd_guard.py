@@ -137,6 +137,8 @@ def verify_target(preview_path: Path, migration_path: Path, generated_path: Path
         raise PolicyError("Preview Worker configuration contains an unreviewed setting")
     if preview.get("name") != TARGET["worker_name"]:
         raise PolicyError("Preview Worker name mismatch")
+    if preview.get("main") != "src/index.ts" or preview.get("compatibility_date") != "2026-10-12":
+        raise PolicyError("Preview Worker entrypoint or compatibility configuration mismatch")
     if preview.get("account_id") != TARGET["account_id"]:
         raise PolicyError("Preview account mismatch")
     if preview.get("workers_dev") is not False or preview.get("preview_urls") is not True:
@@ -160,6 +162,8 @@ def verify_target(preview_path: Path, migration_path: Path, generated_path: Path
         raise PolicyError("migration-only config contains an unreviewed setting")
     if migrations.get("name") != "alquileres-uspa-preview-migrations":
         raise PolicyError("migration-only config name mismatch")
+    if migrations.get("account_id") != TARGET["account_id"]:
+        raise PolicyError("migration config account mismatch")
     md1 = migrations.get("d1_databases", [])
     if not isinstance(md1, list) or len(md1) != 1 or not isinstance(md1[0], dict) or md1[0].get("binding") != "DB":
         raise PolicyError("migration config must identify one D1 binding")
@@ -173,12 +177,20 @@ def verify_target(preview_path: Path, migration_path: Path, generated_path: Path
         _assert_preview_bindings(generated)
         if generated.get("name") != TARGET["worker_name"] or generated.get("account_id") != TARGET["account_id"]:
             raise PolicyError("Vite generated Worker target mismatch")
+        if generated.get("main") != "index.js" or generated.get("compatibility_date") != "2026-10-12":
+            raise PolicyError("Vite generated Worker entrypoint or compatibility configuration mismatch")
         if generated.get("workers_dev") is not False or generated.get("preview_urls") is not True:
             raise PolicyError("Vite generated Worker has an unexpected deployment target")
+        if generated.get("vars", {}) != {} or generated.get("triggers", {}) != {} or generated.get("migrations", []) != []:
+            raise PolicyError("Vite generated Worker contains unreviewed variables, triggers, or migrations")
+        if "env" in generated:
+            raise PolicyError("Vite generated Worker contains an unreviewed environment")
         generated_assets = generated.get("assets", {})
         if generated_assets != {**EXPECTED_ASSETS, "directory": "../client"}:
             raise PolicyError("Vite generated static asset routing mismatch")
         generated_env = generated.get("previews", {})
+        if set(generated_env) != {"vars", "d1_databases"}:
+            raise PolicyError("Vite generated Preview contains an unreviewed setting")
         generated_vars = generated_env.get("vars", {})
         if generated_vars != EXPECTED_PREVIEW_VARS:
             raise PolicyError("Vite generated Preview auth/media/cookie configuration mismatch")
