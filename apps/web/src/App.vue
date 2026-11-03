@@ -2,8 +2,10 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useSession } from './session';
+import { useSavedSelection } from './use-saved-selection';
 
 const session = useSession();
+const savedSelection = useSavedSelection();
 const router = useRouter();
 const route = useRoute();
 const loggingOut = ref(false);
@@ -115,6 +117,7 @@ async function switchDemoIdentity(event:MouseEvent) {
     <div id="primary-navigation" class="navigation-panel" :class="{ 'is-open': menuOpen }">
       <nav class="primary-nav" aria-label="Navegación principal">
         <RouterLink to="/" @click="navigate()">Descubrir</RouterLink>
+        <RouterLink to="/selection" @click="navigate()">Mi selección <span v-if="savedSelection.count.value" class="nav-selection-count">{{ savedSelection.count.value }}</span></RouterLink>
         <RouterLink v-if="session.role.value === 'OWNER'" to="/owner" @click="navigate()">Mis publicaciones</RouterLink>
         <RouterLink v-if="session.role.value === 'ADMIN'" to="/admin" @click="navigate()">Revisión</RouterLink>
         <RouterLink v-if="session.role.value === 'ADMIN'" to="/admin-assist" @click="navigate()">Gestión asistida</RouterLink>

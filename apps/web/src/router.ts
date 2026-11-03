@@ -6,11 +6,13 @@ import AuthView from './views/AuthView.vue';
 import OwnerView from './views/OwnerView.vue';
 import AdminReviewView from './views/AdminReviewView.vue';
 import AdminAssistView from './views/AdminAssistView.vue';
+import SelectionView from './views/SelectionView.vue';
 
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', component: HomeView },
+    { path: '/selection', component: SelectionView },
     { path: '/listings/:id', component: ListingView },
     { path: '/login', component: AuthView },
     { path: '/register', component: AuthView },

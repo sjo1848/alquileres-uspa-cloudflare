@@ -47,6 +47,12 @@ INSERT OR IGNORE INTO listings(
  'Uspallata, Mendoza',660,'MONTH','FLEXIBLE',4,'USD','PUBLISHED','AVAILABLE',
  NULL,'2026-10-08T12:00:00.000Z','2026-10-08T12:00:00.000Z');
 
+-- Populate declared M2.1 terms on an existing synthetic MONTH listing for M3 comparison QA.
+UPDATE listings SET deposit_status='FIXED_AMOUNT',deposit_amount=125000,deposit_currency='ARS',
+  internet_included='INCLUDED',water_included='NOT_INCLUDED',electricity_included='INCLUDED',
+  gas_included='NOT_INFORMED',pets_policy='ASK_OWNER',available_from='2026-12-01'
+WHERE id='synthetic-cabana-cerro' AND owner_id='synthetic-catalog-owner';
+
 UPDATE listings SET location_search=LOWER(location) WHERE id LIKE 'synthetic-%';
 -- Synthetic-only WebP photography used by the local I06.4 public journey.
 INSERT OR REPLACE INTO static_listing_images(id,listing_id,asset_path,mime_type,byte_size,position) VALUES('synthetic-image-0','synthetic-casa-rio','/media/catalog/valle-sintetico.webp','image/webp',237790,0);

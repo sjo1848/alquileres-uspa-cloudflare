@@ -1,8 +1,8 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
-State: `READY_FOR_HUMAN_ACCEPTANCE`
-Phase: `M2_1_HUMAN_ACCEPTANCE`
-Active task: `Product Owner acceptance of M2.1 after Issue #61 published-revision E2E coverage`
+State: `IN_PROGRESS`
+Phase: `M3_IMPLEMENTATION`
+Active task: `Issue #70 — implement saved monthly rental selection and responsive comparison`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
@@ -2327,3 +2327,15 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Assertions verify the public title/price remain unchanged after OWNER save and ADMIN approval; only ADMIN's explicit publish changes them. The listing ID, image metadata, contact ID, availability state and last-confirmed timestamp remain stable. Existing auth/session/logout checks remain in the same run.
 - Local Chromium E2E 1/1 PASS; Worker management tests 23/23 PASS; Worker Preview-auth 12/12 PASS; Worker typecheck, Web typecheck/build PASS. Exact-head GitHub CI/review and protected merge are tracked in Issue #61. No remote resource or data was touched.
 - M2.1 remains **PENDING HUMAN ACCEPTANCE**. After this bounded PR is integrated, the next action is only Product Owner acceptance; do not start M3 or new infrastructure work.
+
+
+## Event 288 — M2.1 accepted; M3 implementation authorized
+
+- Product Owner acceptance of M2.1 was explicitly recorded in Issues #58 and #61 on 2026-11-03; both are closed. Issue #64 is closed with its global Access duration, temporary Service Token expiry, and Controller backend-identity limitations documented.
+- Roadmap #55 now authorizes M3 and links active functional Issue #70. M3 is the only active product increment; M4 remains out of scope.
+- Base main: `main@a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0`.
+- Scope: local ordered IDs only, current public API hydration, comparison of 2–4 monthly rentals, stale/unavailable handling, and existing detail/contact navigation. No backend, migration, remote D1/Preview/Access/CD/production action.
+- Active contract: `.orchestration/contracts/MVP-M3-ISSUE-70-MY-SELECTION.md`.
+- Work branch: `feat/m3-my-selection`.
+- Local implementation and QA consolidated: unit 4/4, M3 Chromium 3/3, public regression 6/6, web typecheck/build/build:preview PASS; M3 screenshots are in `output/playwright/m3/QA.md`.
+- Next action: publish the functional PR, pass exact-head Worker/Web CI and independent technical review, then merge only through protected main. Keep Preview unpublished pending separate authorization.

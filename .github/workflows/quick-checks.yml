@@ -70,6 +70,8 @@ jobs:
         working-directory: apps/web
       - run: npm run typecheck
         working-directory: apps/web
+      - run: npm run test:selection
+        working-directory: apps/web
       - run: npm run build
         working-directory: apps/web
       - run: npm run build:preview
@@ -81,6 +83,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
         working-directory: apps/web
       - run: npm run test:e2e:preview-auth:local
+        working-directory: apps/web
+      - run: npm run test:e2e:m3
         working-directory: apps/web
 
   staging-private:
