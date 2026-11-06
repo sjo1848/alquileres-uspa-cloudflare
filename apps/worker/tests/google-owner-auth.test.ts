@@ -2,6 +2,7 @@ import { env } from 'cloudflare:workers';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT, type CryptoKey } from 'jose';
 import { app } from '../src/index';
+import { provisionGoogleAdminIdentity } from '../src/google-admin-provisioning';
 
 const origin='http://127.0.0.1:8787';
 const clientId='google-local-test-client.apps.googleusercontent.com';
@@ -198,5 +199,117 @@ describe('Google OWNER auth, local isolated D1',()=>{
     expect((await app.request('https://public.example/auth/config',{}, runtimeBindings())).status).toBe(503);
     expect((await app.request(origin+'/auth/config',{}, runtimeBindings({AUTH_STRATEGY:'ACCESS_PREVIEW'}))).status).toBe(503);
     expect((await app.request(origin+'/auth/google/challenge',{}, runtimeBindings({AUTH_STRATEGY:'PASSWORD'}))).status).toBe(503);
+  });
+
+  it('provisions an ADMIN only for a verified sub and an existing server-role ADMIN account',async()=>{
+    const adminId=crypto.randomUUID(),at=new Date().toISOString();
+    await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at,session_version) VALUES(?,?,'admin-local-only','ADMIN',?,?,?,0)")
+      .bind(adminId,`admin-provision-${adminId}@example.test`,at,at,at).run();
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-provisioned-admin',adminId,'local-operator')).toBe('provisioned');
+    expect(await env.DB.prepare('SELECT subject,user_id,provisioned_by,revoked_at FROM google_admin_identities WHERE subject=?').bind('google-sub-provisioned-admin').first())
+      .toMatchObject({subject:'google-sub-provisioned-admin',user_id:adminId,provisioned_by:'local-operator',revoked_at:null});
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-provisioned-admin',adminId,'local-operator')).toBe('identity-conflict');
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-other-admin',adminId,'local-operator')).toBe('identity-conflict');
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-provisioned-admin',crypto.randomUUID(),'local-operator')).toBe('target-not-admin');
+    await expect(provisionGoogleAdminIdentity(env.DB,'email@example.test',adminId,'local-operator')).rejects.toThrow();
+    const ownerId=crypto.randomUUID();
+    await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at,session_version) VALUES(?,?,'owner-local-only','OWNER',?,?,?,0)")
+      .bind(ownerId,`owner-provision-${ownerId}@example.test`,at,at,at).run();
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-owner-conflict',ownerId,'local-operator')).toBe('target-not-admin');
+    expect(await env.DB.prepare('SELECT count(*) AS n FROM google_admin_identities WHERE user_id=?').bind(ownerId).first()).toMatchObject({n:0});
+    await env.DB.prepare("INSERT INTO google_identities(id,provider,subject,user_id,created_at,updated_at) VALUES(?,'google',?,?,?,?)")
+      .bind(crypto.randomUUID(),'google-sub-already-owner',ownerId,at,at).run();
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-already-owner',adminId,'local-operator')).toBe('identity-conflict');
+    await expect(env.DB.prepare("INSERT INTO google_admin_identities(subject,user_id,provisioned_at,provisioned_by) VALUES('google-sub-direct-owner',?,unixepoch(),'local-operator')")
+      .bind(ownerId).run()).rejects.toThrow(/linked to OWNER/);
+    await expect(env.DB.prepare("INSERT INTO google_admin_auth_sessions(session_hash,user_id,role,session_version,browser_binding_hash,created_at,expires_at,last_seen_at) VALUES('unauthorized-session',?,'ADMIN',0,'test-binding',unixepoch(),unixepoch()+300,unixepoch())")
+      .bind(ownerId).run()).rejects.toThrow(/active explicit provisioning/);
+    await expect(env.DB.prepare('DELETE FROM google_admin_identities WHERE subject=?').bind('google-sub-provisioned-admin').run())
+      .rejects.toThrow(/revoked, not deleted/);
+  });
+
+  it('signs in only an explicitly provisioned ADMIN sub and enforces role-specific APIs and logout',async()=>{
+    const adminId=crypto.randomUUID(),at=new Date().toISOString(),adminEmail=`admin-provision-${crypto.randomUUID()}@example.test`;
+    await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at,session_version) VALUES(?,?,'admin-local-only','ADMIN',?,?,?,0)")
+      .bind(adminId,adminEmail,at,at,at).run();
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-m36-admin',adminId,'local-operator')).toBe('provisioned');
+
+    const admin=await start();
+    const adminToken=await credential(admin.nonce,{sub:'google-sub-m36-admin',email:'different-verified-google-email@example.test',role:'OWNER'});
+    const signedIn=await exchange(admin.browser,admin.nonce,adminToken);
+    expect(signedIn.status).toBe(200);
+    expect(await signedIn.json()).toMatchObject({user:{id:adminId,email:adminEmail,role:'ADMIN'}});
+    const adminJar=combine(cookiePair(signedIn,'alquileres_session'),admin.browser);
+    expect((await me(adminJar)).status).toBe(200);
+    expect((await app.request(origin+'/admin/listings/review',{headers:{Cookie:adminJar}},runtimeBindings())).status).toBe(200);
+    expect((await app.request(origin+'/owner/contact-events',{headers:{Cookie:adminJar}},runtimeBindings())).status).toBe(403);
+    expect((await app.request(origin+'/listings',{method:'POST',headers:{Origin:origin,Cookie:adminJar,'Content-Type':'application/json','Idempotency-Key':'admin-cannot-create-owner-listing'},body:JSON.stringify({title:'Admin attempt',description:'',location:'Uspallata',priceAmount:1,pricePeriod:'MONTH',rentalDuration:'MONTHS',maxOccupants:1,currency:'ARS'})},runtimeBindings())).status).toBe(401);
+
+    const otherBrowser=await signIn('admin-provision-other-session@example.test','google-sub-m36-admin');
+    expect(otherBrowser.response.status).toBe(200); // Exact sub controls the role; token email is not the account key.
+    expect(await otherBrowser.response.json()).toMatchObject({user:{id:adminId,email:adminEmail,role:'ADMIN'}});
+    const otherJar=combine(otherBrowser.session!,otherBrowser.browser);
+    expect((await me(otherJar)).status).toBe(200);
+    const logout=await app.request(origin+'/auth/logout',{method:'POST',headers:{Origin:origin,Cookie:adminJar}},runtimeBindings());
+    expect(logout.status).toBe(200);
+    expect((await me(adminJar)).status).toBe(401);
+    expect((await me(otherJar)).status).toBe(200);
+
+    await env.DB.prepare('UPDATE google_admin_identities SET revoked_at=unixepoch() WHERE subject=?').bind('google-sub-m36-admin').run();
+    expect((await me(otherJar)).status).toBe(401);
+    const afterRevocation=await start();
+    const afterToken=await credential(afterRevocation.nonce,{sub:'google-sub-m36-admin',email:adminEmail});
+    expect((await exchange(afterRevocation.browser,afterRevocation.nonce,afterToken)).status).toBe(403);
+  });
+
+  it('never creates ADMIN from a matching email, a token role claim, or a client role field',async()=>{
+    const adminId=crypto.randomUUID(),at=new Date().toISOString(),adminEmail=`existing-admin-${crypto.randomUUID()}@example.test`;
+    await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at,session_version) VALUES(?,?,'admin-local-only','ADMIN',?,?,?,0)")
+      .bind(adminId,adminEmail,at,at,at).run();
+    const matchingEmail=await start();
+    const matchingToken=await credential(matchingEmail.nonce,{sub:`google-unprovisioned-${crypto.randomUUID()}`,email:adminEmail,role:'ADMIN'});
+    expect((await exchange(matchingEmail.browser,matchingEmail.nonce,matchingToken)).status).toBe(409);
+    const unprovisioned=await start();
+    const forgedRole=await credential(unprovisioned.nonce,{sub:`google-unprovisioned-${crypto.randomUUID()}`,email:`new-owner-${crypto.randomUUID()}@example.test`,role:'ADMIN'});
+    const response=await exchange(unprovisioned.browser,unprovisioned.nonce,forgedRole);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({user:{role:'OWNER'}});
+    const jar=combine(cookiePair(response,'alquileres_session'),unprovisioned.browser);
+    expect((await app.request(origin+'/admin/listings/review',{headers:{Cookie:jar}},runtimeBindings())).status).toBe(401);
+    const bodyRole=await start();
+    const bodyToken=await credential(bodyRole.nonce,{sub:`google-unprovisioned-${crypto.randomUUID()}`,email:`body-role-${crypto.randomUUID()}@example.test`});
+    expect((await exchange(bodyRole.browser,bodyRole.nonce,bodyToken,{body:{credential:bodyToken,role:'ADMIN',userId:adminId}})).status).toBe(400);
+    expect(await env.DB.prepare('SELECT count(*) AS n FROM google_admin_identities WHERE user_id=?').bind(adminId).first()).toMatchObject({n:0});
+  });
+
+  it('allows OWNER Google to create a submitted listing and ADMIN Google to approve it without cross-role access',async()=>{
+    const adminId=crypto.randomUUID(),at=new Date().toISOString();
+    await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at,session_version) VALUES(?,?,'admin-local-only','ADMIN',?,?,?,0)")
+      .bind(adminId,`admin-e2e-${adminId}@example.test`,at,at,at).run();
+    expect(await provisionGoogleAdminIdentity(env.DB,'google-sub-e2e-admin',adminId,'local-e2e-provisioner')).toBe('provisioned');
+
+    const owner=await signIn('owner-google-e2e@example.test','google-sub-e2e-owner');
+    expect(owner.response.status).toBe(200);
+    const ownerJar=combine(owner.session!,owner.browser);
+    const created=await app.request(origin+'/listings',{method:'POST',headers:{Origin:origin,Cookie:ownerJar,'Content-Type':'application/json','Idempotency-Key':'m36-owner-admin-e2e-create'},body:JSON.stringify({title:'M3.6 OWNER to ADMIN synthetic',description:'Local test only.',location:'Uspallata',priceAmount:240000,pricePeriod:'MONTH',rentalDuration:'MONTHS',maxOccupants:2,currency:'ARS'})},runtimeBindings());
+    expect(created.status).toBe(201);
+    const listing=await created.json() as {id:string;status:string;publicationStatus:string};
+    expect(listing).toMatchObject({status:'DRAFT',publicationStatus:'UNPUBLISHED'});
+    const submit=await app.request(origin+`/listings/${listing.id}/submit`,{method:'POST',headers:{Origin:origin,Cookie:ownerJar,'Content-Type':'application/json'},body:'{}'},runtimeBindings());
+    expect([200,201]).toContain(submit.status);
+    const admin=await signIn(`admin-e2e-${adminId}@example.test`,'google-sub-e2e-admin');
+    expect(admin.response.status).toBe(200);
+    const adminJar=combine(admin.session!,admin.browser);
+    expect((await app.request(origin+`/listings/${listing.id}`,{headers:{Cookie:adminJar}},runtimeBindings())).status).toBe(401);
+    const decision=await app.request(origin+`/admin/listings/${listing.id}/review`,{method:'POST',headers:{Origin:origin,Cookie:adminJar,'Content-Type':'application/json'},body:JSON.stringify({action:'approve'})},runtimeBindings());
+    expect(decision.status).toBe(200);
+    const approved=await decision.json() as {status:string;publicationStatus:string};
+    expect(approved).toMatchObject({status:'APPROVED',publicationStatus:'UNPUBLISHED'});
+    expect((await app.request(origin+`/public/listings/${listing.id}`,{},runtimeBindings())).status).toBe(404);
+    const publish=await app.request(origin+`/admin/listings/${listing.id}/publish`,{method:'POST',headers:{Origin:origin,Cookie:adminJar,'Content-Type':'application/json'},body:'{}'},runtimeBindings());
+    expect(publish.status).toBe(200);
+    expect((await app.request(origin+`/public/listings/${listing.id}`,{},runtimeBindings())).status).toBe(200);
+    expect((await app.request(origin+'/admin/listings/review',{headers:{Cookie:ownerJar}},runtimeBindings())).status).toBe(401);
+    expect((await app.request(origin+'/owner/contact-events',{headers:{Cookie:adminJar}},runtimeBindings())).status).toBe(403);
   });
 });

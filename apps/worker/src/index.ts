@@ -4,6 +4,7 @@ import { localCompletePasswordReset, localMockMailbox, localOwnerAuthEnabled, lo
 import { previewAuthConfigured, verifyPreviewIdentity, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole, type PreviewIdentity } from './preview-auth';
 import { cleanImageName, d1BlobBytes, D1_IMAGE_MAX_BYTES, D1_IMAGE_MAX_COUNT, D1_MEDIA_QUOTA_BYTES, readBoundedBody, validateImageBytes } from './d1-blob-media';
 import { browserBindingCookie, browserCookie, consumeGoogleChallenge, findOrCreateGoogleOwner, googleAuthConfigured, googleSessionTtl, hashOpaqueValue, issueGoogleChallenge, randomOpaqueValue, verifyGoogleIdToken, type GoogleOwnerAuthEnv } from './google-owner-auth';
+import { adminIdentityCookieLifetime, findProvisionedGoogleAdmin } from './google-admin-provisioning';
 
 type Env = PreviewAuthEnv & LocalOwnerAuthEnv & GoogleOwnerAuthEnv & { MEDIA_STRATEGY?:string; IMAGES: R2Bucket; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
 type User = { id: string; email: string; role: 'OWNER'|'ADMIN'; session_version?: number };
@@ -94,17 +95,25 @@ async function authenticatedUser(c:any,claims:SessionClaims){
     return previewSessionUser(c.env.DB,claims,identity);
   }
   if(c.env.AUTH_STRATEGY==='GOOGLE'){
-    if(claims.role!=='OWNER'||!claims.sessionId)return null;
+    if(!claims.sessionId)return null;
     const binding=browserBindingCookie(c.req.raw);
     if(!binding)return null;
     const [sessionHash,bindingHash]=await Promise.all([hashOpaqueValue(claims.sessionId),hashOpaqueValue(binding)]);
-    const session=await c.env.DB.prepare(`SELECT u.id,u.email,u.role,u.session_version FROM google_auth_sessions s
-      JOIN users u ON u.id=s.user_id WHERE s.session_hash=? AND s.user_id=? AND s.role='OWNER'
-      AND s.session_version=? AND s.browser_binding_hash=? AND s.revoked_at IS NULL AND s.expires_at>unixepoch()
-      AND u.id=s.user_id AND u.email=? AND u.role='OWNER' AND u.session_version=s.session_version`)
-      .bind(sessionHash,claims.id,claims.sessionVersion,bindingHash,claims.email).first() as User|null;
+    const session = claims.role==='OWNER'
+      ? await c.env.DB.prepare(`SELECT u.id,u.email,u.role,u.session_version FROM google_auth_sessions s
+          JOIN users u ON u.id=s.user_id WHERE s.session_hash=? AND s.user_id=? AND s.role='OWNER'
+          AND s.session_version=? AND s.browser_binding_hash=? AND s.revoked_at IS NULL AND s.expires_at>unixepoch()
+          AND u.id=s.user_id AND u.email=? AND u.role='OWNER' AND u.session_version=s.session_version`)
+          .bind(sessionHash,claims.id,claims.sessionVersion,bindingHash,claims.email).first() as User|null
+      : await c.env.DB.prepare(`SELECT u.id,u.email,u.role,u.session_version FROM google_admin_auth_sessions s
+          JOIN google_admin_identities i ON i.user_id=s.user_id AND i.revoked_at IS NULL
+          JOIN users u ON u.id=s.user_id WHERE s.session_hash=? AND s.user_id=? AND s.role='ADMIN'
+          AND s.session_version=? AND s.browser_binding_hash=? AND s.revoked_at IS NULL AND s.expires_at>unixepoch()
+          AND u.id=s.user_id AND u.email=? AND u.role='ADMIN' AND u.session_version=s.session_version`)
+          .bind(sessionHash,claims.id,claims.sessionVersion,bindingHash,claims.email).first() as User|null;
     if(!session)return null;
-    await c.env.DB.prepare('UPDATE google_auth_sessions SET last_seen_at=? WHERE session_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()')
+    const sessionTable=claims.role==='ADMIN'?'google_admin_auth_sessions':'google_auth_sessions';
+    await c.env.DB.prepare(`UPDATE ${sessionTable} SET last_seen_at=? WHERE session_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()`)
       .bind(Math.floor(Date.now()/1000),sessionHash).run();
     return session;
   }
@@ -153,10 +162,11 @@ app.get('/auth/google/challenge',async c=>{
     let bindingTtl=300;
     if(existingBinding){
       const bindingHash=await hashOpaqueValue(existingBinding);
-      const active=await c.env.DB.prepare(`SELECT MAX(expires_at) AS expires_at FROM google_auth_sessions
-        WHERE browser_binding_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()`).bind(bindingHash).first<{expires_at:number|null}>();
-      const expiresAt=Number(active?.expires_at),nowSeconds=Math.floor(Date.now()/1000);
-      if(Number.isSafeInteger(expiresAt)&&expiresAt>nowSeconds)bindingTtl=Math.max(bindingTtl,expiresAt-nowSeconds);
+      const [ownerActive,adminActive]=await Promise.all([
+        c.env.DB.prepare(`SELECT MAX(expires_at) AS expires_at FROM google_auth_sessions WHERE browser_binding_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()`).bind(bindingHash).first<{expires_at:number|null}>(),
+        c.env.DB.prepare(`SELECT MAX(expires_at) AS expires_at FROM google_admin_auth_sessions WHERE browser_binding_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()`).bind(bindingHash).first<{expires_at:number|null}>(),
+      ]);
+      bindingTtl=adminIdentityCookieLifetime(ownerActive?.expires_at??null,adminActive?.expires_at??null,Math.floor(Date.now()/1000));
     }
     // Preserve a live session's binding expiry; for an anonymous retry, renew
     // the binding for the full five-minute lifetime of the new nonce.
@@ -176,27 +186,45 @@ app.post('/auth/google/exchange',async c=>{
   const identity=await verifyGoogleIdToken(input.credential,c.env,c.req.raw);
   if(!identity)return c.json({error:'Google identity could not be verified'},401);
   if(!await consumeGoogleChallenge(c.env.DB,binding,identity.nonce))return c.json({error:'sign-in challenge expired or already used'},401);
-  let account;
-  try{account=await findOrCreateGoogleOwner(c.env.DB,identity);}catch{return c.json({error:'Google sign-in could not be completed'},503);}
+  let account:{kind:'owner';user:User}|{kind:'admin';user:User}|{kind:'email_conflict'}|{kind:'not_owner'}|{kind:'admin_blocked'};
+  try{
+    const adminIdentity=await findProvisionedGoogleAdmin(c.env.DB,identity.sub);
+    if(adminIdentity.kind==='active')account={kind:'admin',user:adminIdentity.user};
+    else if(adminIdentity.kind==='blocked')account={kind:'admin_blocked'};
+    else{
+      const owner=await findOrCreateGoogleOwner(c.env.DB,identity);
+      account=owner.kind==='owner'?{kind:'owner',user:owner.user}:owner;
+    }
+  }catch{return c.json({error:'Google sign-in could not be completed'},503);}
   if(account.kind==='email_conflict')return c.json({error:'This email already has an account. Account linking is not available.'},409);
-  if(account.kind==='not_owner')return c.json({error:'This Google identity is not eligible for OWNER access'},403);
+  if(account.kind==='not_owner'||account.kind==='admin_blocked')return c.json({error:'This Google identity is not eligible for access'},403);
   const createdAt=Math.floor(Date.now()/1000),expiresAt=createdAt+googleSessionTtl(c.env),sessionId=randomOpaqueValue();
   const [sessionHash,bindingHash]=await Promise.all([hashOpaqueValue(sessionId),hashOpaqueValue(binding)]);
   try{
-    await c.env.DB.batch([
-      c.env.DB.prepare('DELETE FROM google_auth_sessions WHERE expires_at<=? OR (revoked_at IS NOT NULL AND revoked_at<?)')
-        .bind(createdAt,createdAt-30*24*60*60),
-      c.env.DB.prepare('UPDATE google_auth_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE browser_binding_hash=? AND revoked_at IS NULL')
-        .bind(createdAt,bindingHash),
-      c.env.DB.prepare(`INSERT INTO google_auth_sessions(session_hash,user_id,role,session_version,browser_binding_hash,created_at,expires_at,revoked_at,last_seen_at)
-        VALUES(?,?,'OWNER',?,?,?,?,NULL,?)`)
-        .bind(sessionHash,account.user.id,account.user.session_version,bindingHash,createdAt,expiresAt,createdAt),
-    ]);
+    if(account.kind==='admin'){
+      await c.env.DB.batch([
+        c.env.DB.prepare('DELETE FROM google_auth_sessions WHERE expires_at<=? OR (revoked_at IS NOT NULL AND revoked_at<?)').bind(createdAt,createdAt-30*24*60*60),
+        c.env.DB.prepare('DELETE FROM google_admin_auth_sessions WHERE expires_at<=? OR (revoked_at IS NOT NULL AND revoked_at<?)').bind(createdAt,createdAt-30*24*60*60),
+        c.env.DB.prepare('UPDATE google_auth_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE browser_binding_hash=? AND revoked_at IS NULL').bind(createdAt,bindingHash),
+        c.env.DB.prepare('UPDATE google_admin_auth_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE browser_binding_hash=? AND revoked_at IS NULL').bind(createdAt,bindingHash),
+        c.env.DB.prepare(`INSERT INTO google_admin_auth_sessions(session_hash,user_id,role,session_version,browser_binding_hash,created_at,expires_at,revoked_at,last_seen_at)
+          VALUES(?,?,'ADMIN',?,?,?,?,NULL,?)`).bind(sessionHash,account.user.id,account.user.session_version,bindingHash,createdAt,expiresAt,createdAt),
+      ]);
+    }else{
+      await c.env.DB.batch([
+        c.env.DB.prepare('DELETE FROM google_auth_sessions WHERE expires_at<=? OR (revoked_at IS NOT NULL AND revoked_at<?)').bind(createdAt,createdAt-30*24*60*60),
+        c.env.DB.prepare('DELETE FROM google_admin_auth_sessions WHERE expires_at<=? OR (revoked_at IS NOT NULL AND revoked_at<?)').bind(createdAt,createdAt-30*24*60*60),
+        c.env.DB.prepare('UPDATE google_auth_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE browser_binding_hash=? AND revoked_at IS NULL').bind(createdAt,bindingHash),
+        c.env.DB.prepare('UPDATE google_admin_auth_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE browser_binding_hash=? AND revoked_at IS NULL').bind(createdAt,bindingHash),
+        c.env.DB.prepare(`INSERT INTO google_auth_sessions(session_hash,user_id,role,session_version,browser_binding_hash,created_at,expires_at,revoked_at,last_seen_at)
+          VALUES(?,?,'OWNER',?,?,?,?,NULL,?)`).bind(sessionHash,account.user.id,account.user.session_version,bindingHash,createdAt,expiresAt,createdAt),
+      ]);
+    }
   }catch{return c.json({error:'Google session could not be created'},503);}
   const signed=await sign(account.user,c.env,expiresAt,undefined,sessionId,googleSessionTtl(c.env));
   c.header('Set-Cookie',setCookie('alquileres_session',signed.token,c.env,{path:'/',maxAge:signed.expiresAt-createdAt}));
   c.header('Set-Cookie',browserCookie(binding,expiresAt-createdAt),{append:true});
-  return c.json({user:{id:account.user.id,email:account.user.email,role:'OWNER'},sessionExpiresAt:signed.expiresAt});
+  return c.json({user:{id:account.user.id,email:account.user.email,role:account.user.role},sessionExpiresAt:signed.expiresAt});
 });
 app.post('/auth/preview-session',async c=>{
   if(!previewAuthConfigured(c.env,new URL(c.req.url).origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview authentication unavailable'},503);
@@ -271,11 +299,12 @@ app.post('/auth/logout',async c=>{
     if(raw&&binding&&jwtSecretConfigured(c.env)){
       try{
         const claims=await verifySession(decodeURIComponent(raw),c.env,true);
-        if(claims.role==='OWNER'&&claims.sessionId){
+        if(claims.sessionId&&(claims.role==='OWNER'||claims.role==='ADMIN')){
           const [sessionHash,bindingHash]=await Promise.all([hashOpaqueValue(claims.sessionId),hashOpaqueValue(binding)]);
-          await c.env.DB.prepare(`UPDATE google_auth_sessions SET revoked_at=COALESCE(revoked_at,?)
-            WHERE session_hash=? AND user_id=? AND browser_binding_hash=? AND revoked_at IS NULL`)
-            .bind(Math.floor(Date.now()/1000),sessionHash,claims.id,bindingHash).run();
+          const sessionTable=claims.role==='ADMIN'?'google_admin_auth_sessions':'google_auth_sessions';
+          await c.env.DB.prepare(`UPDATE ${sessionTable} SET revoked_at=COALESCE(revoked_at,?)
+            WHERE session_hash=? AND user_id=? AND browser_binding_hash=? AND role=? AND revoked_at IS NULL`)
+            .bind(Math.floor(Date.now()/1000),sessionHash,claims.id,bindingHash,claims.role).run();
         }
       }catch{return c.json({error:'Google session revocation unavailable'},503);}
     }

@@ -1,38 +1,32 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "M3_5_GOOGLE_OWNER_AUTH",
+  "phase": "M3_6_GOOGLE_ADMIN_AUTH",
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
-  "active_task": "Issue #76 — M3.5 Google Login and individual OWNER identities",
-  "last_completed_task": "M3 “Mi selección” is integrated and accepted in Issue #70; no M4 work has started.",
-  "last_completed_head": "98e89fe67b52568bd1879298590f80b360739a10",
-  "work_branch": "feat/m3-5-google-owner-auth",
-  "next_action": "Push consolidated challenge-atomicity and temporary-config cleanup fixes to PR #77; derive exact SHA dynamically from GitHub; verify Worker/Web CI and fresh GitHub review; perform valid read-only technical review if runtime evidence is consistent. Do not merge: await exact-SHA security review and Product Owner approval per Issue #76.",
+  "active_task": "Issue #81 — M3.6 Google ADMIN with explicit sub provisioning",
+  "last_completed_task": "M3.5 Google Login OWNER individual identities integrated in main",
+  "last_completed_head": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
+  "work_branch": "feat/m3-6-google-admin-auth",
+  "next_action": "Complete role-specific Google ADMIN provisioning and sessions, local synthetic D1 negative tests and OWNER→ADMIN Playwright flow; run Worker/Web CI and technical review; leave the PR open until Product Owner authorizes the exact SHA.",
   "stop_reason": null,
   "event": {
-    "seq": 300,
-    "summary": "Fixed concurrent Google challenge replacement using atomic D1 batch and removed generated local Wrangler config in finally; focused Worker tests 7/7, Worker/Web typechecks and Chromium E2E 3/3 PASS. PR #77 remains open pending exact-head CI/review and security Human Gate."
+    "seq": 301,
+    "summary": "M3.6 Google ADMIN explicitly authorized from main fda7b867; Issue #81 created. Local implementation active; no remote auth/data changes. Exact-SHA Product Owner approval required before merge."
   },
   "external_review": null,
   "human_gate": {
-    "status": "SECURITY_REVIEW_AND_PRODUCT_OWNER_APPROVAL_REQUIRED",
-    "scope": "No merge of authentication/role changes until security review of exact candidate SHA and Product Owner approval; no claim of independence beyond mechanism guarantees. Local code/test/PR work is authorized. Remote D1, Google credentials, secrets, Access, Preview/deployment, production, CD and M4 remain out of scope."
+    "status": "EXACT_SHA_PRODUCT_OWNER_MERGE_APPROVAL_REQUIRED",
+    "scope": "Authentication and role changes. All local implementation, tests, CI, review, Issue and PR work are authorized. Do not merge until explicit Product Owner approval of exact final SHA."
   },
   "blocker": null,
   "pull_request": {
-    "number": 77,
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/77",
-    "branch": "feat/m3-5-google-owner-auth",
-    "base_branch": "main",
-    "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
-    "state": "OPEN",
-    "is_draft": false,
-    "head_source": "Resolve exact current PR #77 head from GitHub; record final SHA in PR/Issue comments, do not maintain a self-chasing SHA pointer.",
-    "checks": "Previous e5fd16e checks do not cover the new corrections; fresh exact-head Worker/Web CI pending.",
-    "automated_review": "Previous review had no findings on e5fd16e; rerun on the consolidated exact head.",
-    "technical_review": "Prior local Controller output conflicts with accepted model/effort evidence; not PASS. Exact-candidate review must have consistent runtime evidence.",
-    "merge": "NOT AUTHORIZED IN THIS EXECUTION. Issue #76 requires exact-SHA security review and Product Owner approval before merge."
+    "number": null,
+    "url": null,
+    "branch": "feat/m3-6-google-admin-auth",
+    "base_sha": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
+    "state": "NOT_PUBLISHED",
+    "merge": "NEVER_AUTOMATIC; exact SHA Product Owner approval required"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -86,21 +80,14 @@
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
-    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/76",
-    "contract": ".orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md",
-    "status": "IN_REVIEW_NOT_MERGEABLE_PENDING_HUMAN_SECURITY_GATE",
-    "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
-    "branch": "feat/m3-5-google-owner-auth",
-    "scope": "Google OWNER login, individual identities, revocable sessions; local synthetic D1 only. No remote activation/deployment or M4.",
-    "local_results": {
-      "worker_google_auth_tests": "PASS 7/7",
-      "worker_typecheck": "PASS",
-      "web_typecheck": "PASS",
-      "playwright_local_chromium": "PASS 3/3; temporary key, database and generated Wrangler config removed",
-      "remote_tests": "NOT RUN; not authorized"
-    },
-    "review_state": "Fresh exact-head GitHub CI and automated review pending after consolidated fixes; prior Controller result not PASS because final claim conflicted with accepted runtime configuration.",
-    "required_human_action": "Review security findings on exact final PR SHA and approve before merge."
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/81",
+    "contract": ".orchestration/contracts/MVP-M3.6-ISSUE-81-GOOGLE-ADMIN.md",
+    "status": "IN_PROGRESS",
+    "base_sha": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
+    "branch": "feat/m3-6-google-admin-auth",
+    "scope": "Google ADMIN linked only by verified sub through controlled provisioning onto existing ADMIN; role-specific revocable sessions; local migration/tests; OWNER→ADMIN local E2E.",
+    "limits": "No Google Console/real credentials, remote D1, Access, secrets, CD, Preview/deployment, production, source writes, M4.",
+    "merge_gate": "Product Owner explicit approval of exact final SHA required."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {
