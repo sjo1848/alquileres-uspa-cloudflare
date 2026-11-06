@@ -43,6 +43,8 @@ jobs:
         working-directory: apps/worker
       - run: npm run test:owner-auth
         working-directory: apps/worker
+      - run: npm run test:google-auth
+        working-directory: apps/worker
       - run: npm run test:admin
         working-directory: apps/worker
       - run: npm run test:preview-auth
@@ -86,6 +88,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
         working-directory: apps/web
       - run: npm run test:e2e:preview-auth:local
+        working-directory: apps/web
+      - run: npm run test:e2e:google-auth:local
         working-directory: apps/web
       - run: npm run test:e2e:m3
         working-directory: apps/web
