@@ -2460,3 +2460,12 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Implementation adds controlled `sub`-based provisioning for an existing ADMIN, distinct role-bound sessions, negative authorization tests, and local OWNER→ADMIN approval E2E.
 - No remote D1, Google Console/real credentials, Access, secrets, CD, Preview/deployment, production, source repository, or M4.
 - PR #77's approved merge does not authorize this sprint's merge. M3.6 PR must remain unmerged pending express Product Owner approval on its exact final SHA.
+
+
+## Event 302 — M3.6 candidate ready for Product Owner review
+
+- PR #82 is OPEN and ready for review. The executable candidate reviewed by the delegated Controller is `229699a55685859f70bb9f5e9ca8b343dfdb6540`; subsequent changes through HEAD `e93a86e94f0d39d2dbece5b72559c10f29d095e6` update only orchestration state and activation requirements.
+- GitHub CI run 42300985736 passed Worker and Web on the prior state-equivalent HEAD; run 42301486636 passed Web but exposed a missing Event 302 mirror in this file. The state checker is being repaired and CI rerun on the final exact HEAD. Do not report CI PASS until that check passes.
+- Delegated `project_controller` returned PASS on the exact executable candidate. Role model/effort are configured `gpt-6-luna`/`high`; provider backend identity remains unverified. Review output and local test provenance are in PR #82.
+- Local Google OWNER/Admin tests pass; migration 0018 remains local-only. No Google Console, remote D1, Access, secret, CD, Preview, production, source-repository, or M4 change occurred.
+- **Merge gate:** wait for final exact-head Worker/Web CI and explicit Product Owner authorization on the live PR SHA; do not merge without it.
