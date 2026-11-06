@@ -8,11 +8,11 @@
   "last_completed_task": "M3 “Mi selección” is integrated and accepted in Issue #70; no M4 work has started.",
   "last_completed_head": "98e89fe67b52568bd1879298590f80b360739a10",
   "work_branch": "feat/m3-5-google-owner-auth",
-  "next_action": "Complete Worker/Web local validation and exact-head review; open the functional PR and integrate only through protected main controls. Keep remote D1, Google Console/secrets, Access, Preview/CD, production and M4 untouched.",
+  "next_action": "Verify PR #77 exact head and Worker/Web CI, obtain delegated read-only Controller review, fix any bounded findings, and use protected merge only if all controls pass. Keep remote D1, Google Console/secrets, Access, Preview/CD, production and M4 untouched.",
   "stop_reason": null,
   "event": {
-    "seq": 294,
-    "summary": "M3.5 Issue #76 implementation started locally from main@98e89fe; remote credentials, migration, Access and deployment remain unauthorized."
+    "seq": 295,
+    "summary": "M3.5 functional PR #77 opened from the authorized base; local verification passed, exact-head CI and Controller review pending. No remote activation."
   },
   "external_review": null,
   "human_gate": {
@@ -21,17 +21,17 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "url": null,
+    "number": 77,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/77",
     "branch": "feat/m3-5-google-owner-auth",
     "base_branch": "main",
     "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
-    "state": "NOT_OPEN",
+    "state": "OPEN",
     "is_draft": false,
-    "head_source": "Read the live GitHub PR head before exact-head review; do not store a self-referential moving HEAD.",
-    "checks": "Worker/Web CI not yet run on the PR.",
-    "independent_review": "Delegated read-only project_controller review required on the consolidated code candidate.",
-    "merge": "Protected merge is authorized only after all mandatory CI and technical review controls pass; no remote deployment or migration."
+    "head_source": "Query live GitHub PR #77 before each exact-head review; do not pin a rolling HEAD here.",
+    "checks": "Local Worker/Web tests passed; exact-head GitHub worker/web CI pending.",
+    "independent_review": "Delegated read-only project_controller review required on the consolidated exact PR HEAD.",
+    "merge": "Protected merge is authorized only after all mandatory CI and technical review controls pass; no remote migration/configuration or deployment."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -87,7 +87,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/76",
     "contract": ".orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md",
-    "status": "Local implementation in progress; no PR opened yet.",
+    "status": "Functional PR #77 is OPEN; local verification PASS; exact-head Worker/Web CI and delegated Controller review pending. No remote changes.",
     "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
     "scope": "Google Identity Services OWNER sign-in; server verification of ID token via Google JWKS; one-use browser-bound nonce; google sub identity without email linking; first sign-in creates an individual OWNER only; opaque hashed D1 session ID, secure HttpOnly cookies, CSRF, expiry, per-browser rotation/revocation; keep Access Preview and loopback Password modes intact. Migration 0017 local only.",
     "local_migration": "0017_google_owner_identity_sessions.sql; apply only in Worker Vitest and isolated per-run local D1; no remote migration authorized.",
