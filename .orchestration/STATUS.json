@@ -8,11 +8,11 @@
   "last_completed_task": "M3 “Mi selección” is integrated and accepted in Issue #70; no M4 work has started.",
   "last_completed_head": "98e89fe67b52568bd1879298590f80b360739a10",
   "work_branch": "feat/m3-5-google-owner-auth",
-  "next_action": "Run affected Worker Google auth tests/typecheck and Google OWNER Playwright on the consolidated P2 repair; wait for exact-head Worker/Web CI and fresh automated review, then obtain verified read-only Controller review. Merge only via protected main if controls pass.",
+  "next_action": "Run focused web typecheck and Google Playwright after GIS retry repair, then await fresh exact-head Worker/Web CI and automated review. Run one verified read-only Controller review on the final SHA; merge only through protected main if all controls pass.",
   "stop_reason": null,
   "event": {
-    "seq": 296,
-    "summary": "Resolved the exact-head GitHub review P2: reissuing a Google challenge no longer shortens an active browser-binding cookie; Worker and browser regressions added. Final checks/review must run on the updated PR head."
+    "seq": 297,
+    "summary": "Resolved the latest exact-head GitHub P2: failed GIS script elements are removed before retry, with a Chromium regression. Focused Web typecheck/E2E pass; new exact-head CI and final reviews pending."
   },
   "external_review": null,
   "human_gate": {
@@ -29,8 +29,8 @@
     "state": "OPEN",
     "is_draft": false,
     "head_source": "Query live GitHub PR #77 before each exact-head review; do not pin a rolling HEAD here.",
-    "checks": "The prior exact-head CI was on the pre-rework candidate; affected Worker and Google Chromium regressions PASS locally. Fresh exact-head Worker/Web CI pending.",
-    "independent_review": "Fresh exact-head GitHub automated review and verified read-only delegated Controller review pending after P2 correction.",
+    "checks": "Exact prior HEAD Worker/Web CI PASS; latest GIS retry code/test repair is committed locally and awaits fresh exact-head GitHub Worker/Web CI.",
+    "independent_review": "Previous automated review found a retry P2 which is now fixed; request a new exact-head automated review and verified read-only Controller review after the repair is published.",
     "merge": "Protected merge is authorized only after all mandatory CI and technical review controls pass; no remote migration/configuration or deployment."
   },
   "issue_4": "CLOSED",
@@ -87,7 +87,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/76",
     "contract": ".orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md",
-    "status": "PR #77 OPEN; local Worker Google auth/typecheck and Google Playwright passed after resolving the exact-head review P2. Fresh exact-head CI/reviews pending. No remote changes.",
+    "status": "PR #77 OPEN; prior cookie-lifetime P2 fixed and tested. Latest GIS load retry P2 fixed with Playwright (3/3) and Web typecheck; fresh exact-head CI/reviews pending. No remote changes.",
     "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
     "scope": "Google Identity Services OWNER sign-in; server verification of ID token via Google JWKS; one-use browser-bound nonce; google sub identity without email linking; first sign-in creates an individual OWNER only; opaque hashed D1 session ID, secure HttpOnly cookies, CSRF, expiry, per-browser rotation/revocation; keep Access Preview and loopback Password modes intact. Migration 0017 local only.",
     "local_migration": "0017_google_owner_identity_sessions.sql; apply only in Worker Vitest and isolated per-run local D1; no remote migration authorized.",

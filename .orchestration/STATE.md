@@ -14,7 +14,7 @@ Active task: `Issue #76 — M3.5 Google Login and individual OWNER identities`
 - Migration `0017_google_owner_identity_sessions.sql` is local/test-only in this increment. A fresh synthetic RSA keypair and per-run Wrangler config are generated in a temporary directory for local Playwright, restricted to loopback, and removed after the run; neither is a Google credential.
 - No Google Console/OAuth configuration, real Client ID, remote D1 migration, remote secret, Access, Preview/CD, deployment, production, M4 or other product changes are authorized.
 - Binding contract: `.orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md`. Work branch: `feat/m3-5-google-owner-auth`; base SHA above.
-- Functional PR #77 is OPEN from `feat/m3-5-google-owner-auth` against `main@98e89fe67b52568bd1879298590f80b360739a10`; query live GitHub for its current head instead of pinning a moving SHA here. GitHub review of the previous head found a P2: re-requesting a Google challenge could shorten an active browser-binding cookie. The route now preserves an existing binding, with Worker and browser regressions. Fresh exact-head CI and verified read-only Controller review are pending. No remote migration/configuration/deployment has occurred.
+- Functional PR #77 is OPEN from `feat/m3-5-google-owner-auth` against `main@98e89fe67b52568bd1879298590f80b360739a10`; query live GitHub for its current head instead of pinning a moving SHA here. GitHub reviews found two P2s: re-requesting a Google challenge could shorten an active browser-binding cookie, and a failed GIS script prevented retry. Both are fixed with Worker and browser regressions. Fresh exact-head CI and verified read-only Controller review are pending. No remote migration/configuration/deployment has occurred.
 - **Next:** verify PR #77 exact head and CI, run the required read-only Controller review on that head, resolve any findings, then integrate only via protected merge if all controls pass. Preview activation separately requires Google OAuth setup, migration authorization, Preview secret/configuration, an Access/public-browsing decision, and deployment/remote-QA authorization.
 
 ## Source baseline
@@ -2415,3 +2415,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 
 - The exact-head review of PR #77 found that requesting a new login challenge with an existing browser binding overwrote its session-length cookie with a five-minute cookie. The challenge route now leaves an existing binding cookie unchanged; only a new browser gets the short challenge cookie.
 - Added Worker and Playwright regressions for a still-valid OWNER session visiting `/register`. Focused Worker typecheck/tests and local Chromium E2E pass. Fresh exact-head CI, automated review and verified read-only Controller remain pending.
+
+
+## Event 297 — Google GIS retry recovery rework
+
+- Exact-head review found that a failed Google Identity Services script remained in the DOM, preventing the retry button from issuing another request. The failure handler now removes the failed script before clearing the load promise.
+- Added a real-browser regression that aborts the first GIS request and confirms the retry loads successfully. Web typecheck and Google-auth Playwright pass (3/3); new exact-head Worker/Web CI and final reviews pending.

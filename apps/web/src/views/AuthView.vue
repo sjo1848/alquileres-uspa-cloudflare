@@ -48,7 +48,10 @@ function loadGoogleIdentityServices(){
     const failed=()=>reject(new Error('Google Identity Services failed to load'));
     script.addEventListener('load',loaded,{once:true});script.addEventListener('error',failed,{once:true});
     if(window.google?.accounts?.id)loaded();
-  }).catch(error=>{googleScriptLoad=undefined;throw error;});
+  }).catch(error=>{
+    document.querySelector<HTMLScriptElement>('script[data-google-identity-services]')?.remove();
+    googleScriptLoad=undefined;throw error;
+  });
   return googleScriptLoad;
 }
 

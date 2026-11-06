@@ -101,3 +101,23 @@ test('Google registration entry remains readable on a 320px viewport',async({pag
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
   await expect(page.getByText(/La primera vez se crea una cuenta individual de propietario/)).toBeVisible();
 });
+
+test('Google sign-in can retry after the GIS script fails to load once',async({page})=>{
+  let attempts=0;
+  await page.route('https://accounts.google.com/gsi/client',route=>{
+    attempts+=1;
+    if(attempts===1)return route.abort();
+    return route.fulfill({status:200,contentType:'application/javascript',body:`
+      window.google={accounts:{id:{
+        initialize(options){window.__googleAuthOptions=options;},
+        renderButton(container){const button=document.createElement('button');button.type='button';button.textContent='Continuar con Google';button.setAttribute('aria-label','Continuar con Google');container.append(button);},
+        disableAutoSelect(){}
+      }}};
+    `});
+  });
+  await page.goto('/login');
+  await expect(page.getByText('No pudimos preparar el ingreso con Google. Reintentá.')).toBeVisible();
+  await page.getByRole('button',{name:'Preparar otro intento'}).click();
+  await expect(page.getByRole('button',{name:'Continuar con Google'})).toBeVisible();
+  expect(attempts).toBe(2);
+});
