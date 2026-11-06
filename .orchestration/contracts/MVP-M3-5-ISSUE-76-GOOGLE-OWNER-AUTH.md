@@ -4,7 +4,7 @@
 - Roadmap: https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/55
 - Authorized base: `main@98e89fe67b52568bd1879298590f80b360739a10`
 - Branch: `feat/m3-5-google-owner-auth`
-- State: implementation and local verification in progress.
+- State: functional implementation consolidated in PR #77; awaiting fresh exact-head CI/review and the Issue-defined security/Product Owner gate. PR must remain open and unmerged in this increment.
 
 ## Accepted scope
 
@@ -25,8 +25,8 @@ The first Google sign-in creates an OWNER account without creating or publishing
 1. Worker typecheck and Google auth tests: valid/invalid issuer, audience, expiration, signature, `sub`, email verification, nonce binding, one-time replay/concurrent redemption, same-email/no-link conflict, parallel first sign-in, session isolation/rotation/revocation, CSRF, role and strategy boundaries.
 2. Local Chromium E2E using Vue + Worker/Hono + disposable D1: Google OWNER login and registration, session restore after reload, OWNER listing persistence, logout/re-entry with the same user ID, no admin selector, no token in localStorage, and mobile readability.
 3. Web typecheck, build, Preview build, and existing public/OWNER/ADMIN/Preview-auth regressions.
-4. Exact-head GitHub `worker` and `web` checks, automated review, and a read-only `project_controller` review; address substantive findings before protected merge.
-5. Canonical state records the exact functional base, migration local-only status, CI/review result, PR/merge state, and the separate activation gates.
+4. Exact-head GitHub `worker` and `web` checks and automated review. A read-only technical review may provide additional evidence but must not be represented as an independent security authority unless that independence is guaranteed. The latest Issue #76 clarification requires an exact-SHA security review and Product Owner approval before merge; this execution must leave PR #77 open and unmerged.
+5. Canonical state records the exact functional base, migration local-only status, CI/review result, PR/merge state, and separate activation gates. Do not merge automatically: authentication/role changes require Product Owner approval on the exact reviewed SHA.
 
 ## Activation gates after this increment
 

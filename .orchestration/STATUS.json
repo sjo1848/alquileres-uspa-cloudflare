@@ -4,20 +4,20 @@
   "phase": "M3_5_GOOGLE_OWNER_AUTH",
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
-  "active_task": "Issue #76 — M3.5 Google Login and individual OWNER identities",
+  "active_task": "Issue #76 — M3.5 Google Login and individual OWNER identities; final technical/security review on PR #77",
   "last_completed_task": "M3 “Mi selección” is integrated and accepted in Issue #70; no M4 work has started.",
   "last_completed_head": "98e89fe67b52568bd1879298590f80b360739a10",
   "work_branch": "feat/m3-5-google-owner-auth",
-  "next_action": "Publish the exact-head retry-binding renewal repair, run focused Worker/Web checks and exact-head CI, obtain one fresh GitHub review and one bounded read-only Controller review. Merge only if protected checks/conversation controls pass.",
+  "next_action": "Push consolidated challenge-atomicity and temporary-config cleanup fixes to PR #77; derive exact SHA dynamically from GitHub; verify Worker/Web CI and fresh GitHub review; perform valid read-only technical review if runtime evidence is consistent. Do not merge: await exact-SHA security review and Product Owner approval per Issue #76.",
   "stop_reason": null,
   "event": {
-    "seq": 299,
-    "summary": "GitHub review of exact HEAD cd1c75e found P2: anonymous retry could retain a binding cookie with less lifetime than its fresh nonce. Challenge now refreshes anonymous bindings for 300s while preserving/meeting active-session expiry; Worker and browser regressions pass locally."
+    "seq": 300,
+    "summary": "Fixed concurrent Google challenge replacement using atomic D1 batch and removed generated local Wrangler config in finally; focused Worker tests 7/7, Worker/Web typechecks and Chromium E2E 3/3 PASS. PR #77 remains open pending exact-head CI/review and security Human Gate."
   },
   "external_review": null,
   "human_gate": {
-    "status": "M3_5_LOCAL_IMPLEMENTATION_AUTHORIZED",
-    "scope": "Issue #76 local Google OWNER auth code, synthetic tests, functional PR, required review/CI and protected merge only. No Google Console/client credentials, remote D1 migration/secrets, Access, Preview/CD, deployment, production, M4 or other product scope."
+    "status": "SECURITY_REVIEW_AND_PRODUCT_OWNER_APPROVAL_REQUIRED",
+    "scope": "No merge of authentication/role changes until security review of exact candidate SHA and Product Owner approval; no claim of independence beyond mechanism guarantees. Local code/test/PR work is authorized. Remote D1, Google credentials, secrets, Access, Preview/deployment, production, CD and M4 remain out of scope."
   },
   "blocker": null,
   "pull_request": {
@@ -28,10 +28,11 @@
     "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
     "state": "OPEN",
     "is_draft": false,
-    "head_source": "Query live GitHub PR #77 before each exact-head review; do not pin a rolling HEAD here.",
-    "checks": "HEAD cd1c75e Worker/Web CI PASS; current challenge-binding retry repair is local and needs focused tests plus fresh exact-head CI.",
-    "independent_review": "Previous Controller REWORK P2 for temp cleanup is fixed. GitHub found a new challenge-binding retry P2, now fixed locally. Fresh exact-head GitHub review and final bounded Controller review pending.",
-    "merge": "Protected merge is authorized only after all mandatory CI and technical review controls pass; no remote migration/configuration or deployment."
+    "head_source": "Resolve exact current PR #77 head from GitHub; record final SHA in PR/Issue comments, do not maintain a self-chasing SHA pointer.",
+    "checks": "Previous e5fd16e checks do not cover the new corrections; fresh exact-head Worker/Web CI pending.",
+    "automated_review": "Previous review had no findings on e5fd16e; rerun on the consolidated exact head.",
+    "technical_review": "Prior local Controller output conflicts with accepted model/effort evidence; not PASS. Exact-candidate review must have consistent runtime evidence.",
+    "merge": "NOT AUTHORIZED IN THIS EXECUTION. Issue #76 requires exact-SHA security review and Product Owner approval before merge."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -87,12 +88,19 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/76",
     "contract": ".orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md",
-    "status": "PR #77 OPEN; prior cookie lifetime, GIS retry, and temp cleanup P2s are fixed. Latest challenge-binding retry P2 fixed with Worker+browser regression (Worker 6/6, Web Google E2E 3/3, typechecks pass); fresh exact-head CI/reviews pending. No remote changes.",
+    "status": "IN_REVIEW_NOT_MERGEABLE_PENDING_HUMAN_SECURITY_GATE",
     "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
-    "scope": "Google Identity Services OWNER sign-in; server verification of ID token via Google JWKS; one-use browser-bound nonce; google sub identity without email linking; first sign-in creates an individual OWNER only; opaque hashed D1 session ID, secure HttpOnly cookies, CSRF, expiry, per-browser rotation/revocation; keep Access Preview and loopback Password modes intact. Migration 0017 local only.",
-    "local_migration": "0017_google_owner_identity_sessions.sql; apply only in Worker Vitest and isolated per-run local D1; no remote migration authorized.",
-    "ci_e2e": "Worker tests include Google token/nonce/concurrency/identity/session negative tests. Local Chromium E2E uses Vue + Worker/Hono + disposable D1 and a synthetic signing key restricted to loopback.",
-    "activation_gates": "Google OAuth Web Client ID and exact Preview origin; separately authorized D1 0017 migration; Preview-only auth variables and JWT secret; decision for Access interaction/public anonymous browsing; separate deployment and authenticated remote QA authorization."
+    "branch": "feat/m3-5-google-owner-auth",
+    "scope": "Google OWNER login, individual identities, revocable sessions; local synthetic D1 only. No remote activation/deployment or M4.",
+    "local_results": {
+      "worker_google_auth_tests": "PASS 7/7",
+      "worker_typecheck": "PASS",
+      "web_typecheck": "PASS",
+      "playwright_local_chromium": "PASS 3/3; temporary key, database and generated Wrangler config removed",
+      "remote_tests": "NOT RUN; not authorized"
+    },
+    "review_state": "Fresh exact-head GitHub CI and automated review pending after consolidated fixes; prior Controller result not PASS because final claim conflicted with accepted runtime configuration.",
+    "required_human_action": "Review security findings on exact final PR SHA and approve before merge."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

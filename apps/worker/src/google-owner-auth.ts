@@ -97,10 +97,14 @@ export async function issueGoogleChallenge(db: D1Database, request: Request) {
   const createdAt = Math.floor(Date.now() / 1000);
   const expiresAt = createdAt + 300;
   // One current nonce per browser: re-issuing invalidates a possibly intercepted prior challenge.
-  await db.prepare('DELETE FROM google_login_challenges WHERE expires_at<=? OR binding_hash=?')
-    .bind(createdAt, bindingHash).run();
-  await db.prepare('INSERT INTO google_login_challenges(binding_hash,nonce_hash,expires_at,created_at) VALUES(?,?,?,?)')
-    .bind(bindingHash, nonceHash, expiresAt, createdAt).run();
+  // D1 batch executes atomically; parallel challenge requests for one browser
+  // cannot leave more than the final nonce consumable.
+  await db.batch([
+    db.prepare('DELETE FROM google_login_challenges WHERE expires_at<=? OR binding_hash=?')
+      .bind(createdAt, bindingHash),
+    db.prepare('INSERT INTO google_login_challenges(binding_hash,nonce_hash,expires_at,created_at) VALUES(?,?,?,?)')
+      .bind(bindingHash, nonceHash, expiresAt, createdAt),
+  ]);
   return { binding, nonce, expiresAt };
 }
 

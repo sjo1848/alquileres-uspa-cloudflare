@@ -129,6 +129,19 @@ describe('Google OWNER auth, local isolated D1',()=>{
     expect((await me(combine(cookiePair(registrations[1],'alquileres_session'),second.browser))).status).toBe(200);
   });
 
+  it('keeps only one challenge consumable when one browser requests challenges concurrently',async()=>{
+    const initial=await start();
+    const responses=await Promise.all(Array.from({length:12},()=>challenge(initial.browser)));
+    expect(responses.every(response=>response.status===200)).toBe(true);
+    const challenges=await Promise.all(responses.map(async response=>await response.json() as {nonce:string}));
+    const attempts=await Promise.all(challenges.map(async({nonce},index)=>{
+      const token=await credential(nonce,{sub:`google-sub-parallel-challenge-${index}`,email:`parallel-challenge-${index}@example.test`});
+      return exchange(initial.browser,nonce,token);
+    }));
+    expect(attempts.filter(response=>response.status===200)).toHaveLength(1);
+    expect(attempts.filter(response=>response.status===401)).toHaveLength(11);
+  });
+
   it('never links by email, ignores role claims, and rejects client role fields and CSRF',async()=>{
     const existing=await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at,session_version) VALUES(?,?,'existing-local-hash','OWNER',?,?,?,0)")
       .bind(crypto.randomUUID(),'already-owned@example.test',new Date().toISOString(),new Date().toISOString(),new Date().toISOString()).run();expect(existing.success).toBe(true);

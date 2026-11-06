@@ -38,5 +38,6 @@ try {
   if (result.error) throw result.error;
   process.exitCode = result.status ?? 1;
 } finally {
+  rmSync(generatedConfigPath, { force: true });
   rmSync(temporaryRoot, { recursive: true, force: true });
 }
