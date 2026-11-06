@@ -50,6 +50,13 @@ test('Google OWNER login creates no public listing, restores identity/listings, 
   expect(browserCookie).toMatchObject({httpOnly:true,secure:true,sameSite:'Strict',path:'/'});
   expect(await page.evaluate(()=>Object.values(localStorage).some(value=>/^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)))).toBe(false);
 
+  await page.goto('/register');
+  await expect(page.getByRole('button',{name:'Continuar con Google'})).toBeVisible();
+  const browserCookieAfterChallenge=(await context.cookies(origin)).find(cookie=>cookie.name==='__Host-alquileres_google_browser');
+  expect(browserCookieAfterChallenge?.expires).toBe(browserCookie?.expires);
+  expect((await page.evaluate(async()=> (await fetch('/api/auth/me')).status))).toBe(200);
+  await page.goto('/owner');
+
   const identity=await page.evaluate(async()=>{
     const response=await fetch('/api/auth/me');
     return {status:response.status,body:await response.json()};

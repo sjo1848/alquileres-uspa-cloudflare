@@ -13,11 +13,13 @@ let counter=0;
 let testIp='google-auth-test';
 const runtimeBindings=(extra:Record<string,unknown>={})=>({...baseBindings,GOOGLE_AUTH_TEST_JWKS:publicJwks,...extra});
 
-function cookiePair(response:Response,name:string){
+function cookiePair(response:Response,name:string,fallback?:string){
   const header=response.headers.get('Set-Cookie')??'';
   const match=new RegExp(`(?:^|,\\s*|;\\s*)${name}=([^;,]+)`).exec(header);
-  if(!match)throw new Error(`Missing ${name} cookie`);
-  return `${name}=${match[1]}`;
+  if(match)return `${name}=${match[1]}`;
+  const existing=fallback?.split(';').map(part=>part.trim()).find(part=>part.startsWith(`${name}=`));
+  if(existing)return existing;
+  throw new Error(`Missing ${name} cookie`);
 }
 function combine(...pairs:string[]){return pairs.join('; ');}
 async function challenge(cookie?:string,settings:{url?:string;origin?:string;fetchSite?:string;env?:Record<string,unknown>}={}){
@@ -33,7 +35,7 @@ async function credential(nonce:string,overrides:Record<string,unknown>={},key:C
 async function start(cookie?:string){
   const response=await challenge(cookie);expect(response.status).toBe(200);
   const body=await response.json() as {nonce:string};
-  const browser=cookiePair(response,'__Host-alquileres_google_browser');
+  const browser=cookiePair(response,'__Host-alquileres_google_browser',cookie);
   return {nonce:body.nonce,browser};
 }
 async function exchange(binding:string,nonce:string,token:string,options:{origin?:string;body?:unknown;fetchSite?:string;env?:Record<string,unknown>}={}){
@@ -146,6 +148,10 @@ describe('Google OWNER auth, local isolated D1',()=>{
   it('keeps sessions independent by browser, rotates same-browser sessions, and revokes only the logging-out session',async()=>{
     const first=await signIn('multi-session@example.test','google-sub-multi-session');expect(first.response.status).toBe(200);
     const firstJar=combine(first.session!,first.browser);
+    const renewedChallenge=await challenge(first.browser);
+    expect(renewedChallenge.status).toBe(200);
+    expect(renewedChallenge.headers.get('Set-Cookie')??'').not.toContain('__Host-alquileres_google_browser=');
+    expect((await me(firstJar)).status).toBe(200);
     const second=await signIn('multi-session@example.test','google-sub-multi-session');expect(second.response.status).toBe(200);
     const secondJar=combine(second.session!,second.browser);
     expect((await me(firstJar)).status).toBe(200);expect((await me(secondJar)).status).toBe(200);
