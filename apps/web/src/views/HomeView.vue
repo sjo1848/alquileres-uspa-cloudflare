@@ -308,3 +308,5 @@ watch(() => route.query, () => {
     </section>
   </div>
 </template>
+
+<!-- Synthetic CD policy probe; no product behavior -->
