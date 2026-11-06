@@ -150,9 +150,17 @@ app.get('/auth/google/challenge',async c=>{
   try{
     const existingBinding=browserBindingCookie(c.req.raw);
     const challenge=await issueGoogleChallenge(c.env.DB,c.req.raw);
-    // An active Google session uses this cookie as a browser binding. Reissuing
-    // a short-lived login challenge must never shorten that session cookie.
-    if(!existingBinding)c.header('Set-Cookie',browserCookie(challenge.binding,300));
+    let bindingTtl=300;
+    if(existingBinding){
+      const bindingHash=await hashOpaqueValue(existingBinding);
+      const active=await c.env.DB.prepare(`SELECT MAX(expires_at) AS expires_at FROM google_auth_sessions
+        WHERE browser_binding_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()`).bind(bindingHash).first<{expires_at:number|null}>();
+      const expiresAt=Number(active?.expires_at),nowSeconds=Math.floor(Date.now()/1000);
+      if(Number.isSafeInteger(expiresAt)&&expiresAt>nowSeconds)bindingTtl=Math.max(bindingTtl,expiresAt-nowSeconds);
+    }
+    // Preserve a live session's binding expiry; for an anonymous retry, renew
+    // the binding for the full five-minute lifetime of the new nonce.
+    c.header('Set-Cookie',browserCookie(challenge.binding,bindingTtl));
     return c.json({nonce:challenge.nonce,expiresAt:challenge.expiresAt});
   }catch{return c.json({error:'Google sign-in could not be started'},503);}
 });

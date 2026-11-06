@@ -14,7 +14,7 @@ Active task: `Issue #76 — M3.5 Google Login and individual OWNER identities`
 - Migration `0017_google_owner_identity_sessions.sql` is local/test-only in this increment. A fresh synthetic RSA keypair and per-run Wrangler config are generated in a temporary directory for local Playwright, restricted to loopback, and removed after the run; neither is a Google credential.
 - No Google Console/OAuth configuration, real Client ID, remote D1 migration, remote secret, Access, Preview/CD, deployment, production, M4 or other product changes are authorized.
 - Binding contract: `.orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md`. Work branch: `feat/m3-5-google-owner-auth`; base SHA above.
-- Functional PR #77 is OPEN from `feat/m3-5-google-owner-auth` against `main@98e89fe67b52568bd1879298590f80b360739a10`; query live GitHub for its current head instead of pinning a moving SHA here. GitHub reviews found two P2s: re-requesting a Google challenge could shorten an active browser-binding cookie, and a failed GIS script prevented retry. Both are fixed with Worker and browser regressions. Fresh exact-head CI and verified read-only Controller review are pending. No remote migration/configuration/deployment has occurred.
+- Functional PR #77 is OPEN from `feat/m3-5-google-owner-auth` against `main@98e89fe67b52568bd1879298590f80b360739a10`; query live GitHub for its current head instead of pinning a moving SHA here. GitHub reviews and Controller found four P2s, all repaired with regressions: active-session binding expiry is preserved, anonymous challenge bindings renew for the full 300-second nonce lifetime, failed GIS script loading can retry, and all per-run test key/config setup is inside recursive try/finally cleanup. The latest Worker 6/6 and Web Google Playwright 3/3 plus typechecks pass locally; fresh exact-head CI/reviews remain pending. No remote changes.
 - **Next:** verify PR #77 exact head and CI, run the required read-only Controller review on that head, resolve any findings, then integrate only via protected merge if all controls pass. Preview activation separately requires Google OAuth setup, migration authorization, Preview secret/configuration, an Access/public-browsing decision, and deployment/remote-QA authorization.
 
 ## Source baseline
@@ -2427,3 +2427,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 
 - Delegated static review of exact prior PR #77 candidate 182d3f2a92c81654cc03b012fda61ceca56320b3 returned REWORK for one P2: key generation/config writes preceded the temporary-resource cleanup boundary. Moved all setup inside that boundary and now remove the entire isolated temporary tree in finally.
 - Web typecheck and local Google-owner Playwright pass 3/3. Previous exact-head Worker/Web CI was green; fresh exact-head CI/GitHub review and one final bounded Controller review remain pending. No remote changes.
+
+
+## Event 299 — challenge retry binding-expiry rework
+
+- Exact GitHub review of prior PR #77 HEAD cd1c75e found a P2: retrying an anonymous challenge near the original binding-cookie expiry could produce a five-minute nonce with less than five minutes remaining on its browser binding. The route now renews anonymous bindings for the challenge lifetime, preserves active-session expiry, and extends the binding to at least the challenge TTL without extending authenticated session validity (D1 session expiry remains authoritative).
+- Added Worker regression for anonymous retry renewal and active-session non-shortening, plus a Chromium check with expiry tolerance. Worker Google suite 6/6 and Web Google Playwright 3/3 pass; fresh exact-head CI, GitHub review, and Controller review are pending. No remote changes.

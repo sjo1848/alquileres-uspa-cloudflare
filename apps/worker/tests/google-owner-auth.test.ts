@@ -150,8 +150,14 @@ describe('Google OWNER auth, local isolated D1',()=>{
     const firstJar=combine(first.session!,first.browser);
     const renewedChallenge=await challenge(first.browser);
     expect(renewedChallenge.status).toBe(200);
-    expect(renewedChallenge.headers.get('Set-Cookie')??'').not.toContain('__Host-alquileres_google_browser=');
+    const liveBindingCookie=renewedChallenge.headers.get('Set-Cookie')??'';
+    expect(liveBindingCookie).toContain('__Host-alquileres_google_browser=');
+    expect(Number(/Max-Age=(\d+)/.exec(liveBindingCookie)?.[1])).toBeGreaterThan(300);
     expect((await me(firstJar)).status).toBe(200);
+    const anonymous=await start();
+    const retried=await challenge(anonymous.browser);
+    expect(retried.status).toBe(200);
+    expect(retried.headers.get('Set-Cookie')).toMatch(/Max-Age=300/);
     const second=await signIn('multi-session@example.test','google-sub-multi-session');expect(second.response.status).toBe(200);
     const secondJar=combine(second.session!,second.browser);
     expect((await me(firstJar)).status).toBe(200);expect((await me(secondJar)).status).toBe(200);
