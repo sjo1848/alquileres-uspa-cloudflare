@@ -1288,3 +1288,5 @@ async function reconcilePendingReorders(env:Env) {
 const worker = { fetch: (request:Request,env:Env,ctx:ExecutionContext) => { const url=new URL(request.url);if(url.pathname.startsWith('/api/')){url.pathname=url.pathname.slice(4);request=new Request(url,request);}return app.fetch(request,env,ctx); }, scheduled: async (_controller: ScheduledController, env: Env) => { if(env.MEDIA_STRATEGY==='STATIC_ASSETS'||env.MEDIA_STRATEGY==='D1_BLOB')return;await reconcile(env);await reconcilePendingReorders(env); } };
 export { app };
 export default worker;
+
+// Synthetic CODEOWNERS policy probe; no product behavior.
