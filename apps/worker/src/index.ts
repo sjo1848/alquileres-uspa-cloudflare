@@ -3,8 +3,9 @@ import bcrypt from 'bcryptjs';
 import { localCompletePasswordReset, localMockMailbox, localOwnerAuthEnabled, localRateAllowed, localRegister, localRequestPasswordReset, localVerifyEmail, type LocalOwnerAuthEnv } from './local-owner-auth';
 import { previewAuthConfigured, verifyPreviewIdentity, PREVIEW_DEMO_USERS, type PreviewAuthEnv, type PreviewDemoRole, type PreviewIdentity } from './preview-auth';
 import { cleanImageName, d1BlobBytes, D1_IMAGE_MAX_BYTES, D1_IMAGE_MAX_COUNT, D1_MEDIA_QUOTA_BYTES, readBoundedBody, validateImageBytes } from './d1-blob-media';
+import { browserBindingCookie, browserCookie, consumeGoogleChallenge, findOrCreateGoogleOwner, googleAuthConfigured, googleSessionTtl, hashOpaqueValue, issueGoogleChallenge, randomOpaqueValue, verifyGoogleIdToken, type GoogleOwnerAuthEnv } from './google-owner-auth';
 
-type Env = PreviewAuthEnv & LocalOwnerAuthEnv & { MEDIA_STRATEGY?:string; IMAGES: R2Bucket; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
+type Env = PreviewAuthEnv & LocalOwnerAuthEnv & GoogleOwnerAuthEnv & { MEDIA_STRATEGY?:string; IMAGES: R2Bucket; JWT_EXPIRES_IN?: string; MAX_IMAGE_BYTES?: string; COOKIE_SAME_SITE?: string; COOKIE_SECURE?: string; NODE_ENV?: string };
 type User = { id: string; email: string; role: 'OWNER'|'ADMIN'; session_version?: number };
 type ImageRow = { id:string; listing_id:string; object_key:string; original_name:string; mime_type:string; byte_size:number; position:number; created_at:string; blob_data?:unknown };
 const app = new Hono<{ Bindings: Env; Variables: { user: User; previewIdentity: PreviewIdentity } }>();
@@ -41,8 +42,10 @@ function jwtSecretConfigured(env:Env) { try{jwtSecretBytes(env);return true;}cat
 const PREVIEW_SESSION_MAX_AGE=7*24*60*60;
 type SessionClaims = { id:string; email:string; role:'OWNER'|'ADMIN'; sessionVersion:number; iat:number; exp:number; sessionId?:string; previewSource?:PreviewIdentity['source']; previewServiceClientId?:string; previewBinding?:string };
 type SignedSession={token:string;expiresAt:number};
-async function sign(u:User,env:Env,expiresAt=Infinity,previewIdentity?:PreviewIdentity,sessionId?:string):Promise<SignedSession> { const n=Math.floor(Date.now()/1000), exp=Math.min(n+lifetime(env),expiresAt), claims={id:u.id,email:u.email,role:u.role,sv:u.session_version??0,iat:n,exp,...(sessionId?{sid:sessionId}:{}),...(previewIdentity?{previewSource:previewIdentity.source,previewBinding:previewIdentity.binding,...(previewIdentity.serviceClientId?{previewServiceClientId:previewIdentity.serviceClientId}:{})}:{})}, a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify(claims))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return {token:`${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`,expiresAt:exp}; }
-async function verify(token:string,env:Env,allowExpired=false) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))), n=Math.floor(Date.now()/1000); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||!Number.isSafeInteger(c.iat)||c.iat>n+30||c.exp<=c.iat||c.exp-c.iat>lifetime(env)+2||(!allowExpired&&c.exp<=n)||!['OWNER','ADMIN'].includes(c.role)||typeof c.id!=='string'||typeof c.email!=='string'||!Number.isSafeInteger(c.sv)) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return {...c,sessionVersion:c.sv,sessionId:typeof c.sid==='string'?c.sid:undefined} as SessionClaims; }
+async function sign(u:User,env:Env,expiresAt=Infinity,previewIdentity?:PreviewIdentity,sessionId?:string,maxAge=lifetime(env)):Promise<SignedSession> { const n=Math.floor(Date.now()/1000), exp=Math.min(n+maxAge,expiresAt), claims={id:u.id,email:u.email,role:u.role,sv:u.session_version??0,iat:n,exp,...(sessionId?{sid:sessionId}:{}),...(previewIdentity?{previewSource:previewIdentity.source,previewBinding:previewIdentity.binding,...(previewIdentity.serviceClientId?{previewServiceClientId:previewIdentity.serviceClientId}:{})}:{})}, a=b64(te.encode(JSON.stringify({alg:'HS256',typ:'JWT'}))), p=b64(te.encode(JSON.stringify(claims))), input=`${a}.${p}`, key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['sign']); return {token:`${input}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',key,te.encode(input))))}`,expiresAt:exp}; }
+async function verify(token:string,env:Env,allowExpired=false,maxAge=lifetime(env)) { if(token.length>8192) throw Error(); const p=token.split('.'); if(p.length!==3) throw Error(); const h=JSON.parse(new TextDecoder().decode(unb64(p[0]))), c=JSON.parse(new TextDecoder().decode(unb64(p[1]))), n=Math.floor(Date.now()/1000); if(h.alg!=='HS256'||!Number.isFinite(c.exp)||!Number.isSafeInteger(c.iat)||c.iat>n+30||c.exp<=c.iat||c.exp-c.iat>maxAge+2||(!allowExpired&&c.exp<=n)||!['OWNER','ADMIN'].includes(c.role)||typeof c.id!=='string'||typeof c.email!=='string'||!Number.isSafeInteger(c.sv)) throw Error(); const key=await crypto.subtle.importKey('raw',jwtSecretBytes(env),{name:'HMAC',hash:'SHA-256'},false,['verify']); if(!await crypto.subtle.verify('HMAC',key,unb64(p[2]),te.encode(`${p[0]}.${p[1]}`))) throw Error(); return {...c,sessionVersion:c.sv,sessionId:typeof c.sid==='string'?c.sid:undefined} as SessionClaims; }
+function strategySessionTtl(env:Env){return env.AUTH_STRATEGY==='GOOGLE'?googleSessionTtl(env):lifetime(env);}
+async function verifySession(token:string,env:Env,allowExpired=false){return verify(token,env,allowExpired,strategySessionTtl(env));}
 function cookieNamed(raw:string|null,name:string) { return raw?.split(';').map(x=>x.trim()).find(x=>x.startsWith(`${name}=`))?.slice(name.length+1); }
 function cookie(raw:string|null) { return cookieNamed(raw,'alquileres_session'); }
 function refreshCookie(raw:string|null) { return cookieNamed(raw,'alquileres_refresh'); }
@@ -90,6 +93,21 @@ async function authenticatedUser(c:any,claims:SessionClaims){
     if(!identity)return null;
     return previewSessionUser(c.env.DB,claims,identity);
   }
+  if(c.env.AUTH_STRATEGY==='GOOGLE'){
+    if(claims.role!=='OWNER'||!claims.sessionId)return null;
+    const binding=browserBindingCookie(c.req.raw);
+    if(!binding)return null;
+    const [sessionHash,bindingHash]=await Promise.all([hashOpaqueValue(claims.sessionId),hashOpaqueValue(binding)]);
+    const session=await c.env.DB.prepare(`SELECT u.id,u.email,u.role,u.session_version FROM google_auth_sessions s
+      JOIN users u ON u.id=s.user_id WHERE s.session_hash=? AND s.user_id=? AND s.role='OWNER'
+      AND s.session_version=? AND s.browser_binding_hash=? AND s.revoked_at IS NULL AND s.expires_at>unixepoch()
+      AND u.id=s.user_id AND u.email=? AND u.role='OWNER' AND u.session_version=s.session_version`)
+      .bind(sessionHash,claims.id,claims.sessionVersion,bindingHash,claims.email).first() as User|null;
+    if(!session)return null;
+    await c.env.DB.prepare('UPDATE google_auth_sessions SET last_seen_at=? WHERE session_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()')
+      .bind(Math.floor(Date.now()/1000),sessionHash).run();
+    return session;
+  }
   return user;
 }
 function sameOriginPost(c:any){const origin=new URL(c.req.url).origin;return c.req.header('Origin')===origin&&(!c.req.header('Sec-Fetch-Site')||c.req.header('Sec-Fetch-Site')==='same-origin');}
@@ -100,7 +118,8 @@ app.use('*',async(c,next)=>{
   const origin=new URL(c.req.url).origin;
   const localMode=localOwnerAuthEnabled(c.req.raw,c.env);
   const previewMode=strategy==='ACCESS_PREVIEW'&&previewAuthConfigured(c.env,origin);
-  if(protectedPath&&!localMode&&!previewMode)return c.json({error:'Authentication configuration unavailable'},503);
+  const googleMode=strategy==='GOOGLE'&&googleAuthConfigured(c.req.raw,c.env);
+  if(protectedPath&&!localMode&&!previewMode&&!googleMode)return c.json({error:'Authentication configuration unavailable'},503);
   if(protectedPath&&previewMode){
     let identity:PreviewIdentity;
     try{identity=await verifyPreviewIdentity(c.req.header('Cf-Access-Jwt-Assertion')??'',c.env,origin);}
@@ -113,6 +132,7 @@ app.get('/auth/config',c=>{
   const origin=new URL(c.req.url).origin;
   const mediaStrategy=c.env.MEDIA_STRATEGY??'UNKNOWN';
   if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'&&previewAuthConfigured(c.env,origin))return c.json({strategy:'ACCESS_PREVIEW',mediaStrategy});
+  if(c.env.AUTH_STRATEGY==='GOOGLE'&&googleAuthConfigured(c.req.raw,c.env))return c.json({strategy:'GOOGLE',googleClientId:c.env.GOOGLE_CLIENT_ID,registration:true,mediaStrategy});
   if(localOwnerAuthEnabled(c.req.raw,c.env))return c.json({strategy:'PASSWORD',registration:true,recovery:true,mediaStrategy});
   return c.json({error:'Authentication is unavailable'},503);
 });
@@ -121,6 +141,63 @@ app.post('/auth/verify-email',c=>localVerifyEmail(c.req.raw,c.env));
 app.post('/auth/password-reset/request',c=>localRequestPasswordReset(c.req.raw,c.env));
 app.post('/auth/password-reset/complete',c=>localCompletePasswordReset(c.req.raw,c.env));
 app.get('/__local/mailbox',c=>localMockMailbox(c.req.raw,c.env));
+app.get('/auth/google/challenge',async c=>{
+  if(c.env.AUTH_STRATEGY!=='GOOGLE'||!googleAuthConfigured(c.req.raw,c.env))return c.json({error:'Google authentication is unavailable'},503);
+  const origin=new URL(c.req.url).origin;
+  if((c.req.header('Origin')&&c.req.header('Origin')!==origin)||c.req.header('Sec-Fetch-Site')==='cross-site')return c.json({error:'same-origin request required'},403);
+  const ip=c.req.header('CF-Connecting-IP')??'unknown';
+  if(!await localRateAllowed(c.env,`google-challenge:${ip}`,60))return c.json({error:'Too many Google sign-in attempts'},429);
+  try{
+    const existingBinding=browserBindingCookie(c.req.raw);
+    const challenge=await issueGoogleChallenge(c.env.DB,c.req.raw);
+    let bindingTtl=300;
+    if(existingBinding){
+      const bindingHash=await hashOpaqueValue(existingBinding);
+      const active=await c.env.DB.prepare(`SELECT MAX(expires_at) AS expires_at FROM google_auth_sessions
+        WHERE browser_binding_hash=? AND revoked_at IS NULL AND expires_at>unixepoch()`).bind(bindingHash).first<{expires_at:number|null}>();
+      const expiresAt=Number(active?.expires_at),nowSeconds=Math.floor(Date.now()/1000);
+      if(Number.isSafeInteger(expiresAt)&&expiresAt>nowSeconds)bindingTtl=Math.max(bindingTtl,expiresAt-nowSeconds);
+    }
+    // Preserve a live session's binding expiry; for an anonymous retry, renew
+    // the binding for the full five-minute lifetime of the new nonce.
+    c.header('Set-Cookie',browserCookie(challenge.binding,bindingTtl));
+    return c.json({nonce:challenge.nonce,expiresAt:challenge.expiresAt});
+  }catch{return c.json({error:'Google sign-in could not be started'},503);}
+});
+app.post('/auth/google/exchange',async c=>{
+  if(c.env.AUTH_STRATEGY!=='GOOGLE'||!googleAuthConfigured(c.req.raw,c.env))return c.json({error:'Google authentication is unavailable'},503);
+  if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  const input=await boundedJson(c.req.raw,20_000) as any;
+  if(!input||Object.keys(input).length!==1||typeof input.credential!=='string'||input.credential.length>16_384)return c.json({error:'invalid sign-in response'},400);
+  const binding=browserBindingCookie(c.req.raw);
+  if(!binding)return c.json({error:'sign-in challenge expired'},401);
+  const ip=c.req.header('CF-Connecting-IP')??'unknown';
+  if(!await localRateAllowed(c.env,`google-exchange:${ip}`,40))return c.json({error:'Too many Google sign-in attempts'},429);
+  const identity=await verifyGoogleIdToken(input.credential,c.env,c.req.raw);
+  if(!identity)return c.json({error:'Google identity could not be verified'},401);
+  if(!await consumeGoogleChallenge(c.env.DB,binding,identity.nonce))return c.json({error:'sign-in challenge expired or already used'},401);
+  let account;
+  try{account=await findOrCreateGoogleOwner(c.env.DB,identity);}catch{return c.json({error:'Google sign-in could not be completed'},503);}
+  if(account.kind==='email_conflict')return c.json({error:'This email already has an account. Account linking is not available.'},409);
+  if(account.kind==='not_owner')return c.json({error:'This Google identity is not eligible for OWNER access'},403);
+  const createdAt=Math.floor(Date.now()/1000),expiresAt=createdAt+googleSessionTtl(c.env),sessionId=randomOpaqueValue();
+  const [sessionHash,bindingHash]=await Promise.all([hashOpaqueValue(sessionId),hashOpaqueValue(binding)]);
+  try{
+    await c.env.DB.batch([
+      c.env.DB.prepare('DELETE FROM google_auth_sessions WHERE expires_at<=? OR (revoked_at IS NOT NULL AND revoked_at<?)')
+        .bind(createdAt,createdAt-30*24*60*60),
+      c.env.DB.prepare('UPDATE google_auth_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE browser_binding_hash=? AND revoked_at IS NULL')
+        .bind(createdAt,bindingHash),
+      c.env.DB.prepare(`INSERT INTO google_auth_sessions(session_hash,user_id,role,session_version,browser_binding_hash,created_at,expires_at,revoked_at,last_seen_at)
+        VALUES(?,?,'OWNER',?,?,?,?,NULL,?)`)
+        .bind(sessionHash,account.user.id,account.user.session_version,bindingHash,createdAt,expiresAt,createdAt),
+    ]);
+  }catch{return c.json({error:'Google session could not be created'},503);}
+  const signed=await sign(account.user,c.env,expiresAt,undefined,sessionId,googleSessionTtl(c.env));
+  c.header('Set-Cookie',setCookie('alquileres_session',signed.token,c.env,{path:'/',maxAge:signed.expiresAt-createdAt}));
+  c.header('Set-Cookie',browserCookie(binding,expiresAt-createdAt),{append:true});
+  return c.json({user:{id:account.user.id,email:account.user.email,role:'OWNER'},sessionExpiresAt:signed.expiresAt});
+});
 app.post('/auth/preview-session',async c=>{
   if(!previewAuthConfigured(c.env,new URL(c.req.url).origin)||!jwtSecretConfigured(c.env))return c.json({error:'Preview authentication unavailable'},503);
   if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
@@ -160,7 +237,7 @@ app.post('/auth/refresh',async c=>{
 app.get('/health',c=>c.json({ok:true}));
 app.all('/__fixture/*',c=>c.json({error:'not found'},404));
 app.post('/auth/login',async c=>{
-  if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW')return c.json({error:'Password login is unavailable in this Preview'},403);
+  if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'||c.env.AUTH_STRATEGY==='GOOGLE')return c.json({error:'Password login is unavailable for this authentication strategy'},403);
   if(!localOwnerAuthEnabled(c.req.raw,c.env))return c.json({error:'Local synthetic OWNER authentication is unavailable'},404);
   if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
   if(c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
@@ -170,7 +247,8 @@ app.post('/auth/login',async c=>{
   const [ipAllowed,emailAllowed]=await Promise.all([localRateAllowed(c.env,`login-ip:${ip}`,200),localRateAllowed(c.env,`login-email:${normalized}`,25)]);
   const dummyHash='$2b$12$0YkafzqqdCLg0biWLYYHYO2Q7zMyTxGv/dh50357J.0Nrmt8iBRTS';
   if(!ipAllowed||!emailAllowed){await bcrypt.compare(input.password,dummyHash);return c.json({error:'Invalid credentials'},401);}
-  const account=await c.env.DB.prepare('SELECT id,email,password_hash,role,session_version,email_verified_at FROM users WHERE email=?').bind(normalized).first<any>();
+  const account=await c.env.DB.prepare(`SELECT id,email,password_hash,role,session_version,email_verified_at FROM users
+    WHERE email=? AND NOT EXISTS(SELECT 1 FROM google_identities g WHERE g.user_id=users.id AND g.provider='google')`).bind(normalized).first<any>();
   const matches=account?await bcrypt.compare(input.password,account.password_hash):await bcrypt.compare(input.password,dummyHash);
   if(!account||!matches||!account.email_verified_at)return c.json({error:'Invalid credentials'},401);
   const user:User={id:account.id,email:account.email,role:account.role,session_version:account.session_version};
@@ -181,18 +259,35 @@ app.get('/auth/me',async c=>{
   if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
   const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
   if(!raw)return c.json({error:'Invalid or expired token'},401);
-  let claims:SessionClaims;try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  let claims:SessionClaims;try{claims=await verifySession(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
   const user=await authenticatedUser(c,claims);
   if(!user)return c.json({error:'Invalid or expired token'},401);
-  return c.json({id:user.id,email:user.email,role:user.role,...(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'?{sessionExpiresAt:claims.exp}:{})});
+  return c.json({id:user.id,email:user.email,role:user.role,...(['ACCESS_PREVIEW','GOOGLE'].includes(c.env.AUTH_STRATEGY??'')?{sessionExpiresAt:claims.exp}:{})});
 });
 app.post('/auth/logout',async c=>{
   if(!sameOriginPost(c))return c.json({error:'same-origin request required'},403);
+  if(c.env.AUTH_STRATEGY==='GOOGLE'){
+    const raw=cookie(c.req.header('Cookie')??null),binding=browserBindingCookie(c.req.raw);
+    if(raw&&binding&&jwtSecretConfigured(c.env)){
+      try{
+        const claims=await verifySession(decodeURIComponent(raw),c.env,true);
+        if(claims.role==='OWNER'&&claims.sessionId){
+          const [sessionHash,bindingHash]=await Promise.all([hashOpaqueValue(claims.sessionId),hashOpaqueValue(binding)]);
+          await c.env.DB.prepare(`UPDATE google_auth_sessions SET revoked_at=COALESCE(revoked_at,?)
+            WHERE session_hash=? AND user_id=? AND browser_binding_hash=? AND revoked_at IS NULL`)
+            .bind(Math.floor(Date.now()/1000),sessionHash,claims.id,bindingHash).run();
+        }
+      }catch{return c.json({error:'Google session revocation unavailable'},503);}
+    }
+    c.header('Set-Cookie',setCookie('alquileres_session','',c.env,{path:'/',maxAge:0,clear:true}));
+    c.header('Set-Cookie',browserCookie('',0,true),{append:true});
+    return c.json({ok:true});
+  }
   if(c.env.AUTH_STRATEGY==='ACCESS_PREVIEW'){
     if(!jwtSecretConfigured(c.env))return c.json({error:'Preview logout unavailable'},503);
     const identity=c.get('previewIdentity') as PreviewIdentity,raw=cookie(c.req.header('Cookie')??null),refresh=parseRefreshCookie(refreshCookie(c.req.header('Cookie')??null));
     let claims:SessionClaims|undefined;
-    if(raw){try{claims=await verify(decodeURIComponent(raw),c.env,true);}catch{}}
+    if(raw){try{claims=await verifySession(decodeURIComponent(raw),c.env,true);}catch{}}
     if(claims?.sessionId&&claims.previewSource===identity.source&&claims.previewBinding===identity.binding&&
       (identity.source!=='playwright-service'||claims.previewServiceClientId===identity.serviceClientId)){
       const expected=PREVIEW_DEMO_USERS[claims.role];
@@ -223,7 +318,7 @@ app.post('/auth/logout',async c=>{
     const sessionCookie=cookie(c.req.header('Cookie')??null);
     for(const token of new Set([bearer,sessionCookie].filter((value):value is string=>Boolean(value)))){
       let claims:{id:string;email:string;sessionVersion:number}|undefined;
-      try{claims=await verify(decodeURIComponent(token),c.env);}catch{}
+      try{claims=await verifySession(decodeURIComponent(token),c.env);}catch{}
       if(!claims)continue;
       try{
         await c.env.DB.prepare('UPDATE users SET session_version=session_version+1,updated_at=? WHERE id=? AND email=? AND session_version=?').bind(now(),claims.id,claims.email,claims.sessionVersion??0).run();
@@ -232,15 +327,15 @@ app.post('/auth/logout',async c=>{
   }
   return c.json({ok:true},200,{'Set-Cookie':setCookie('alquileres_session','',c.env,{path:'/',maxAge:0,clear:true})});
 });
-app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:SessionClaims;try { claims=await verify(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await authenticatedUser(c,claims);if(!u)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
-app.use('/owner/*',async(c,next)=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);if(!raw)return c.json({error:'Invalid or expired token'},401);if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:SessionClaims;try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}const user=await authenticatedUser(c,claims);if(!user)return c.json({error:'Invalid or expired token'},401);if(user.role!=='OWNER')return c.json({error:'Insufficient role'},403);c.set('user',user);await next();});
+app.use('/listings/*',async(c,next)=>{ if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'); const raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null); if(!raw)return c.json({error:'Invalid or expired token'},401); if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:SessionClaims;try { claims=await verifySession(decodeURIComponent(raw),c.env); } catch { return c.json({error:'Invalid or expired token'},401); }const u=await authenticatedUser(c,claims);if(!u)return c.json({error:'Invalid or expired token'},401);if(u.role!=='OWNER')return c.json({error:'Insufficient role'},401);c.set('user',u);await next(); });
+app.use('/owner/*',async(c,next)=>{if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);if(!raw)return c.json({error:'Invalid or expired token'},401);if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)){const origin=c.req.header('Origin');if(!origin||origin!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);}let claims:SessionClaims;try{claims=await verifySession(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}const user=await authenticatedUser(c,claims);if(!user)return c.json({error:'Invalid or expired token'},401);if(user.role!=='OWNER')return c.json({error:'Insufficient role'},403);c.set('user',user);await next();});
 app.use('/listings/*',async(c,next)=>{if(c.env.MEDIA_STRATEGY==='STATIC_ASSETS'&&['POST','PATCH','PUT','DELETE'].includes(c.req.method)&&/\/images(?:\/|$)/.test(c.req.path))return c.json({error:'Owner image changes are not available for repository-managed media'},503);await next();});
 app.use('/admin/*',async(c,next)=>{
   if(!jwtSecretConfigured(c.env))return c.json({error:'authentication unavailable'},503);
   const auth=c.req.header('Authorization'),raw=auth?.startsWith('Bearer ')?auth.slice(7):cookie(c.req.header('Cookie')??null);
   if(!raw)return c.json({error:'Invalid or expired token'},401);
   if(!auth?.startsWith('Bearer ')&&['POST','PATCH','DELETE','PUT'].includes(c.req.method)&&c.req.header('Origin')!==new URL(c.req.url).origin)return c.json({error:'same-origin request required'},403);
-  let claims:SessionClaims;try{claims=await verify(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
+  let claims:SessionClaims;try{claims=await verifySession(decodeURIComponent(raw),c.env);}catch{return c.json({error:'Invalid or expired token'},401);}
   const user=await authenticatedUser(c,claims);
   if(!user)return c.json({error:'Invalid or expired token'},401);
   if(user.role!=='ADMIN')return c.json({error:'Invalid or expired token'},401);

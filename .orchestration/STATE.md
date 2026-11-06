@@ -1,19 +1,21 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `CD_PREVIEW_HARDENING`
-Active task: `Issue #49 — prepare safe opt-in Preview CD; activation remains disabled pending separate Product Owner authorization`
+Phase: `M3_5_GOOGLE_OWNER_AUTH`
+Active task: `Issue #76 — M3.5 Google Login and individual OWNER identities`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
 
-## Current checkpoint — Safe Preview CD preparation (2026-11-03)
+## Current checkpoint — M3.5 Google Login and individual OWNER identities (2026-11-06)
 
-- Product Owner authorized a functional PR on Issue #49 to harden `staging-private`, add sensitive-path CODEOWNERS, and prepare automatic publication after protected-main Worker/Web checks. CD must remain disabled; no secret, variable, remote GitHub protection, Cloudflare Access, D1, production, or infrastructure change is authorized here.
-- Base/main: `3c6837723d2d48a1710c692185aa9c1484b513db`; PR #71 is integrated. M3 is deployed to the existing private Preview at deployment `f3d02d69-8aa5-4ccf-8046-815510c3f2b9`, exact source SHA above. Issue #70 remains open for Product Owner acceptance; its remote browser smoke was `BLOCKED_AUTH` because the test browser had no Access session.
-- GitHub currently has no repository Actions variables or secrets usable by `staging-private`; its gate remains `SAFE SKIP`. `main` requires strict `worker` and `web` checks and admin enforcement, but currently requires zero approving reviews and does not require CODEOWNERS reviews.
-- This increment removes all remote migration work from the automatic publication path, requires zero pending migrations and no migration-file delta since the latest verified Preview SHA, validates the existing target/config/bindings and exact deployed SHA, and retains Access-denial checks. It prepares CODEOWNERS without changing remote branch protection.
-- Binding contract: `.orchestration/contracts/CF-AU-CD-SAFE-PREVIEW.md`. Exact active PR HEAD is resolved dynamically from GitHub; do not persist a self-referential HEAD here.
-- Next action: complete focused guard regressions, Worker/Web CI, automatic/technical review; merge through existing protected `main` only if controls pass. Keep `CF_PREVIEW_CD_ENABLED` unset and stop before credential/variable or branch-protection activation.
+- Product Owner authorized local implementation, synthetic testing, a functional PR and protected integration for Issue #76 from `main@98e89fe67b52568bd1879298590f80b360739a10`.
+- Google identity is keyed by provider `google` + verified Google `sub`; no email-based account linking. First sign-in creates an individual OWNER only and never creates or publishes a listing. ADMIN remains server-managed and the existing moderation path is preserved.
+- Code adds a one-use nonce tied to an HttpOnly browser-binding cookie; Google JWKS / issuer / audience / expiry / `sub` / verified email checks; D1-backed hashed session identifiers, explicit expiry, per-browser session rotation, logout revocation, CSRF/origin enforcement, and fail-closed `AUTH_STRATEGY=GOOGLE`. Existing `ACCESS_PREVIEW` and loopback `PASSWORD` strategies remain separate.
+- Migration `0017_google_owner_identity_sessions.sql` is local/test-only in this increment. A fresh synthetic RSA keypair and per-run Wrangler config are generated in a temporary directory for local Playwright, restricted to loopback, and removed after the run; neither is a Google credential.
+- No Google Console/OAuth configuration, real Client ID, remote D1 migration, remote secret, Access, Preview/CD, deployment, production, M4 or other product changes are authorized.
+- Binding contract: `.orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md`. Work branch: `feat/m3-5-google-owner-auth`; base SHA above.
+- Functional PR #77 is OPEN from `feat/m3-5-google-owner-auth` against `main@98e89fe67b52568bd1879298590f80b360739a10`; query live GitHub for its current head instead of pinning a moving SHA here. GitHub reviews and Controller found four P2s, all repaired with regressions: active-session binding expiry is preserved, anonymous challenge bindings renew for the full 300-second nonce lifetime, failed GIS script loading can retry, and all per-run test key/config setup is inside recursive try/finally cleanup. Worker Google auth tests are now 7/7; local Chromium Google auth E2E is 3/3; Worker/Web typechecks pass. Six review findings are repaired, including concurrent challenge issuance and cleanup of the generated Wrangler config. GitHub CI and automated review must run on the new exact head. The previous Controller process output contradicted its accepted runtime model/effort, so it is not a valid PASS; no Controller PASS is claimed. No remote changes.
+- **Next:** publish the consolidated corrections and canonical checkpoint to PR #77; verify exact-head Worker/Web CI and GitHub review; obtain a technically valid read-only review without claiming independence not provided by GitHub. Keep the PR open. The latest Issue #76 clarification requires a security review of the exact SHA and Product Owner approval before any merge. Preview activation separately requires Google OAuth setup, migration authorization, Preview secret/configuration, an Access/public-browsing decision, and deployment/remote-QA authorization.
 
 ## Source baseline
 
@@ -2393,3 +2395,50 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - PR #72: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/72, branch `feat/cd-preview-no-migrations`, base `main@3c6837723d2d48a1710c692185aa9c1484b513db`.
 - Exact PR HEAD is resolved dynamically from GitHub. Worker/Web CI, automatic review, and read-only technical review are pending on that HEAD. The `staging-private` job must remain `SAFE SKIP` because no activation variable or Actions credential is configured.
 - Merge only after the required checks and review pass through existing protected-main settings. Do not alter remote branch protections or activate CD.
+
+
+## Event 294 — M3.5 local implementation started
+
+- Issue #76 authorizes implementation of Google OWNER identity/session flows locally, synthetic D1 tests, a functional PR, reviews, and protected merge when required checks pass.
+- Base `main@98e89fe67b52568bd1879298590f80b360739a10`; branch `feat/m3-5-google-owner-auth`.
+- Scope and activation boundaries are recorded in `.orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md`; migration 0017 is local-only.
+- Next action: complete local Worker/Web/Playwright validation, then PR review and protected integration. No Google Console, remote credentials/D1, Access, Preview/CD, production or M4 actions.
+
+## Event 295 — Functional PR #77 opened
+
+- PR #77: https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/77, branch `feat/m3-5-google-owner-auth`, base `main@98e89fe67b52568bd1879298590f80b360739a10`.
+- Exact PR HEAD is resolved dynamically from GitHub; local Worker/Web/Playwright suites passed, while exact-head GitHub CI and delegated read-only Controller review are pending.
+- Migration 0017 remains local/test-only. No Google Console, remote D1, secrets, Access, Preview/CD, deployment, production or M4 actions occurred.
+
+
+## Event 296 — Google active-session browser-binding rework
+
+- The exact-head review of PR #77 found that requesting a new login challenge with an existing browser binding overwrote its session-length cookie with a five-minute cookie. The challenge route now leaves an existing binding cookie unchanged; only a new browser gets the short challenge cookie.
+- Added Worker and Playwright regressions for a still-valid OWNER session visiting `/register`. Focused Worker typecheck/tests and local Chromium E2E pass. Fresh exact-head CI, automated review and verified read-only Controller remain pending.
+
+
+## Event 297 — Google GIS retry recovery rework
+
+- Exact-head review found that a failed Google Identity Services script remained in the DOM, preventing the retry button from issuing another request. The failure handler now removes the failed script before clearing the load promise.
+- Added a real-browser regression that aborts the first GIS request and confirms the retry loads successfully. Web typecheck and Google-auth Playwright pass (3/3); new exact-head Worker/Web CI and final reviews pending.
+
+
+## Event 298 — Controller temp-file cleanup rework
+
+- Delegated static review of exact prior PR #77 candidate 182d3f2a92c81654cc03b012fda61ceca56320b3 returned REWORK for one P2: key generation/config writes preceded the temporary-resource cleanup boundary. Moved all setup inside that boundary and now remove the entire isolated temporary tree in finally.
+- Web typecheck and local Google-owner Playwright pass 3/3. Previous exact-head Worker/Web CI was green; fresh exact-head CI/GitHub review and one final bounded Controller review remain pending. No remote changes.
+
+
+## Event 299 — challenge retry binding-expiry rework
+
+- Exact GitHub review of prior PR #77 HEAD cd1c75e found a P2: retrying an anonymous challenge near the original binding-cookie expiry could produce a five-minute nonce with less than five minutes remaining on its browser binding. The route now renews anonymous bindings for the challenge lifetime, preserves active-session expiry, and extends the binding to at least the challenge TTL without extending authenticated session validity (D1 session expiry remains authoritative).
+- Added Worker regression for anonymous retry renewal and active-session non-shortening, plus a Chromium check with expiry tolerance. Worker Google suite 6/6 and Web Google Playwright 3/3 pass; fresh exact-head CI, GitHub review, and Controller review are pending. No remote changes.
+
+
+## Event 300 — consolidated Google OWNER auth review fixes
+
+- Corrected the concurrent challenge race: challenge replacement now uses one atomic D1 `batch`; a regression issues 12 challenges for one browser and proves exactly one nonce can be redeemed.
+- Corrected local E2E cleanup: the generated per-run Wrangler JSONC file is explicitly removed in `finally`, as is the disposable key/database directory. The last run left no matching temp output.
+- Focused validation on the consolidated code: Worker Google auth tests 7/7, Worker typecheck PASS, Web typecheck PASS, local Chromium Google auth E2E 3/3.
+- PR #77 remains OPEN. Query its current exact HEAD from GitHub; exact-head CI and automated review must refresh after this update. The prior delegated reviewer process emitted model/effort details conflicting with its accepted runtime header, so its verdict is not recorded as PASS.
+- **Security Human Gate remains:** no merge until a security review of the exact final SHA and Product Owner approval, as recorded in Issue #76. Do not claim independent review if the mechanism cannot guarantee it. No remote D1, Google credentials, Access, deployment, CD, production or M4 changes.

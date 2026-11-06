@@ -1,37 +1,38 @@
 {
   "schema_version": 1,
   "project": "Alquileres Uspallata Cloudflare Lab",
-  "phase": "CD_PREVIEW_HARDENING",
+  "phase": "M3_5_GOOGLE_OWNER_AUTH",
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
-  "active_task": "Issue #49 — prepare safe opt-in Preview CD; activation remains disabled pending separate Product Owner authorization",
-  "last_completed_task": "M3 PR #71 integrated and published to the existing private Preview; remote functional smoke is BLOCKED_AUTH and Issue #70 remains open for Product Owner acceptance.",
-  "last_completed_head": "3c6837723d2d48a1710c692185aa9c1484b513db",
-  "work_branch": "feat/cd-preview-no-migrations",
-  "next_action": "Resolve live HEAD of PR #72 from GitHub; complete exact-head Worker/Web CI, automated review, controller read-only technical review, and state validator. Integrate only via current protected main controls; never enable CD or change credentials, variables, Access, D1, production, or remote branch protections.",
+  "active_task": "Issue #76 — M3.5 Google Login and individual OWNER identities",
+  "last_completed_task": "M3 “Mi selección” is integrated and accepted in Issue #70; no M4 work has started.",
+  "last_completed_head": "98e89fe67b52568bd1879298590f80b360739a10",
+  "work_branch": "feat/m3-5-google-owner-auth",
+  "next_action": "Push consolidated challenge-atomicity and temporary-config cleanup fixes to PR #77; derive exact SHA dynamically from GitHub; verify Worker/Web CI and fresh GitHub review; perform valid read-only technical review if runtime evidence is consistent. Do not merge: await exact-SHA security review and Product Owner approval per Issue #76.",
   "stop_reason": null,
   "event": {
-    "seq": 293,
-    "summary": "Functional PR #72 opened from base 3c683772; CD remains disabled."
+    "seq": 300,
+    "summary": "Fixed concurrent Google challenge replacement using atomic D1 batch and removed generated local Wrangler config in finally; focused Worker tests 7/7, Worker/Web typechecks and Chromium E2E 3/3 PASS. PR #77 remains open pending exact-head CI/review and security Human Gate."
   },
   "external_review": null,
   "human_gate": {
-    "status": "M3_IMPLEMENTATION_AUTHORIZED",
-    "scope": "M3 Issue #70 only; no automatic Preview publication, remote infrastructure changes, production, or M4."
+    "status": "SECURITY_REVIEW_AND_PRODUCT_OWNER_APPROVAL_REQUIRED",
+    "scope": "No merge of authentication/role changes until security review of exact candidate SHA and Product Owner approval; no claim of independence beyond mechanism guarantees. Local code/test/PR work is authorized. Remote D1, Google credentials, secrets, Access, Preview/deployment, production, CD and M4 remain out of scope."
   },
   "blocker": null,
   "pull_request": {
-    "number": 72,
-    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/72",
-    "branch": "feat/cd-preview-no-migrations",
+    "number": 77,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/77",
+    "branch": "feat/m3-5-google-owner-auth",
     "base_branch": "main",
-    "base_sha": "3c6837723d2d48a1710c692185aa9c1484b513db",
+    "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
     "state": "OPEN",
     "is_draft": false,
-    "head_source": "Resolve live HEAD from GitHub PR #72 immediately before exact-head checks/review; do not persist moving HEAD in tracked state.",
-    "checks": "Worker/Web CI pending on live PR HEAD; staging-private must SAFE SKIP because activation settings/credential are absent.",
-    "independent_review": "Pending exact-head read-only technical review.",
-    "merge": "Protected merge only after CI and technical review pass; merge must leave CD disabled."
+    "head_source": "Resolve exact current PR #77 head from GitHub; record final SHA in PR/Issue comments, do not maintain a self-chasing SHA pointer.",
+    "checks": "Previous e5fd16e checks do not cover the new corrections; fresh exact-head Worker/Web CI pending.",
+    "automated_review": "Previous review had no findings on e5fd16e; rerun on the consolidated exact head.",
+    "technical_review": "Prior local Controller output conflicts with accepted model/effort evidence; not PASS. Exact-candidate review must have consistent runtime evidence.",
+    "merge": "NOT AUTHORIZED IN THIS EXECUTION. Issue #76 requires exact-SHA security review and Product Owner approval before merge."
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -85,17 +86,21 @@
   },
   "integration_reference": "PR #15 merged by commit aff1d44ec95bef09b676b5cf096aa7e51dbe5c2e; A1/A2 and full branch ancestry preserved.",
   "current_functional_increment": {
-    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/70",
-    "contract": ".orchestration/contracts/MVP-M3-ISSUE-70-MY-SELECTION.md",
-    "status": "Functional PR #71 open; exact-head Worker/Web CI and independent review pending.",
-    "base_sha": "a7a98664b2bbc5f8ad81a790b77fbdc0f09f31f0",
-    "scope": "Save/remove up to four monthly rental IDs in browser localStorage, ordered by selection; public API rehydration on opening/refresh/visibility return; comparison of current price/currency, capacity, location, deposit, services, pets, move-in date and declared availability/freshness; unknown values explicit; stale/unpublished/non-MONTH handling; existing detail/contact navigation. No backend/migrations/accounts/sync/reservations/payments/AI/analytics, remote D1/Preview/Access/CD/production or M4.",
-    "command_unit": "cd apps/web && npm run test:selection",
-    "command_e2e": "cd apps/web && npm run test:e2e:m3",
-    "browser": "Local Playwright Chromium against the existing local Worker/Hono and synthetic D1 harness; no remote data.",
-    "pr_tracking": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/71; stable executable candidate c21bdee; derive live tracking HEAD from GitHub immediately before review.",
-    "visual_evidence": "output/playwright/m3/QA.md and desktop/mobile screenshots at 1440, 390 and 320 px.",
-    "local_results": "Unit 4/4 PASS; local M3 Playwright Chromium 3/3 PASS; public regression Playwright 6/6 PASS; Web typecheck/build/build:preview PASS; canonical-state validator/diff PASS."
+    "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/76",
+    "contract": ".orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md",
+    "status": "IN_REVIEW_NOT_MERGEABLE_PENDING_HUMAN_SECURITY_GATE",
+    "base_sha": "98e89fe67b52568bd1879298590f80b360739a10",
+    "branch": "feat/m3-5-google-owner-auth",
+    "scope": "Google OWNER login, individual identities, revocable sessions; local synthetic D1 only. No remote activation/deployment or M4.",
+    "local_results": {
+      "worker_google_auth_tests": "PASS 7/7",
+      "worker_typecheck": "PASS",
+      "web_typecheck": "PASS",
+      "playwright_local_chromium": "PASS 3/3; temporary key, database and generated Wrangler config removed",
+      "remote_tests": "NOT RUN; not authorized"
+    },
+    "review_state": "Fresh exact-head GitHub CI and automated review pending after consolidated fixes; prior Controller result not PASS because final claim conflicted with accepted runtime configuration.",
+    "required_human_action": "Review security findings on exact final PR SHA and approve before merge."
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

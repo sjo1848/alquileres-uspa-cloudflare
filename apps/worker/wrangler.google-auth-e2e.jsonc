@@ -1,0 +1,40 @@
+{
+  "name": "cf-au-m3-5-google-auth-local",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-12",
+  "vars": {
+    "AUTH_STRATEGY": "GOOGLE",
+    "GOOGLE_CLIENT_ID": "google-local-test-client.apps.googleusercontent.com",
+    "GOOGLE_SESSION_TTL_SECONDS": "86400",
+    "GOOGLE_AUTH_LOCAL_TEST": "true",
+    "JWT_SECRET": "local-only-synthetic-google-session-secret-000000000000000000",
+    "COOKIE_SECURE": "true",
+    "COOKIE_SAME_SITE": "lax",
+    "MEDIA_STRATEGY": "D1_BLOB"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cf-au-m3-5-google-auth-local",
+      "database_id": "00000000-0000-0000-0000-000000000076",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "assets": {
+    "directory": "../web/dist/client",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/public/*",
+      "/auth/*",
+      "/owner/*",
+      "/admin/*",
+      "/health",
+      "/listings",
+      "/listings/*/availability",
+      "/listings/*/reconfirm",
+      "/listings/*/images",
+      "/listings/*/images/*"
+    ]
+  }
+}

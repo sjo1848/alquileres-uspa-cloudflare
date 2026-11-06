@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, request } from '../api';
 import { useSession } from '../session';
@@ -10,19 +10,82 @@ const loading = ref(false);
 const notice = ref('');
 const mockMailUrl = ref('');
 const newPassword = ref('');
-const strategy = ref<'LOADING'|'PASSWORD'|'ACCESS_PREVIEW'|'ERROR'>('LOADING');
+const strategy = ref<'LOADING'|'PASSWORD'|'ACCESS_PREVIEW'|'GOOGLE'|'ERROR'>('LOADING');
+const googleButton = ref<HTMLElement|null>(null);
+let googleAttempt = 0;
+let googleScriptLoad: Promise<void>|undefined;
 const session = useSession(), router = useRouter(), route = useRoute();
 const page = computed(() => route.path === '/register' ? 'register' : route.path === '/verify-email' ? 'verify' : route.path === '/recover' ? 'recover' : route.path === '/reset-password' ? 'reset' : 'login');
 const heading = computed(() => page.value==='register'?'Creá tu cuenta de propietario':page.value==='verify'?'Verificá tu correo':page.value==='recover'?'Recuperá el acceso':page.value==='reset'?'Elegí una nueva contraseña':'Ingresá a tu espacio');
 const description = computed(() => page.value==='register'?'Prepará tu alojamiento y empezá a organizar cada detalle.':page.value==='verify'?'Confirmá tu dirección con el enlace de prueba que recibiste.':page.value==='recover'?'Te enviaremos un enlace simulado si la cuenta puede recibir una recuperación.':page.value==='reset'?'El enlace de recuperación es temporal y de un solo uso.':'Gestioná tus publicaciones y consultas desde un solo lugar.');
-watch(() => route.fullPath, () => { error.value=''; notice.value=''; mockMailUrl.value=''; });
+watch(() => route.fullPath, () => { error.value=''; notice.value=''; mockMailUrl.value=''; if(strategy.value==='GOOGLE')void prepareGoogleButton(); });
 async function loadConfig() {
   strategy.value = 'LOADING'; error.value = '';
   try {
     strategy.value = await session.loadAuthStrategy();
+    if(strategy.value==='GOOGLE')await prepareGoogleButton();
   } catch { strategy.value='ERROR';error.value='El ingreso no está disponible. Reintentá en unos instantes.'; }
 }
-onMounted(loadConfig);
+onMounted(()=>void loadConfig());
+
+declare global {
+  interface Window {
+    google?: { accounts?: { id?: {
+      initialize: (options:{client_id:string;nonce:string;callback:(response:{credential?:string})=>void;auto_select?:boolean})=>void;
+      renderButton: (container:HTMLElement,options:{theme:string;size:string;text:string;shape:string;width:number})=>void;
+      disableAutoSelect?:()=>void;
+    } } };
+  }
+}
+
+function loadGoogleIdentityServices(){
+  if(window.google?.accounts?.id)return Promise.resolve();
+  if(googleScriptLoad)return googleScriptLoad;
+  googleScriptLoad=new Promise<void>((resolve,reject)=>{
+    let script=document.querySelector<HTMLScriptElement>('script[data-google-identity-services]');
+    if(!script){script=document.createElement('script');script.dataset.googleIdentityServices='true';script.src='https://accounts.google.com/gsi/client';script.async=true;script.defer=true;document.head.append(script);}
+    const loaded=()=>window.google?.accounts?.id?resolve():reject(new Error('Google Identity Services did not initialize'));
+    const failed=()=>reject(new Error('Google Identity Services failed to load'));
+    script.addEventListener('load',loaded,{once:true});script.addEventListener('error',failed,{once:true});
+    if(window.google?.accounts?.id)loaded();
+  }).catch(error=>{
+    document.querySelector<HTMLScriptElement>('script[data-google-identity-services]')?.remove();
+    googleScriptLoad=undefined;throw error;
+  });
+  return googleScriptLoad;
+}
+
+async function prepareGoogleButton(){
+  const attempt=++googleAttempt;error.value='';
+  try{
+    const clientId=session.googleClientId.value;
+    if(!clientId)throw new Error('Google Client ID is not configured');
+    await nextTick();
+    if(!googleButton.value||!['login','register'].includes(page.value))return;
+    const challenge=await request<{nonce:string}>('/auth/google/challenge');
+    await loadGoogleIdentityServices();
+    if(attempt!==googleAttempt||!googleButton.value||!window.google?.accounts?.id)return;
+    window.google.accounts.id.initialize({client_id:clientId,nonce:challenge.nonce,auto_select:false,callback:response=>{
+      if(response.credential)void completeGoogleSignIn(response.credential);
+      else error.value='Google no devolvió una identidad válida. Reintentá.';
+    }});
+    googleButton.value.replaceChildren();
+    window.google.accounts.id.renderButton(googleButton.value,{theme:'outline',size:'large',text:page.value==='register'?'signup_with':'signin_with',shape:'pill',width:Math.min(320,Math.max(200,googleButton.value.clientWidth||320))});
+  }catch{
+    if(attempt===googleAttempt)error.value='No pudimos preparar el ingreso con Google. Reintentá.';
+  }
+}
+
+async function completeGoogleSignIn(credential:string){
+  if(loading.value)return;
+  loading.value=true;error.value='';notice.value='';
+  try{
+    const authenticated=await session.authenticateGoogle(credential);
+    await router.push(safeLoginRedirect(route.query.redirect,authenticated.role)??'/owner');
+  }catch(e){
+    error.value=e instanceof ApiError&&e.status===409?'Esta dirección ya tiene una cuenta. No vinculamos cuentas automáticamente; contactá al equipo para resolverlo.':e instanceof ApiError&&e.status===401?'La verificación venció o no pudo completarse. Prepará un nuevo intento.':'No pudimos iniciar sesión con Google. Reintentá.';
+  }finally{loading.value=false;}
+}
 async function submitLocalFlow() {
   if(loading.value)return;
   loading.value=true;error.value='';notice.value='';
@@ -81,6 +144,7 @@ async function submit() {
         <p>{{ description }}</p>
       </header>
       <p v-if="strategy==='PASSWORD'" class="auth-local-note" role="note"><strong>Entorno local de prueba.</strong> Las cuentas y el correo son sintéticos; no se envían mensajes reales.</p>
+      <p v-if="strategy==='GOOGLE'" class="auth-local-note" role="note">Google verifica tu identidad. La primera vez se crea una cuenta individual de propietario; no se publica ningún alojamiento automáticamente.</p>
       <p v-if="route.query.reset" class="auth-feedback success" role="status">La contraseña fue actualizada. Iniciá sesión con la nueva contraseña.</p>
       <p v-if="route.query.expired" class="auth-feedback error" role="alert">La sesión expiró. Ingresá nuevamente para proteger tus cambios.</p>
       <p v-if="route.query.unavailable" class="auth-feedback error" role="alert">No pudimos verificar la sesión. Podés reintentar el ingreso.</p>
@@ -88,6 +152,18 @@ async function submit() {
       <p v-if="notice" class="auth-feedback success" role="status">{{ notice }}</p>
       <p v-if="strategy==='LOADING'" class="auth-loading" role="status">Preparando el ingreso…</p>
       <button v-if="strategy==='ERROR'" type="button" class="secondary" @click="loadConfig">Reintentar</button>
+
+      <section v-if="strategy==='GOOGLE'&&(page==='login'||page==='register')" class="auth-form" :aria-busy="loading" aria-label="Ingreso seguro con Google">
+        <p>{{ page==='register'?'Creá una cuenta individual de propietario con tu identidad de Google.':'Ingresá a tu cuenta de propietario con Google.' }}</p>
+        <div ref="googleButton" class="google-signin-button" role="group" aria-label="Botón de ingreso de Google"></div>
+        <button type="button" class="secondary" :disabled="loading" @click="prepareGoogleButton">Preparar otro intento</button>
+        <p class="auth-form-hint">No guardamos tu token de Google en este dispositivo. Crear una cuenta no publica ni modifica anuncios.</p>
+      </section>
+      <section v-if="strategy==='GOOGLE'&&!['login','register'].includes(page)" class="auth-preview-locked" role="status">
+        <h2>Esta opción no está habilitada para Google</h2>
+        <p>La recuperación automática todavía no está disponible. Volvé al ingreso para continuar con tu identidad de Google.</p>
+        <RouterLink class="button-link" to="/login">Ir al ingreso</RouterLink>
+      </section>
 
       <div v-if="strategy==='ACCESS_PREVIEW'&&page!=='login'" class="auth-preview-locked" role="status">
         <h2>El alta local no está disponible en Preview</h2>
@@ -117,6 +193,8 @@ async function submit() {
       <form v-if="strategy==='PASSWORD'&&page==='verify'" class="auth-form" @submit.prevent="submitLocalFlow" :aria-busy="loading"><p>El enlace de verificación vence y se puede usar una sola vez.</p><button :disabled="loading||!route.query.token" type="submit">{{ loading?'Verificando…':'Verificar correo de prueba' }}</button></form>
       <form v-if="strategy==='PASSWORD'&&page==='recover'" class="auth-form" @submit.prevent="submitLocalFlow" :aria-busy="loading"><fieldset :disabled="loading"><label for="email">Correo electrónico</label><input id="email" v-model="email" type="email" autocomplete="email" required maxlength="254" /><button type="submit">{{ loading?'Preparando enlace…':'Solicitar recuperación' }}</button></fieldset><p class="auth-form-hint">La respuesta es igual para cuentas existentes y direcciones desconocidas.</p></form>
       <form v-if="strategy==='PASSWORD'&&page==='reset'" class="auth-form" @submit.prevent="submitLocalFlow" :aria-busy="loading"><fieldset :disabled="loading"><label for="password">Nueva contraseña</label><input id="password" v-model="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /><button type="submit">{{ loading?'Actualizando…':'Guardar contraseña nueva' }}</button></fieldset></form>
+
+      <nav v-if="strategy==='GOOGLE'" class="auth-links" aria-label="Opciones de cuenta"><RouterLink v-if="page==='login'" to="/register">Crear cuenta de propietario</RouterLink><RouterLink v-if="page==='register'" to="/login">Ya tengo cuenta</RouterLink></nav>
 
       <div v-if="strategy==='PASSWORD'&&(page==='register'||page==='recover')" class="auth-mailbox">
         <button type="button" class="secondary" :disabled="loading" @click="readLocalMailbox">Consultar bandeja de prueba</button>

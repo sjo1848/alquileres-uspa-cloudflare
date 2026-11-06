@@ -3,11 +3,12 @@ import { ApiError, request, type Role, type User } from './api';
 
 export type SessionStatus =
   'unknown' | 'loading' | 'authenticated' | 'anonymous' | 'error';
-export type AuthStrategy = 'PASSWORD' | 'ACCESS_PREVIEW' | 'UNKNOWN';
+export type AuthStrategy = 'PASSWORD' | 'ACCESS_PREVIEW' | 'GOOGLE' | 'UNKNOWN';
 export type MediaStrategy = 'STATIC_ASSETS' | 'D1_BLOB' | 'R2' | 'UNKNOWN';
 const status = ref<SessionStatus>('unknown');
 const user = ref<User | null>(null);
 const authStrategy = ref<AuthStrategy>('UNKNOWN');
+const googleClientId = ref<string | null>(null);
 const mediaStrategy = ref<MediaStrategy>('UNKNOWN');
 let restorePromise: Promise<void> | undefined;
 let previewRefreshPromise: Promise<User> | undefined;
@@ -38,6 +39,10 @@ export function useSession() {
       const result=await request<{ok?:boolean}>('/auth/logout', { method: 'POST' });
       if(result.ok!==true)throw new ApiError(401,'The server did not confirm session revocation');
       revoked=true;anonymous();
+      if(authStrategy.value==='GOOGLE'&&typeof window!=='undefined'){
+        const google=(window as Window&{google?:{accounts?:{id?:{disableAutoSelect?:()=>void}}}}).google;
+        google?.accounts?.id?.disableAutoSelect?.();
+      }
     }finally{
       logoutInFlight=false;
       if(!revoked&&expiresAt!==undefined&&status.value==='authenticated')schedulePreviewRefresh(expiresAt);
@@ -108,9 +113,10 @@ export function useSession() {
   async function loadAuthStrategy() {
     if(authStrategy.value!=='UNKNOWN'&&mediaStrategy.value!=='UNKNOWN')return authStrategy.value;
     if(!authConfigPromise){
-      authConfigPromise=request<{strategy:string;mediaStrategy?:string}>('/auth/config').then(config=>{
-        if(config.strategy!=='PASSWORD'&&config.strategy!=='ACCESS_PREVIEW')throw Error('Unsupported authentication');
+      authConfigPromise=request<{strategy:string;mediaStrategy?:string;googleClientId?:string}>('/auth/config').then(config=>{
+        if(config.strategy!=='PASSWORD'&&config.strategy!=='ACCESS_PREVIEW'&&config.strategy!=='GOOGLE')throw Error('Unsupported authentication');
         authStrategy.value=config.strategy;
+        googleClientId.value=config.strategy==='GOOGLE'&&typeof config.googleClientId==='string'?config.googleClientId:null;
         mediaStrategy.value=config.mediaStrategy==='STATIC_ASSETS'||config.mediaStrategy==='D1_BLOB'||config.mediaStrategy==='R2'?config.mediaStrategy:'UNKNOWN';
         return config.strategy;
       });
@@ -148,6 +154,15 @@ export function useSession() {
     status.value = 'authenticated';
     user.value = result.user;
     schedulePreviewRefresh(result.sessionExpiresAt);
+  }
+
+  async function authenticateGoogle(credential:string){
+    if(authStrategy.value!=='GOOGLE')throw new Error('Google authentication is unavailable');
+    if(typeof credential!=='string'||credential.length<32||credential.length>16_384)throw new Error('Invalid Google credential');
+    const result=await request<{user:User;sessionExpiresAt:number}>('/auth/google/exchange',{method:'POST',body:JSON.stringify({credential})});
+    if(result.user.role!=='OWNER'||!Number.isSafeInteger(result.sessionExpiresAt))throw new ApiError(401,'Google sign-in was rejected');
+    user.value=result.user;status.value='authenticated';
+    return result.user;
   }
 
   async function restore() {
@@ -211,10 +226,12 @@ export function useSession() {
     user,
     role,
     authStrategy,
+    googleClientId,
     mediaStrategy,
     isAuthenticated,
     authenticate,
     authenticatePreview,
+    authenticateGoogle,
     loadAuthStrategy,
     restore,
     clear,
