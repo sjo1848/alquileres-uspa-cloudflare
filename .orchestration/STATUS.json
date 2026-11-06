@@ -4,7 +4,7 @@
   "phase": "M3_5_GOOGLE_OWNER_AUTH",
   "runtime_status": "IN_PROGRESS",
   "resume_authorized": true,
-  "active_task": "Issue #76 — M3.5 Google Login and individual OWNER identities; final technical/security review on PR #77",
+  "active_task": "Issue #76 — M3.5 Google Login and individual OWNER identities",
   "last_completed_task": "M3 “Mi selección” is integrated and accepted in Issue #70; no M4 work has started.",
   "last_completed_head": "98e89fe67b52568bd1879298590f80b360739a10",
   "work_branch": "feat/m3-5-google-owner-auth",
