@@ -8,11 +8,11 @@
   "last_completed_task": "M3.5 Google Login OWNER individual identities integrated in main",
   "last_completed_head": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
   "work_branch": "feat/m3-6-google-admin-auth",
-  "next_action": "Reconcile PR #82 tracking fields, run exact-head GitHub worker/web checks and delegated read-only technical review; keep it open until Product Owner approves that exact SHA.",
+  "next_action": "Await Product Owner review and explicit merge authorization on the live exact HEAD of PR #82. Do not merge or perform remote operations.",
   "stop_reason": null,
   "event": {
-    "seq": 301,
-    "summary": "M3.6 Google ADMIN explicitly authorized from main fda7b867; Issue #81 created. Local implementation active; no remote auth/data changes. Exact-SHA Product Owner approval required before merge."
+    "seq": 302,
+    "summary": "M3.6 PR #82 is ready for Product Owner review. Exact-head GitHub Worker/Web checks PASS on 2d44ce5; delegated Controller PASS on executable commit 229699a. Backend model identity remains unverified; no remote operations. Await exact-SHA merge approval."
   },
   "external_review": null,
   "human_gate": {
@@ -26,8 +26,11 @@
     "branch": "feat/m3-6-google-admin-auth",
     "base_sha": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
     "state": "OPEN",
-    "merge": "NEVER_AUTOMATIC; exact SHA Product Owner approval required",
-    "is_draft": true
+    "merge": "NEVER_AUTOMATIC; explicit Product Owner authorization on the exact live HEAD required",
+    "is_draft": false,
+    "github_ci": "run 42300985736: worker PASS, web PASS, staging-private SKIPPED",
+    "controller_reviewed_code_sha": "229699a55685859f70bb9f5e9ca8b343dfdb6540",
+    "controller_verdict": "PASS; project_controller delegated role configured gpt-6-luna/high; backend identity UNVERIFIED"
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -83,7 +86,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/81",
     "contract": ".orchestration/contracts/MVP-M3.6-ISSUE-81-GOOGLE-ADMIN.md",
-    "status": "PR #82 OPEN/DRAFT; local implementation and targeted validation complete; exact-head GitHub CI and delegated technical review pending.",
+    "status": "PR #82 OPEN/READY; Worker/Web CI PASS; delegated Controller PASS on executable code SHA 229699a. Await Product Owner authorization on the exact live PR HEAD before merge.",
     "base_sha": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
     "branch": "feat/m3-6-google-admin-auth",
     "scope": "Google ADMIN linked only by verified sub through controlled provisioning onto existing ADMIN; role-specific revocable sessions; local migration/tests; OWNER→ADMIN local E2E.",
