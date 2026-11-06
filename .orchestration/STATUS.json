@@ -8,11 +8,11 @@
   "last_completed_task": "M3.5 Google Login OWNER individual identities integrated in main",
   "last_completed_head": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
   "work_branch": "feat/m3-6-google-admin-auth",
-  "next_action": "Mirror Event 302 in STATE.md, run the canonical state consistency check, and get final exact-head Worker/Web CI PASS; then stop for Product Owner exact-SHA authorization.",
+  "next_action": "Review the live Worker/Web checks and current exact PR #82 HEAD; then wait for Product Owner approval to merge that exact SHA. Do not merge or perform remote operations.",
   "stop_reason": null,
   "event": {
-    "seq": 302,
-    "summary": "M3.6 PR #82 ready for Product Owner review. Web CI passed; Worker functional suites passed but consistency check failed because Event 302 was not mirrored in STATE.md. Reconcile state and rerun exact-head CI. Controller PASS on executable SHA 229699a; no remote operations. Await exact-SHA merge approval."
+    "seq": 303,
+    "summary": "M3.6 PR #82 is ready for Product Owner review. Canonical event/state check passes; subsequent CI and exact SHA are read dynamically from GitHub to avoid stale HEAD pointers. Controller PASS on executable SHA 229699a; no remote operations. Await exact-SHA merge authorization."
   },
   "external_review": null,
   "human_gate": {
@@ -28,7 +28,7 @@
     "state": "OPEN",
     "merge": "NEVER_AUTOMATIC; explicit Product Owner authorization on the exact live HEAD required",
     "is_draft": false,
-    "github_ci": "run 42301486636: web PASS, worker functional suites PASS but state consistency check FAILED; rerun required on updated STATE mirror",
+    "github_ci": "Query live Worker/Web rollup for current PR #82 HEAD; CI conclusions are recorded in GitHub, not pinned here.",
     "controller_reviewed_code_sha": "229699a55685859f70bb9f5e9ca8b343dfdb6540",
     "controller_verdict": "PASS; project_controller delegated role configured gpt-6-luna/high; backend identity UNVERIFIED"
   },
@@ -86,7 +86,7 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/81",
     "contract": ".orchestration/contracts/MVP-M3.6-ISSUE-81-GOOGLE-ADMIN.md",
-    "status": "PR #82 OPEN/READY; local tests pass; GitHub Web PASS, Worker state consistency check failed due missing Event 302 mirror, now being corrected. Final exact-head CI required before PO review.",
+    "status": "PR #82 OPEN/READY; local checks complete; CI and current exact HEAD are read dynamically from GitHub; delegated Controller PASS is scoped to executable SHA 229699a. Await Product Owner authorization on live exact HEAD.",
     "base_sha": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
     "branch": "feat/m3-6-google-admin-auth",
     "scope": "Google ADMIN linked only by verified sub through controlled provisioning onto existing ADMIN; role-specific revocable sessions; local migration/tests; OWNER→ADMIN local E2E.",

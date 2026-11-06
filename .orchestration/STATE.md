@@ -2465,7 +2465,15 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 ## Event 302 — M3.6 candidate ready for Product Owner review
 
 - PR #82 is OPEN and ready for review. The executable candidate reviewed by the delegated Controller is `229699a55685859f70bb9f5e9ca8b343dfdb6540`; subsequent changes through HEAD `e93a86e94f0d39d2dbece5b72559c10f29d095e6` update only orchestration state and activation requirements.
-- GitHub CI run 42300985736 passed Worker and Web on the prior state-equivalent HEAD; run 42301486636 passed Web but exposed a missing Event 302 mirror in this file. The state checker is being repaired and CI rerun on the final exact HEAD. Do not report CI PASS until that check passes.
+- GitHub CI run 42301486636 exposed a missing Event 302 mirror in this file; the state mirror was repaired and `scripts/check_orchestration_state.py --base origin/main` passed locally. Latest complete CI run 42301841527 passed Worker and Web on `e2a3ff6`; current final-HEAD CI must be read dynamically from PR #82 after state-only commits.
 - Delegated `project_controller` returned PASS on the exact executable candidate. Role model/effort are configured `gpt-6-luna`/`high`; provider backend identity remains unverified. Review output and local test provenance are in PR #82.
 - Local Google OWNER/Admin tests pass; migration 0018 remains local-only. No Google Console, remote D1, Access, secret, CD, Preview, production, source-repository, or M4 change occurred.
 - **Merge gate:** wait for final exact-head Worker/Web CI and explicit Product Owner authorization on the live PR SHA; do not merge without it.
+
+
+## Event 303 — M3.6 canonical checks use live PR state
+
+- Removed pinned CI conclusions from the canonical status fields to avoid stale results after state-only commits. The PR's current live Worker/Web check rollup is authoritative; exact final head and run URL will be recorded in the GitHub review comment.
+- Local state/contract pointers and Event sequence are aligned; no executable changes are introduced by this event.
+- The `project_controller` PASS remains scoped to executable commit `229699a55685859f70bb9f5e9ca8b343dfdb6540`; the only subsequent file changes are canonical state/activation documentation.
+- Await final live Worker/Web CI and explicit Product Owner authorization on exact live PR HEAD. Do not merge or perform remote operations.
