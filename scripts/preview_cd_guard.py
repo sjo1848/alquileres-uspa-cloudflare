@@ -998,3 +998,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+# Synthetic policy probe: control-file path is classified as sensitive.
