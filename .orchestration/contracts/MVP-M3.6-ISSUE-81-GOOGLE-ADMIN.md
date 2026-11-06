@@ -21,3 +21,11 @@ Sin Google Console o credenciales reales, D1 remota, Access, secretos, CD, Previ
 ## Gates de entrega
 
 Un PR funcional con tests, CI Worker/Web y revisión técnica exacta. PR queda abierto y no se fusiona sin autorización expresa del Product Owner sobre el SHA exacto, por el impacto en autenticación y roles.
+
+## Requisitos concretos para activar Google real (fuera de este PR)
+
+- Crear un OAuth Web Client en Google Cloud con JavaScript origins exactos para cada entorno autorizado (incluidos los orígenes HTTPS de Preview y los loopback locales usados en desarrollo); el Client ID es público y no sustituye validación server-side.
+- Configurar `GOOGLE_CLIENT_ID` y `AUTH_STRATEGY=GOOGLE` en el Worker; `JWT_SECRET` debe existir solo como secreto del Worker, con al menos 32 bytes aleatorios. GIS entrega el ID token al navegador y no requiere introducir un client secret en este flujo.
+- Aplicar `0017_google_owner_identity_sessions.sql` y `0018_google_admin_identity_sessions.sql` a la D1 objetivo mediante un procedimiento remoto separado y autorizado; este PR no ejecuta ni autoriza migraciones remotas.
+- Para cada administrador, conservar una cuenta D1 ya asignada por el servidor con rol `ADMIN`; un operador verifica la identidad Google y la vincula por `sub` mediante el procedimiento/script de provisión. Verificar por fuera de la sesión quién es titular de ese `sub`; no inferirla del correo.
+- Tras una activación autorizada, probar OWNER y ADMIN en entorno aislado, comprobar denegaciones cruzadas, logout/revocación y mantener Preview Access/producción sin cambios hasta autorizar esas operaciones por separado.

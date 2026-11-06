@@ -8,7 +8,7 @@
   "last_completed_task": "M3.5 Google Login OWNER individual identities integrated in main",
   "last_completed_head": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
   "work_branch": "feat/m3-6-google-admin-auth",
-  "next_action": "Complete role-specific Google ADMIN provisioning and sessions, local synthetic D1 negative tests and OWNER→ADMIN Playwright flow; run Worker/Web CI and technical review; leave the PR open until Product Owner authorizes the exact SHA.",
+  "next_action": "Reconcile PR #82 tracking fields, run exact-head GitHub worker/web checks and delegated read-only technical review; keep it open until Product Owner approves that exact SHA.",
   "stop_reason": null,
   "event": {
     "seq": 301,
@@ -21,12 +21,13 @@
   },
   "blocker": null,
   "pull_request": {
-    "number": null,
-    "url": null,
+    "number": 82,
+    "url": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/82",
     "branch": "feat/m3-6-google-admin-auth",
     "base_sha": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
-    "state": "NOT_PUBLISHED",
-    "merge": "NEVER_AUTOMATIC; exact SHA Product Owner approval required"
+    "state": "OPEN",
+    "merge": "NEVER_AUTOMATIC; exact SHA Product Owner approval required",
+    "is_draft": true
   },
   "issue_4": "CLOSED",
   "review_authority": null,
@@ -82,12 +83,14 @@
   "current_functional_increment": {
     "issue": "https://github.com/sjo1848/alquileres-uspa-cloudflare/issues/81",
     "contract": ".orchestration/contracts/MVP-M3.6-ISSUE-81-GOOGLE-ADMIN.md",
-    "status": "IN_PROGRESS",
+    "status": "PR #82 OPEN/DRAFT; local implementation and targeted validation complete; exact-head GitHub CI and delegated technical review pending.",
     "base_sha": "fda7b867608acc2848d0e6a0c1944c40dc2b7ec1",
     "branch": "feat/m3-6-google-admin-auth",
     "scope": "Google ADMIN linked only by verified sub through controlled provisioning onto existing ADMIN; role-specific revocable sessions; local migration/tests; OWNER→ADMIN local E2E.",
     "limits": "No Google Console/real credentials, remote D1, Access, secrets, CD, Preview/deployment, production, source writes, M4.",
-    "merge_gate": "Product Owner explicit approval of exact final SHA required."
+    "merge_gate": "Product Owner explicit approval of exact final SHA required.",
+    "pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/82",
+    "executable_sha": "229699a55685859f70bb9f5e9ca8b343dfdb6540"
   },
   "prior_pull_request": "https://github.com/sjo1848/alquileres-uspa-cloudflare/pull/14",
   "preview_admin_identity": {

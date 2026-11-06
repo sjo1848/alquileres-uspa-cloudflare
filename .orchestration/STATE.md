@@ -14,6 +14,7 @@ Active task: `Issue #81 — M3.6 Google ADMIN with explicit sub provisioning`
 - Migration 0018, if required, is local/test-only. No Google Console/real credentials, remote D1, Access, secrets, CD, Preview/deployment, production, source-repo write, or M4.
 - Contract: `.orchestration/contracts/MVP-M3.6-ISSUE-81-GOOGLE-ADMIN.md`. Branch `feat/m3-6-google-admin-auth`.
 - **Merge gate:** no merge without explicit Product Owner authorization on the exact SHA.
+- PR #82 is OPEN/DRAFT. Local code candidate: `229699a55685859f70bb9f5e9ca8b343dfdb6540`; query live HEAD and checks before final review. Local Chromium Google auth E2E is 4/4, Worker Google auth 11/11 plus 3 provisioning verifier tests, Worker/Web typecheck and Web build PASS; GitHub checks are running. No merge or remote operation occurred.
 
 ## Current checkpoint — M3.5 Google Login and individual OWNER identities (2026-11-06)
 
