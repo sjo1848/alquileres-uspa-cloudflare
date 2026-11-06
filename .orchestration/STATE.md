@@ -2421,3 +2421,9 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 
 - Exact-head review found that a failed Google Identity Services script remained in the DOM, preventing the retry button from issuing another request. The failure handler now removes the failed script before clearing the load promise.
 - Added a real-browser regression that aborts the first GIS request and confirms the retry loads successfully. Web typecheck and Google-auth Playwright pass (3/3); new exact-head Worker/Web CI and final reviews pending.
+
+
+## Event 298 — Controller temp-file cleanup rework
+
+- Delegated static review of exact prior PR #77 candidate 182d3f2a92c81654cc03b012fda61ceca56320b3 returned REWORK for one P2: key generation/config writes preceded the temporary-resource cleanup boundary. Moved all setup inside that boundary and now remove the entire isolated temporary tree in finally.
+- Web typecheck and local Google-owner Playwright pass 3/3. Previous exact-head Worker/Web CI was green; fresh exact-head CI/GitHub review and one final bounded Controller review remain pending. No remote changes.
