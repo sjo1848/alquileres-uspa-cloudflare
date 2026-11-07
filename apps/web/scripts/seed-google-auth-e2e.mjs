@@ -15,10 +15,15 @@ if (!workerConfig || !isAbsolute(workerConfig) || !workerConfig.startsWith(`${wo
   console.error('GOOGLE_AUTH_E2E_CONFIG must point to the private per-run local Worker config.');
   process.exit(2);
 }
-const result = spawnSync('npx', ['--no-install', 'wrangler', 'd1', 'migrations', 'apply', 'DB', '--local', '--config', workerConfig, '--persist-to', stateDirectory], {
-  cwd: webDirectory,
-  env: process.env,
-  stdio: 'inherit',
-});
-if (result.error) throw result.error;
-process.exit(result.status ?? 1);
+for (const args of [
+  ['d1', 'migrations', 'apply', 'DB', '--local', '--config', workerConfig, '--persist-to', stateDirectory],
+  ['d1', 'execute', 'DB', '--local', '--config', workerConfig, '--persist-to', stateDirectory, '--file', '../worker/tests/seed-google-auth-e2e.sql'],
+]) {
+  const result = spawnSync('npx', ['--no-install', 'wrangler', ...args], {
+    cwd: webDirectory,
+    env: process.env,
+    stdio: 'inherit',
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+}

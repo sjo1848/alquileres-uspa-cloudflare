@@ -81,7 +81,7 @@ async function completeGoogleSignIn(credential:string){
   loading.value=true;error.value='';notice.value='';
   try{
     const authenticated=await session.authenticateGoogle(credential);
-    await router.push(safeLoginRedirect(route.query.redirect,authenticated.role)??'/owner');
+    await router.push(safeLoginRedirect(route.query.redirect,authenticated.role)??(authenticated.role==='ADMIN'?'/admin':'/owner'));
   }catch(e){
     error.value=e instanceof ApiError&&e.status===409?'Esta dirección ya tiene una cuenta. No vinculamos cuentas automáticamente; contactá al equipo para resolverlo.':e instanceof ApiError&&e.status===401?'La verificación venció o no pudo completarse. Prepará un nuevo intento.':'No pudimos iniciar sesión con Google. Reintentá.';
   }finally{loading.value=false;}
@@ -144,7 +144,7 @@ async function submit() {
         <p>{{ description }}</p>
       </header>
       <p v-if="strategy==='PASSWORD'" class="auth-local-note" role="note"><strong>Entorno local de prueba.</strong> Las cuentas y el correo son sintéticos; no se envían mensajes reales.</p>
-      <p v-if="strategy==='GOOGLE'" class="auth-local-note" role="note">Google verifica tu identidad. La primera vez se crea una cuenta individual de propietario; no se publica ningún alojamiento automáticamente.</p>
+      <p v-if="strategy==='GOOGLE'" class="auth-local-note" role="note">Google verifica tu identidad. Las cuentas nuevas acceden como propietarios. El acceso de administración solo está disponible para identidades habilitadas previamente por el equipo; no se asigna por correo ni desde este formulario.</p>
       <p v-if="route.query.reset" class="auth-feedback success" role="status">La contraseña fue actualizada. Iniciá sesión con la nueva contraseña.</p>
       <p v-if="route.query.expired" class="auth-feedback error" role="alert">La sesión expiró. Ingresá nuevamente para proteger tus cambios.</p>
       <p v-if="route.query.unavailable" class="auth-feedback error" role="alert">No pudimos verificar la sesión. Podés reintentar el ingreso.</p>
@@ -154,7 +154,7 @@ async function submit() {
       <button v-if="strategy==='ERROR'" type="button" class="secondary" @click="loadConfig">Reintentar</button>
 
       <section v-if="strategy==='GOOGLE'&&(page==='login'||page==='register')" class="auth-form" :aria-busy="loading" aria-label="Ingreso seguro con Google">
-        <p>{{ page==='register'?'Creá una cuenta individual de propietario con tu identidad de Google.':'Ingresá a tu cuenta de propietario con Google.' }}</p>
+        <p>{{ page==='register'?'Creá una cuenta individual de propietario con tu identidad de Google.':'Ingresá con Google. Las identidades de administración habilitadas acceden a su espacio correspondiente.' }}</p>
         <div ref="googleButton" class="google-signin-button" role="group" aria-label="Botón de ingreso de Google"></div>
         <button type="button" class="secondary" :disabled="loading" @click="prepareGoogleButton">Preparar otro intento</button>
         <p class="auth-form-hint">No guardamos tu token de Google en este dispositivo. Crear una cuenta no publica ni modifica anuncios.</p>

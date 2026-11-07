@@ -16,7 +16,7 @@
     "test:owner": "vitest run --config vitest.config.ts tests/owner-lifecycle.test.ts",
     "test:rental-terms": "vitest run --config vitest.config.ts tests/rental-terms.test.ts",
     "test:owner-auth": "vitest run --config vitest.config.ts tests/local-owner-auth.test.ts",
-    "test:google-auth": "vitest run --config vitest.config.ts tests/google-owner-auth.test.ts",
+    "test:google-auth": "vitest run --config vitest.config.ts tests/google-owner-auth.test.ts && node --test tests/provision-google-admin-script.test.mjs",
     "test:preview-auth": "vitest run --config vitest.config.ts tests/preview-auth.test.ts",
     "test:contact-workflow": "vitest run --config vitest.config.ts tests/contact-workflow.test.ts",
     "test:management": "vitest run --config vitest.config.ts tests/listing-management.test.ts"

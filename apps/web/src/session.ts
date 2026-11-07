@@ -160,7 +160,7 @@ export function useSession() {
     if(authStrategy.value!=='GOOGLE')throw new Error('Google authentication is unavailable');
     if(typeof credential!=='string'||credential.length<32||credential.length>16_384)throw new Error('Invalid Google credential');
     const result=await request<{user:User;sessionExpiresAt:number}>('/auth/google/exchange',{method:'POST',body:JSON.stringify({credential})});
-    if(result.user.role!=='OWNER'||!Number.isSafeInteger(result.sessionExpiresAt))throw new ApiError(401,'Google sign-in was rejected');
+    if(!['OWNER','ADMIN'].includes(result.user.role)||!Number.isSafeInteger(result.sessionExpiresAt))throw new ApiError(401,'Google sign-in was rejected');
     user.value=result.user;status.value='authenticated';
     return result.user;
   }

@@ -1,10 +1,20 @@
 # Canonical State — Alquileres Uspallata Cloudflare Lab
 
 State: `IN_PROGRESS`
-Phase: `M3_5_GOOGLE_OWNER_AUTH`
-Active task: `Issue #76 — M3.5 Google Login and individual OWNER identities`
+Phase: `M3_6_GOOGLE_ADMIN_AUTH`
+Active task: `Issue #81 — M3.6 Google ADMIN with explicit sub provisioning`
 
 > Historical note: earlier bootstrap, CF-AU-I00, and Artifact A1/A2 entries are retained as audit history. The latest canonical transition is recorded at the end of this file and mirrored in `.orchestration/STATUS.json`.
+
+## Current checkpoint — M3.6 Google ADMIN access (2026-11-06)
+
+- Base `main@fda7b867608acc2848d0e6a0c1944c40dc2b7ec1` integrates M3.5 OWNER Google login. Issue #81 authorizes local implementation only.
+- ADMIN Google identity must be provisioned explicitly by verified Google `sub` onto an existing D1 user whose server-side role is `ADMIN`; email matching, public registration, ID-token claims, and client request parameters never grant ADMIN.
+- Admin sessions and owner sessions remain role-specific, revocable, and checked against current D1 identity/role. E2E uses an isolated local synthetic D1.
+- Migration 0018, if required, is local/test-only. No Google Console/real credentials, remote D1, Access, secrets, CD, Preview/deployment, production, source-repo write, or M4.
+- Contract: `.orchestration/contracts/MVP-M3.6-ISSUE-81-GOOGLE-ADMIN.md`. Branch `feat/m3-6-google-admin-auth`.
+- **Merge gate:** no merge without explicit Product Owner authorization on the exact SHA.
+- PR #82 is OPEN/DRAFT. Local code candidate: `229699a55685859f70bb9f5e9ca8b343dfdb6540`; query live HEAD and checks before final review. Local Chromium Google auth E2E is 4/4, Worker Google auth 11/11 plus 3 provisioning verifier tests, Worker/Web typecheck and Web build PASS; GitHub checks are running. No merge or remote operation occurred.
 
 ## Current checkpoint — M3.5 Google Login and individual OWNER identities (2026-11-06)
 
@@ -15,7 +25,7 @@ Active task: `Issue #76 — M3.5 Google Login and individual OWNER identities`
 - No Google Console/OAuth configuration, real Client ID, remote D1 migration, remote secret, Access, Preview/CD, deployment, production, M4 or other product changes are authorized.
 - Binding contract: `.orchestration/contracts/MVP-M3-5-ISSUE-76-GOOGLE-OWNER-AUTH.md`. Work branch: `feat/m3-5-google-owner-auth`; base SHA above.
 - Functional PR #77 is OPEN from `feat/m3-5-google-owner-auth` against `main@98e89fe67b52568bd1879298590f80b360739a10`; query live GitHub for its current head instead of pinning a moving SHA here. GitHub reviews and Controller found four P2s, all repaired with regressions: active-session binding expiry is preserved, anonymous challenge bindings renew for the full 300-second nonce lifetime, failed GIS script loading can retry, and all per-run test key/config setup is inside recursive try/finally cleanup. Worker Google auth tests are now 7/7; local Chromium Google auth E2E is 3/3; Worker/Web typechecks pass. Six review findings are repaired, including concurrent challenge issuance and cleanup of the generated Wrangler config. GitHub CI and automated review must run on the new exact head. The previous Controller process output contradicted its accepted runtime model/effort, so it is not a valid PASS; no Controller PASS is claimed. No remote changes.
-- **Next:** publish the consolidated corrections and canonical checkpoint to PR #77; verify exact-head Worker/Web CI and GitHub review; obtain a technically valid read-only review without claiming independence not provided by GitHub. Keep the PR open. The latest Issue #76 clarification requires a security review of the exact SHA and Product Owner approval before any merge. Preview activation separately requires Google OAuth setup, migration authorization, Preview secret/configuration, an Access/public-browsing decision, and deployment/remote-QA authorization.
+- **Historical closure:** PR #77 was merged into main at `fda7b867608acc2848d0e6a0c1944c40dc2b7ec1` after Product Owner authorization. Google activation remains separate; no remote migration, credential, Access, deployment, or production change occurred.
 
 ## Source baseline
 
@@ -2435,10 +2445,35 @@ Authority: Issue #7 comment6219058078 (OWNER accepted6/6; next journey upload/vi
 - Added Worker regression for anonymous retry renewal and active-session non-shortening, plus a Chromium check with expiry tolerance. Worker Google suite 6/6 and Web Google Playwright 3/3 pass; fresh exact-head CI, GitHub review, and Controller review are pending. No remote changes.
 
 
-## Event 300 — consolidated Google OWNER auth review fixes
+## Event 300 — M3.5 consolidated Google OWNER auth review fixes
 
 - Corrected the concurrent challenge race: challenge replacement now uses one atomic D1 `batch`; a regression issues 12 challenges for one browser and proves exactly one nonce can be redeemed.
 - Corrected local E2E cleanup: the generated per-run Wrangler JSONC file is explicitly removed in `finally`, as is the disposable key/database directory. The last run left no matching temp output.
 - Focused validation on the consolidated code: Worker Google auth tests 7/7, Worker typecheck PASS, Web typecheck PASS, local Chromium Google auth E2E 3/3.
-- PR #77 remains OPEN. Query its current exact HEAD from GitHub; exact-head CI and automated review must refresh after this update. The prior delegated reviewer process emitted model/effort details conflicting with its accepted runtime header, so its verdict is not recorded as PASS.
+- PR #77 was subsequently merged at main `fda7b867608acc2848d0e6a0c1944c40dc2b7ec1` per the Product Owner instruction recorded in Issue #76. Its final CI/review and merge evidence remain in that issue.
 - **Security Human Gate remains:** no merge until a security review of the exact final SHA and Product Owner approval, as recorded in Issue #76. Do not claim independent review if the mechanism cannot guarantee it. No remote D1, Google credentials, Access, deployment, CD, production or M4 changes.
+
+
+## Event 301 — M3.6 Google ADMIN authorized
+
+- Product Owner authorized M3.6 from `main@fda7b867608acc2848d0e6a0c1944c40dc2b7ec1`; functional Issue #81 was created and linked to roadmap #55.
+- Implementation adds controlled `sub`-based provisioning for an existing ADMIN, distinct role-bound sessions, negative authorization tests, and local OWNER→ADMIN approval E2E.
+- No remote D1, Google Console/real credentials, Access, secrets, CD, Preview/deployment, production, source repository, or M4.
+- PR #77's approved merge does not authorize this sprint's merge. M3.6 PR must remain unmerged pending express Product Owner approval on its exact final SHA.
+
+
+## Event 302 — M3.6 candidate ready for Product Owner review
+
+- PR #82 is OPEN and ready for review. The executable candidate reviewed by the delegated Controller is `229699a55685859f70bb9f5e9ca8b343dfdb6540`; subsequent changes through HEAD `e93a86e94f0d39d2dbece5b72559c10f29d095e6` update only orchestration state and activation requirements.
+- GitHub CI run 42301486636 exposed a missing Event 302 mirror in this file; the state mirror was repaired and `scripts/check_orchestration_state.py --base origin/main` passed locally. Latest complete CI run 42301841527 passed Worker and Web on `e2a3ff6`; current final-HEAD CI must be read dynamically from PR #82 after state-only commits.
+- Delegated `project_controller` returned PASS on the exact executable candidate. Role model/effort are configured `gpt-6-luna`/`high`; provider backend identity remains unverified. Review output and local test provenance are in PR #82.
+- Local Google OWNER/Admin tests pass; migration 0018 remains local-only. No Google Console, remote D1, Access, secret, CD, Preview, production, source-repository, or M4 change occurred.
+- **Merge gate:** wait for final exact-head Worker/Web CI and explicit Product Owner authorization on the live PR SHA; do not merge without it.
+
+
+## Event 303 — M3.6 canonical checks use live PR state
+
+- Removed pinned CI conclusions from the canonical status fields to avoid stale results after state-only commits. The PR's current live Worker/Web check rollup is authoritative; exact final head and run URL will be recorded in the GitHub review comment.
+- Local state/contract pointers and Event sequence are aligned; no executable changes are introduced by this event.
+- The `project_controller` PASS remains scoped to executable commit `229699a55685859f70bb9f5e9ca8b343dfdb6540`; the only subsequent file changes are canonical state/activation documentation.
+- Await final live Worker/Web CI and explicit Product Owner authorization on exact live PR HEAD. Do not merge or perform remote operations.

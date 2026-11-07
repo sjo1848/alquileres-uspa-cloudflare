@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { createPrivateKey, createSign } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
@@ -27,9 +27,9 @@ async function mockGoogleIdentityServices(page:Page){
   `}));
 }
 
-async function signIn(page:Page,sub='local-google-owner-sub',email='local-google-owner@example.test'){
+async function signIn(page:Page,sub='local-google-owner-sub',email='local-google-owner@example.test',redirect?:string){
   await mockGoogleIdentityServices(page);
-  await page.goto('/login');
+  await page.goto(redirect?`/login?redirect=${encodeURIComponent(redirect)}`:'/login');
   const button=page.getByRole('button',{name:'Continuar con Google'});
   await expect(button).toBeVisible();
   await expect(page.getByText('Perfil de demostración')).toHaveCount(0);
@@ -37,7 +37,7 @@ async function signIn(page:Page,sub='local-google-owner-sub',email='local-google
   expect(nonce).toMatch(/^[A-Za-z0-9_-]{43}$/);
   await page.evaluate((credential)=>{(window as GoogleTestWindow).__googleTestCredential=credential;},tokenFor(nonce,sub,email));
   await button.click();
-  await expect(page).toHaveURL(/\/owner$/);
+  await expect(page).toHaveURL(sub==='local-google-admin-sub'?/\/admin(?:\/|$)/:/\/owner$/);
   await expect(page.getByRole('button',{name:'Cerrar sesión'})).toBeVisible();
 }
 
@@ -93,13 +93,54 @@ test('Google OWNER login creates no public listing, restores identity/listings, 
   await expect(page.locator('body')).not.toContainText('Continuar como administrador');
 });
 
+test('Google OWNER creates a listing and explicitly provisioned ADMIN reviews and publishes it',async({page,browser})=>{
+  await signIn(page);
+  const owner=await page.evaluate(async()=>{
+    const created=await fetch('/api/listings',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':'google-m36-owner-admin-listing'},body:JSON.stringify({title:'Alojamiento Google M3.6',description:'Fixture sintético del recorrido OWNER a ADMIN.',location:'Uspallata',priceAmount:245000,pricePeriod:'MONTH',rentalDuration:'MONTHS',maxOccupants:3,currency:'ARS'})});
+    const listing=await created.json();
+    const submitted=await fetch(`/api/listings/${encodeURIComponent(listing.id)}/submit`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    return {created:created.status,listing,submitted:submitted.status};
+  });
+  expect(owner.created).toBe(201);
+  expect(owner.listing).toMatchObject({status:'DRAFT',publicationStatus:'UNPUBLISHED'});
+  expect(owner.submitted).toBe(200);
+
+  const adminContext=await browser.newContext();
+  try{
+    const adminPage=await adminContext.newPage();
+    await signIn(adminPage,'local-google-admin-sub','local-google-admin@example.test','/admin');
+    const moderation=await adminPage.evaluate(async(listingId)=>{
+      const before=await fetch('/api/admin/listings/review');
+      const queue=await before.json();
+      const contains=queue.items?.some((item:{id:string})=>item.id===listingId)??false;
+      const approved=await fetch(`/api/admin/listings/${encodeURIComponent(listingId)}/review`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'approve'})});
+      const unpublished=await fetch('/api/public/listings');
+      const unpublishedCatalog=await unpublished.json();
+      const published=await fetch(`/api/admin/listings/${encodeURIComponent(listingId)}/publish`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      const visible=await fetch('/api/public/listings');
+      const visibleCatalog=await visible.json();
+      return {queueStatus:before.status,contains,approvalStatus:approved.status,approval:await approved.json(),unpublishedStatus:unpublished.status,unpublishedVisible:unpublishedCatalog.items?.some((item:{id:string})=>item.id===listingId)??false,publishStatus:published.status,visibleStatus:visible.status,visible:visibleCatalog.items?.find((item:{id:string})=>item.id===listingId)};
+    },owner.listing.id);
+    expect(moderation).toMatchObject({queueStatus:200,contains:true,approvalStatus:200,approval:{status:'APPROVED',publicationStatus:'UNPUBLISHED'},unpublishedStatus:200,unpublishedVisible:false,publishStatus:200,visibleStatus:200,visible:{id:owner.listing.id,title:'Alojamiento Google M3.6'}});
+    expect(await adminPage.evaluate(async()=> (await fetch('/api/owner/contact-events')).status)).toBe(403);
+    await adminPage.getByRole('button',{name:'Cerrar sesión'}).click();
+    await expect(adminPage).toHaveURL(/\/$/);
+    expect(await adminPage.evaluate(async()=> (await fetch('/api/auth/me')).status)).toBe(401);
+  }finally{
+    await adminContext.close();
+  }
+  expect(await page.evaluate(async()=> (await fetch('/api/admin/listings/review')).status)).toBe(401);
+  const ownerListing=await page.evaluate(async(id)=>{const response=await fetch(`/api/listings/${encodeURIComponent(id)}`);return {status:response.status,body:await response.json()};},owner.listing.id);
+  expect(ownerListing).toMatchObject({status:200,body:{id:owner.listing.id,status:'APPROVED',publicationStatus:'PUBLISHED'}});
+});
+
 test('Google registration entry remains readable on a 320px viewport',async({page})=>{
   await page.setViewportSize({width:320,height:760});
   await mockGoogleIdentityServices(page);
   await page.goto('/register');
   await expect(page.getByRole('button',{name:'Continuar con Google'})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
-  await expect(page.getByText(/La primera vez se crea una cuenta individual de propietario/)).toBeVisible();
+  await expect(page.getByText(/Las cuentas nuevas acceden como propietarios/)).toBeVisible();
 });
 
 test('Google sign-in can retry after the GIS script fails to load once',async({page})=>{
