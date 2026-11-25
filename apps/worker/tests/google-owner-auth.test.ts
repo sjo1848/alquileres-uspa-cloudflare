@@ -282,6 +282,57 @@ describe('Google OWNER auth, local isolated D1',()=>{
     expect(await env.DB.prepare('SELECT count(*) AS n FROM google_admin_identities WHERE user_id=?').bind(adminId).first()).toMatchObject({n:0});
   });
 
+  it('applies wildcard security middleware to collection and nested routes in GOOGLE mode', async () => {
+    const timestamp = new Date().toISOString();
+    const adminEmail = 'middleware-admin@example.test';
+    await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at) VALUES(?,?,'local-only','ADMIN',?,?)")
+      .bind('middleware-admin', adminEmail, timestamp, timestamp).run();
+    expect(await provisionGoogleAdminIdentity(env.DB, 'middleware-admin-sub', 'middleware-admin', 'local-test')).toBe('provisioned');
+    const admin = await signIn(adminEmail, 'middleware-admin-sub');
+    const owner = await signIn('middleware-owner@example.test', 'middleware-owner-sub');
+    expect(admin.response.status).toBe(200);
+    expect(owner.response.status).toBe(200);
+    const adminCookie = combine(admin.session!, admin.browser);
+    const ownerCookie = combine(owner.session!, owner.browser);
+    const request = (path: string, method = 'GET', cookie?: string, requestOrigin = origin) =>
+      app.request(origin + path, {
+        method,
+        headers: { Origin: requestOrigin, ...(cookie ? { Cookie: cookie } : {}) },
+      }, runtimeBindings());
+
+    const created = await app.request(origin + '/listings', {
+      method: 'POST',
+      headers: { Origin: origin, Cookie: ownerCookie, 'Content-Type': 'application/json', 'Idempotency-Key': 'middleware-coverage-create' },
+      body: JSON.stringify({ title: 'Middleware coverage', description: 'Synthetic listing', location: 'Uspallata', priceAmount: 100, pricePeriod: 'MONTH', rentalDuration: 'MONTHS', maxOccupants: 2, currency: 'ARS' }),
+    }, runtimeBindings());
+    expect(created.status).toBe(201);
+    const { id: listingId } = await created.json() as { id: string };
+
+    for (const [path, allowed, denied, deniedStatus] of [
+      ['/listings', ownerCookie, adminCookie, 401],
+      [`/listings/${listingId}`, ownerCookie, adminCookie, 401],
+      ['/owner/contact-events', ownerCookie, adminCookie, 403],
+      ['/admin/listings/review', adminCookie, ownerCookie, 401],
+      [`/admin/listings/${listingId}`, adminCookie, ownerCookie, 401],
+    ] as const) {
+      const anonymous = await request(path);
+      expect(anonymous.status, path).toBe(401);
+      expect(anonymous.headers.get('Cache-Control'), path).toBe('no-store');
+      expect((await request(path, 'GET', denied)).status, path).toBe(deniedStatus);
+      expect((await request(path, 'GET', allowed)).status, path).toBe(200);
+    }
+
+    const submitPath = `/listings/${listingId}/submit`;
+    const approvePath = `/admin/listings/${listingId}/approve`;
+    expect((await request(submitPath, 'POST', ownerCookie, 'https://other.example')).status).toBe(403);
+    expect((await request(submitPath, 'POST', ownerCookie)).status).toBe(200);
+    expect((await request(approvePath, 'POST')).status).toBe(401);
+    expect((await request(approvePath, 'POST', ownerCookie)).status).toBe(401);
+    expect((await request(approvePath, 'POST', adminCookie, 'https://other.example')).status).toBe(403);
+    expect(await env.DB.prepare('SELECT status FROM listings WHERE id=?').bind(listingId).first('status')).toBe('SUBMITTED');
+    expect((await request(approvePath, 'POST', adminCookie)).status).toBe(200);
+  });
+
   it('allows OWNER Google to create a submitted listing and ADMIN Google to approve it without cross-role access',async()=>{
     const adminId=crypto.randomUUID(),at=new Date().toISOString();
     await env.DB.prepare("INSERT INTO users(id,email,password_hash,role,created_at,updated_at,email_verified_at,session_version) VALUES(?,?,'admin-local-only','ADMIN',?,?,?,0)")
